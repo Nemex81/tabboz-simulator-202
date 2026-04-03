@@ -277,19 +277,23 @@ Entrambi i posti: `drawSchoolMorningEvents(3)` → `drawSchoolMorningEvents(6)`
 ### File da modificare
 1. `src/lib/types.ts` — aggiungere `'dormi'` all'unione `ActionId` in `phase-actions.ts`
 2. `src/lib/phase-actions.ts` — aggiungere `{ id: 'dormi', label: 'Vai a dormire' }` a `feriale.sera`, `feriale.notte`, `sabato.sera`, `sabato.notte`, `domenica.sera`, `domenica.notte`, `festivo.sera`, `festivo.notte`
-3. `src/hooks/useGameActions.ts` — aggiungere `handleDormi`, aggiungere `advanceToNextDay` ai parametri
-4. `src/App.tsx` — esporre `handleDormi`, aggiungere button UI, passare `advanceToNextDay` al hook
+3. `src/hooks/useGameTime.ts` — implementare `handleDormi` **direttamente** dopo la definizione di `advanceToNextDay` (~riga 150); aggiungere `setStats`, `consumeAction`, `announce` a `UseGameTimeParams`; esportare `handleDormi` nel valore di ritorno del hook
+4. `src/App.tsx` — destrutturare `handleDormi` da `useGameTime` (NON da `useGameActions`); passare `setStats`/`consumeAction`/`announce` a `useGameTime`; aggiungere button UI
 
-### Patch — `src/hooks/useGameActions.ts`
+> **Motivazione architetturale (C1):** inserire `advanceToNextDay` come parametro di `UseGameActionsParams` creerebbe una dipendenza circolare (`useGameActions` → `useGameTime` → `useGameActions`). Poiché `useGameTime` già possiede `advanceToNextDay` come funzione locale, `handleDormi` va definito lì, dove `advanceToNextDay` è nativo e non richiede import circolari.
+
+### Patch — `src/hooks/useGameTime.ts`
 
 ```typescript
-// Interfaccia: aggiungere advanceToNextDay
-interface UseGameActionsParams {
-  // ...
-  advanceToNextDay: () => void  // ← NUOVO per handleDormi
+// Interfaccia: aggiungere setStats, consumeAction, announce a UseGameTimeParams
+interface UseGameTimeParams {
+  // ... (parametri già esistenti) ...
+  setStats: React.Dispatch<React.SetStateAction<GameStats>>  // ← NUOVO per handleDormi
+  consumeAction: () => void                                  // ← NUOVO per handleDormi
+  announce: (message: string) => void                        // ← NUOVO per handleDormi
 }
 
-// Handler:
+// Handler (inserire subito dopo advanceToNextDay ~riga 150):
 const handleDormi = useCallback(() => {
   if (phaseActionsRemainingRef.current <= 0) {
     playSound.failure()
@@ -314,7 +318,18 @@ const handleDormi = useCallback(() => {
   announce(msg)
   playSound.success()
   advanceToNextDay()
-}, [setStats, announce, advanceToNextDay])
+}, [setStats, announce, consumeAction, advanceToNextDay])
+
+// Aggiornare il return del hook:
+return {
+  gameTime,
+  advanceGameTime,
+  advancePhaseOnly,
+  advanceToNextDay,
+  handleDormi,  // ← NUOVO
+  gainExtraAction,
+  // ...
+}
 ```
 
 ### Patch — `src/lib/phase-actions.ts`
@@ -412,6 +427,8 @@ sabato.mattina → aggiungere parco
 domenica.pomeriggio → aggiungere chiacchiera, telefona
 festivo → aggiungere parco, chiacchiera
 ```
+
+> **Nota implementativa (C2):** `checkForNewFriend`, `checkForNewRelationship` e `checkForNewGirlfriend` sono **già definiti** come parametri di `UseGameActionsParams` (righe 43–45 di `useGameActions.ts`) e già destrutturati nel corpo del hook (righe 72–74). I nuovi handler `handleChiacchiera`, `handleParco` e `handleTelefona` possono usarli direttamente senza alcuna modifica all'interfaccia. ✅
 
 ### Patch — `src/hooks/useGameActions.ts`
 
@@ -540,8 +557,8 @@ ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi un po' di Figosità e 
 3. src/hooks/useGameActions.ts
    → A1: guard handleRiposa per mattina feriale + cambio recovery a percentuale A7
    → A4: intelligenzaGain decimale in handleStudySubject
-   → A6: aggiungere handleDormi + advanceToNextDay al params interface
    → A8: aggiungere handleChiacchiera, handleParco, handleTelefona
+   (A6 NON va in questo file — vedi punto 5)
 
 4. src/hooks/useEventEngine.ts
    → A9: rimuovere soldi da handleAtipaProva
@@ -549,11 +566,12 @@ ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi un po' di Figosità e 
 
 5. src/hooks/useGameTime.ts
    → A5: drawSchoolMorningEvents(3) → drawSchoolMorningEvents(6)
+   → A6: aggiungere setStats/consumeAction/announce a UseGameTimeParams; implementare handleDormi dopo advanceToNextDay; esportarlo nel return
 
 6. src/App.tsx
    → A1: aggiornare disabled logic per handleRiposa
    → A5: drawSchoolMorningEvents(3) → drawSchoolMorningEvents(6) (init useEffect)
-   → A6: passare advanceToNextDay a useGameActions + esporre handleDormi + button UI
+   → A6: passare setStats/consumeAction/announce a useGameTime; destrutturare handleDormi da useGameTime + button UI
    → A8: aggiungere pulsanti chiacchiera, parco, telefona nel tab social
    → A9: rimuovere stats.soldi < 80 dal disabled/blockedReason di Atipa
 ```
