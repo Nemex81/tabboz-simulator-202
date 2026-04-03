@@ -546,26 +546,34 @@ function App() {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (gameOver || showResetDialog || showMetallariEvent || showAtipaEvent || showPoliceEvent || showStreetRaceEvent || showBulliEvent) return
       
+      if (!e.ctrlKey && !e.altKey) return
+      
       const key = e.key.toLowerCase()
       
-      switch(key) {
-        case '1': handlePalestra(); break
-        case '2': handleLampada(); break
-        case '3': handleLavoro(); break
-        case '4': handleMotorino(); break
-        case '5': handleStudia(); break
-        case '6': handleCorrompi(); break
-        case '7': handleMinaccia(); break
-        case '8': handleRiposa(); break
-        case '9': handleProvarciConAtipa(); break
-        case 'd': handleDisco(); break
-        case 'c': handleCinema(); break
-        case 's': handleShoppingMall(); break
-        case 'r': setShowResetDialog(true); break
-        case '?':
-        case 'h':
-          announce('Tasti rapidi: 1=Palestra, 2=Lampada, 3=Lavoro, 4=Motorino, 5=Studia, 6=Corrompi, 7=Minaccia, 8=Riposa, 9=Atipa, D=Disco, C=Cinema, S=Shopping, R=Reset')
-          break
+      if (e.ctrlKey && !e.altKey && !e.shiftKey) {
+        e.preventDefault()
+        switch(key) {
+          case '1': handlePalestra(); break
+          case '2': handleLampada(); break
+          case '3': handleLavoro(); break
+          case '4': handleMotorino(); break
+          case '5': handleStudia(); break
+          case '6': handleCorrompi(); break
+          case '7': handleMinaccia(); break
+          case '8': handleRiposa(); break
+          case '9': handleProvarciConAtipa(); break
+          case 'd': handleDisco(); break
+          case 'c': handleCinema(); break
+          case 's': handleShoppingMall(); break
+          case 'r': setShowResetDialog(true); break
+        }
+      }
+      
+      if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+        e.preventDefault()
+        if (key === 'h' || key === '?') {
+          announce('Tasti rapidi: Ctrl+1=Palestra, Ctrl+2=Lampada, Ctrl+3=Lavoro, Ctrl+4=Motorino, Ctrl+5=Studia, Ctrl+6=Corrompi, Ctrl+7=Minaccia, Ctrl+8=Riposa, Ctrl+9=Atipa, Ctrl+D=Disco, Ctrl+C=Cinema, Ctrl+S=Shopping, Ctrl+R=Reset')
+        }
       }
     }
 
@@ -592,7 +600,7 @@ function App() {
           </h1>
           <p className="text-xl md:text-2xl text-secondary font-bold">2026 EDITION - VITA DA COATTO</p>
           <p className="text-sm text-muted-foreground mt-4">
-            Premi <kbd className="px-2 py-1 bg-muted rounded text-primary">H</kbd> o <kbd className="px-2 py-1 bg-muted rounded text-primary">?</kbd> per i tasti rapidi
+            Usa <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+numero</kbd> o <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+lettera</kbd> per le scorciatoie. <kbd className="px-2 py-1 bg-muted rounded text-primary">Alt+H</kbd> per la lista completa
           </p>
         </header>
 
@@ -704,36 +712,36 @@ function App() {
             <ActionButton
               icon={<Brain size={48} />}
               label="Studia"
-              shortcut="5"
+              shortcut="Ctrl+5"
               onClick={handleStudia}
               disabled={stats.stanchezza > 80}
               variant="secondary"
-              ariaLabel="Studia per aumentare i voti. Costa stanchezza, riduce coattaggine. Tasto rapido: 5"
+              ariaLabel="Studia per aumentare i voti. Costa stanchezza, riduce coattaggine. Tasto rapido: Ctrl+5"
             />
             <ActionButton
               icon={<HandCoins size={48} />}
               label="Corrompi"
-              shortcut="6"
+              shortcut="Ctrl+6"
               onClick={handleCorrompi}
               disabled={stats.soldi < 100}
               variant="default"
-              ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: 6"
+              ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
             />
             <ActionButton
               icon={<Fist size={48} />}
               label="Minaccia"
-              shortcut="7"
+              shortcut="Ctrl+7"
               onClick={handleMinaccia}
               variant="destructive"
-              ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: 7"
+              ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
             />
             <ActionButton
               icon={<Battery size={48} />}
               label="Riposa"
-              shortcut="8"
+              shortcut="Ctrl+8"
               onClick={handleRiposa}
               variant="secondary"
-              ariaLabel="Riposa per ridurre la stanchezza. Tasto rapido: 8"
+              ariaLabel="Riposa per ridurre la stanchezza. Tasto rapido: Ctrl+8"
             />
           </div>
         </section>
@@ -746,70 +754,70 @@ function App() {
             <ActionButton
               icon={<Barbell size={48} />}
               label="Palestra"
-              shortcut="1"
+              shortcut="Ctrl+1"
               onClick={handlePalestra}
               disabled={stats.soldi < 20}
-              ariaLabel="Vai in palestra per pompare muscoli. Costa 20 euro e aumenta la stanchezza. Tasto rapido: 1"
+              ariaLabel="Vai in palestra per pompare muscoli. Costa 20 euro e aumenta la stanchezza. Tasto rapido: Ctrl+1"
             />
             <ActionButton
               icon={<Sun size={48} />}
               label="Lampada"
-              shortcut="2"
+              shortcut="Ctrl+2"
               onClick={handleLampada}
               disabled={stats.soldi < 30}
-              ariaLabel="Vai alla lampada abbronzante per aumentare la coattaggine. Costa 30 euro. Tasto rapido: 2"
+              ariaLabel="Vai alla lampada abbronzante per aumentare la coattaggine. Costa 30 euro. Tasto rapido: Ctrl+2"
             />
             <ActionButton
               icon={<Briefcase size={48} />}
               label="Lavoro"
-              shortcut="3"
+              shortcut="Ctrl+3"
               onClick={handleLavoro}
               disabled={stats.muscoli < 40 || stats.stanchezza > 80}
-              ariaLabel="Lavora come buttadifuori. Richiede 40 muscoli. Guadagni soldi e coattaggine. Tasto rapido: 3"
+              ariaLabel="Lavora come buttadifuori. Richiede 40 muscoli. Guadagni soldi e coattaggine. Tasto rapido: Ctrl+3"
             />
             <ActionButton
               icon={<Motorcycle size={48} />}
               label="Motorino"
-              shortcut="4"
+              shortcut="Ctrl+4"
               onClick={handleMotorino}
               disabled={stats.soldi < 50}
-              ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: 4"
+              ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
             />
             <ActionButton
               icon={<Heart size={48} />}
               label="Atipa"
-              shortcut="9"
+              shortcut="Ctrl+9"
               onClick={handleProvarciConAtipa}
               disabled={stats.soldi < 80}
               variant="default"
-              ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: 9"
+              ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: Ctrl+9"
             />
             <ActionButton
               icon={<MusicNotes size={48} />}
               label="Discoteca"
-              shortcut="D"
+              shortcut="Ctrl+D"
               onClick={handleDisco}
               disabled={stats.soldi < 60 || stats.stanchezza > 70}
               variant="default"
-              ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: D"
+              ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: Ctrl+D"
             />
             <ActionButton
               icon={<FilmSlate size={48} />}
               label="Cinema"
-              shortcut="C"
+              shortcut="Ctrl+C"
               onClick={handleCinema}
               disabled={stats.soldi < 40}
               variant="secondary"
-              ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: C"
+              ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: Ctrl+C"
             />
             <ActionButton
               icon={<ShoppingCart size={48} />}
               label="Shopping"
-              shortcut="S"
+              shortcut="Ctrl+S"
               onClick={handleShoppingMall}
               disabled={stats.soldi < 100}
               variant="default"
-              ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: S"
+              ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: Ctrl+S"
             />
           </div>
         </section>
@@ -820,7 +828,7 @@ function App() {
             variant="outline"
             className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
           >
-            Reset Gioco (R)
+            Reset Gioco (Ctrl+R)
           </Button>
         </footer>
       </div>
