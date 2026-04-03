@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { CalendarCheck, Brain, CheckCircle, Warning } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { getSubjectDisplayName } from '@/lib/types'
+import { getDifficultyText } from '@/lib/exam-system'
 
 interface ExamsPanelProps {
   exams: ScheduledExam[]
@@ -62,6 +63,17 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
                     className="ml-2"
                   >
                     {exam.daysUntil === 0 ? 'DOMANI!' : `Tra ${exam.daysUntil} giorni`}
+                  </Badge>
+                  <Badge 
+                    variant="outline"
+                    className={`ml-2 ${
+                      exam.difficulty === 'brutale' ? 'border-destructive text-destructive' :
+                      exam.difficulty === 'difficile' ? 'border-accent text-accent' :
+                      exam.difficulty === 'facile' ? 'border-primary text-primary' :
+                      ''
+                    }`}
+                  >
+                    {getDifficultyText(exam.difficulty)}
                   </Badge>
                 </div>
                 <div className="text-sm space-y-1">

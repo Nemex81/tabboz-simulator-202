@@ -41,6 +41,7 @@ import { FriendsPanel } from '@/components/FriendsPanel'
 import { RelationshipsPanel } from '@/components/RelationshipsPanel'
 import { ExamsPanel } from '@/components/ExamsPanel'
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
+import { SubjectSelectionDialog } from '@/components/SubjectSelectionDialog'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -95,7 +96,9 @@ import {
   calculateExamGrade,
   calculateSurpriseQuizGrade,
   shouldTriggerSurpriseQuiz,
-  prepareForExam
+  prepareForExam,
+  getDifficultyText,
+  getDifficultyAnnouncement
 } from '@/lib/exam-system'
 
 function App() {
@@ -141,6 +144,7 @@ function App() {
   const [schoolEvent, setSchoolEvent] = useState<SchoolEvent | null>(null)
   const [showSchoolEvent, setShowSchoolEvent] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+  const [showSubjectDialog, setShowSubjectDialog] = useState(false)
   
   const ariaLiveRef = useRef<HTMLDivElement>(null)
   const prevReputationRef = useRef<number>(stats.reputazione)
@@ -208,20 +212,30 @@ function App() {
       setScheduledExams((currentExams) => {
         const updatedExams = currentExams.map(exam => {
           const newDaysUntil = exam.daysUntil - 1
+          
+          if (newDaysUntil === 3 && !exam.announced) {
+            const announcementText = getDifficultyAnnouncement(getSubjectDisplayName(exam.subject), exam.difficulty)
+            playSound.eventTrigger()
+            announce(announcementText)
+            return { ...exam, daysUntil: newDaysUntil, announced: true }
+          }
+          
           if (newDaysUntil <= 0) {
             const examGrade = calculateExamGrade(
               grades[exam.subject] || 6,
               stats.intelligenza,
               exam.isPrepared,
-              currentMedia
+              currentMedia,
+              exam.difficulty
             )
             setGrades((g) => ({
               ...g,
               [exam.subject]: examGrade
             }))
+            const diffText = getDifficultyText(exam.difficulty)
             const resultText = exam.isPrepared 
-              ? `VERIFICA di ${getSubjectDisplayName(exam.subject)}! Eri PREPARATO! Voto: ${examGrade.toFixed(1)}`
-              : `VERIFICA di ${getSubjectDisplayName(exam.subject)}! Non eri preparato... Voto: ${examGrade.toFixed(1)}`
+              ? `VERIFICA ${diffText} di ${getSubjectDisplayName(exam.subject)}! Eri PREPARATO! Voto: ${examGrade.toFixed(1)}`
+              : `VERIFICA ${diffText} di ${getSubjectDisplayName(exam.subject)}! Non eri preparato... Voto: ${examGrade.toFixed(1)}`
             announce(resultText)
             return null
           }
@@ -231,7 +245,7 @@ function App() {
         if (newGameTime.schoolYear.isSchoolPeriod && updatedExams.length < 3 && Math.random() < 0.3 && schoolType) {
           const subjects = Object.keys(grades)
           const newExam = generateScheduledExam(subjects)
-          announce(`NUOVA VERIFICA programmata di ${getSubjectDisplayName(newExam.subject)} tra ${newExam.daysUntil} giorni!`)
+          announce(`NUOVA VERIFICA programmata di ${getSubjectDisplayName(newExam.subject)} tra ${newExam.daysUntil} giorni! Difficoltà: ${getDifficultyText(newExam.difficulty)}`)
           return [...updatedExams, newExam]
         }
         
@@ -690,8 +704,11 @@ function App() {
       return
     }
     playSound.buttonClick()
-    const subjects = Object.keys(grades) as Array<keyof SubjectGrades>
-    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
+    setShowSubjectDialog(true)
+  }
+
+  const handleStudySubject = (selectedSubject: string) => {
+    setShowSubjectDialog(false)
     
     const hasFriendBonus = getFriendStudyBonus(friends) > 0
     const gradeIncrease = calculateStudyGradeIncrease(stats.intelligenza, hasFriendBonus)
@@ -699,7 +716,7 @@ function App() {
     
     setGrades((current) => ({
       ...current,
-      [randomSubject]: clampStat(current[randomSubject] + gradeIncrease, 0, 10)
+      [selectedSubject]: clampStat(current[selectedSubject] + gradeIncrease, 0, 10)
     }))
     setStats((current) => ({
       ...current,
@@ -711,9 +728,10 @@ function App() {
     playSound.statIncrease()
     
     const bonusText = hasFriendBonus ? ' (BONUS AMICO INTELLIGENTE!)' : ''
-    announce(`Hai studiato ${getSubjectDisplayName(randomSubject)}! +${gradeIncrease.toFixed(1)} al voto, +${intelligenzaGain} Intelligenza${bonusText}, +20 Stanchezza, -5 Coattaggine`)
+    announce(`Hai studiato ${getSubjectDisplayName(selectedSubject)}! +${gradeIncrease.toFixed(1)} al voto, +${intelligenzaGain} Intelligenza${bonusText}, +20 Stanchezza, -5 Coattaggine`)
     
     if (shouldTriggerSurpriseQuiz() && gameTime.schoolYear.isSchoolPeriod) {
+      const subjects = Object.keys(grades) as Array<keyof SubjectGrades>
       const surpriseSubject = subjects[Math.floor(Math.random() * subjects.length)]
       const quizResult = calculateSurpriseQuizGrade(grades[surpriseSubject], stats)
       setGrades((current) => ({
@@ -1934,6 +1952,14 @@ function App() {
       <KeyboardShortcutsDialog
         open={showKeyboardHelp}
         onOpenChange={setShowKeyboardHelp}
+      />
+
+      <SubjectSelectionDialog
+        open={showSubjectDialog}
+        onClose={() => setShowSubjectDialog(false)}
+        grades={grades}
+        onSelectSubject={handleStudySubject}
+        stanchezza={stats.stanchezza}
       />
     </main>
   )

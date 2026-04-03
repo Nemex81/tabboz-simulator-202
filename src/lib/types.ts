@@ -109,10 +109,14 @@ export interface GameTime {
   lastPaghettaDate?: GameDate
 }
 
+export type ExamDifficulty = 'facile' | 'normale' | 'difficile' | 'brutale'
+
 export interface ScheduledExam {
   subject: string
   daysUntil: number
   isPrepared: boolean
+  difficulty: ExamDifficulty
+  announced: boolean
 }
 
 export interface GameState {

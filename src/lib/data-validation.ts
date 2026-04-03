@@ -126,16 +126,35 @@ export const validateScheduledExams = (exams: unknown): ScheduledExam[] => {
     return []
   }
 
-  return exams.filter((exam): exam is ScheduledExam => {
-    return (
+  return exams.map((exam): ScheduledExam => {
+    if (
       exam &&
       typeof exam === 'object' &&
       typeof exam.subject === 'string' &&
       typeof exam.daysUntil === 'number' &&
       typeof exam.isPrepared === 'boolean' &&
       exam.daysUntil >= 0
-    )
-  })
+    ) {
+      const difficulty = ['facile', 'normale', 'difficile', 'brutale'].includes(exam.difficulty as string)
+        ? (exam.difficulty as 'facile' | 'normale' | 'difficile' | 'brutale')
+        : 'normale'
+      
+      return {
+        subject: exam.subject,
+        daysUntil: exam.daysUntil,
+        isPrepared: exam.isPrepared,
+        difficulty,
+        announced: typeof exam.announced === 'boolean' ? exam.announced : false
+      }
+    }
+    return {
+      subject: 'matematica',
+      daysUntil: 5,
+      isPrepared: false,
+      difficulty: 'normale',
+      announced: false
+    }
+  }).filter(exam => exam.daysUntil >= 0)
 }
 
 export const validateSchoolType = (schoolType: unknown): SchoolType | null => {

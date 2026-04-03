@@ -1,14 +1,59 @@
-import { ScheduledExam, SubjectGrades, GameStats } from '@/lib/types'
+import { ScheduledExam, SubjectGrades, GameStats, ExamDifficulty } from '@/lib/types'
 import { randomChance, clampStat } from '@/lib/game-utils'
+
+const DIFFICULTY_MULTIPLIERS: Record<ExamDifficulty, number> = {
+  facile: 1.5,
+  normale: 1.0,
+  difficile: 0.6,
+  brutale: 0.35
+}
 
 export const generateScheduledExam = (subjects: string[]): ScheduledExam => {
   const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
   const daysUntil = Math.floor(Math.random() * 4) + 2
   
+  const rand = Math.random()
+  const difficulty: ExamDifficulty = 
+    rand < 0.30 ? 'facile' :
+    rand < 0.70 ? 'normale' :
+    rand < 0.90 ? 'difficile' : 'brutale'
+  
   return {
     subject: randomSubject,
     daysUntil,
-    isPrepared: false
+    isPrepared: false,
+    difficulty,
+    announced: false
+  }
+}
+
+export const getDifficultyMultiplier = (difficulty: ExamDifficulty): number => {
+  return DIFFICULTY_MULTIPLIERS[difficulty]
+}
+
+export const getDifficultyText = (difficulty: ExamDifficulty): string => {
+  switch (difficulty) {
+    case 'facile':
+      return 'FACILE'
+    case 'normale':
+      return 'NORMALE'
+    case 'difficile':
+      return 'DIFFICILE'
+    case 'brutale':
+      return 'BRUTALE'
+  }
+}
+
+export const getDifficultyAnnouncement = (subject: string, difficulty: ExamDifficulty): string => {
+  switch (difficulty) {
+    case 'facile':
+      return `Il prof di ${subject} ha detto che la verifica sarà una passeggiata. Forse studia un po' per sicurezza.`
+    case 'normale':
+      return `Verifica di ${subject} tra 3 giorni. Mettiti sotto.`
+    case 'difficile':
+      return `Il prof di ${subject} ha fatto vedere la verifica a un collega e quello ha pianto. Preparati bene.`
+    case 'brutale':
+      return `Si vocifera che l'ultima volta che il prof di ${subject} ha fatto questa verifica, metà classe è stata bocciata. STUDIA ORA.`
   }
 }
 
@@ -16,17 +61,19 @@ export const calculateExamGrade = (
   currentGrade: number,
   intelligenza: number,
   isPrepared: boolean,
-  media: number
+  media: number,
+  difficulty: ExamDifficulty
 ): number => {
   let gradeChange = 0
+  const diffMultiplier = getDifficultyMultiplier(difficulty)
   
   if (isPrepared) {
     const intelligenceMultiplier = 1 + (intelligenza / 100)
-    gradeChange = Number((2 * intelligenceMultiplier).toFixed(1))
+    gradeChange = Number((2 * intelligenceMultiplier * diffMultiplier).toFixed(1))
   } else {
     const surpriseChance = (media + intelligenza) / 2
     if (surpriseChance > 60) {
-      gradeChange = 0.5
+      gradeChange = 0.5 * diffMultiplier
     } else if (surpriseChance > 40) {
       gradeChange = 0
     } else {
@@ -34,7 +81,14 @@ export const calculateExamGrade = (
     }
   }
   
-  const newGrade = clampStat(currentGrade + gradeChange, 0, 10)
+  const diffPenalty = {
+    facile: 0.5,
+    normale: 0,
+    difficile: -0.5,
+    brutale: -1.0
+  }[difficulty]
+  
+  const newGrade = clampStat(currentGrade + gradeChange + diffPenalty, 0, 10)
   return Number(newGrade.toFixed(1))
 }
 
