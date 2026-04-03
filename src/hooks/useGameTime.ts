@@ -84,6 +84,14 @@ export function useGameTime({
     const nextPhase = PHASE_SEQUENCE[nextIdx]
 
     if (nextPhase === 'mattina') {
+      // Fine giornata → applica recupero notturno (da "Avanza Fascia" in fase notte)
+      const nightRecovery = DAY_PHASE_CONFIG[dayType]['notte'].nightRecovery
+      if (nightRecovery !== 0) {
+        setStats((current) => ({
+          ...current,
+          stanchezza: clampStat(current.stanchezza + nightRecovery)
+        }))
+      }
       // Fine giornata → avanza data e ricalcola
       setRawGameTime((current) => {
         const newGt = advanceGameTime(current)
@@ -108,7 +116,7 @@ export function useGameTime({
     }
     playSound.buttonClick()
     announce(`Fascia oraria: ${nextPhase.charAt(0).toUpperCase() + nextPhase.slice(1)}`)
-  }, [currentPhase, dayType, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining,
+  }, [currentPhase, dayType, setStats, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining,
       setSchoolMorningEvents, setShowSchoolMorning, announce])
 
   const advanceToNextDay = useCallback(() => {
@@ -236,11 +244,6 @@ export function useGameTime({
 
   // A6 — Nuova azione dormi
   const handleDormi = useCallback(() => {
-    if (phaseActionsRemainingRef.current <= 0) {
-      playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
-      return
-    }
     const phase = currentPhaseRef.current
     if (phase !== 'sera' && phase !== 'notte') {
       playSound.failure()

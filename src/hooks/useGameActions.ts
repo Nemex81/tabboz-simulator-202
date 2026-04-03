@@ -96,6 +96,13 @@ export function useGameActions({
   currentPhaseRef.current = currentPhase
   const dayTypeRef = useRef(dayType)
   dayTypeRef.current = dayType
+  // B1-FIX-4: limita messaggi alla ragazza a 1 per fascia oraria
+  const messaggioUsatoRef = useRef(false)
+  const lastPhaseRef = useRef(currentPhase)
+  if (currentPhase !== lastPhaseRef.current) {
+    lastPhaseRef.current = currentPhase
+    messaggioUsatoRef.current = false
+  }
 
   const handlePalestra = useCallback(() => {
     const gt = gameTimeRef.current
@@ -103,6 +110,12 @@ export function useGameActions({
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    // C1-5: blocca durante ore scolastiche del mattino
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Non puoi farlo adesso.')
       return
     }
     if (s.soldi < 20) {
@@ -166,6 +179,12 @@ export function useGameActions({
       announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
+    // C1-5: blocca durante ore scolastiche del mattino
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Non puoi farlo adesso.')
+      return
+    }
     if (s.muscoli < 40) {
       playSound.failure()
       announce('Sei troppo SMILZO per fare il buttadifuori! Servono 40 Muscoli')
@@ -195,6 +214,12 @@ export function useGameActions({
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    // C1-5: blocca durante ore scolastiche del mattino
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Non puoi farlo adesso.')
       return
     }
     if (s.soldi < 50) {
@@ -321,6 +346,7 @@ export function useGameActions({
     announce(`MAZZETTA al prof di ${getSubjectDisplayName(randomSubject)}! +2 al voto, -100 Soldi. EZPZ!`)
   }, [setGrades, setStats, consumeAction, announce])
 
+  // B1-FIX-1 applicato
   const handleMinaccia = useCallback(() => {
     const gt = gameTimeRef.current
     if (phaseActionsRemainingRef.current <= 0) {
@@ -353,7 +379,7 @@ export function useGameActions({
       coattaggine: clampStat(current.coattaggine + 15)
     }))
     consumeAction()
-    announce(`Hai MINACCIATO il prof di ${randomSubject.toUpperCase()}! +3 al voto, +15 Coattaggine. Rischiosa ma ha funzionato!`)
+    announce(`Hai MINACCIATO il prof di ${getSubjectDisplayName(randomSubject)}! +3 al voto, +15 Coattaggine. Rischiosa ma ha funzionato!`)
   }, [setGrades, setStats, setGameOver, setGameOverReason, consumeAction, announce])
 
   const handleRiposa = useCallback(() => {
@@ -458,6 +484,12 @@ export function useGameActions({
       announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
+    // C1-5: blocca durante ore scolastiche del mattino
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Non puoi farlo adesso.')
+      return
+    }
     if (s.soldi < 40) {
       playSound.failure()
       announce('Non hai abbastanza GRANA per il cinema! Servono 40€')
@@ -504,6 +536,12 @@ export function useGameActions({
       announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
+    // C1-5: blocca durante ore scolastiche del mattino
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Non puoi farlo adesso.')
+      return
+    }
     if (s.soldi < 100) {
       playSound.failure()
       announce('Non hai abbastanza GRANA per fare shopping! Servono 100€')
@@ -532,6 +570,12 @@ export function useGameActions({
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    // C1-5: blocca durante ore scolastiche del mattino
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Non puoi farlo adesso.')
       return
     }
     if (s.soldi < 80) {
@@ -635,6 +679,7 @@ export function useGameActions({
     announce(result.message)
   }, [setStats, consumeAction, announce])
 
+  // B1-FIX-4 applicato
   const handleGirlfriendAction = useCallback((action: string) => {
     const gf = girlfriendRef.current
     if (!gf) return
@@ -643,6 +688,15 @@ export function useGameActions({
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
       return
+    }
+    // B1-FIX-4: messaggio — un solo messaggio gratuito per fascia oraria
+    if (action === 'messaggio' && messaggioUsatoRef.current) {
+      playSound.failure()
+      announce('Hai già mandato un messaggio in questa fascia oraria! Non essere troppo appiccicoso.')
+      return
+    }
+    if (action === 'messaggio') {
+      messaggioUsatoRef.current = true
     }
     const currentDateString = `${gt.currentDate.day}/${gt.currentDate.month}/${gt.currentDate.year}`
     const s = statsRef.current
@@ -699,10 +753,17 @@ export function useGameActions({
   }, [setGirlfriend, announce])
 
   // A8 — Nuove azioni sociali gratuite
+  // B1-FIX-5 applicato
   const handleChiacchiera = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    const gt = gameTimeRef.current
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Concentrati sulle lezioni.')
       return
     }
     playSound.buttonClick()
@@ -718,10 +779,17 @@ export function useGameActions({
     checkForNewRelationship()
   }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship])
 
+  // B1-FIX-5 applicato
   const handleParco = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    const gt = gameTimeRef.current
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Concentrati sulle lezioni.')
       return
     }
     playSound.buttonClick()
@@ -738,10 +806,17 @@ export function useGameActions({
     checkForNewGirlfriend()
   }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend])
 
+  // B1-FIX-5 applicato
   const handleTelefona = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    const gt = gameTimeRef.current
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Concentrati sulle lezioni.')
       return
     }
     if (friendsRef.current.length === 0) {

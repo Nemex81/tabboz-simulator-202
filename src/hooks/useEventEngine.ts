@@ -66,6 +66,8 @@ export function useEventEngine({
   atipaNameRef.current = atipaName
   const atipaSuccessChanceRef = useRef(atipaSuccessChance)
   atipaSuccessChanceRef.current = atipaSuccessChance
+  const phaseActionsRemainingRef = useRef(phaseActionsRemaining)
+  phaseActionsRemainingRef.current = phaseActionsRemaining
 
   const checkForNewFriend = useCallback((location: string) => {
     if (checkNewFriendEvent(statsRef.current.carisma, location) && friendsRef.current.length < 4) {
@@ -225,6 +227,7 @@ export function useEventEngine({
     }
   }, [setStats, announce])
 
+  // B1-FIX-2 applicato
   const handleStreetRaceAccetta = useCallback(() => {
     setShowStreetRaceEvent(false)
     if (randomChance(raceWinChanceRef.current)) {
@@ -243,7 +246,7 @@ export function useEventEngine({
         ...current,
         figosita: clampStat(current.figosita - 20),
         coattaggine: clampStat(current.coattaggine - 15),
-        soldi: clampStat(current.soldi - 80, 0, 1000)
+        soldi: clampStat(current.soldi - actualLoss, 0, 1000)
       }))
       announce(`Hai PERSO la gara! Che SCHIFO! -20 Figosità, -15 Coattaggine, -${actualLoss} Soldi (scommessa)`)
     }
@@ -293,9 +296,9 @@ export function useEventEngine({
     announce('Hai CEDUTO alla loro prepotenza! Sei un PERDENTE! -20 Soldi, -15 Coattaggine')
   }, [setStats, announce])
 
+  // B1-FIX-3 applicato
   const handleProvarciConAtipa = useCallback(() => {
-    const gt = gameTimeRef.current
-    if (phaseActionsRemaining <= 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Nessuna azione rimasta per questa fascia oraria!')
       return
@@ -318,16 +321,18 @@ export function useEventEngine({
     setAtipaSuccessChance(Math.round(successChance))
     setCurrentEvent(`Hai adocchiato ${randomName} al centro commerciale! Ti vuoi provare?`)
     setShowAtipaEvent(true)
+    consumeAction()
     announce(`Evento: Hai incontrato ${randomName}! Possibilità di successo: ${Math.round(successChance)}%`)
-  }, [announce])
+  }, [consumeAction, announce])
 
+  // B1-FIX-3 applicato
   const handleAtipaRinuncia = useCallback(() => {
     setShowAtipaEvent(false)
     playSound.failure()
     setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 5) }))
-    consumeAction()
+    // consumeAction() rimossa — già chiamata in handleProvarciConAtipa
     announce('Hai CAGATO sotto! -5 Coattaggine')
-  }, [setStats, consumeAction, announce])
+  }, [setStats, announce])
 
   const handleAtipaProva = useCallback(() => {
     setShowAtipaEvent(false)
@@ -350,8 +355,8 @@ export function useEventEngine({
       }))
       announce(`${name} ti ha dato il PALO! Bruciata DEVASTANTE! -15 Figosità, -10 Coattaggine`)
     }
-    consumeAction()
-  }, [setStats, consumeAction, announce])
+    // consumeAction() rimossa — già chiamata in handleProvarciConAtipa
+  }, [setStats, announce])
 
   return {
     // Dialog state

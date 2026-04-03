@@ -190,7 +190,8 @@ function App() {
     setGirlfriend,
     gameTime,
     consumeAction,
-    announce
+    announce,
+    phaseActionsRemaining
   })
 
   const actions = useGameActions({
@@ -883,8 +884,8 @@ function App() {
                     icon={<Sparkle size={48} />}
                     label="Dormi"
                     onClick={handleDormi}
-                    disabled={phaseActionsRemaining <= 0}
-                    blockedReason="Nessuna azione per questa fascia oraria"
+                    disabled={currentPhase !== 'sera' && currentPhase !== 'notte'}
+                    blockedReason="Puoi dormire solo la sera o di notte!"
                     variant="secondary"
                     ariaLabel="Vai a dormire la sera (recupero totale) o di notte (recupero 80%) e passa al giorno successivo"
                   />
@@ -1107,7 +1108,7 @@ function App() {
               <ExamsPanel
                 exams={scheduledExams}
                 onPrepareExam={handlePrepareExam}
-                actionsRemaining={gameTime.actionsRemaining}
+                actionsRemaining={phaseActionsRemaining}
                 stanchezza={stats.stanchezza}
               />
             </Suspense>
@@ -1138,7 +1139,7 @@ function App() {
                 relationships={relationships}
                 stats={stats}
                 onTryRelationship={handleTryRelationship}
-                actionsRemaining={gameTime.actionsRemaining}
+                actionsRemaining={phaseActionsRemaining}
               />
             </Suspense>
             <Card className="p-6 border-2 border-accent bg-card/50">
@@ -1166,7 +1167,7 @@ function App() {
               <GirlfriendPanel
                 girlfriend={girlfriend}
                 stats={stats}
-                actionsRemaining={gameTime.actionsRemaining}
+                actionsRemaining={phaseActionsRemaining}
                 onAction={handleGirlfriendAction}
                 onBreakup={handleGirlfriendBreakup}
               />
@@ -1222,7 +1223,7 @@ function App() {
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleAtipaProva} className="bg-accent border-2">
               <Heart size={24} weight="fill" className="mr-2" />
-              PROVA! (Costa 80€)
+              PROVA! (Gratis)
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

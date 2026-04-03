@@ -1,4 +1,4 @@
-# Piano di Correzione V3 — Tabboz Simulator
+    # Piano di Correzione V3 — Tabboz Simulator
 **Data:** 2026-04-03  
 **Baseline:** Piano V2 completamente applicato, 0 errori TypeScript  
 **Fonte anomalie:** Test manuale post-V2  
@@ -641,7 +641,7 @@ const events = useEventEngine({
 6. src/App.tsx
    → A1: aggiornare disabled logic per handleRiposa
    → A5: drawSchoolMorningEvents(3) → drawSchoolMorningEvents(6) (init useEffect)
-   → A6: destrutturare handleDormi da useGameTime (già disponibile, nessun params aggiuntivi da passare) + button UI
+   → A6: passare setStats/consumeAction/announce a useGameTime; destrutturare handleDormi da useGameTime + button UI
    → A8: aggiungere pulsanti chiacchiera, parco, telefona nel tab social
    → A9: rimuovere stats.soldi < 80 dal disabled/blockedReason di Atipa
 ```

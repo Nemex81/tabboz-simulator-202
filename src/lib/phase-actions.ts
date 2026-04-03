@@ -102,7 +102,6 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
     sera: [
       // La sera domenicale è occupata dall'evento narrativo "Ansia del Lunedì"
       { id: 'studia', label: 'Rivedi gli appunti', requiresSchoolPeriod: true },
-      { id: 'riposa', label: 'Riposati' },
       { id: 'dormi', label: 'Vai a dormire (recupero totale)' },
     ],
     notte: [
