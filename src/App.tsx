@@ -32,6 +32,8 @@ import { StatDisplay } from '@/components/StatDisplay'
 import { ActionButton } from '@/components/ActionButton'
 import { TimeDisplay } from '@/components/TimeDisplay'
 import { ReportCardDialog } from '@/components/ReportCardDialog'
+import { SchoolSelection } from '@/components/SchoolSelection'
+import { SchoolEventDialog } from '@/components/SchoolEventDialog'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -45,7 +47,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName } from '@/lib/types'
 import { 
   clampStat, 
   calculateMedia, 
@@ -58,11 +60,14 @@ import {
 import { 
   advanceGameTime, 
   shouldShowReportCard, 
-  calculateNextSchoolYear 
+  calculateNextSchoolYear,
+  shouldReceivePaghetta
 } from '@/lib/time-utils'
 import { playSound } from '@/lib/sound-effects'
+import { getTeacherEvent, getParentEventByMedia, SchoolEvent, EventOutcome } from '@/lib/school-events'
 
 function App() {
+  const [schoolType, setSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
   const [stats, setStats] = useKV<GameStats>('tabboz-stats', DEFAULT_GAME_STATE.stats)
   const [grades, setGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
   const [gameTime, setGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
@@ -81,9 +86,22 @@ function App() {
   const [showStreetRaceEvent, setShowStreetRaceEvent] = useState(false)
   const [showBulliEvent, setShowBulliEvent] = useState(false)
   const [raceWinChance, setRaceWinChance] = useState(0)
+  const [schoolEvent, setSchoolEvent] = useState<SchoolEvent | null>(null)
+  const [showSchoolEvent, setShowSchoolEvent] = useState(false)
   
   const ariaLiveRef = useRef<HTMLDivElement>(null)
   const prevReputationRef = useRef<number>(stats.reputazione)
+
+  const handleSchoolSelection = (selected: SchoolType) => {
+    playSound.success()
+    setSchoolType(selected)
+    setGrades(getDefaultGradesForSchoolType(selected))
+    announce(`Hai scelto: ${selected.toUpperCase()}! Buona fortuna!`)
+  }
+
+  if (!schoolType) {
+    return <SchoolSelection onSelectSchool={handleSchoolSelection} />
+  }
 
   const announce = (message: string) => {
     if (ariaLiveRef.current) {
@@ -103,6 +121,24 @@ function App() {
     setGameTime((current) => {
       const newGameTime = advanceGameTime(current)
       
+      const currentMedia = calculateMedia(grades)
+      if (shouldReceivePaghetta(newGameTime.currentDate, current.lastPaghettaDate)) {
+        if (currentMedia >= 7) {
+          const paghetta = 50
+          setStats((s) => ({ ...s, soldi: clampStat(s.soldi + paghetta, 0, 1000) }))
+          playSound.moneyEarned()
+          announce(`SABATO! I tuoi ti hanno dato la PAGHETTA! +${paghetta}€ (media ≥ 7)`)
+          return { ...newGameTime, lastPaghettaDate: newGameTime.currentDate }
+        } else {
+          const parentEvent = getParentEventByMedia(currentMedia, stats)
+          if (parentEvent) {
+            setSchoolEvent(parentEvent)
+            setShowSchoolEvent(true)
+          }
+          return { ...newGameTime, lastPaghettaDate: newGameTime.currentDate }
+        }
+      }
+      
       if (shouldShowReportCard(newGameTime.currentDate, newGameTime.schoolYear.reportCardDate)) {
         const media = calculateMedia(grades)
         const passed = media >= 6
@@ -112,6 +148,12 @@ function App() {
         if (passed && newGameTime.schoolYear.currentYear === 5) {
           setGameWon(true)
         }
+      }
+      
+      if (Math.random() < 0.15 && newGameTime.schoolYear.isSchoolPeriod && schoolType) {
+        const teacherEvent = getTeacherEvent(schoolType)
+        setSchoolEvent(teacherEvent)
+        setShowSchoolEvent(true)
       }
       
       return newGameTime
@@ -730,13 +772,52 @@ function App() {
   const handleReset = () => {
     playSound.reset()
     setStats(DEFAULT_GAME_STATE.stats)
-    setGrades(DEFAULT_GAME_STATE.grades)
+    setGrades(schoolType ? getDefaultGradesForSchoolType(schoolType) : DEFAULT_GAME_STATE.grades)
     setGameTime(DEFAULT_GAME_STATE.gameTime)
     setGameOver(false)
     setGameOverReason('')
     setShowResetDialog(false)
     setGameWon(false)
-    announce('Gioco RESETTATO! Ricominci da capo!')
+    setSchoolType(null)
+    announce('Gioco RESETTATO! Scegli di nuovo l\'indirizzo!')
+  }
+
+  const handleSchoolEventChoice = (choiceIndex: number) => {
+    if (!schoolEvent) return
+    
+    const outcome: EventOutcome = schoolEvent.choices[choiceIndex].action()
+    
+    if (outcome.statChanges) {
+      setStats((current) => {
+        const updated = { ...current }
+        Object.entries(outcome.statChanges!).forEach(([key, value]) => {
+          const statKey = key as keyof GameStats
+          if (statKey === 'soldi') {
+            updated[statKey] = clampStat((updated[statKey] as number) + value, 0, 1000)
+          } else {
+            updated[statKey] = clampStat((updated[statKey] as number) + value)
+          }
+        })
+        return updated
+      })
+    }
+    
+    if (outcome.gradeChanges) {
+      const subjects = Object.keys(grades)
+      const targetSubject = outcome.gradeChanges.subject === 'random' 
+        ? subjects[Math.floor(Math.random() * subjects.length)]
+        : outcome.gradeChanges.subject
+      
+      setGrades((current) => ({
+        ...current,
+        [targetSubject]: clampStat(current[targetSubject] + outcome.gradeChanges!.change, 0, 10)
+      }))
+    }
+    
+    playSound.eventTrigger()
+    announce(outcome.message)
+    setShowSchoolEvent(false)
+    setSchoolEvent(null)
   }
 
   const handleReportCardContinue = () => {
@@ -758,12 +839,7 @@ function App() {
         age: current.age + 1
       }))
       
-      setGrades((current) => ({
-        matematica: 6,
-        italiano: 6,
-        storia: 6,
-        edFisica: 6
-      }))
+      setGrades(schoolType ? getDefaultGradesForSchoolType(schoolType) : DEFAULT_GAME_STATE.grades)
       
       playSound.success()
       announce(`PROMOSSO! Ora sei in ${newYear}° superiore! I voti sono stati resettati.`)
@@ -1094,13 +1170,13 @@ function App() {
                 <GraduationCap size={32} weight="fill" />
                 VOTI SCOLASTICI
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {Object.entries(grades).map(([subject, grade]) => (
                   <div key={subject} className="text-center p-4 rounded-lg bg-muted/30">
-                    <div className="text-sm text-muted-foreground uppercase font-semibold mb-2">
-                      {subject}
+                    <div className="text-xs text-muted-foreground uppercase font-semibold mb-2">
+                      {getSubjectDisplayName(subject)}
                     </div>
-                    <div className={`text-4xl font-bold ${grade < 6 ? 'text-destructive' : 'text-secondary'}`}>
+                    <div className={`text-3xl font-bold ${grade < 6 ? 'text-destructive' : 'text-secondary'}`}>
                       {grade}
                     </div>
                     <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
@@ -1482,6 +1558,13 @@ function App() {
         schoolYear={gameTime.schoolYear.currentYear}
         onContinue={handleReportCardContinue}
         isLastYear={gameTime.schoolYear.currentYear === 5 && reportCardPassed}
+      />
+
+      <SchoolEventDialog
+        open={showSchoolEvent}
+        event={schoolEvent}
+        onChoice={handleSchoolEventChoice}
+        onClose={() => setShowSchoolEvent(false)}
       />
     </main>
   )

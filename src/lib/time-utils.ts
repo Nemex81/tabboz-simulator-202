@@ -127,3 +127,24 @@ export const getDaysUntilReportCard = (currentDate: GameDate, reportCardDate: Ga
   
   return count
 }
+
+export const getWeekNumber = (date: GameDate): number => {
+  const jan1 = new Date(date.year, 0, 1)
+  const current = new Date(date.year, date.month - 1, date.day)
+  const dayOfYear = Math.floor((current.getTime() - jan1.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.floor(dayOfYear / 7)
+}
+
+export const isSaturday = (date: GameDate): boolean => {
+  const jsDate = new Date(date.year, date.month - 1, date.day)
+  return jsDate.getDay() === 6
+}
+
+export const shouldReceivePaghetta = (currentDate: GameDate, lastPaghettaDate: GameDate | undefined): boolean => {
+  if (!lastPaghettaDate) return isSaturday(currentDate)
+  
+  const currentWeek = getWeekNumber(currentDate)
+  const lastWeek = getWeekNumber(lastPaghettaDate)
+  
+  return isSaturday(currentDate) && currentWeek !== lastWeek
+}

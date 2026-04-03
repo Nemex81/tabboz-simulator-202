@@ -7,7 +7,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { SubjectGrades } from '@/lib/types'
+import { SubjectGrades, getSubjectDisplayName } from '@/lib/types'
 import { GraduationCap, Trophy, X } from '@phosphor-icons/react'
 
 interface ReportCardDialogProps {
@@ -66,7 +66,7 @@ export function ReportCardDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="grid grid-cols-2 gap-4 my-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 my-6 max-h-96 overflow-y-auto">
           {Object.entries(grades).map(([subject, grade]) => (
             <div
               key={subject}
@@ -75,7 +75,7 @@ export function ReportCardDialog({
               }`}
             >
               <div className="text-sm text-muted-foreground uppercase font-semibold mb-1">
-                {subject}
+                {getSubjectDisplayName(subject)}
               </div>
               <div className={`text-4xl font-bold ${grade >= 6 ? 'text-accent' : 'text-destructive'}`}>
                 {grade}
