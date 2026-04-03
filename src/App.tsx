@@ -29,6 +29,8 @@ import {
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
 import { ActionButton } from '@/components/ActionButton'
+import { TimeDisplay } from '@/components/TimeDisplay'
+import { ReportCardDialog } from '@/components/ReportCardDialog'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -42,7 +44,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { GameStats, SubjectGrades, DEFAULT_GAME_STATE } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE } from '@/lib/types'
 import { 
   clampStat, 
   calculateMedia, 
@@ -52,14 +54,23 @@ import {
   getReputationLevel,
   getReputationEventModifier
 } from '@/lib/game-utils'
+import { 
+  advanceGameTime, 
+  shouldShowReportCard, 
+  calculateNextSchoolYear 
+} from '@/lib/time-utils'
 import { playSound } from '@/lib/sound-effects'
 
 function App() {
   const [stats, setStats] = useKV<GameStats>('tabboz-stats', DEFAULT_GAME_STATE.stats)
   const [grades, setGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
+  const [gameTime, setGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
   const [gameOver, setGameOver] = useState(false)
   const [gameOverReason, setGameOverReason] = useState('')
   const [showResetDialog, setShowResetDialog] = useState(false)
+  const [showReportCard, setShowReportCard] = useState(false)
+  const [reportCardPassed, setReportCardPassed] = useState(false)
+  const [gameWon, setGameWon] = useState(false)
   const [currentEvent, setCurrentEvent] = useState<string>('')
   const [showMetallariEvent, setShowMetallariEvent] = useState(false)
   const [showAtipaEvent, setShowAtipaEvent] = useState(false)
@@ -78,6 +89,34 @@ function App() {
       ariaLiveRef.current.textContent = message
     }
     toast(message)
+  }
+
+  const consumeAction = () => {
+    setGameTime((current) => ({
+      ...current,
+      actionsRemaining: Math.max(0, current.actionsRemaining - 1)
+    }))
+  }
+
+  const advanceToNextDay = () => {
+    setGameTime((current) => {
+      const newGameTime = advanceGameTime(current)
+      
+      if (shouldShowReportCard(newGameTime.currentDate, newGameTime.schoolYear.reportCardDate)) {
+        const media = calculateMedia(grades)
+        const passed = media >= 6
+        setReportCardPassed(passed)
+        setShowReportCard(true)
+        
+        if (passed && newGameTime.schoolYear.currentYear === 5) {
+          setGameWon(true)
+        }
+      }
+      
+      return newGameTime
+    })
+    playSound.success()
+    announce('Nuovo giorno! Azioni ripristinate.')
   }
 
   useEffect(() => {
@@ -295,6 +334,11 @@ function App() {
   }
 
   const handlePalestra = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
     if (stats.soldi < 20) {
       playSound.failure()
       announce('Non hai abbastanza GRANA per la palestra! Servono 20€')
@@ -309,11 +353,17 @@ function App() {
       soldi: clampStat(current.soldi - 20, 0, 1000),
       stanchezza: clampStat(current.stanchezza + 15)
     }))
+    consumeAction()
     announce('Hai pompato FERRO! +10 Muscoli, +5 Figosità, -20 Soldi, +15 Stanchezza')
     triggerRandomEvent()
   }
 
   const handleLampada = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
     if (stats.soldi < 30) {
       playSound.failure()
       announce('Non hai abbastanza GRANA per la lampada! Servono 30€')
@@ -327,11 +377,17 @@ function App() {
       figosita: clampStat(current.figosita + 10),
       soldi: clampStat(current.soldi - 30, 0, 1000)
     }))
+    consumeAction()
     announce('Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -30 Soldi')
     triggerRandomEvent()
   }
 
   const handleLavoro = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
     if (stats.muscoli < 40) {
       playSound.failure()
       announce('Sei troppo SMILZO per fare il buttadifuori! Servono 40 Muscoli')
@@ -350,11 +406,17 @@ function App() {
       stanchezza: clampStat(current.stanchezza + 20),
       coattaggine: clampStat(current.coattaggine + 5)
     }))
+    consumeAction()
     announce('Hai lavorato come BUTTADIFUORI! +80 Soldi, +5 Coattaggine, +20 Stanchezza')
     triggerRandomEvent()
   }
 
   const handleMotorino = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
     if (stats.soldi < 50) {
       playSound.failure()
       announce('Non hai abbastanza GRANA per truccare il motorino! Servono 50€')
@@ -368,11 +430,22 @@ function App() {
       figosita: clampStat(current.figosita + 15),
       soldi: clampStat(current.soldi - 50, 0, 1000)
     }))
+    consumeAction()
     announce('Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -50 Soldi')
     triggerRandomEvent()
   }
 
   const handleStudia = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
+    if (!gameTime.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Non puoi studiare durante le VACANZE ESTIVE! Goditi l\'estate!')
+      return
+    }
     if (stats.stanchezza > 80) {
       playSound.failure()
       announce('Sei troppo DISTRUTTO per studiare! Riposa!')
@@ -391,11 +464,22 @@ function App() {
       stanchezza: clampStat(current.stanchezza + 20),
       coattaggine: clampStat(current.coattaggine - 5)
     }))
+    consumeAction()
     playSound.statIncrease()
     announce(`Hai studiato ${randomSubject.toUpperCase()}! +1 al voto, +20 Stanchezza, -5 Coattaggine`)
   }
 
   const handleCorrompi = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
+    if (!gameTime.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('La scuola è CHIUSA! Aspetta settembre!')
+      return
+    }
     if (stats.soldi < 100) {
       playSound.failure()
       announce('Non hai abbastanza GRANA per la MAZZETTA! Servono 100€')
@@ -414,11 +498,22 @@ function App() {
       ...current,
       soldi: clampStat(current.soldi - 100, 0, 1000)
     }))
+    consumeAction()
     playSound.success()
     announce(`MAZZETTA al prof di ${randomSubject.toUpperCase()}! +2 al voto, -100 Soldi. EZPZ!`)
   }
 
   const handleMinaccia = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
+    if (!gameTime.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('La scuola è CHIUSA! Aspetta settembre!')
+      return
+    }
     playSound.buttonClick()
     if (randomChance(30)) {
       playSound.gameOver()
@@ -440,6 +535,7 @@ function App() {
       ...current,
       coattaggine: clampStat(current.coattaggine + 15)
     }))
+    consumeAction()
     announce(`Hai MINACCIATO il prof di ${randomSubject.toUpperCase()}! +3 al voto, +15 Coattaggine. Rischiosa ma ha funzionato!`)
   }
 
@@ -449,10 +545,20 @@ function App() {
       ...current,
       stanchezza: clampStat(current.stanchezza - 40)
     }))
-    announce('Hai riposato un po\'! -40 Stanchezza')
+    
+    if (gameTime.actionsRemaining === 0) {
+      advanceToNextDay()
+    } else {
+      announce('Hai riposato un po\'! -40 Stanchezza')
+    }
   }
 
   const handleDisco = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
     if (stats.soldi < 60) {
       playSound.failure()
       announce('Non hai abbastanza GRANA per entrare in discoteca! Servono 60€')
@@ -494,10 +600,16 @@ function App() {
       }))
       announce('Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -60 Soldi, +20 Stanchezza')
     }
+    consumeAction()
     triggerRandomEvent()
   }
 
   const handleCinema = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
     if (stats.soldi < 40) {
       playSound.failure()
       announce('Non hai abbastanza GRANA per il cinema! Servono 40€')
@@ -525,10 +637,16 @@ function App() {
       }))
       announce('Hai visto un bel film! Serata tranquilla. -40 Soldi, -15 Stanchezza')
     }
+    consumeAction()
     triggerRandomEvent()
   }
 
   const handleShoppingMall = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
     if (stats.soldi < 100) {
       playSound.failure()
       announce('Non hai abbastanza GRANA per fare shopping! Servono 100€')
@@ -543,11 +661,17 @@ function App() {
       coattaggine: clampStat(current.coattaggine + 10),
       soldi: clampStat(current.soldi - 100, 0, 1000)
     }))
+    consumeAction()
     announce('Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, -100 Soldi')
     triggerRandomEvent()
   }
 
   const handleProvarciConAtipa = () => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      return
+    }
     playSound.buttonClick()
     playSound.eventTrigger()
     const names = ['Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer']
@@ -574,6 +698,7 @@ function App() {
     playSound.failure()
     setShowAtipaEvent(false)
     setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 5) }))
+    consumeAction()
     announce(`Hai CAGATO sotto! -5 Coattaggine`)
   }
 
@@ -598,16 +723,44 @@ function App() {
       }))
       announce(`${atipaName} ti ha dato il PALO! Bruciata DEVASTANTE! -15 Figosità, -10 Coattaggine`)
     }
+    consumeAction()
   }
 
   const handleReset = () => {
     playSound.reset()
     setStats(DEFAULT_GAME_STATE.stats)
     setGrades(DEFAULT_GAME_STATE.grades)
+    setGameTime(DEFAULT_GAME_STATE.gameTime)
     setGameOver(false)
     setGameOverReason('')
     setShowResetDialog(false)
+    setGameWon(false)
     announce('Gioco RESETTATO! Ricominci da capo!')
+  }
+
+  const handleReportCardContinue = () => {
+    setShowReportCard(false)
+    
+    if (gameWon) {
+      playSound.bigWin()
+      setGameOver(true)
+      setGameOverReason('HAI VINTO! Hai superato la MATURITÀ! Sei una LEGGENDA!')
+      return
+    }
+    
+    if (reportCardPassed) {
+      setGameTime((current) => ({
+        ...current,
+        schoolYear: calculateNextSchoolYear(current.schoolYear)
+      }))
+      playSound.success()
+      const newYear = gameTime.schoolYear.currentYear + 1
+      announce(`Promosso! Ora sei in ${newYear}° superiore!`)
+    } else {
+      playSound.gameOver()
+      setGameOver(true)
+      setGameOverReason('BOCCIATO! Media sotto il 6! Devi ripetere l\'anno!')
+    }
   }
 
   useEffect(() => {
@@ -647,7 +800,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, stats, grades])
+  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, showReportCard, stats, grades, gameTime])
 
   const currentMedia = calculateMedia(grades)
 
@@ -709,6 +862,8 @@ function App() {
             />
           </div>
         </section>
+
+        <TimeDisplay gameTime={gameTime} />
 
         <Tabs defaultValue="status" className="w-full">
           <TabsList className="grid w-full grid-cols-3 gap-2 bg-muted/50 p-1 h-auto">
@@ -924,7 +1079,7 @@ function App() {
                     label="Studia"
                     shortcut="Ctrl+5"
                     onClick={handleStudia}
-                    disabled={stats.stanchezza > 80}
+                    disabled={gameTime.actionsRemaining === 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
                     variant="secondary"
                     ariaLabel="Studia per aumentare i voti. Costa stanchezza, riduce coattaggine. Tasto rapido: Ctrl+5"
                   />
@@ -950,7 +1105,7 @@ function App() {
                     label="Corrompi"
                     shortcut="Ctrl+6"
                     onClick={handleCorrompi}
-                    disabled={stats.soldi < 100}
+                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 100 || !gameTime.schoolYear.isSchoolPeriod}
                     variant="default"
                     ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
                   />
@@ -959,6 +1114,7 @@ function App() {
                     label="Minaccia"
                     shortcut="Ctrl+7"
                     onClick={handleMinaccia}
+                    disabled={gameTime.actionsRemaining === 0 || !gameTime.schoolYear.isSchoolPeriod}
                     variant="destructive"
                     ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
                   />
@@ -983,7 +1139,7 @@ function App() {
                     label="Palestra"
                     shortcut="Ctrl+1"
                     onClick={handlePalestra}
-                    disabled={stats.soldi < 20}
+                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 20}
                     ariaLabel="Vai in palestra per pompare muscoli. Costa 20 euro e aumenta la stanchezza. Tasto rapido: Ctrl+1"
                   />
                   <ActionButton
@@ -991,7 +1147,7 @@ function App() {
                     label="Lampada"
                     shortcut="Ctrl+2"
                     onClick={handleLampada}
-                    disabled={stats.soldi < 30}
+                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 30}
                     ariaLabel="Vai alla lampada abbronzante per aumentare la coattaggine. Costa 30 euro. Tasto rapido: Ctrl+2"
                   />
                   <ActionButton
@@ -999,7 +1155,7 @@ function App() {
                     label="Motorino"
                     shortcut="Ctrl+4"
                     onClick={handleMotorino}
-                    disabled={stats.soldi < 50}
+                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 50}
                     ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
                   />
                 </div>
@@ -1016,7 +1172,7 @@ function App() {
                     label="Atipa"
                     shortcut="Ctrl+9"
                     onClick={handleProvarciConAtipa}
-                    disabled={stats.soldi < 80}
+                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 80}
                     variant="default"
                     ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: Ctrl+9"
                   />
@@ -1025,7 +1181,7 @@ function App() {
                     label="Discoteca"
                     shortcut="Ctrl+D"
                     onClick={handleDisco}
-                    disabled={stats.soldi < 60 || stats.stanchezza > 70}
+                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 60 || stats.stanchezza > 70}
                     variant="default"
                     ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: Ctrl+D"
                   />
@@ -1034,7 +1190,7 @@ function App() {
                     label="Cinema"
                     shortcut="Ctrl+C"
                     onClick={handleCinema}
-                    disabled={stats.soldi < 40}
+                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 40}
                     variant="secondary"
                     ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: Ctrl+C"
                   />
@@ -1052,7 +1208,7 @@ function App() {
                     label="Lavoro"
                     shortcut="Ctrl+3"
                     onClick={handleLavoro}
-                    disabled={stats.muscoli < 40 || stats.stanchezza > 80}
+                    disabled={gameTime.actionsRemaining === 0 || stats.muscoli < 40 || stats.stanchezza > 80}
                     ariaLabel="Lavora come buttadifuori. Richiede 40 muscoli. Guadagni soldi e coattaggine. Tasto rapido: Ctrl+3"
                   />
                   <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
@@ -1075,7 +1231,7 @@ function App() {
                     label="Shopping"
                     shortcut="Ctrl+S"
                     onClick={handleShoppingMall}
-                    disabled={stats.soldi < 100}
+                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 100}
                     variant="default"
                     ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: Ctrl+S"
                   />
@@ -1257,6 +1413,16 @@ function App() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ReportCardDialog
+        open={showReportCard}
+        grades={grades}
+        media={currentMedia}
+        isPassed={reportCardPassed}
+        schoolYear={gameTime.schoolYear.currentYear}
+        onContinue={handleReportCardContinue}
+        isLastYear={gameTime.schoolYear.currentYear === 5 && reportCardPassed}
+      />
     </main>
   )
 }
