@@ -48,6 +48,7 @@ import {
   getReputationLevel,
   getReputationEventModifier
 } from '@/lib/game-utils'
+import { playSound } from '@/lib/sound-effects'
 
 function App() {
   const [stats, setStats] = useKV<GameStats>('tabboz-stats', DEFAULT_GAME_STATE.stats)
@@ -84,6 +85,7 @@ function App() {
       setStats((current) => ({ ...current, reputazione: newReputation }))
       
       if (oldLevel !== newLevel) {
+        playSound.reputationUp()
         announce(`CAMBIO DI REPUTAZIONE! Ora sei: ${newLevel}`)
       }
     }
@@ -94,6 +96,7 @@ function App() {
   useEffect(() => {
     const checkStatus = checkGameOver({ ...stats, media: calculateMedia(grades) })
     if (checkStatus.isOver) {
+      playSound.gameOver()
       setGameOver(true)
       setGameOverReason(checkStatus.reason)
       announce(checkStatus.reason)
@@ -108,17 +111,21 @@ function App() {
     if (adjustedRoll < 12) {
       const respectBonus = reputationModifier.respectBonus
       if (respectBonus >= 15) {
+        playSound.success()
         announce('I METALLARI ti riconoscono e ti salutano con rispetto! La tua REPUTAZIONE ti precede!')
         return
       }
+      playSound.dangerAlert()
       setShowMetallariEvent(true)
       setCurrentEvent('Incontro con i METALLARI! Vogliono la tua grana!')
       announce('Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!')
     } else if (adjustedRoll < 22) {
       if (reputationModifier.respectBonus >= 15) {
+        playSound.success()
         announce('I POLIZIOTTI ti hanno fermato ma ti lasciano andare! Sei troppo RISPETTATO nel quartiere!')
         return
       }
+      playSound.dangerAlert()
       setShowPoliceEvent(true)
       setCurrentEvent('I POLIZIOTTI ti hanno fermato! Controllo documenti!')
       announce('Evento casuale: Controllo della POLIZIA!')
@@ -130,14 +137,17 @@ function App() {
         reputationModifier.positiveOutcomeBonus
       ))
       setRaceWinChance(Math.round(winChance))
+      playSound.eventTrigger()
       setShowStreetRaceEvent(true)
       setCurrentEvent('Un TAMARRO ti sfida ad una GARA con il motorino!')
       announce(`Evento casuale: GARA di motorini! Possibilità di vincita: ${Math.round(winChance)}%`)
     } else if (adjustedRoll < 36) {
       if (reputationModifier.respectBonus >= 10) {
+        playSound.success()
         announce('I BULLI della scuola ti vedono e si allontanano! Hanno PAURA della tua REPUTAZIONE!')
         return
       }
+      playSound.dangerAlert()
       setShowBulliEvent(true)
       setCurrentEvent('I BULLI della scuola ti vogliono rubare la merenda!')
       announce('Evento casuale: Incontro con i BULLI!')
@@ -145,6 +155,7 @@ function App() {
   }
 
   const handleMetallariScappa = () => {
+    playSound.failure()
     setShowMetallariEvent(false)
     setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 10) }))
     announce('Sei scappato come un CONIGLIO! -10 Coattaggine')
@@ -153,6 +164,7 @@ function App() {
   const handleMetallariCombatti = () => {
     setShowMetallariEvent(false)
     if (stats.muscoli > 60) {
+      playSound.bigWin()
       setStats((current) => ({
         ...current,
         coattaggine: clampStat(current.coattaggine + 15),
@@ -160,6 +172,7 @@ function App() {
       }))
       announce('Li hai STESI! +15 Coattaggine, +30 Soldi rubati')
     } else {
+      playSound.bigLoss()
       setStats((current) => ({
         ...current,
         soldi: clampStat(current.soldi - 50, 0, 1000),
@@ -172,12 +185,14 @@ function App() {
   const handlePoliceScappa = () => {
     setShowPoliceEvent(false)
     if (stats.coattaggine > 70) {
+      playSound.success()
       setStats((current) => ({
         ...current,
         coattaggine: clampStat(current.coattaggine + 10)
       }))
       announce('Sei SCAPPATO dai poliziotti! Che COATTO! +10 Coattaggine')
     } else {
+      playSound.bigLoss()
       setStats((current) => ({
         ...current,
         soldi: clampStat(current.soldi - 100, 0, 1000),
@@ -190,12 +205,14 @@ function App() {
   const handlePoliceCollabora = () => {
     setShowPoliceEvent(false)
     if (stats.soldi >= 50) {
+      playSound.moneySpent()
       setStats((current) => ({
         ...current,
         soldi: clampStat(current.soldi - 50, 0, 1000)
       }))
       announce('Hai dato una MAZZETTA! Ti lasciano andare. -50 Soldi')
     } else {
+      playSound.bigLoss()
       setStats((current) => ({
         ...current,
         soldi: 0,
@@ -209,6 +226,7 @@ function App() {
     setShowStreetRaceEvent(false)
     
     if (randomChance(raceWinChance)) {
+      playSound.bigWin()
       setStats((current) => ({
         ...current,
         coattaggine: clampStat(current.coattaggine + 25),
@@ -217,6 +235,7 @@ function App() {
       }))
       announce('Hai VINTO la gara! Sei una LEGGENDA! +25 Coattaggine, +20 Figosità, +150 Soldi')
     } else {
+      playSound.bigLoss()
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita - 20),
@@ -228,6 +247,7 @@ function App() {
   }
 
   const handleStreetRaceRifiuta = () => {
+    playSound.failure()
     setShowStreetRaceEvent(false)
     setStats((current) => ({
       ...current,
@@ -240,6 +260,7 @@ function App() {
   const handleBulliResisti = () => {
     setShowBulliEvent(false)
     if (stats.muscoli > 50) {
+      playSound.bigWin()
       setStats((current) => ({
         ...current,
         coattaggine: clampStat(current.coattaggine + 20),
@@ -247,6 +268,7 @@ function App() {
       }))
       announce('Li hai MENATI! Ora ti RISPETTANO! +20 Coattaggine, +5 Muscoli')
     } else {
+      playSound.bigLoss()
       setStats((current) => ({
         ...current,
         soldi: clampStat(current.soldi - 30, 0, 1000),
@@ -258,6 +280,7 @@ function App() {
   }
 
   const handleBulliCedi = () => {
+    playSound.failure()
     setShowBulliEvent(false)
     setStats((current) => ({
       ...current,
@@ -269,9 +292,12 @@ function App() {
 
   const handlePalestra = () => {
     if (stats.soldi < 20) {
+      playSound.failure()
       announce('Non hai abbastanza GRANA per la palestra! Servono 20€')
       return
     }
+    playSound.buttonClick()
+    playSound.statIncrease()
     setStats((current) => ({
       ...current,
       muscoli: clampStat(current.muscoli + 10),
@@ -285,9 +311,12 @@ function App() {
 
   const handleLampada = () => {
     if (stats.soldi < 30) {
+      playSound.failure()
       announce('Non hai abbastanza GRANA per la lampada! Servono 30€')
       return
     }
+    playSound.buttonClick()
+    playSound.statIncrease()
     setStats((current) => ({
       ...current,
       coattaggine: clampStat(current.coattaggine + 15),
@@ -300,13 +329,17 @@ function App() {
 
   const handleLavoro = () => {
     if (stats.muscoli < 40) {
+      playSound.failure()
       announce('Sei troppo SMILZO per fare il buttadifuori! Servono 40 Muscoli')
       return
     }
     if (stats.stanchezza > 80) {
+      playSound.failure()
       announce('Sei troppo DISTRUTTO per lavorare! Riposa!')
       return
     }
+    playSound.buttonClick()
+    playSound.moneyEarned()
     setStats((current) => ({
       ...current,
       soldi: clampStat(current.soldi + 80, 0, 1000),
@@ -319,9 +352,12 @@ function App() {
 
   const handleMotorino = () => {
     if (stats.soldi < 50) {
+      playSound.failure()
       announce('Non hai abbastanza GRANA per truccare il motorino! Servono 50€')
       return
     }
+    playSound.buttonClick()
+    playSound.statIncrease()
     setStats((current) => ({
       ...current,
       coattaggine: clampStat(current.coattaggine + 20),
@@ -334,9 +370,11 @@ function App() {
 
   const handleStudia = () => {
     if (stats.stanchezza > 80) {
+      playSound.failure()
       announce('Sei troppo DISTRUTTO per studiare! Riposa!')
       return
     }
+    playSound.buttonClick()
     const subjects = Object.keys(grades) as Array<keyof SubjectGrades>
     const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
     
@@ -349,14 +387,18 @@ function App() {
       stanchezza: clampStat(current.stanchezza + 20),
       coattaggine: clampStat(current.coattaggine - 5)
     }))
+    playSound.statIncrease()
     announce(`Hai studiato ${randomSubject.toUpperCase()}! +1 al voto, +20 Stanchezza, -5 Coattaggine`)
   }
 
   const handleCorrompi = () => {
     if (stats.soldi < 100) {
+      playSound.failure()
       announce('Non hai abbastanza GRANA per la MAZZETTA! Servono 100€')
       return
     }
+    playSound.buttonClick()
+    playSound.moneySpent()
     const subjects = Object.keys(grades) as Array<keyof SubjectGrades>
     const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
     
@@ -368,17 +410,21 @@ function App() {
       ...current,
       soldi: clampStat(current.soldi - 100, 0, 1000)
     }))
+    playSound.success()
     announce(`MAZZETTA al prof di ${randomSubject.toUpperCase()}! +2 al voto, -100 Soldi. EZPZ!`)
   }
 
   const handleMinaccia = () => {
+    playSound.buttonClick()
     if (randomChance(30)) {
+      playSound.gameOver()
       setGameOver(true)
       setGameOverReason('Hai PESTATO il prof ma ti hanno ESPULSO! Torna a settembre, violento!')
       announce('ESPULSO dalla scuola per violenza!')
       return
     }
     
+    playSound.bigWin()
     const subjects = Object.keys(grades) as Array<keyof SubjectGrades>
     const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
     
@@ -394,6 +440,7 @@ function App() {
   }
 
   const handleRiposa = () => {
+    playSound.buttonClick()
     setStats((current) => ({
       ...current,
       stanchezza: clampStat(current.stanchezza - 40)
@@ -403,14 +450,17 @@ function App() {
 
   const handleDisco = () => {
     if (stats.soldi < 60) {
+      playSound.failure()
       announce('Non hai abbastanza GRANA per entrare in discoteca! Servono 60€')
       return
     }
     if (stats.stanchezza > 70) {
+      playSound.failure()
       announce('Sei troppo DISTRUTTO per andare in disco! Riposa!')
       return
     }
     
+    playSound.buttonClick()
     const reputationModifier = getReputationEventModifier(stats.reputazione)
     
     const successChance = Math.min(85, Math.max(20, 
@@ -421,6 +471,7 @@ function App() {
     ))
     
     if (randomChance(successChance)) {
+      playSound.bigWin()
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita + 25),
@@ -430,6 +481,7 @@ function App() {
       }))
       announce('Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, -60 Soldi, +25 Stanchezza')
     } else {
+      playSound.failure()
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita - 10),
@@ -443,12 +495,15 @@ function App() {
 
   const handleCinema = () => {
     if (stats.soldi < 40) {
+      playSound.failure()
       announce('Non hai abbastanza GRANA per il cinema! Servono 40€')
       return
     }
     
+    playSound.buttonClick()
     const roll = Math.random()
     if (roll < 0.4) {
+      playSound.success()
       const names = ['Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer']
       const randomName = names[Math.floor(Math.random() * names.length)]
       setStats((current) => ({
@@ -471,10 +526,13 @@ function App() {
 
   const handleShoppingMall = () => {
     if (stats.soldi < 100) {
+      playSound.failure()
       announce('Non hai abbastanza GRANA per fare shopping! Servono 100€')
       return
     }
     
+    playSound.buttonClick()
+    playSound.statIncrease()
     setStats((current) => ({
       ...current,
       figosita: clampStat(current.figosita + 20),
@@ -486,6 +544,8 @@ function App() {
   }
 
   const handleProvarciConAtipa = () => {
+    playSound.buttonClick()
+    playSound.eventTrigger()
     const names = ['Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer']
     const randomName = names[Math.floor(Math.random() * names.length)]
     setAtipaName(randomName)
@@ -507,6 +567,7 @@ function App() {
   }
 
   const handleAtipaRinuncia = () => {
+    playSound.failure()
     setShowAtipaEvent(false)
     setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 5) }))
     announce(`Hai CAGATO sotto! -5 Coattaggine`)
@@ -516,6 +577,7 @@ function App() {
     setShowAtipaEvent(false)
     
     if (randomChance(atipaSuccessChance)) {
+      playSound.bigWin()
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita + 20),
@@ -524,6 +586,7 @@ function App() {
       }))
       announce(`${atipaName} ha detto SÌ! Uscita EPICA! +20 Figosità, +10 Coattaggine, -80 Soldi (cinema + pizza)`)
     } else {
+      playSound.bigLoss()
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita - 15),
@@ -534,6 +597,7 @@ function App() {
   }
 
   const handleReset = () => {
+    playSound.reset()
     setStats(DEFAULT_GAME_STATE.stats)
     setGrades(DEFAULT_GAME_STATE.grades)
     setGameOver(false)

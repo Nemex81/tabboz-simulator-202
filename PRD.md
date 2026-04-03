@@ -68,6 +68,13 @@ Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) 
 - **Progression**: Ogni modifica stat → useKV setter → Persistenza immediata
 - **Success criteria**: Refresh mantiene stato, reset button funziona
 
+### Sistema Audio con Effetti Sonori
+- **Functionality**: Feedback audio sintetizzato per tutte le azioni ed eventi del gioco usando Web Audio API. Include suoni per: stat increase/decrease, big win/loss, money spent/earned, event trigger, danger alert, success/failure, reputation up, game over, button click, reset
+- **Purpose**: Fornire feedback immediato non-visivo per migliorare l'esperienza di gioco e supportare giocatori ipovedenti con cue audio distintivi
+- **Trigger**: Automatico su ogni azione, evento, e cambio di stato significativo
+- **Progression**: Azione utente → Suono appropriato viene sintetizzato e riprodotto → Feedback visivo/testuale → Aggiornamento stato
+- **Success criteria**: Ogni azione ha un suono distintivo, suoni non si sovrappongono fastidiosamente, volume appropriato (0.1-0.3 gain), durata breve (50-400ms), nessun lag percepibile
+
 ### Navigazione da Tastiera e Screen Reader
 - **Functionality**: Tutti i controlli accessibili via Tab, shortcuts alfanumerici (1-9 per azioni rapide), ARIA live per feedback immediato
 - **Purpose**: Garantire piena giocabilità per utenti ipovedenti o con screen reader
