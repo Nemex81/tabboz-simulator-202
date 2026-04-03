@@ -87,3 +87,49 @@ h1, h2, h3, h4, h5, h6 {
 .stat-flash {
   animation: neon-pulse 150ms ease-in-out;
 }
+
+@keyframes stat-increase {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+    filter: brightness(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes stat-decrease {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(0.9) rotate(-2deg);
+  }
+  75% {
+    transform: scale(0.9) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes value-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes glow-intense {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(100, 255, 100, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(100, 255, 100, 0.9), 0 0 60px rgba(100, 255, 100, 0.5);
+  }
+}

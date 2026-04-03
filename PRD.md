@@ -97,7 +97,7 @@ Il design deve evocare **nostalgia digitale trash** degli anni '90-2000: monitor
 
 ## Animations
 
-Le animazioni servono **feedback immediato** senza distrarre. Pulse sottile sui bottoni hover (100ms), slide-in veloce per notifiche eventi (200ms), flash neon su cambiamenti statistiche importanti (150ms uno-shot). Nessuna animazione automatica continua che disturbi screen reader. Focus ring animato (scale + glow) per evidenziare navigazione tastiera.
+Le animazioni servono **feedback immediato** senza distrarre e celebrare i successi del giocatore. Pulse sottile sui bottoni hover (100ms), slide-in veloce per notifiche eventi (200ms), flash neon su cambiamenti statistiche importanti (150ms uno-shot). **Animazioni drammatiche per stat changes**: quando una statistica cambia di +/-5 o più, appare un numero animato che mostra il delta (verde per positivo, rosso per negativo) con effetto fade-up. Per cambiamenti +/-10 o più, l'intera card della statistica pulsa e scala leggermente con rotazione, mentre l'icona ruota 360°. Per cambiamenti +/-15 o più, si aggiunge un glow intenso. Bottoni hanno spring physics su click con scale e rotazione dell'icona. Nessuna animazione automatica continua che disturbi screen reader. Focus ring animato (scale + glow) per evidenziare navigazione tastiera.
 
 ## Component Selection
 
