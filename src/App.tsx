@@ -27,7 +27,8 @@ import {
   Buildings,
   Trophy,
   UserCircle,
-  Chats
+  Chats,
+  Keyboard
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
@@ -39,6 +40,7 @@ import { SchoolEventDialog } from '@/components/SchoolEventDialog'
 import { FriendsPanel } from '@/components/FriendsPanel'
 import { RelationshipsPanel } from '@/components/RelationshipsPanel'
 import { ExamsPanel } from '@/components/ExamsPanel'
+import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -53,6 +55,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam } from '@/lib/types'
+import { 
+  validateStats, 
+  validateGrades, 
+  validateGameTime, 
+  validateFriends, 
+  validateRelationships, 
+  validateScheduledExams, 
+  validateSchoolType 
+} from '@/lib/data-validation'
 import { 
   clampStat, 
   calculateMedia, 
@@ -88,13 +99,30 @@ import {
 } from '@/lib/exam-system'
 
 function App() {
-  const [schoolType, setSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
-  const [stats, setStats] = useKV<GameStats>('tabboz-stats', DEFAULT_GAME_STATE.stats)
-  const [grades, setGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
-  const [gameTime, setGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
-  const [friends, setFriends] = useKV<Friend[]>('tabboz-friends', [])
-  const [relationships, setRelationships] = useKV<Relationship[]>('tabboz-relationships', [])
-  const [scheduledExams, setScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
+  const [rawSchoolType, setRawSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
+  const [rawStats, setRawStats] = useKV<GameStats>('tabboz-stats', DEFAULT_GAME_STATE.stats)
+  const [rawGrades, setRawGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
+  const [rawGameTime, setRawGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
+  const [rawFriends, setRawFriends] = useKV<Friend[]>('tabboz-friends', [])
+  const [rawRelationships, setRawRelationships] = useKV<Relationship[]>('tabboz-relationships', [])
+  const [rawScheduledExams, setRawScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
+  
+  const schoolType = validateSchoolType(rawSchoolType)
+  const stats = validateStats(rawStats)
+  const grades = validateGrades(rawGrades, schoolType)
+  const gameTime = validateGameTime(rawGameTime)
+  const friends = validateFriends(rawFriends)
+  const relationships = validateRelationships(rawRelationships)
+  const scheduledExams = validateScheduledExams(rawScheduledExams)
+  
+  const setSchoolType = setRawSchoolType
+  const setStats = setRawStats
+  const setGrades = setRawGrades
+  const setGameTime = setRawGameTime
+  const setFriends = setRawFriends
+  const setRelationships = setRawRelationships
+  const setScheduledExams = setRawScheduledExams
+  
   const [gameOver, setGameOver] = useState(false)
   const [gameOverReason, setGameOverReason] = useState('')
   const [showResetDialog, setShowResetDialog] = useState(false)
@@ -112,6 +140,7 @@ function App() {
   const [raceWinChance, setRaceWinChance] = useState(0)
   const [schoolEvent, setSchoolEvent] = useState<SchoolEvent | null>(null)
   const [showSchoolEvent, setShowSchoolEvent] = useState(false)
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   
   const ariaLiveRef = useRef<HTMLDivElement>(null)
   const prevReputationRef = useRef<number>(stats.reputazione)
@@ -1077,7 +1106,8 @@ function App() {
       if (e.altKey && !e.ctrlKey && !e.shiftKey) {
         e.preventDefault()
         if (key === 'h' || key === '?') {
-          announce('Tasti rapidi: Ctrl+1=Palestra, Ctrl+2=Lampada, Ctrl+3=Lavoro, Ctrl+4=Motorino, Ctrl+5=Studia, Ctrl+6=Corrompi, Ctrl+7=Minaccia, Ctrl+8=Riposa, Ctrl+9=Atipa, Ctrl+D=Disco, Ctrl+C=Cinema, Ctrl+S=Shopping, Ctrl+R=Reset')
+          setShowKeyboardHelp(true)
+          announce('Aiuto scorciatoie da tastiera aperto')
         }
       }
     }
@@ -1108,9 +1138,20 @@ function App() {
             TABBOZ SIMULATOR
           </h1>
           <p className="text-xl md:text-2xl text-secondary font-bold">2026 EDITION - VITA DA COATTO</p>
-          <p className="text-sm text-muted-foreground mt-4">
-            Usa <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+numero</kbd> o <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+lettera</kbd> per le scorciatoie. <kbd className="px-2 py-1 bg-muted rounded text-primary">Alt+H</kbd> per la lista completa
-          </p>
+          <div className="flex items-center justify-center gap-4 mt-4">
+            <p className="text-sm text-muted-foreground">
+              Usa <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+numero</kbd> o <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+lettera</kbd> per le scorciatoie.
+            </p>
+            <Button 
+              onClick={() => setShowKeyboardHelp(true)}
+              variant="outline"
+              size="sm"
+              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+            >
+              <Keyboard size={20} className="mr-2" weight="fill" />
+              Aiuto Tasti (Alt+H)
+            </Button>
+          </div>
         </header>
 
         <section aria-labelledby="quick-stats">
@@ -1888,6 +1929,11 @@ function App() {
         event={schoolEvent}
         onChoice={handleSchoolEventChoice}
         onClose={() => setShowSchoolEvent(false)}
+      />
+
+      <KeyboardShortcutsDialog
+        open={showKeyboardHelp}
+        onOpenChange={setShowKeyboardHelp}
       />
     </main>
   )
