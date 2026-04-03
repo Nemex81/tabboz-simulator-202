@@ -98,6 +98,13 @@ export function useGameTime({
   const advanceToNextDay = useCallback(() => {
     setRawGameTime((current) => {
       const newGameTime = advanceGameTime(current)
+
+      // Reset fasce orarie al nuovo giorno
+      const newDayType = getDayType(newGameTime.currentDate)
+      setDayType(newDayType)
+      setCurrentPhase('mattina')
+      setPhaseActionsRemaining(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
+
       const currentMedia = calculateMedia(gradesRef.current)
       const st = schoolTypeRef.current
 
@@ -197,7 +204,10 @@ export function useGameTime({
     setGameWon,
     setSchoolEvent,
     setShowSchoolEvent,
-    announce
+    announce,
+    setDayType,
+    setCurrentPhase,
+    setPhaseActionsRemaining
   ])
 
   return {

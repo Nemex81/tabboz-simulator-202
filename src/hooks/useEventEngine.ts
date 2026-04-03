@@ -156,8 +156,8 @@ export function useEventEngine({
   }, [setStats, announce])
 
   const handleMetallariScappa = useCallback(() => {
-    playSound.failure()
     setShowMetallariEvent(false)
+    playSound.failure()
     setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 10) }))
     announce('Sei scappato come un CONIGLIO! -10 Coattaggine')
   }, [setStats, announce])
@@ -236,19 +236,20 @@ export function useEventEngine({
       announce('Hai VINTO la gara! Sei una LEGGENDA! +25 Coattaggine, +20 Figosità, +150 Soldi')
     } else {
       playSound.bigLoss()
+      const actualLoss = Math.min(80, statsRef.current.soldi)
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita - 20),
         coattaggine: clampStat(current.coattaggine - 15),
         soldi: clampStat(current.soldi - 80, 0, 1000)
       }))
-      announce('Hai PERSO la gara! Che SCHIFO! -20 Figosità, -15 Coattaggine, -80 Soldi (scommessa)')
+      announce(`Hai PERSO la gara! Che SCHIFO! -20 Figosità, -15 Coattaggine, -${actualLoss} Soldi (scommessa)`)
     }
   }, [setStats, announce])
 
   const handleStreetRaceRifiuta = useCallback(() => {
-    playSound.failure()
     setShowStreetRaceEvent(false)
+    playSound.failure()
     setStats((current) => ({
       ...current,
       coattaggine: clampStat(current.coattaggine - 15),
@@ -280,8 +281,8 @@ export function useEventEngine({
   }, [setStats, announce])
 
   const handleBulliCedi = useCallback(() => {
-    playSound.failure()
     setShowBulliEvent(false)
+    playSound.failure()
     setStats((current) => ({
       ...current,
       soldi: clampStat(current.soldi - 20, 0, 1000),
@@ -319,8 +320,8 @@ export function useEventEngine({
   }, [announce])
 
   const handleAtipaRinuncia = useCallback(() => {
-    playSound.failure()
     setShowAtipaEvent(false)
+    playSound.failure()
     setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 5) }))
     consumeAction()
     announce('Hai CAGATO sotto! -5 Coattaggine')

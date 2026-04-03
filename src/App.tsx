@@ -912,8 +912,8 @@ function App() {
                     label="Motorino"
                     shortcut="Ctrl+4"
                     onClick={handleMotorino}
-                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 50}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 50€'}
+                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 50 || stats.stanchezza > 80}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
                     ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
                   />
                 </div>

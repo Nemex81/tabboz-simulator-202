@@ -183,6 +183,11 @@ export function useGameActions({
       announce('Non hai abbastanza GRANA per truccare il motorino! Servono 50€')
       return
     }
+    if (s.stanchezza > 80) {
+      playSound.failure()
+      announce('Sei troppo DISTRUTTO per trafficare col motorino! Riposa prima!')
+      return
+    }
     playSound.buttonClick()
     playSound.statIncrease()
     setStats((current) => ({
@@ -288,7 +293,7 @@ export function useGameActions({
     }))
     consumeAction()
     playSound.success()
-    announce(`MAZZETTA al prof di ${randomSubject.toUpperCase()}! +2 al voto, -100 Soldi. EZPZ!`)
+    announce(`MAZZETTA al prof di ${getSubjectDisplayName(randomSubject)}! +2 al voto, -100 Soldi. EZPZ!`)
   }, [setGrades, setStats, consumeAction, announce])
 
   const handleMinaccia = useCallback(() => {
@@ -332,12 +337,14 @@ export function useGameActions({
       ...current,
       stanchezza: clampStat(current.stanchezza - 40)
     }))
-    if (gameTimeRef.current.actionsRemaining === 0) {
+    if (gameTimeRef.current.actionsRemaining <= 1) {
+      consumeAction()
       advanceToNextDay()
     } else {
+      consumeAction()
       announce('Hai riposato un po\'! -40 Stanchezza')
     }
-  }, [setStats, announce])
+  }, [setStats, consumeAction, announce])
 
   const handleDisco = useCallback(() => {
     const gt = gameTimeRef.current
