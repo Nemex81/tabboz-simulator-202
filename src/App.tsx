@@ -38,6 +38,7 @@ import { ReportCardDialog } from '@/components/ReportCardDialog'
 import { SchoolSelection } from '@/components/SchoolSelection'
 import { SchoolEventDialog } from '@/components/SchoolEventDialog'
 import { FriendsPanel } from '@/components/FriendsPanel'
+import { GirlfriendPanel } from '@/components/GirlfriendPanel'
 import { RelationshipsPanel } from '@/components/RelationshipsPanel'
 import { ExamsPanel } from '@/components/ExamsPanel'
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
@@ -56,6 +57,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam } from '@/lib/types'
+import { Ragazza, generateRandomGirlfriend, performGirlfriendAction, shouldGirlfriendBreakup } from '@/lib/girlfriend-system'
 import { 
   validateStats, 
   validateGrades, 
@@ -109,6 +111,7 @@ function App() {
   const [rawFriends, setRawFriends] = useKV<Friend[]>('tabboz-friends', [])
   const [rawRelationships, setRawRelationships] = useKV<Relationship[]>('tabboz-relationships', [])
   const [rawScheduledExams, setRawScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
+  const [rawGirlfriend, setRawGirlfriend] = useKV<Ragazza | null>('tabboz-girlfriend', null)
   
   const schoolType = validateSchoolType(rawSchoolType)
   const stats = validateStats(rawStats)
@@ -117,6 +120,7 @@ function App() {
   const friends = validateFriends(rawFriends)
   const relationships = validateRelationships(rawRelationships)
   const scheduledExams = validateScheduledExams(rawScheduledExams)
+  const girlfriend = rawGirlfriend
   
   const setSchoolType = setRawSchoolType
   const setStats = setRawStats
@@ -125,6 +129,7 @@ function App() {
   const setFriends = setRawFriends
   const setRelationships = setRawRelationships
   const setScheduledExams = setRawScheduledExams
+  const setGirlfriend = setRawGirlfriend
   
   const [gameOver, setGameOver] = useState(false)
   const [gameOverReason, setGameOverReason] = useState('')
@@ -879,6 +884,7 @@ function App() {
     consumeAction()
     checkForNewFriend('in discoteca')
     checkForNewRelationship()
+    checkForNewGirlfriend()
     triggerRandomEvent()
   }
 
@@ -919,6 +925,7 @@ function App() {
     consumeAction()
     checkForNewFriend('al cinema')
     checkForNewRelationship()
+    checkForNewGirlfriend()
     triggerRandomEvent()
   }
 
@@ -947,6 +954,7 @@ function App() {
     announce('Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -100 Soldi')
     checkForNewFriend('al centro commerciale')
     checkForNewRelationship()
+    checkForNewGirlfriend()
     triggerRandomEvent()
   }
 
@@ -1010,6 +1018,86 @@ function App() {
     consumeAction()
   }
 
+  const handleGirlfriendAction = (action: string) => {
+    if (!girlfriend) return
+    
+    if (gameTime.actionsRemaining === 0 && action !== 'messaggio') {
+      playSound.failure()
+      announce('Nessuna azione rimasta!')
+      return
+    }
+    
+    const currentDateString = `${gameTime.currentDate.day}/${gameTime.currentDate.month}/${gameTime.currentDate.year}`
+    
+    const result = performGirlfriendAction(action, stats, girlfriend, currentDateString)
+    
+    setGirlfriend(result.updatedGirlfriend)
+    
+    if (result.statChanges) {
+      setStats((current) => {
+        const updated = { ...current }
+        Object.entries(result.statChanges).forEach(([key, value]) => {
+          const statKey = key as keyof GameStats
+          if (statKey === 'soldi') {
+            updated[statKey] = clampStat((updated[statKey] as number) + value, 0, 1000)
+          } else {
+            updated[statKey] = clampStat((updated[statKey] as number) + value)
+          }
+        })
+        return updated
+      })
+    }
+    
+    if (result.gradeChange && result.gradeChange > 0) {
+      const subjects = Object.keys(grades)
+      subjects.forEach(subject => {
+        setGrades((current) => ({
+          ...current,
+          [subject]: clampStat(current[subject] + result.gradeChange!, 0, 10)
+        }))
+      })
+    }
+    
+    if (action !== 'messaggio') {
+      consumeAction()
+    }
+    
+    if (action === 'dichiarati' && result.updatedGirlfriend.relationshipStatus === 'fidanzata') {
+      playSound.bigWin()
+    } else if (action === 'dichiarati') {
+      playSound.bigLoss()
+    } else {
+      playSound.success()
+    }
+    
+    announce(result.message)
+    
+    if (shouldGirlfriendBreakup(result.updatedGirlfriend)) {
+      playSound.gameOver()
+      announce(`${girlfriend.nome} ti ha lasciato! La relazione è finita...`)
+      setGirlfriend(null)
+    }
+  }
+  
+  const handleGirlfriendBreakup = () => {
+    if (!girlfriend) return
+    
+    playSound.failure()
+    announce(`Hai lasciato ${girlfriend.nome}. La storia è finita.`)
+    setGirlfriend(null)
+  }
+  
+  const checkForNewGirlfriend = () => {
+    if (girlfriend || relationships.length > 0) return
+    
+    if (randomChance(10)) {
+      const newGirl = generateRandomGirlfriend()
+      setGirlfriend(newGirl)
+      playSound.eventTrigger()
+      announce(`Hai notato ${newGirl.nome} ${newGirl.cognome}! Sembra interessante...`)
+    }
+  }
+
   const handleReset = () => {
     playSound.reset()
     setStats(DEFAULT_GAME_STATE.stats)
@@ -1018,6 +1106,7 @@ function App() {
     setFriends([])
     setRelationships([])
     setScheduledExams([])
+    setGirlfriend(null)
     setGameOver(false)
     setGameOverReason('')
     setShowResetDialog(false)
@@ -1223,7 +1312,7 @@ function App() {
         <TimeDisplay gameTime={gameTime} />
 
         <Tabs defaultValue="status" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 bg-muted/50 p-1 h-auto">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-2 bg-muted/50 p-1 h-auto">
             <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <ChartBar size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Profilo</span>
@@ -1243,6 +1332,11 @@ function App() {
               <UserCircle size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Amici</span>
               <span className="sm:hidden">Amici</span>
+            </TabsTrigger>
+            <TabsTrigger value="girlfriend" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+              <Heart size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Fidanzata</span>
+              <span className="sm:hidden">💕</span>
             </TabsTrigger>
             <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
               <Buildings size={20} className="mr-2" weight="fill" />
@@ -1762,6 +1856,16 @@ function App() {
                 </ul>
               </div>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="girlfriend" className="space-y-6 mt-6">
+            <GirlfriendPanel
+              girlfriend={girlfriend}
+              stats={stats}
+              actionsRemaining={gameTime.actionsRemaining}
+              onAction={handleGirlfriendAction}
+              onBreakup={handleGirlfriendBreakup}
+            />
           </TabsContent>
         </Tabs>
       </div>

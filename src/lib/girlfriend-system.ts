@@ -3,10 +3,32 @@ import { randomChance } from '@/lib/game-utils'
 
 export type AspettoType = 'carina' | 'bellissima' | 'normale' | 'alternativa'
 export type PersonalitaType = 'timida' | 'estroversa' | 'secchiona' | 'ribelle' | 'vanitosa'
+export type RelationshipStatus = 'sconosciuta' | 'conoscente' | 'amica' | 'interessata' | 'fidanzata' | 'ex'
 
 export interface Hobby {
   name: string
   icon: string
+}
+
+export interface DateActivity {
+  id: string
+  date: string
+  activity: string
+  interesseGain: number
+  notes: string
+}
+
+export interface RelationshipStats {
+  totalDates: number
+  messagesExchanged: number
+  giftsGiven: number
+  fightsHad: number
+  dateActivities: DateActivity[]
+  relationshipStartDate?: string
+  daysTogether: number
+  jealousyLevel: number
+  trustLevel: number
+  happinessLevel: number
 }
 
 export interface Ragazza {
@@ -25,6 +47,9 @@ export interface Ragazza {
   coloreCapelli: string
   scuola: string
   statPreferita: 'figosita' | 'muscoli' | 'intelligenza' | 'carisma'
+  relationshipStatus: RelationshipStatus
+  stats: RelationshipStats
+  lastInteractionDate?: string
 }
 
 const NOMI_FEMMINILI = [
@@ -121,7 +146,19 @@ export const generateRandomGirlfriend = (): Ragazza => {
     hobby,
     coloreCapelli: COLORI_CAPELLI[Math.floor(Math.random() * COLORI_CAPELLI.length)],
     scuola: SCUOLE[Math.floor(Math.random() * SCUOLE.length)],
-    statPreferita
+    statPreferita,
+    relationshipStatus: 'sconosciuta',
+    stats: {
+      totalDates: 0,
+      messagesExchanged: 0,
+      giftsGiven: 0,
+      fightsHad: 0,
+      dateActivities: [],
+      daysTogether: 0,
+      jealousyLevel: gelosa ? 50 : 20,
+      trustLevel: 50,
+      happinessLevel: 50
+    }
   }
 }
 
@@ -264,4 +301,207 @@ export const calculateInteresseGain = (
   
   const carismaBonus = Math.floor(stats.carisma / 10)
   return Math.min(100, baseGain + carismaBonus)
+}
+
+export const updateRelationshipStatus = (ragazza: Ragazza): RelationshipStatus => {
+  if (ragazza.interessePerTe >= 90 && ragazza.relationshipStatus === 'fidanzata') {
+    return 'fidanzata'
+  }
+  if (ragazza.interessePerTe >= 70) {
+    return 'fidanzata'
+  }
+  if (ragazza.interessePerTe >= 50) {
+    return 'interessata'
+  }
+  if (ragazza.interessePerTe >= 30) {
+    return 'amica'
+  }
+  if (ragazza.interessePerTe >= 10) {
+    return 'conoscente'
+  }
+  return 'sconosciuta'
+}
+
+export const performGirlfriendAction = (
+  action: string,
+  stats: GameStats,
+  ragazza: Ragazza,
+  currentDate: string
+): {
+  updatedGirlfriend: Ragazza
+  statChanges: Partial<GameStats>
+  gradeChange?: number
+  message: string
+} => {
+  const updatedGirlfriend = { ...ragazza }
+  const statChanges: Partial<GameStats> = {}
+  let message = ''
+  let gradeChange: number | undefined = undefined
+
+  switch (action) {
+    case 'messaggio':
+      updatedGirlfriend.stats.messagesExchanged += 1
+      updatedGirlfriend.interessePerTe = Math.min(100, updatedGirlfriend.interessePerTe + 5)
+      updatedGirlfriend.stats.happinessLevel = Math.min(100, updatedGirlfriend.stats.happinessLevel + 2)
+      message = `Hai mandato un messaggio a ${ragazza.nome}. Le è piaciuto! +5 Interesse`
+      break
+
+    case 'cinema':
+      updatedGirlfriend.stats.totalDates += 1
+      updatedGirlfriend.stats.dateActivities.push({
+        id: `date_${Date.now()}`,
+        date: currentDate,
+        activity: 'Cinema',
+        interesseGain: 15,
+        notes: 'Serata al cinema insieme'
+      })
+      updatedGirlfriend.interessePerTe = Math.min(100, updatedGirlfriend.interessePerTe + 15)
+      updatedGirlfriend.stats.happinessLevel = Math.min(100, updatedGirlfriend.stats.happinessLevel + 10)
+      statChanges.figosita = 5
+      statChanges.soldi = -40
+      message = `Hai portato ${ragazza.nome} al cinema! Serata fantastica! +15 Interesse, +5 Figosità, -40 Soldi`
+      break
+
+    case 'motorino':
+      updatedGirlfriend.stats.totalDates += 1
+      updatedGirlfriend.stats.dateActivities.push({
+        id: `date_${Date.now()}`,
+        date: currentDate,
+        activity: 'Giro in motorino',
+        interesseGain: 20,
+        notes: 'Giro col motorino'
+      })
+      updatedGirlfriend.interessePerTe = Math.min(100, updatedGirlfriend.interessePerTe + 20)
+      updatedGirlfriend.stats.happinessLevel = Math.min(100, updatedGirlfriend.stats.happinessLevel + 15)
+      updatedGirlfriend.stats.trustLevel = Math.min(100, updatedGirlfriend.stats.trustLevel + 5)
+      statChanges.coattaggine = 5
+      statChanges.soldi = -20
+      message = `Hai portato ${ragazza.nome} a fare un giro col motorino! Si è divertita un sacco! +20 Interesse, +5 Coattaggine, -20 Soldi`
+      break
+
+    case 'compiti':
+      updatedGirlfriend.stats.totalDates += 1
+      updatedGirlfriend.interessePerTe = Math.min(100, updatedGirlfriend.interessePerTe + 10)
+      updatedGirlfriend.stats.trustLevel = Math.min(100, updatedGirlfriend.stats.trustLevel + 10)
+      statChanges.coattaggine = -10
+      gradeChange = 0.3
+      message = `Hai fatto i compiti a ${ragazza.nome}! È molto grata! +10 Interesse, +0.3 Media, -10 Coattaggine`
+      break
+
+    case 'regalo':
+      updatedGirlfriend.stats.giftsGiven += 1
+      const interesseGain = ragazza.personalita === 'vanitosa' ? 20 : 15
+      updatedGirlfriend.interessePerTe = Math.min(100, updatedGirlfriend.interessePerTe + interesseGain)
+      updatedGirlfriend.stats.happinessLevel = Math.min(100, updatedGirlfriend.stats.happinessLevel + 20)
+      statChanges.soldi = -60
+      message = `Hai fatto un regalo a ${ragazza.nome}! È felicissima! +${interesseGain} Interesse, -60 Soldi`
+      break
+
+    case 'dichiarati':
+      if (ragazza.interessePerTe >= 70) {
+        updatedGirlfriend.relationshipStatus = 'fidanzata'
+        updatedGirlfriend.stats.relationshipStartDate = currentDate
+        updatedGirlfriend.stats.happinessLevel = 100
+        updatedGirlfriend.stats.trustLevel = Math.min(100, updatedGirlfriend.stats.trustLevel + 20)
+        statChanges.figosita = 30
+        statChanges.carisma = 15
+        message = `${ragazza.nome} ha detto SÌ! Siete FIDANZATI! +30 Figosità, +15 Carisma`
+      } else {
+        updatedGirlfriend.interessePerTe = Math.max(0, updatedGirlfriend.interessePerTe - 20)
+        statChanges.figosita = -20
+        statChanges.carisma = -10
+        message = `${ragazza.nome} ti ha dato il PALO! Hai provato troppo presto! -20 Interesse, -20 Figosità, -10 Carisma`
+      }
+      break
+
+    case 'litigio':
+      updatedGirlfriend.stats.fightsHad += 1
+      updatedGirlfriend.interessePerTe = Math.max(0, updatedGirlfriend.interessePerTe - 15)
+      updatedGirlfriend.stats.happinessLevel = Math.max(0, updatedGirlfriend.stats.happinessLevel - 20)
+      updatedGirlfriend.stats.trustLevel = Math.max(0, updatedGirlfriend.stats.trustLevel - 10)
+      if (ragazza.gelosa) {
+        updatedGirlfriend.stats.jealousyLevel = Math.min(100, updatedGirlfriend.stats.jealousyLevel + 20)
+      }
+      message = `Hai litigato con ${ragazza.nome}! Non è stata una bella scena... -15 Interesse`
+      break
+  }
+
+  updatedGirlfriend.lastInteractionDate = currentDate
+  updatedGirlfriend.relationshipStatus = updateRelationshipStatus(updatedGirlfriend)
+
+  return {
+    updatedGirlfriend,
+    statChanges,
+    gradeChange,
+    message
+  }
+}
+
+export const calculateRelationshipHealth = (ragazza: Ragazza): {
+  health: number
+  status: string
+  warnings: string[]
+} => {
+  const warnings: string[] = []
+  
+  let health = 50
+  
+  health += ragazza.stats.happinessLevel * 0.3
+  health += ragazza.stats.trustLevel * 0.3
+  health -= ragazza.stats.jealousyLevel * 0.2
+  health -= ragazza.stats.fightsHad * 5
+  
+  if (ragazza.stats.totalDates > 0) {
+    health += Math.min(20, ragazza.stats.totalDates * 2)
+  }
+  
+  health = Math.max(0, Math.min(100, health))
+  
+  if (ragazza.stats.jealousyLevel > 70) {
+    warnings.push('È molto gelosa! Fai attenzione!')
+  }
+  
+  if (ragazza.stats.happinessLevel < 30) {
+    warnings.push('Non sembra felice ultimamente...')
+  }
+  
+  if (ragazza.stats.trustLevel < 40) {
+    warnings.push('Non si fida molto di te')
+  }
+  
+  if (ragazza.stats.fightsHad > 3) {
+    warnings.push('Avete litigato troppe volte!')
+  }
+  
+  const daysSinceLastInteraction = ragazza.lastInteractionDate 
+    ? calculateDaysSinceInteraction(ragazza.lastInteractionDate)
+    : 0
+  
+  if (daysSinceLastInteraction > 7) {
+    warnings.push(`Non la vedi da ${daysSinceLastInteraction} giorni!`)
+  }
+  
+  let status = 'Eccellente'
+  if (health < 80) status = 'Buona'
+  if (health < 60) status = 'Stabile'
+  if (health < 40) status = 'Problematica'
+  if (health < 20) status = 'In crisi'
+  
+  return { health, status, warnings }
+}
+
+const calculateDaysSinceInteraction = (lastDate: string): number => {
+  return 0
+}
+
+export const shouldGirlfriendBreakup = (ragazza: Ragazza): boolean => {
+  if (ragazza.relationshipStatus !== 'fidanzata') return false
+  
+  const health = calculateRelationshipHealth(ragazza)
+  
+  if (health.health < 15) return true
+  if (ragazza.stats.fightsHad > 5) return true
+  if (ragazza.interessePerTe < 20) return true
+  
+  return false
 }
