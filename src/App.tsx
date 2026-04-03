@@ -24,7 +24,8 @@ import {
   Crown,
   ChartBar,
   User,
-  Buildings
+  Buildings,
+  Trophy
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
