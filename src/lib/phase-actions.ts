@@ -14,9 +14,14 @@ export type ActionId =
   | 'corrompi'
   | 'minaccia'
   | 'riposa'
+  | 'dormi'
   | 'disco'
   | 'cinema'
   | 'shopping'
+  | 'chiacchiera'
+  | 'parco'
+  | 'telefona'
+  | 'studia_gruppo'
 
 export interface PhaseActionEntry {
   id: ActionId
@@ -30,8 +35,7 @@ export interface PhaseActionEntry {
 export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>> = {
   feriale: {
     mattina: [
-      // 'studia' rimossa: la mattina scolastica è gestita da SchoolMorningPanel
-      { id: 'riposa', label: 'Sei a scuola! (salta per oggi)' },
+      // A1: mattina scolastica feriale — nessuna azione libera, gestita da SchoolMorningPanel
     ],
     pomeriggio: [
       { id: 'palestra', label: 'Vai in palestra' },
@@ -39,15 +43,20 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'lavoro', label: 'Lavoro part-time', minSchoolYear: 3 },
       { id: 'motorino', label: 'Giro col motorino' },
       { id: 'shopping', label: 'Shopping in centro' },
+      { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
+      { id: 'parco', label: 'Giro al parco' },
+      { id: 'chiacchiera', label: 'Chiacchiera in giro' },
     ],
     sera: [
       { id: 'cinema', label: 'Vai al cinema' },
       { id: 'studia', label: 'Studia la sera' },
-      { id: 'riposa', label: 'Riposati' },
       { id: 'motorino', label: 'Giro serale col motorino' },
+      { id: 'telefona', label: 'Telefona a qualcuno' },
+      { id: 'chiacchiera', label: 'Chiacchiera col vicino' },
+      { id: 'dormi', label: 'Vai a dormire (recupero totale)' },
     ],
     notte: [
-      { id: 'riposa', label: 'Dormi (automatico)' },
+      { id: 'dormi', label: 'Dormi (recupero 80%)' },
     ],
   },
   sabato: {
@@ -56,20 +65,25 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'lampada', label: 'Lampada UV' },
       { id: 'shopping', label: 'Shopping al mercato' },
       { id: 'riposa', label: 'Dormi fino a tardi' },
+      { id: 'parco', label: 'Giro al parco' },
     ],
     pomeriggio: [
       { id: 'palestra', label: 'Vai in palestra' },
       { id: 'motorino', label: 'Giro motorini' },
       { id: 'shopping', label: 'Shopping in centro' },
       { id: 'lavoro', label: 'Lavoro part-time', minSchoolYear: 3 },
+      { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
+      { id: 'parco', label: 'Giro al parco' },
+      { id: 'chiacchiera', label: 'Chiacchiera in giro' },
     ],
     sera: [
       { id: 'disco', label: 'Discoteca' },
       { id: 'cinema', label: 'Cinema con amici' },
       { id: 'motorino', label: 'Gara di motorini' },
+      { id: 'dormi', label: 'Vai a dormire (recupero totale)' },
     ],
     notte: [
-      { id: 'riposa', label: 'Dormi (automatico)' },
+      { id: 'dormi', label: 'Dormi (recupero 80%)' },
     ],
   },
   domenica: {
@@ -81,33 +95,41 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'studia', label: 'Studia per la settimana', requiresSchoolPeriod: true },
       { id: 'palestra', label: 'Sport domenicale' },
       { id: 'motorino', label: 'Giro domenicale' },
+      { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
+      { id: 'chiacchiera', label: 'Chiacchiera in giro' },
+      { id: 'telefona', label: 'Telefona agli amici' },
     ],
     sera: [
       // La sera domenicale è occupata dall'evento narrativo "Ansia del Lunedì"
       { id: 'studia', label: 'Rivedi gli appunti', requiresSchoolPeriod: true },
       { id: 'riposa', label: 'Riposati' },
+      { id: 'dormi', label: 'Vai a dormire (recupero totale)' },
     ],
     notte: [
-      { id: 'riposa', label: 'Dormi (automatico)' },
+      { id: 'dormi', label: 'Dormi (recupero 80%)' },
     ],
   },
   festivo: {
     mattina: [
       { id: 'riposa', label: 'Riposa il giorno di festa' },
       { id: 'palestra', label: 'Sport' },
+      { id: 'parco', label: 'Giro al parco' },
     ],
     pomeriggio: [
       { id: 'shopping', label: 'Shopping' },
       { id: 'cinema', label: 'Cinema' },
       { id: 'motorino', label: 'Giro col motorino' },
+      { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
+      { id: 'parco', label: 'Giro al parco' },
+      { id: 'chiacchiera', label: 'Chiacchiera in giro' },
     ],
     sera: [
       { id: 'disco', label: 'Discoteca festiva' },
       { id: 'cinema', label: 'Cinema serale' },
-      { id: 'riposa', label: 'Riposati' },
+      { id: 'dormi', label: 'Vai a dormire (recupero totale)' },
     ],
     notte: [
-      { id: 'riposa', label: 'Dormi (automatico)' },
+      { id: 'dormi', label: 'Dormi (recupero 80%)' },
     ],
   },
 }

@@ -66,6 +66,11 @@ export function useGameTime({
   statsRef.current = stats
   const schoolTypeRef = useRef(schoolType)
   schoolTypeRef.current = schoolType
+  // A6: refs per handleDormi
+  const phaseActionsRemainingRef = useRef(phaseActionsRemaining)
+  phaseActionsRemainingRef.current = phaseActionsRemaining
+  const currentPhaseRef = useRef(currentPhase)
+  currentPhaseRef.current = currentPhase
 
   const consumeAction = useCallback(() => {
     // Solo phaseActionsRemaining viene decrementata (Fix5)
@@ -89,7 +94,7 @@ export function useGameTime({
 
         // Fix4: genera eventi scolastici se è un giorno feriale scolastico
         if (newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
-          const morningEvents = drawSchoolMorningEvents(3)
+          const morningEvents = drawSchoolMorningEvents(6)
           setSchoolMorningEvents(morningEvents)
           setShowSchoolMorning(true)
         }
@@ -229,6 +234,33 @@ export function useGameTime({
     announce('Hai guadagnato un\'AZIONE EXTRA! Usala saggiamente.')
   }, [setRawGameTime, announce])
 
+  // A6 — Nuova azione dormi
+  const handleDormi = useCallback(() => {
+    if (phaseActionsRemainingRef.current <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    const phase = currentPhaseRef.current
+    if (phase !== 'sera' && phase !== 'notte') {
+      playSound.failure()
+      announce('Puoi dormire solo la sera o di notte!')
+      return
+    }
+    playSound.buttonClick()
+    const isNight = phase === 'notte'
+    setStats((current) => {
+      const recovery = isNight ? Math.round(current.stanchezza * 0.80) : current.stanchezza
+      return { ...current, stanchezza: clampStat(current.stanchezza - recovery) }
+    })
+    const msg = isNight
+      ? 'Sei crollato di notte! Riposo parziale (80%). Ci si vede domani!'
+      : 'Dormi come un ghiro! Stanchezza AZZERATA. Buonanotte!'
+    announce(msg)
+    playSound.success()
+    advanceToNextDay()
+  }, [setStats, announce, advanceToNextDay])
+
   return {
     gameTime,
     setGameTime: setRawGameTime,
@@ -237,6 +269,7 @@ export function useGameTime({
     consumeAction,
     advanceToNextDay,
     gainExtraAction,
+    handleDormi,
     // Fasce orarie
     currentPhase,
     setCurrentPhase,

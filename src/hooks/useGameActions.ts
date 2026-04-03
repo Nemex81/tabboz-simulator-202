@@ -254,7 +254,7 @@ export function useGameActions({
     const g = gradesRef.current
     const hasFriendBonus = getFriendStudyBonus(friendsRef.current) > 0
     const gradeIncrease = calculateStudyGradeIncrease(s.intelligenza, hasFriendBonus)
-    const intelligenzaGain = Math.floor(Math.random() * 3) + 1
+    const intelligenzaGain = Number((0.01 + (s.intelligenza / 100) * 0.04).toFixed(2))
 
     setGrades((current) => ({
       ...current,
@@ -270,7 +270,7 @@ export function useGameActions({
     playSound.statIncrease()
 
     const bonusText = hasFriendBonus ? ' (BONUS AMICO INTELLIGENTE!)' : ''
-    announce(`Hai studiato ${getSubjectDisplayName(selectedSubject)}! +${gradeIncrease.toFixed(1)} al voto, +${intelligenzaGain} Intelligenza${bonusText}, +20 Stanchezza, -5 Coattaggine`)
+    announce(`Hai studiato ${getSubjectDisplayName(selectedSubject)}! +${gradeIncrease.toFixed(2)} al voto, +${intelligenzaGain} Intelligenza${bonusText}, +20 Stanchezza, -5 Coattaggine`)
 
     const gt = gameTimeRef.current
     if (shouldTriggerSurpriseQuiz() && gt.schoolYear.isSchoolPeriod) {
@@ -362,13 +362,31 @@ export function useGameActions({
       announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
+    // A1: riposa non disponibile durante la mattina scolastica feriale
+    const gt = gameTimeRef.current
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Non puoi riposare adesso.')
+      return
+    }
+    // A7: riposa disponibile solo in pomeriggio o mattina non-feriale
+    const ph = currentPhaseRef.current
+    const dt = dayTypeRef.current
+    const isRestAllowed = ph === 'pomeriggio' || (ph === 'mattina' && dt !== 'feriale')
+    if (!isRestAllowed) {
+      playSound.failure()
+      announce('Il riposo parziale è disponibile solo al pomeriggio (o la mattina nei giorni non scolastici)!')
+      return
+    }
+    // A7: recupero parziale 25-35%
+    const recoveryPct = 0.25 + Math.random() * 0.10
     playSound.buttonClick()
     setStats((current) => ({
       ...current,
-      stanchezza: clampStat(current.stanchezza - 40)
+      stanchezza: clampStat(current.stanchezza - Math.round(current.stanchezza * recoveryPct))
     }))
     consumeAction()
-    announce('Hai riposato un po\'! -40 Stanchezza')
+    announce(`Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`)
   }, [setStats, consumeAction, announce])
 
   const handleDisco = useCallback(() => {
@@ -680,6 +698,67 @@ export function useGameActions({
     setGirlfriend(null)
   }, [setGirlfriend, announce])
 
+  // A8 — Nuove azioni sociali gratuite
+  const handleChiacchiera = useCallback(() => {
+    if (phaseActionsRemainingRef.current <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    playSound.buttonClick()
+    setStats((current) => ({
+      ...current,
+      carisma: clampStat(current.carisma + 5),
+      reputazione: clampStat(current.reputazione + 3),
+      stanchezza: clampStat(current.stanchezza + 5)
+    }))
+    consumeAction()
+    announce('Hai chiacchierato con qualcuno! +5 Carisma, +3 Reputazione')
+    checkForNewFriend('in giro per il paese')
+    checkForNewRelationship()
+  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship])
+
+  const handleParco = useCallback(() => {
+    if (phaseActionsRemainingRef.current <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    playSound.buttonClick()
+    setStats((current) => ({
+      ...current,
+      carisma: clampStat(current.carisma + 5),
+      stanchezza: clampStat(current.stanchezza - 5),
+      reputazione: clampStat(current.reputazione + 2)
+    }))
+    consumeAction()
+    announce('Giro rilassante al parco! +5 Carisma, -5 Stanchezza, +2 Reputazione')
+    checkForNewFriend('al parco')
+    checkForNewRelationship()
+    checkForNewGirlfriend()
+  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend])
+
+  const handleTelefona = useCallback(() => {
+    if (phaseActionsRemainingRef.current <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    if (friendsRef.current.length === 0) {
+      playSound.failure()
+      announce('Non hai amici da chiamare! Esci e socializza prima.')
+      return
+    }
+    playSound.buttonClick()
+    const randomFriend = friendsRef.current[Math.floor(Math.random() * friendsRef.current.length)]
+    setStats((current) => ({
+      ...current,
+      carisma: clampStat(current.carisma + 3)
+    }))
+    consumeAction()
+    announce(`Hai chiamato ${randomFriend.name}! Bella chiacchierata. +3 Carisma`)
+  }, [setStats, consumeAction, announce])
+
   return {
     handlePalestra,
     handleLampada,
@@ -697,6 +776,9 @@ export function useGameActions({
     handlePrepareExam,
     handleFriendAction,
     handleGirlfriendAction,
-    handleGirlfriendBreakup
+    handleGirlfriendBreakup,
+    handleChiacchiera,
+    handleParco,
+    handleTelefona,
   }
 }

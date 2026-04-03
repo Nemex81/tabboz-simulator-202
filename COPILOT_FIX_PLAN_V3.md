@@ -277,23 +277,26 @@ Entrambi i posti: `drawSchoolMorningEvents(3)` → `drawSchoolMorningEvents(6)`
 ### File da modificare
 1. `src/lib/types.ts` — aggiungere `'dormi'` all'unione `ActionId` in `phase-actions.ts`
 2. `src/lib/phase-actions.ts` — aggiungere `{ id: 'dormi', label: 'Vai a dormire' }` a `feriale.sera`, `feriale.notte`, `sabato.sera`, `sabato.notte`, `domenica.sera`, `domenica.notte`, `festivo.sera`, `festivo.notte`
-3. `src/hooks/useGameTime.ts` — implementare `handleDormi` **direttamente** dopo la definizione di `advanceToNextDay` (~riga 150); aggiungere `setStats`, `consumeAction`, `announce` a `UseGameTimeParams`; esportare `handleDormi` nel valore di ritorno del hook
-4. `src/App.tsx` — destrutturare `handleDormi` da `useGameTime` (NON da `useGameActions`); passare `setStats`/`consumeAction`/`announce` a `useGameTime`; aggiungere button UI
+3. `src/hooks/useGameTime.ts` — aggiungere due ref locali (`phaseActionsRemainingRef`, `currentPhaseRef`) dopo i ref esistenti di `statsRef`/`schoolTypeRef`; implementare `handleDormi` subito dopo `gainExtraAction` (~riga 224); esportarlo nel return del hook. **Nessuna modifica a `UseGameTimeParams`** — `setStats`, `consumeAction` e `announce` sono già disponibili (i primi due via params, il terzo definito localmente).
+4. `src/App.tsx` — destrutturare `handleDormi` da `useGameTime` (NON da `useGameActions`); nessun parametro aggiuntivo da passare a `useGameTime`; aggiungere button UI
 
 > **Motivazione architetturale (C1):** inserire `advanceToNextDay` come parametro di `UseGameActionsParams` creerebbe una dipendenza circolare (`useGameActions` → `useGameTime` → `useGameActions`). Poiché `useGameTime` già possiede `advanceToNextDay` come funzione locale, `handleDormi` va definito lì, dove `advanceToNextDay` è nativo e non richiede import circolari.
 
 ### Patch — `src/hooks/useGameTime.ts`
 
 ```typescript
-// Interfaccia: aggiungere setStats, consumeAction, announce a UseGameTimeParams
-interface UseGameTimeParams {
-  // ... (parametri già esistenti) ...
-  setStats: React.Dispatch<React.SetStateAction<GameStats>>  // ← NUOVO per handleDormi
-  consumeAction: () => void                                  // ← NUOVO per handleDormi
-  announce: (message: string) => void                        // ← NUOVO per handleDormi
-}
+// Nessuna modifica a UseGameTimeParams:
+// - setStats   → già presente nei params
+// - announece  → già presente nei params
+// - consumeAction → già definita localmente nel hook
 
-// Handler (inserire subito dopo advanceToNextDay ~riga 150):
+// Aggiungere DUE ref locali dopo statsRef/schoolTypeRef (~riga 70):
+const phaseActionsRemainingRef = useRef(phaseActionsRemaining)
+phaseActionsRemainingRef.current = phaseActionsRemaining
+const currentPhaseRef = useRef(currentPhase)
+currentPhaseRef.current = currentPhase
+
+// Handler (inserire subito dopo gainExtraAction ~riga 224):
 const handleDormi = useCallback(() => {
   if (phaseActionsRemainingRef.current <= 0) {
     playSound.failure()
@@ -320,15 +323,23 @@ const handleDormi = useCallback(() => {
   advanceToNextDay()
 }, [setStats, announce, consumeAction, advanceToNextDay])
 
-// Aggiornare il return del hook:
+// Aggiornare il return del hook (aggiungere handleDormi accanto a gainExtraAction):
 return {
   gameTime,
-  advanceGameTime,
-  advancePhaseOnly,
+  setGameTime: setRawGameTime,
+  scheduledExams,
+  setScheduledExams: setRawScheduledExams,
+  consumeAction,
   advanceToNextDay,
-  handleDormi,  // ← NUOVO
   gainExtraAction,
-  // ...
+  handleDormi,  // ← NUOVO
+  currentPhase,
+  setCurrentPhase,
+  dayType,
+  setDayType,
+  phaseActionsRemaining,
+  setPhaseActionsRemaining,
+  advancePhaseOnly,
 }
 ```
 
@@ -538,7 +549,66 @@ blockedReason={'Nessuna azione per questa fascia oraria'}
 ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi un po' di Figosità e Carisma; se accetta guadagni entrambi."
 ```
 
-> **Nota:** anche il guard in `handleProvarciConAtipa` (useEventEngine.ts) usa ancora `gt.actionsRemaining === 0` (non aggiornato in V2 perché è in useEventEngine, separato da useGameActions). Aggiornare anche quello a `phaseActionsRemaining`.
+### Patch aggiuntiva A9 — Guardia `handleProvarciConAtipa` in `useEventEngine.ts`
+
+Il guard attuale `if (gt.actionsRemaining === 0)` usa un campo obsoleto di `GameTime` che non riflette il sistema a fasce orarie introdotto in V2.
+
+**Passo 1** — `src/hooks/useEventEngine.ts`: aggiungere il parametro all'interfaccia:
+
+```typescript
+interface UseEventEngineParams {
+  stats: GameStats
+  setStats: (updater: ((prev: GameStats) => GameStats) | GameStats) => void
+  friends: Friend[]
+  setFriends: (updater: ((prev: Friend[]) => Friend[]) | Friend[]) => void
+  relationships: Relationship[]
+  setRelationships: (updater: ((prev: Relationship[]) => Relationship[]) | Relationship[]) => void
+  girlfriend: Ragazza | null
+  setGirlfriend: (v: Ragazza | null | ((prev: Ragazza | null) => Ragazza | null)) => void
+  gameTime: GameTime
+  consumeAction: () => void
+  announce: (msg: string) => void
+  phaseActionsRemaining: number  // ← NUOVO
+}
+```
+
+**Passo 2** — Destrutturare il nuovo parametro nel corpo del hook:
+
+```typescript
+export function useEventEngine({
+  stats, setStats, friends, setFriends, relationships, setRelationships,
+  girlfriend, setGirlfriend, gameTime, consumeAction, announce,
+  phaseActionsRemaining  // ← NUOVO
+}: UseEventEngineParams) {
+```
+
+**Passo 3** — Sostituire il guard in `handleProvarciConAtipa` (~riga 296):
+
+```typescript
+// PRIMA:
+if (gt.actionsRemaining === 0) {
+  playSound.failure()
+  announce('Nessuna azione rimasta! ...')
+  return
+}
+
+// DOPO:
+if (phaseActionsRemaining <= 0) {
+  playSound.failure()
+  announce('Nessuna azione rimasta per questa fascia oraria!')
+  return
+}
+```
+
+**Passo 4** — `src/App.tsx`: passare `phaseActionsRemaining` alla chiamata di `useEventEngine` (~riga 182):
+
+```typescript
+const events = useEventEngine({
+  stats, setStats, friends, setFriends, relationships, setRelationships,
+  girlfriend, setGirlfriend, gameTime, consumeAction, announce,
+  phaseActionsRemaining  // ← NUOVO (già disponibile nel componente App)
+})
+```
 
 ---
 
@@ -566,12 +636,12 @@ ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi un po' di Figosità e 
 
 5. src/hooks/useGameTime.ts
    → A5: drawSchoolMorningEvents(3) → drawSchoolMorningEvents(6)
-   → A6: aggiungere setStats/consumeAction/announce a UseGameTimeParams; implementare handleDormi dopo advanceToNextDay; esportarlo nel return
+   → A6: aggiungere phaseActionsRemainingRef + currentPhaseRef; implementare handleDormi dopo gainExtraAction; esportarlo nel return
 
 6. src/App.tsx
    → A1: aggiornare disabled logic per handleRiposa
    → A5: drawSchoolMorningEvents(3) → drawSchoolMorningEvents(6) (init useEffect)
-   → A6: passare setStats/consumeAction/announce a useGameTime; destrutturare handleDormi da useGameTime + button UI
+   → A6: destrutturare handleDormi da useGameTime (già disponibile, nessun params aggiuntivi da passare) + button UI
    → A8: aggiungere pulsanti chiacchiera, parco, telefona nel tab social
    → A9: rimuovere stats.soldi < 80 dal disabled/blockedReason di Atipa
 ```

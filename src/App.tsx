@@ -162,7 +162,7 @@ function App() {
 
   const {
     gameTime, setGameTime, scheduledExams, setScheduledExams,
-    consumeAction, advanceToNextDay, gainExtraAction,
+    consumeAction, advanceToNextDay, gainExtraAction, handleDormi,
     currentPhase, dayType, phaseActionsRemaining, advancePhaseOnly,
   } = useGameTime({
     grades,
@@ -259,7 +259,10 @@ function App() {
     handlePrepareExam,
     handleFriendAction,
     handleGirlfriendAction,
-    handleGirlfriendBreakup
+    handleGirlfriendBreakup,
+    handleChiacchiera,
+    handleParco,
+    handleTelefona,
   } = actions
 
   const handleRiposa = () => actions.handleRiposa()
@@ -273,7 +276,7 @@ function App() {
       !showSchoolMorning &&
       schoolMorningEvents.length === 0
     ) {
-      const events = drawSchoolMorningEvents(3)
+      const events = drawSchoolMorningEvents(6)
       setSchoolMorningEvents(events)
       setShowSchoolMorning(true)
     }
@@ -871,8 +874,19 @@ function App() {
                     label="Riposa"
                     shortcut="Ctrl+8"
                     onClick={handleRiposa}
+                    disabled={phaseActionsRemaining <= 0 || (dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod)}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Sei a scuola!'}
                     variant="secondary"
-                    ariaLabel="Riposa per ridurre la stanchezza. Tasto rapido: Ctrl+8"
+                    ariaLabel="Riposa per ridurre la stanchezza del 25-35%. Disponibile solo al pomeriggio. Tasto rapido: Ctrl+8"
+                  />
+                  <ActionButton
+                    icon={<Sparkle size={48} />}
+                    label="Dormi"
+                    onClick={handleDormi}
+                    disabled={phaseActionsRemaining <= 0}
+                    blockedReason="Nessuna azione per questa fascia oraria"
+                    variant="secondary"
+                    ariaLabel="Vai a dormire la sera (recupero totale) o di notte (recupero 80%) e passa al giorno successivo"
                   />
                   <ActionButton
                     icon={<Clock size={48} />}
@@ -928,6 +942,42 @@ function App() {
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="p-6 border-2 border-primary bg-card">
                 <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <Chats size={24} weight="fill" />
+                  SOCIALIZZA GRATIS
+                </h3>
+                <div className="space-y-3">
+                  <ActionButton
+                    icon={<Chats size={48} />}
+                    label="Chiacchiera"
+                    onClick={handleChiacchiera}
+                    disabled={phaseActionsRemaining <= 0}
+                    blockedReason="Nessuna azione per questa fascia oraria"
+                    variant="secondary"
+                    ariaLabel="Chiacchiera con qualcuno. Gratis. +5 Carisma, +3 Reputazione"
+                  />
+                  <ActionButton
+                    icon={<Running size={48} />}
+                    label="Giro al Parco"
+                    onClick={handleParco}
+                    disabled={phaseActionsRemaining <= 0}
+                    blockedReason="Nessuna azione per questa fascia oraria"
+                    variant="secondary"
+                    ariaLabel="Giro rilassante al parco. Gratis. +5 Carisma, -5 Stanchezza, +2 Reputazione"
+                  />
+                  <ActionButton
+                    icon={<UserCircle size={48} />}
+                    label="Telefona"
+                    onClick={handleTelefona}
+                    disabled={phaseActionsRemaining <= 0}
+                    blockedReason="Nessuna azione per questa fascia oraria"
+                    variant="secondary"
+                    ariaLabel="Telefona a un amico. Gratis. +3 Carisma (richiede almeno un amico)"
+                  />
+                </div>
+              </Card>
+
+              <Card className="p-6 border-2 border-primary bg-card">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
                   <Barbell size={24} weight="fill" />
                   MIGLIORAMENTO FISICO
                 </h3>
@@ -973,10 +1023,10 @@ function App() {
                     label="Atipa"
                     shortcut="Ctrl+9"
                     onClick={handleProvarciConAtipa}
-                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 80}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 80€'}
+                    disabled={phaseActionsRemaining <= 0}
+                    blockedReason="Nessuna azione per questa fascia oraria"
                     variant="default"
-                    ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: Ctrl+9"
+                    ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi Figosità e Carisma; se accetta guadagni entrambi. Tasto rapido: Ctrl+9"
                   />
                   <ActionButton
                     icon={<MusicNotes size={48} />}

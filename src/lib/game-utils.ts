@@ -90,7 +90,7 @@ export const calculateReputationFromStats = (stats: GameStats): number => {
 export const calculateStudyGradeIncrease = (intelligenza: number, hasFriendBonus: boolean = false): number => {
   const baseIncrease = 0.2 * (intelligenza / 50)
   const friendMultiplier = hasFriendBonus ? 1.5 : 1
-  return Number((baseIncrease * friendMultiplier).toFixed(1))
+  return Number((baseIncrease * friendMultiplier).toFixed(2))
 }
 
 export const calculateSocialSuccessChance = (

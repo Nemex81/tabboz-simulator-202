@@ -22,6 +22,7 @@ interface UseEventEngineParams {
   gameTime: GameTime
   consumeAction: () => void
   announce: (msg: string) => void
+  phaseActionsRemaining: number
 }
 
 export function useEventEngine({
@@ -35,7 +36,8 @@ export function useEventEngine({
   setGirlfriend,
   gameTime,
   consumeAction,
-  announce
+  announce,
+  phaseActionsRemaining
 }: UseEventEngineParams) {
   const [showMetallariEvent, setShowMetallariEvent] = useState(false)
   const [showAtipaEvent, setShowAtipaEvent] = useState(false)
@@ -293,9 +295,9 @@ export function useEventEngine({
 
   const handleProvarciConAtipa = useCallback(() => {
     const gt = gameTimeRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemaining <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Nessuna azione rimasta per questa fascia oraria!')
       return
     }
     const s = statsRef.current
@@ -336,9 +338,9 @@ export function useEventEngine({
         ...current,
         figosita: clampStat(current.figosita + 20),
         coattaggine: clampStat(current.coattaggine + 10),
-        soldi: clampStat(current.soldi - 80, 0, 1000)
+        carisma: clampStat(current.carisma + 5)
       }))
-      announce(`${name} ha detto SÌ! Uscita EPICA! +20 Figosità, +10 Coattaggine, -80 Soldi`)
+      announce(`${name} ha detto SÌ! +20 Figosità, +10 Coattaggine, +5 Carisma`)
     } else {
       playSound.bigLoss()
       setStats((current) => ({
