@@ -1,4 +1,4 @@
-import { GameStats } from '@/lib/types'
+import { GameStats, ReputationLevel } from '@/lib/types'
 
 export const clampStat = (value: number, min: number = 0, max: number = 100): number => {
   return Math.max(min, Math.min(max, value))
@@ -26,5 +26,71 @@ export const checkGameOver = (stats: GameStats): { isOver: boolean; reason: stri
 export const announceToScreenReader = (message: string, element: HTMLElement | null) => {
   if (element) {
     element.textContent = message
+  }
+}
+
+export const getReputationLevel = (reputazione: number): ReputationLevel => {
+  if (reputazione < 20) return 'Sfigato Totale'
+  if (reputazione < 40) return 'Nessuno'
+  if (reputazione < 60) return 'Coatto Base'
+  if (reputazione < 80) return 'Rispettato'
+  return 'Leggenda del Quartiere'
+}
+
+export const calculateReputationFromStats = (stats: GameStats): number => {
+  const coattaggineWeight = 0.3
+  const muscoliWeight = 0.2
+  const figositaWeight = 0.25
+  const soldiWeight = 0.15
+  const mediaWeight = 0.1
+  
+  const reputationScore = 
+    (stats.coattaggine * coattaggineWeight) +
+    (stats.muscoli * muscoliWeight) +
+    (stats.figosita * figositaWeight) +
+    (Math.min(stats.soldi / 10, 100) * soldiWeight) +
+    (Math.min(stats.media * 10, 100) * mediaWeight)
+  
+  return clampStat(reputationScore)
+}
+
+export const getReputationEventModifier = (reputazione: number): {
+  encounterChanceMultiplier: number
+  positiveOutcomeBonus: number
+  respectBonus: number
+} => {
+  const level = getReputationLevel(reputazione)
+  
+  switch (level) {
+    case 'Sfigato Totale':
+      return { 
+        encounterChanceMultiplier: 1.5, 
+        positiveOutcomeBonus: -20,
+        respectBonus: 0
+      }
+    case 'Nessuno':
+      return { 
+        encounterChanceMultiplier: 1.2, 
+        positiveOutcomeBonus: -10,
+        respectBonus: 0
+      }
+    case 'Coatto Base':
+      return { 
+        encounterChanceMultiplier: 1.0, 
+        positiveOutcomeBonus: 0,
+        respectBonus: 5
+      }
+    case 'Rispettato':
+      return { 
+        encounterChanceMultiplier: 0.8, 
+        positiveOutcomeBonus: 15,
+        respectBonus: 10
+      }
+    case 'Leggenda del Quartiere':
+      return { 
+        encounterChanceMultiplier: 0.5, 
+        positiveOutcomeBonus: 30,
+        respectBonus: 20
+      }
   }
 }

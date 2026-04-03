@@ -20,7 +20,8 @@ import {
   ShieldWarning,
   MusicNotes,
   FilmSlate,
-  ShoppingCart
+  ShoppingCart,
+  Crown
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
@@ -38,7 +39,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { GameStats, SubjectGrades, DEFAULT_GAME_STATE } from '@/lib/types'
-import { clampStat, calculateMedia, randomChance, checkGameOver } from '@/lib/game-utils'
+import { 
+  clampStat, 
+  calculateMedia, 
+  randomChance, 
+  checkGameOver,
+  calculateReputationFromStats,
+  getReputationLevel,
+  getReputationEventModifier
+} from '@/lib/game-utils'
 
 function App() {
   const [stats, setStats] = useKV<GameStats>('tabboz-stats', DEFAULT_GAME_STATE.stats)
@@ -57,6 +66,7 @@ function App() {
   const [raceWinChance, setRaceWinChance] = useState(0)
   
   const ariaLiveRef = useRef<HTMLDivElement>(null)
+  const prevReputationRef = useRef<number>(stats.reputazione)
 
   const announce = (message: string) => {
     if (ariaLiveRef.current) {
@@ -64,6 +74,22 @@ function App() {
     }
     toast(message)
   }
+
+  useEffect(() => {
+    const newReputation = calculateReputationFromStats(stats)
+    const oldLevel = getReputationLevel(prevReputationRef.current)
+    const newLevel = getReputationLevel(newReputation)
+    
+    if (Math.abs(newReputation - stats.reputazione) > 2) {
+      setStats((current) => ({ ...current, reputazione: newReputation }))
+      
+      if (oldLevel !== newLevel) {
+        announce(`CAMBIO DI REPUTAZIONE! Ora sei: ${newLevel}`)
+      }
+    }
+    
+    prevReputationRef.current = newReputation
+  }, [stats.coattaggine, stats.muscoli, stats.figosita, stats.soldi, stats.media])
 
   useEffect(() => {
     const checkStatus = checkGameOver({ ...stats, media: calculateMedia(grades) })
@@ -75,27 +101,43 @@ function App() {
   }, [stats, grades])
 
   const triggerRandomEvent = () => {
-    const roll = Math.random() * 100
+    const reputationModifier = getReputationEventModifier(stats.reputazione)
+    const baseRoll = Math.random() * 100
+    const adjustedRoll = baseRoll * reputationModifier.encounterChanceMultiplier
     
-    if (roll < 12) {
+    if (adjustedRoll < 12) {
+      const respectBonus = reputationModifier.respectBonus
+      if (respectBonus >= 15) {
+        announce('I METALLARI ti riconoscono e ti salutano con rispetto! La tua REPUTAZIONE ti precede!')
+        return
+      }
       setShowMetallariEvent(true)
       setCurrentEvent('Incontro con i METALLARI! Vogliono la tua grana!')
       announce('Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!')
-    } else if (roll < 22) {
+    } else if (adjustedRoll < 22) {
+      if (reputationModifier.respectBonus >= 15) {
+        announce('I POLIZIOTTI ti hanno fermato ma ti lasciano andare! Sei troppo RISPETTATO nel quartiere!')
+        return
+      }
       setShowPoliceEvent(true)
       setCurrentEvent('I POLIZIOTTI ti hanno fermato! Controllo documenti!')
       announce('Evento casuale: Controllo della POLIZIA!')
-    } else if (roll < 30) {
+    } else if (adjustedRoll < 30) {
       const winChance = Math.min(85, Math.max(15, 
         (stats.coattaggine * 0.5) + 
         (stats.figosita * 0.3) + 
-        (stats.muscoli * 0.2)
+        (stats.muscoli * 0.2) +
+        reputationModifier.positiveOutcomeBonus
       ))
       setRaceWinChance(Math.round(winChance))
       setShowStreetRaceEvent(true)
       setCurrentEvent('Un TAMARRO ti sfida ad una GARA con il motorino!')
       announce(`Evento casuale: GARA di motorini! Possibilità di vincita: ${Math.round(winChance)}%`)
-    } else if (roll < 36) {
+    } else if (adjustedRoll < 36) {
+      if (reputationModifier.respectBonus >= 10) {
+        announce('I BULLI della scuola ti vedono e si allontanano! Hanno PAURA della tua REPUTAZIONE!')
+        return
+      }
       setShowBulliEvent(true)
       setCurrentEvent('I BULLI della scuola ti vogliono rubare la merenda!')
       announce('Evento casuale: Incontro con i BULLI!')
@@ -369,10 +411,13 @@ function App() {
       return
     }
     
+    const reputationModifier = getReputationEventModifier(stats.reputazione)
+    
     const successChance = Math.min(85, Math.max(20, 
       (stats.figosita * 0.4) + 
       (stats.coattaggine * 0.3) + 
-      (stats.muscoli * 0.2)
+      (stats.muscoli * 0.2) +
+      reputationModifier.positiveOutcomeBonus
     ))
     
     if (randomChance(successChance)) {
@@ -445,17 +490,20 @@ function App() {
     const randomName = names[Math.floor(Math.random() * names.length)]
     setAtipaName(randomName)
     
+    const reputationModifier = getReputationEventModifier(stats.reputazione)
+    
     const successChance = Math.min(90, Math.max(10, 
       (stats.figosita * 0.4) + 
       (stats.coattaggine * 0.3) + 
       (stats.muscoli * 0.2) + 
-      (stats.soldi / 10)
+      (stats.soldi / 10) +
+      reputationModifier.positiveOutcomeBonus
     ))
     
     setAtipaSuccessChance(Math.round(successChance))
     setCurrentEvent(`Hai adocchiato ${randomName} al centro commerciale! Ti vuoi provare?`)
     setShowAtipaEvent(true)
-    announce(`Evento: Hai incontrato ${randomName}! Possibilità di successo: ${Math.round(successChance)}%`)
+    announce(`Evento: Hai incontrato ${randomName}! Possibilità di successo: ${Math.round(successChance)}% (bonus reputazione: +${reputationModifier.positiveOutcomeBonus})`)
   }
 
   const handleAtipaRinuncia = () => {
@@ -585,6 +633,37 @@ function App() {
               label="Stanchezza"
               value={stats.stanchezza}
             />
+          </div>
+          <div className="mt-6">
+            <Card className="p-4 border-2 border-primary bg-card/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Crown size={40} weight="fill" className="text-primary" />
+                  <div>
+                    <div className="text-sm text-muted-foreground uppercase font-semibold">
+                      REPUTAZIONE
+                    </div>
+                    <div className="text-2xl font-bold text-primary neon-text-glow">
+                      {getReputationLevel(stats.reputazione)}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-4xl font-black text-primary">
+                    {Math.round(stats.reputazione)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    / 100
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 neon-glow"
+                  style={{ width: `${stats.reputazione}%` }}
+                />
+              </div>
+            </Card>
           </div>
         </section>
 

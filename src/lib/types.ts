@@ -5,7 +5,15 @@ export interface GameStats {
   media: number
   stanchezza: number
   figosita: number
+  reputazione: number
 }
+
+export type ReputationLevel = 
+  | 'Sfigato Totale' 
+  | 'Nessuno' 
+  | 'Coatto Base' 
+  | 'Rispettato' 
+  | 'Leggenda del Quartiere'
 
 export interface SubjectGrades {
   matematica: number
@@ -27,7 +35,8 @@ export const DEFAULT_STATS: GameStats = {
   soldi: 100,
   media: 6,
   stanchezza: 0,
-  figosita: 50
+  figosita: 50,
+  reputazione: 50
 }
 
 export const DEFAULT_GRADES: SubjectGrades = {

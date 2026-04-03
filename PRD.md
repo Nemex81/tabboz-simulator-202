@@ -20,11 +20,28 @@ Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) 
 - **Success criteria**: Media calcolata correttamente, eventi di espulsione al 30% per "Minaccia", costi applicati per corruzione
 
 ### Sistema Statistiche e Progressione
-- **Functionality**: 5 statistiche principali (Coattaggine, Muscoli, Soldi, Media Scolastica, Stanchezza) che si influenzano a vicenda
-- **Purpose**: Creare scelte strategiche - spendere soldi in palestra o corrompere? Studiare o lavorare?
+- **Functionality**: 6 statistiche principali (Coattaggine, Muscoli, Figosità, Soldi, Media Scolastica, Stanchezza) che si influenzano a vicenda, più una settima statistica derivata: **Reputazione**
+- **Purpose**: Creare scelte strategiche - spendere soldi in palestra o corrompere? Studiare o lavorare? La Reputazione è calcolata automaticamente da tutte le altre stat e influenza significativamente gli eventi casuali
 - **Trigger**: Sempre visibili in dashboard, aggiornate dopo ogni azione
-- **Progression**: Azione selezionata → Verifica prerequisiti (es. abbastanza soldi?) → Applicazione modifiche → Annuncio vocale cambiamenti
-- **Success criteria**: Tutte le stat reagiscono correttamente, limiti rispettati (es. Stanchezza max 100)
+- **Progression**: Azione selezionata → Verifica prerequisiti (es. abbastanza soldi?) → Applicazione modifiche → Calcolo automatico Reputazione → Annuncio vocale cambiamenti
+- **Success criteria**: Tutte le stat reagiscono correttamente, limiti rispettati (es. Stanchezza max 100), Reputazione si aggiorna automaticamente e annuncia cambio livello
+
+### Sistema di Reputazione Dinamico
+- **Functionality**: La Reputazione (0-100) è calcolata automaticamente da: Coattaggine (30%), Muscoli (20%), Figosità (25%), Soldi (15%), Media Scolastica (10%). Ha 5 livelli: "Sfigato Totale" (<20), "Nessuno" (20-39), "Coatto Base" (40-59), "Rispettato" (60-79), "Leggenda del Quartiere" (80+)
+- **Purpose**: Creare un senso di progressione e prestigio che riflette il successo complessivo del giocatore, con conseguenze tangibili sugli eventi
+- **Trigger**: Si aggiorna automaticamente ogni volta che cambia una delle stat che contribuiscono
+- **Progression**: Stat modificata → Calcolo formula pesata → Se cambio significativo (>2 punti): aggiorna Reputazione → Se cambio livello: annuncio ARIA live drammatico
+- **Success criteria**: Formula bilanciata che premia equilibrio tra stat, livelli progressivi chiari, UI mostra livello testuale + barra grafica + valore numerico
+
+### Influenza Reputazione su Eventi Casuali
+- **Functionality**: La Reputazione modifica tre aspetti degli eventi:
+  1. **Frequenza** - Reputazione alta riduce chance eventi negativi (moltiplicatore da 1.5x a 0.5x)
+  2. **Probabilità Successo** - Bonus/malus da -20% a +30% su tutti i check probabilistici
+  3. **Rispetto** - Con Reputazione "Rispettato" o superiore, alcuni eventi si risolvono automaticamente a tuo favore (Metallari ti salutano, Polizia ti lascia andare, Bulli scappano)
+- **Purpose**: Premiare investimento a lungo termine e creare senso di evoluzione narrativa - da sfigato a leggenda
+- **Trigger**: Check reputazione all'inizio di ogni evento casuale
+- **Progression**: Evento triggerato → Calcola modificatori reputazione → Se rispetto alto: auto-risolvi positivo con flavor text → Altrimenti: applica bonus/malus → Presenta scelte → Calcola esito modificato
+- **Success criteria**: Eventi mostrano chiaramente bonus reputazione nelle descrizioni, alta reputazione fa sentire giocatore potente, bassa reputazione aumenta difficoltà visibilmente
 
 ### Azioni Vita Sociale
 - **Functionality**: Palestra (+Muscoli, -Soldi), Lampada (+Coattaggine, -Soldi), Lavora come Buttadifuori (+Soldi se Muscoli alti), Trucca Motorino (+Coattaggine, -Soldi)
@@ -33,16 +50,16 @@ Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) 
 - **Progression**: Selezione azione → Check condizioni → Esito con flavor text → Update stat
 - **Success criteria**: Ogni azione ha effetti distinti, alcuni richiedono stat minime
 
-### Sistema Eventi Casuali Multipli
-- **Functionality**: Quattro tipi di eventi random che possono accadere dopo azioni comuni:
-  1. **Metallari** - Gang ostile che vuole la tua grana (12% chance): Scappa (-10 Coattaggine) o Combatti (richiede Muscoli > 60, +15 Coattaggine +30 Soldi se vinci, altrimenti -50 Soldi -5 Muscoli)
-  2. **Polizia** - Controllo documenti (10% chance): Scappa (richiede Coattaggine > 70, +10 Coattaggine se riesci, altrimenti -100 Soldi -15 Coattaggine) o Dai Mazzetta (50€ per cavartela, altrimenti sequestro tutto e -20 Coattaggine)
-  3. **Gara Motorini** - Sfida street racing (8% chance): Accetta (probabilità basata su Coattaggine 50% + Figosità 30% + Muscoli 20%, se vinci +25 Coattaggine +20 Figosità +150 Soldi, se perdi -20 Figosità -15 Coattaggine -80 Soldi) o Rifiuta (-15 Coattaggine -10 Figosità)
-  4. **Bulli** - Gang scolastica vuole la merenda (6% chance): Resisti (richiede Muscoli > 50, +20 Coattaggine +5 Muscoli se vinci, altrimenti -30 Soldi -10 Coattaggine -5 Muscoli) o Cedi (-20 Soldi -15 Coattaggine)
-- **Purpose**: Aggiungere varietà, suspense e ricompense rischiose che premiano investimento strategico nelle diverse statistiche
-- **Trigger**: Random roll (36% totale di evento) dopo ogni azione sociale (Palestra, Lampada, Lavoro, Motorino)
-- **Progression**: Azione completata → Roll probabilistico → Se evento: mostra dialog modale con dettagli → Scelta A o B → Calcolo esito basato su stat → Applicazione conseguenze → ARIA announcement risultato
-- **Success criteria**: Eventi distribuiti correttamente, probabilità di successo calcolate accuratamente, UI mostra chiaramente requisiti e conseguenze, ogni evento ha flavor text distintivo
+### Sistema Eventi Casuali Multipli con Modificatori Reputazione
+- **Functionality**: Quattro tipi di eventi random che possono accadere dopo azioni comuni, con probabilità e esiti modificati dalla Reputazione:
+  1. **Metallari** - Gang ostile che vuole la tua grana (12% base chance, ridotta da alta reputazione): Scappa (-10 Coattaggine) o Combatti (richiede Muscoli > 60, +15 Coattaggine +30 Soldi se vinci, altrimenti -50 Soldi -5 Muscoli). Con Reputazione "Leggenda" si auto-risolve positivamente.
+  2. **Polizia** - Controllo documenti (10% base chance): Scappa (richiede Coattaggine > 70, +10 Coattaggine se riesci, altrimenti -100 Soldi -15 Coattaggine) o Dai Mazzetta (50€ per cavartela, altrimenti sequestro tutto e -20 Coattaggine). Con Reputazione "Leggenda" ti lasciano andare.
+  3. **Gara Motorini** - Sfida street racing (8% base chance): Accetta (probabilità basata su Coattaggine 50% + Figosità 30% + Muscoli 20% + Bonus Reputazione, se vinci +25 Coattaggine +20 Figosità +150 Soldi, se perdi -20 Figosità -15 Coattaggine -80 Soldi) o Rifiuta (-15 Coattaggine -10 Figosità)
+  4. **Bulli** - Gang scolastica vuole la merenda (6% base chance): Resisti (richiede Muscoli > 50, +20 Coattaggine +5 Muscoli se vinci, altrimenti -30 Soldi -10 Coattaggine -5 Muscoli) o Cedi (-20 Soldi -15 Coattaggine). Con Reputazione "Rispettato" o superiore scappano automaticamente.
+- **Purpose**: Aggiungere varietà, suspense e ricompense rischiose che premiano investimento strategico nelle diverse statistiche E nella reputazione complessiva
+- **Trigger**: Random roll (36% base totale di evento, modificato da reputazione) dopo ogni azione sociale (Palestra, Lampada, Lavoro, Motorino, Disco, Cinema, Shopping)
+- **Progression**: Azione completata → Roll probabilistico modificato da reputazione → Se auto-risolto da alta reputazione: mostra flavor text positivo e annuncio → Altrimenti se evento: mostra dialog modale con bonus reputazione visibile → Scelta A o B → Calcolo esito con modificatori reputazione → Applicazione conseguenze → ARIA announcement risultato
+- **Success criteria**: Eventi distribuiti correttamente con modificatori, probabilità di successo calcolate accuratamente con bonus reputazione, UI mostra chiaramente bonus/malus da reputazione, auto-risoluzioni positive con alta reputazione funzionano e hanno flavor text distintivo
 
 ### Sistema di Salvataggio Persistente
 - **Functionality**: Auto-save di tutte le stat e stato gioco ogni cambiamento
@@ -142,6 +159,7 @@ Le animazioni servono **feedback immediato** senza distrarre e celebrare i succe
   - SirenLight - Polizia (animated pulse)
   - Flag - Gara/Street Race
   - ShieldWarning - Bulli/Pericolo
+  - Crown - Reputazione/Status
 
 - **Spacing**: 
   - Container padding: `p-6`
