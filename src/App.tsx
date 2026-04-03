@@ -21,13 +21,17 @@ import {
   MusicNotes,
   FilmSlate,
   ShoppingCart,
-  Crown
+  Crown,
+  ChartBar,
+  User,
+  Buildings
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
 import { ActionButton } from '@/components/ActionButton'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -657,7 +661,7 @@ function App() {
         className="sr-only"
       />
 
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-6">
         <header className="text-center">
           <h1 className="text-4xl md:text-6xl font-black text-primary neon-text-glow mb-2 tracking-wider">
             TABBOZ SIMULATOR
@@ -668,60 +672,79 @@ function App() {
           </p>
         </header>
 
-        <section aria-labelledby="stats-heading">
-          <h2 id="stats-heading" className="text-2xl font-bold mb-4 text-secondary">
-            LE TUE STATISTICHE
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <section aria-labelledby="quick-stats">
+          <h2 id="quick-stats" className="sr-only">Panoramica Statistiche</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <StatDisplay 
-              icon={<Lightning size={32} weight="fill" />}
+              icon={<Lightning size={28} weight="fill" />}
               label="Coattaggine"
               value={stats.coattaggine}
             />
             <StatDisplay 
-              icon={<Barbell size={32} weight="fill" />}
+              icon={<Barbell size={28} weight="fill" />}
               label="Muscoli"
               value={stats.muscoli}
             />
             <StatDisplay 
-              icon={<Sparkle size={32} weight="fill" />}
+              icon={<Sparkle size={28} weight="fill" />}
               label="Figosità"
               value={stats.figosita}
             />
             <StatDisplay 
-              icon={<CurrencyDollar size={32} weight="fill" />}
+              icon={<CurrencyDollar size={28} weight="fill" />}
               label="Soldi"
               value={stats.soldi}
               max={1000}
             />
             <StatDisplay 
-              icon={<GraduationCap size={32} weight="fill" />}
+              icon={<GraduationCap size={28} weight="fill" />}
               label="Media"
               value={currentMedia}
               max={10}
             />
             <StatDisplay 
-              icon={<Battery size={32} weight="fill" />}
+              icon={<Battery size={28} weight="fill" />}
               label="Stanchezza"
               value={stats.stanchezza}
             />
           </div>
-          <div className="mt-6">
-            <Card className="p-4 border-2 border-primary bg-card/50">
-              <div className="flex items-center justify-between">
+        </section>
+
+        <Tabs defaultValue="status" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 gap-2 bg-muted/50 p-1 h-auto">
+            <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <ChartBar size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Profilo & Status</span>
+              <span className="sm:hidden">Status</span>
+            </TabsTrigger>
+            <TabsTrigger value="school" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              <GraduationCap size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Scuola & Studio</span>
+              <span className="sm:hidden">Scuola</span>
+            </TabsTrigger>
+            <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+              <Buildings size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Vita Sociale</span>
+              <span className="sm:hidden">Sociale</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="status" className="space-y-6 mt-6">
+            <Card className="p-6 border-2 border-primary bg-card/50">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <Crown size={40} weight="fill" className="text-primary" />
+                  <Crown size={48} weight="fill" className="text-primary" />
                   <div>
                     <div className="text-sm text-muted-foreground uppercase font-semibold">
                       REPUTAZIONE
                     </div>
-                    <div className="text-2xl font-bold text-primary neon-text-glow">
+                    <div className="text-3xl font-bold text-primary neon-text-glow">
                       {getReputationLevel(stats.reputazione)}
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-4xl font-black text-primary">
+                  <div className="text-5xl font-black text-primary">
                     {Math.round(stats.reputazione)}
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -729,172 +752,344 @@ function App() {
                   </div>
                 </div>
               </div>
-              <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
+              <div className="h-3 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 neon-glow"
                   style={{ width: `${stats.reputazione}%` }}
                 />
               </div>
+              <div className="mt-4 pt-4 border-t border-border text-sm text-muted-foreground">
+                <p>La tua reputazione nel quartiere influenza gli eventi casuali e come ti vedono gli altri.</p>
+              </div>
             </Card>
-          </div>
-        </section>
 
-        <section aria-labelledby="grades-heading">
-          <h2 id="grades-heading" className="text-2xl font-bold mb-4 text-secondary">
-            VOTI SCOLASTICI
-          </h2>
-          <Card className="p-6 border-2 border-secondary bg-card">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(grades).map(([subject, grade]) => (
-                <div key={subject} className="text-center">
-                  <div className="text-sm text-muted-foreground uppercase font-semibold mb-1">
-                    {subject}
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="p-6 border-2 border-primary bg-card">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <User size={24} weight="fill" />
+                  CARATTERISTICHE
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                        <Lightning size={20} weight="fill" className="text-primary" />
+                        Coattaggine
+                      </span>
+                      <span className="text-2xl font-bold text-primary">{stats.coattaggine}</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary transition-all duration-300" style={{ width: `${stats.coattaggine}%` }} />
+                    </div>
                   </div>
-                  <div className={`text-3xl font-bold ${grade < 6 ? 'text-destructive' : 'text-secondary'}`}>
-                    {grade}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                        <Barbell size={20} weight="fill" className="text-secondary" />
+                        Muscoli
+                      </span>
+                      <span className="text-2xl font-bold text-secondary">{stats.muscoli}</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-secondary transition-all duration-300" style={{ width: `${stats.muscoli}%` }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                        <Sparkle size={20} weight="fill" className="text-accent" />
+                        Figosità
+                      </span>
+                      <span className="text-2xl font-bold text-accent">{stats.figosita}</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-accent transition-all duration-300" style={{ width: `${stats.figosita}%` }} />
+                    </div>
                   </div>
                 </div>
-              ))}
+              </Card>
+
+              <Card className="p-6 border-2 border-secondary bg-card">
+                <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
+                  <CurrencyDollar size={24} weight="fill" />
+                  RISORSE
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                        <CurrencyDollar size={20} weight="fill" className="text-accent" />
+                        Soldi
+                      </span>
+                      <span className="text-2xl font-bold text-accent">{stats.soldi}€</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-accent transition-all duration-300" style={{ width: `${(stats.soldi / 1000) * 100}%` }} />
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">Max: 1000€</div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                        <Battery size={20} weight="fill" className={stats.stanchezza > 80 ? 'text-destructive' : 'text-muted-foreground'} />
+                        Stanchezza
+                      </span>
+                      <span className={`text-2xl font-bold ${stats.stanchezza > 80 ? 'text-destructive' : 'text-foreground'}`}>{stats.stanchezza}</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className={`h-full transition-all duration-300 ${stats.stanchezza > 80 ? 'bg-destructive' : 'bg-muted-foreground'}`} style={{ width: `${stats.stanchezza}%` }} />
+                    </div>
+                    {stats.stanchezza > 80 && (
+                      <div className="text-xs text-destructive mt-1 font-bold">Troppo stanco! Devi riposare!</div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                        <GraduationCap size={20} weight="fill" className={currentMedia < 6 ? 'text-destructive' : 'text-secondary'} />
+                        Media Scolastica
+                      </span>
+                      <span className={`text-2xl font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-secondary'}`}>{currentMedia.toFixed(1)}</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className={`h-full transition-all duration-300 ${currentMedia < 6 ? 'bg-destructive' : 'bg-secondary'}`} style={{ width: `${(currentMedia / 10) * 100}%` }} />
+                    </div>
+                    {currentMedia < 4 && (
+                      <div className="text-xs text-destructive mt-1 font-bold animate-pulse">BOCCIATO!</div>
+                    )}
+                  </div>
+                </div>
+              </Card>
             </div>
-            <div className="mt-4 pt-4 border-t border-border text-center">
-              <span className="text-muted-foreground">Media totale: </span>
-              <span className={`text-2xl font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-accent'}`}>
-                {currentMedia.toFixed(1)}
-              </span>
-              {currentMedia < 4 && (
-                <span className="ml-3 text-destructive font-bold animate-pulse">BOCCIATO!</span>
-              )}
+
+            <div className="text-center">
+              <Button
+                onClick={() => setShowResetDialog(true)}
+                variant="outline"
+                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              >
+                Reset Gioco (Ctrl+R)
+              </Button>
             </div>
-          </Card>
-        </section>
+          </TabsContent>
 
-        <section aria-labelledby="school-heading">
-          <h2 id="school-heading" className="text-2xl font-bold mb-4 text-secondary">
-            AZIONI SCUOLA
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <ActionButton
-              icon={<Brain size={48} />}
-              label="Studia"
-              shortcut="Ctrl+5"
-              onClick={handleStudia}
-              disabled={stats.stanchezza > 80}
-              variant="secondary"
-              ariaLabel="Studia per aumentare i voti. Costa stanchezza, riduce coattaggine. Tasto rapido: Ctrl+5"
-            />
-            <ActionButton
-              icon={<HandCoins size={48} />}
-              label="Corrompi"
-              shortcut="Ctrl+6"
-              onClick={handleCorrompi}
-              disabled={stats.soldi < 100}
-              variant="default"
-              ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
-            />
-            <ActionButton
-              icon={<Fist size={48} />}
-              label="Minaccia"
-              shortcut="Ctrl+7"
-              onClick={handleMinaccia}
-              variant="destructive"
-              ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
-            />
-            <ActionButton
-              icon={<Battery size={48} />}
-              label="Riposa"
-              shortcut="Ctrl+8"
-              onClick={handleRiposa}
-              variant="secondary"
-              ariaLabel="Riposa per ridurre la stanchezza. Tasto rapido: Ctrl+8"
-            />
-          </div>
-        </section>
+          <TabsContent value="school" className="space-y-6 mt-6">
+            <Card className="p-6 border-2 border-secondary bg-card">
+              <h3 className="text-2xl font-bold mb-6 text-secondary flex items-center gap-2">
+                <GraduationCap size={32} weight="fill" />
+                VOTI SCOLASTICI
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {Object.entries(grades).map(([subject, grade]) => (
+                  <div key={subject} className="text-center p-4 rounded-lg bg-muted/30">
+                    <div className="text-sm text-muted-foreground uppercase font-semibold mb-2">
+                      {subject}
+                    </div>
+                    <div className={`text-4xl font-bold ${grade < 6 ? 'text-destructive' : 'text-secondary'}`}>
+                      {grade}
+                    </div>
+                    <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-300 ${grade < 6 ? 'bg-destructive' : 'bg-secondary'}`}
+                        style={{ width: `${(grade / 10) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 pt-6 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <span className="text-lg text-muted-foreground">Media totale:</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-3xl font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-accent'}`}>
+                      {currentMedia.toFixed(1)}
+                    </span>
+                    {currentMedia < 4 && (
+                      <span className="text-destructive font-bold animate-pulse">BOCCIATO!</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Card>
 
-        <section aria-labelledby="actions-heading">
-          <h2 id="actions-heading" className="text-2xl font-bold mb-4 text-secondary">
-            AZIONI VITA SOCIALE
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
-            <ActionButton
-              icon={<Barbell size={48} />}
-              label="Palestra"
-              shortcut="Ctrl+1"
-              onClick={handlePalestra}
-              disabled={stats.soldi < 20}
-              ariaLabel="Vai in palestra per pompare muscoli. Costa 20 euro e aumenta la stanchezza. Tasto rapido: Ctrl+1"
-            />
-            <ActionButton
-              icon={<Sun size={48} />}
-              label="Lampada"
-              shortcut="Ctrl+2"
-              onClick={handleLampada}
-              disabled={stats.soldi < 30}
-              ariaLabel="Vai alla lampada abbronzante per aumentare la coattaggine. Costa 30 euro. Tasto rapido: Ctrl+2"
-            />
-            <ActionButton
-              icon={<Briefcase size={48} />}
-              label="Lavoro"
-              shortcut="Ctrl+3"
-              onClick={handleLavoro}
-              disabled={stats.muscoli < 40 || stats.stanchezza > 80}
-              ariaLabel="Lavora come buttadifuori. Richiede 40 muscoli. Guadagni soldi e coattaggine. Tasto rapido: Ctrl+3"
-            />
-            <ActionButton
-              icon={<Motorcycle size={48} />}
-              label="Motorino"
-              shortcut="Ctrl+4"
-              onClick={handleMotorino}
-              disabled={stats.soldi < 50}
-              ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
-            />
-            <ActionButton
-              icon={<Heart size={48} />}
-              label="Atipa"
-              shortcut="Ctrl+9"
-              onClick={handleProvarciConAtipa}
-              disabled={stats.soldi < 80}
-              variant="default"
-              ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: Ctrl+9"
-            />
-            <ActionButton
-              icon={<MusicNotes size={48} />}
-              label="Discoteca"
-              shortcut="Ctrl+D"
-              onClick={handleDisco}
-              disabled={stats.soldi < 60 || stats.stanchezza > 70}
-              variant="default"
-              ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: Ctrl+D"
-            />
-            <ActionButton
-              icon={<FilmSlate size={48} />}
-              label="Cinema"
-              shortcut="Ctrl+C"
-              onClick={handleCinema}
-              disabled={stats.soldi < 40}
-              variant="secondary"
-              ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: Ctrl+C"
-            />
-            <ActionButton
-              icon={<ShoppingCart size={48} />}
-              label="Shopping"
-              shortcut="Ctrl+S"
-              onClick={handleShoppingMall}
-              disabled={stats.soldi < 100}
-              variant="default"
-              ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: Ctrl+S"
-            />
-          </div>
-        </section>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="p-6 border-2 border-primary bg-card">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <Brain size={24} weight="fill" />
+                  STUDIO & RIPOSO
+                </h3>
+                <div className="space-y-3">
+                  <ActionButton
+                    icon={<Brain size={48} />}
+                    label="Studia"
+                    shortcut="Ctrl+5"
+                    onClick={handleStudia}
+                    disabled={stats.stanchezza > 80}
+                    variant="secondary"
+                    ariaLabel="Studia per aumentare i voti. Costa stanchezza, riduce coattaggine. Tasto rapido: Ctrl+5"
+                  />
+                  <ActionButton
+                    icon={<Battery size={48} />}
+                    label="Riposa"
+                    shortcut="Ctrl+8"
+                    onClick={handleRiposa}
+                    variant="secondary"
+                    ariaLabel="Riposa per ridurre la stanchezza. Tasto rapido: Ctrl+8"
+                  />
+                </div>
+              </Card>
 
-        <footer className="text-center">
-          <Button
-            onClick={() => setShowResetDialog(true)}
-            variant="outline"
-            className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          >
-            Reset Gioco (Ctrl+R)
-          </Button>
-        </footer>
+              <Card className="p-6 border-2 border-destructive bg-card">
+                <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
+                  <HandCoins size={24} weight="fill" />
+                  METODI ALTERNATIVI
+                </h3>
+                <div className="space-y-3">
+                  <ActionButton
+                    icon={<HandCoins size={48} />}
+                    label="Corrompi"
+                    shortcut="Ctrl+6"
+                    onClick={handleCorrompi}
+                    disabled={stats.soldi < 100}
+                    variant="default"
+                    ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
+                  />
+                  <ActionButton
+                    icon={<Fist size={48} />}
+                    label="Minaccia"
+                    shortcut="Ctrl+7"
+                    onClick={handleMinaccia}
+                    variant="destructive"
+                    ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
+                  />
+                </div>
+                <div className="mt-4 pt-4 border-t border-border text-xs text-destructive">
+                  <p className="font-bold">⚠️ ATTENZIONE: Metodi rischiosi! L'opzione Minaccia ha 30% di probabilità di ESPULSIONE!</p>
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="social" className="space-y-6 mt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="p-6 border-2 border-primary bg-card">
+                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                  <Barbell size={24} weight="fill" />
+                  MIGLIORAMENTO FISICO
+                </h3>
+                <div className="space-y-3">
+                  <ActionButton
+                    icon={<Barbell size={48} />}
+                    label="Palestra"
+                    shortcut="Ctrl+1"
+                    onClick={handlePalestra}
+                    disabled={stats.soldi < 20}
+                    ariaLabel="Vai in palestra per pompare muscoli. Costa 20 euro e aumenta la stanchezza. Tasto rapido: Ctrl+1"
+                  />
+                  <ActionButton
+                    icon={<Sun size={48} />}
+                    label="Lampada"
+                    shortcut="Ctrl+2"
+                    onClick={handleLampada}
+                    disabled={stats.soldi < 30}
+                    ariaLabel="Vai alla lampada abbronzante per aumentare la coattaggine. Costa 30 euro. Tasto rapido: Ctrl+2"
+                  />
+                  <ActionButton
+                    icon={<Motorcycle size={48} />}
+                    label="Motorino"
+                    shortcut="Ctrl+4"
+                    onClick={handleMotorino}
+                    disabled={stats.soldi < 50}
+                    ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
+                  />
+                </div>
+              </Card>
+
+              <Card className="p-6 border-2 border-accent bg-card">
+                <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+                  <Heart size={24} weight="fill" />
+                  SVAGO & RIMORCHIO
+                </h3>
+                <div className="space-y-3">
+                  <ActionButton
+                    icon={<Heart size={48} />}
+                    label="Atipa"
+                    shortcut="Ctrl+9"
+                    onClick={handleProvarciConAtipa}
+                    disabled={stats.soldi < 80}
+                    variant="default"
+                    ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: Ctrl+9"
+                  />
+                  <ActionButton
+                    icon={<MusicNotes size={48} />}
+                    label="Discoteca"
+                    shortcut="Ctrl+D"
+                    onClick={handleDisco}
+                    disabled={stats.soldi < 60 || stats.stanchezza > 70}
+                    variant="default"
+                    ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: Ctrl+D"
+                  />
+                  <ActionButton
+                    icon={<FilmSlate size={48} />}
+                    label="Cinema"
+                    shortcut="Ctrl+C"
+                    onClick={handleCinema}
+                    disabled={stats.soldi < 40}
+                    variant="secondary"
+                    ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: Ctrl+C"
+                  />
+                </div>
+              </Card>
+
+              <Card className="p-6 border-2 border-secondary bg-card">
+                <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
+                  <Briefcase size={24} weight="fill" />
+                  LAVORO & DENARO
+                </h3>
+                <div className="space-y-3">
+                  <ActionButton
+                    icon={<Briefcase size={48} />}
+                    label="Lavoro"
+                    shortcut="Ctrl+3"
+                    onClick={handleLavoro}
+                    disabled={stats.muscoli < 40 || stats.stanchezza > 80}
+                    ariaLabel="Lavora come buttadifuori. Richiede 40 muscoli. Guadagni soldi e coattaggine. Tasto rapido: Ctrl+3"
+                  />
+                  <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
+                    <p className="font-semibold mb-1">Requisiti:</p>
+                    <p>• Muscoli ≥ 40</p>
+                    <p>• Stanchezza {'<'} 80</p>
+                    <p className="mt-2 text-secondary font-semibold">Ricompensa: +80€, +5 Coattaggine</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 border-2 border-accent bg-card">
+                <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+                  <ShoppingCart size={24} weight="fill" />
+                  SHOPPING
+                </h3>
+                <div className="space-y-3">
+                  <ActionButton
+                    icon={<ShoppingCart size={48} />}
+                    label="Shopping"
+                    shortcut="Ctrl+S"
+                    onClick={handleShoppingMall}
+                    disabled={stats.soldi < 100}
+                    variant="default"
+                    ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: Ctrl+S"
+                  />
+                  <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
+                    <p className="font-semibold mb-1">Vestiti nuovi:</p>
+                    <p>• +20 Figosità</p>
+                    <p>• +10 Coattaggine</p>
+                    <p className="mt-2 text-destructive font-semibold">Costo: 100€</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <AlertDialog open={showMetallariEvent} onOpenChange={setShowMetallariEvent}>

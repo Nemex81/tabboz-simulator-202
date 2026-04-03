@@ -8,7 +8,7 @@ Un simulatore di vita da "coatto" anni '90-2000, completamente accessibile e iro
 3. **Accessibile** - Screen reader ready con ARIA live regions, shortcuts da tastiera, e contrasto estremo per ipovedenti
 
 **Complexity Level:** Light Application (multiple features with basic state)
-Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) ma mantiene un'interfaccia semplice basata su scelte e statistiche. Perfetto per sessioni brevi con progressione salvata.
+Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) con un'interfaccia organizzata a schede per facilitare la navigazione. Perfetto per sessioni brevi con progressione salvata.
 
 ## Essential Features
 
@@ -76,11 +76,11 @@ Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) 
 - **Success criteria**: Ogni azione ha un suono distintivo, suoni non si sovrappongono fastidiosamente, volume appropriato (0.1-0.3 gain), durata breve (50-400ms), nessun lag percepibile
 
 ### Navigazione da Tastiera e Screen Reader
-- **Functionality**: Tutti i controlli accessibili via Tab, shortcuts alfanumerici (1-9 per azioni rapide), ARIA live per feedback immediato
-- **Purpose**: Garantire piena giocabilità per utenti ipovedenti o con screen reader
+- **Functionality**: Tutti i controlli accessibili via Tab, shortcuts alfanumerici (1-9 per azioni rapide), ARIA live per feedback immediato. L'interfaccia è organizzata in tre schede principali per ridurre il sovraccarico cognitivo: "Profilo & Status" (statistiche dettagliate e reputazione), "Scuola & Studio" (voti e azioni scolastiche), "Vita Sociale" (tutte le attività sociali organizzate per categoria)
+- **Purpose**: Garantire piena giocabilità per utenti ipovedenti o con screen reader, e migliorare l'usabilità per tutti riducendo la complessità visiva
 - **Trigger**: Sempre attivo
-- **Progression**: Keydown event → Identifica comando → Esegui azione → Annuncio vocale
-- **Success criteria**: Nessun elemento richiede mouse, tutti i cambiamenti annunciati, focus visibile
+- **Progression**: Keydown event → Identifica comando → Esegui azione → Annuncio vocale. Navigazione tra tabs via Tab + Arrow keys
+- **Success criteria**: Nessun elemento richiede mouse, tutti i cambiamenti annunciati, focus visibile, ogni scheda è logicamente organizzata e non sovraffollata
 
 ## Edge Case Handling
 
@@ -133,6 +133,7 @@ Le animazioni servono **feedback immediato** senza distrarre e celebrare i succe
 ## Component Selection
 
 - **Components**:
+  - Tabs (shadcn) - Navigazione principale tra tre sezioni: "Profilo & Status", "Scuola & Studio", "Vita Sociale"
   - Card (shadcn) - Containers per sezioni Statistiche/Scuola/Azioni, con bordi neon via Tailwind `border-primary`
   - Button (shadcn) - Tutte le azioni, customizzati con varianti `neon` (bg-primary text-background) e `danger` (bg-destructive)
   - Alert Dialog (shadcn) - Per conferme reset e game over screen
@@ -143,9 +144,11 @@ Le animazioni servono **feedback immediato** senza distrarre e celebrare i succe
   - Componente custom `StatDisplay` - Mostra singola statistica con icona Phosphor, valore, e barra progress
   - Componente custom `ActionButton` - Button con shortcut key visualizzato e handler keyboard integrato
   - ARIA Live Region - `<div role="status" aria-live="assertive">` per annunci immediati
+  - Layout a Schede - Interfaccia organizzata in 3 schede principali per ridurre il sovraccarico cognitivo
 
 - **States**:
   - Buttons: Default (border-2 neon), Hover (bg-primary + scale-105), Focus (ring-4 ring-primary/50 + outline-offset-4), Disabled (opacity-40 + cursor-not-allowed)
+  - Tabs: Active (bg-primary), Inactive (bg-muted), con transizioni fluide e indicatori visivi chiari
   - Inputs: Stesso pattern, focus ring molto evidente
   - Cards: Subtle glow on hover via `shadow-[0_0_15px_rgba(100,255,100,0.3)]`
 
@@ -167,18 +170,22 @@ Le animazioni servono **feedback immediato** senza distrarre e celebrare i succe
   - Flag - Gara/Street Race
   - ShieldWarning - Bulli/Pericolo
   - Crown - Reputazione/Status
+  - ChartBar - Tab "Profilo & Status"
+  - User - Sezione Caratteristiche
+  - Buildings - Tab "Vita Sociale"
 
 - **Spacing**: 
   - Container padding: `p-6`
-  - Card gaps: `gap-4`
+  - Card gaps: `gap-4` nelle grid, `gap-6` tra sezioni principali
   - Button spacing: `px-6 py-3`
-  - Section margins: `mb-8`
+  - Section margins: `mb-8` ridotto a `mb-6` nelle tabs per compattezza
   - Tutto basato su scale Tailwind (4px increments) per consistenza
 
 - **Mobile**:
   - Stack verticale completo sotto 768px
-  - Statistiche da grid 5-col a 2-col poi a 1-col
-  - Bottoni azioni da grid 4-col a 2-col
+  - Statistiche quick-view da grid 6-col a 2-col
+  - Tab labels cambiano da lunghi ("Profilo & Status") a corti ("Status") su schermi piccoli usando classi responsive
+  - Bottoni azioni restano leggibili con icone grandi
   - Font sizes scalano via `text-base` responsive
   - Touch targets min 44x44px (già garantito da `px-6 py-3` sui Button)
-  - Shortcuts tastiera disabilitati su mobile, sostituiti da tap
+  - Shortcuts tastiera rimangono attivi anche su mobile per utenti con tastiera Bluetooth
