@@ -33,12 +33,16 @@ Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) 
 - **Progression**: Selezione azione → Check condizioni → Esito con flavor text → Update stat
 - **Success criteria**: Ogni azione ha effetti distinti, alcuni richiedono stat minime
 
-### Eventi Casuali (Metallari)
-- **Functionality**: Apparizioni random di "metallari" ostili - puoi scappare (codardo ma sicuro) o combattere (basato su Muscoli)
-- **Purpose**: Elemento di imprevedibilità che premia investimento in Muscoli
-- **Trigger**: Random dopo azioni comuni (20% chance)
-- **Progression**: Notifica evento → Scelta Scappa/Combatti → Calcolo esito (se combatti: check Muscoli) → Conseguenze (perdita Soldi se perdi)
-- **Success criteria**: Probabilità corrette, esiti coerenti con stat
+### Sistema Eventi Casuali Multipli
+- **Functionality**: Quattro tipi di eventi random che possono accadere dopo azioni comuni:
+  1. **Metallari** - Gang ostile che vuole la tua grana (12% chance): Scappa (-10 Coattaggine) o Combatti (richiede Muscoli > 60, +15 Coattaggine +30 Soldi se vinci, altrimenti -50 Soldi -5 Muscoli)
+  2. **Polizia** - Controllo documenti (10% chance): Scappa (richiede Coattaggine > 70, +10 Coattaggine se riesci, altrimenti -100 Soldi -15 Coattaggine) o Dai Mazzetta (50€ per cavartela, altrimenti sequestro tutto e -20 Coattaggine)
+  3. **Gara Motorini** - Sfida street racing (8% chance): Accetta (probabilità basata su Coattaggine 50% + Figosità 30% + Muscoli 20%, se vinci +25 Coattaggine +20 Figosità +150 Soldi, se perdi -20 Figosità -15 Coattaggine -80 Soldi) o Rifiuta (-15 Coattaggine -10 Figosità)
+  4. **Bulli** - Gang scolastica vuole la merenda (6% chance): Resisti (richiede Muscoli > 50, +20 Coattaggine +5 Muscoli se vinci, altrimenti -30 Soldi -10 Coattaggine -5 Muscoli) o Cedi (-20 Soldi -15 Coattaggine)
+- **Purpose**: Aggiungere varietà, suspense e ricompense rischiose che premiano investimento strategico nelle diverse statistiche
+- **Trigger**: Random roll (36% totale di evento) dopo ogni azione sociale (Palestra, Lampada, Lavoro, Motorino)
+- **Progression**: Azione completata → Roll probabilistico → Se evento: mostra dialog modale con dettagli → Scelta A o B → Calcolo esito basato su stat → Applicazione conseguenze → ARIA announcement risultato
+- **Success criteria**: Eventi distribuiti correttamente, probabilità di successo calcolate accuratamente, UI mostra chiaramente requisiti e conseguenze, ogni evento ha flavor text distintivo
 
 ### Sistema di Salvataggio Persistente
 - **Functionality**: Auto-save di tutte le stat e stato gioco ogni cambiamento
@@ -60,9 +64,12 @@ Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) 
 - **Soldi insufficienti** - Azione bloccata con messaggio ARIA live "Non hai abbastanza grana!"
 - **Espulsione da minaccia prof** - 30% random, game over immediato con messaggio ironico
 - **Stanchezza > 100** - Bloccate azioni faticose, richiede riposo
-- **Muscoli bassi vs Metallari** - Alta probabilità perdita combattimento = perdita soldi
-- **Corruzione senza soldi** - Impedita, richiede almeno 50€
+- **Muscoli bassi vs Metallari/Bulli** - Alta probabilità perdita combattimento = perdita soldi e stat
+- **Corruzione senza soldi** - Impedita, richiede almeno 100€
+- **Mazzetta polizia senza soldi** - Conseguenze peggiori (confisca tutto + penalità extra)
+- **Fuga dalla polizia con Coattaggine bassa** - Beccato con multa maggiorata
 - **Reset gioco** - Conferma via dialog accessibile prima di cancellare salvataggio
+- **Eventi multipli sovrapposti** - Sistema previene trigger di eventi durante dialog aperti
 
 ## Design Direction
 
@@ -125,11 +132,16 @@ Le animazioni servono **feedback immediato** senza distrarre e celebrare i succe
   - CurrencyDollar - Soldi
   - Lightning - Coattaggine
   - Brain - Studiare
-  - HandCoins - Corrompere
+  - HandCoins - Corrompere/Mazzette
   - Fist - Minacciare/Combattere
   - Running - Scappare
   - Briefcase - Lavoro
   - Motorcycle - Motorino
+  - Heart - Atipa/Rimorchio
+  - Sparkle - Figosità
+  - SirenLight - Polizia (animated pulse)
+  - Flag - Gara/Street Race
+  - ShieldWarning - Bulli/Pericolo
 
 - **Spacing**: 
   - Container padding: `p-6`

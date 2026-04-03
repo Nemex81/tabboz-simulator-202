@@ -14,7 +14,10 @@ import {
   Fist,
   Running,
   Heart,
-  Sparkle
+  Sparkle,
+  SirenLight,
+  Flag,
+  ShieldWarning
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
@@ -45,6 +48,10 @@ function App() {
   const [showAtipaEvent, setShowAtipaEvent] = useState(false)
   const [atipaName, setAtipaName] = useState('')
   const [atipaSuccessChance, setAtipaSuccessChance] = useState(0)
+  const [showPoliceEvent, setShowPoliceEvent] = useState(false)
+  const [showStreetRaceEvent, setShowStreetRaceEvent] = useState(false)
+  const [showBulliEvent, setShowBulliEvent] = useState(false)
+  const [raceWinChance, setRaceWinChance] = useState(0)
   
   const ariaLiveRef = useRef<HTMLDivElement>(null)
 
@@ -65,10 +72,30 @@ function App() {
   }, [stats, grades])
 
   const triggerRandomEvent = () => {
-    if (randomChance(20)) {
+    const roll = Math.random() * 100
+    
+    if (roll < 12) {
       setShowMetallariEvent(true)
       setCurrentEvent('Incontro con i METALLARI! Vogliono la tua grana!')
       announce('Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!')
+    } else if (roll < 22) {
+      setShowPoliceEvent(true)
+      setCurrentEvent('I POLIZIOTTI ti hanno fermato! Controllo documenti!')
+      announce('Evento casuale: Controllo della POLIZIA!')
+    } else if (roll < 30) {
+      const winChance = Math.min(85, Math.max(15, 
+        (stats.coattaggine * 0.5) + 
+        (stats.figosita * 0.3) + 
+        (stats.muscoli * 0.2)
+      ))
+      setRaceWinChance(Math.round(winChance))
+      setShowStreetRaceEvent(true)
+      setCurrentEvent('Un TAMARRO ti sfida ad una GARA con il motorino!')
+      announce(`Evento casuale: GARA di motorini! Possibilità di vincita: ${Math.round(winChance)}%`)
+    } else if (roll < 36) {
+      setShowBulliEvent(true)
+      setCurrentEvent('I BULLI della scuola ti vogliono rubare la merenda!')
+      announce('Evento casuale: Incontro con i BULLI!')
     }
   }
 
@@ -95,6 +122,104 @@ function App() {
       }))
       announce('Ti hanno FATTO IL CULO! -50 Soldi, -5 Muscoli')
     }
+  }
+
+  const handlePoliceScappa = () => {
+    setShowPoliceEvent(false)
+    if (stats.coattaggine > 70) {
+      setStats((current) => ({
+        ...current,
+        coattaggine: clampStat(current.coattaggine + 10)
+      }))
+      announce('Sei SCAPPATO dai poliziotti! Che COATTO! +10 Coattaggine')
+    } else {
+      setStats((current) => ({
+        ...current,
+        soldi: clampStat(current.soldi - 100, 0, 1000),
+        coattaggine: clampStat(current.coattaggine - 15)
+      }))
+      announce('Ti hanno BECCATO! Multa di 100€! -100 Soldi, -15 Coattaggine')
+    }
+  }
+
+  const handlePoliceCollabora = () => {
+    setShowPoliceEvent(false)
+    if (stats.soldi >= 50) {
+      setStats((current) => ({
+        ...current,
+        soldi: clampStat(current.soldi - 50, 0, 1000)
+      }))
+      announce('Hai dato una MAZZETTA! Ti lasciano andare. -50 Soldi')
+    } else {
+      setStats((current) => ({
+        ...current,
+        soldi: 0,
+        coattaggine: clampStat(current.coattaggine - 20)
+      }))
+      announce('Non hai GRANA per la mazzetta! Ti hanno portato in questura! -Tutti i Soldi, -20 Coattaggine')
+    }
+  }
+
+  const handleStreetRaceAccetta = () => {
+    setShowStreetRaceEvent(false)
+    
+    if (randomChance(raceWinChance)) {
+      setStats((current) => ({
+        ...current,
+        coattaggine: clampStat(current.coattaggine + 25),
+        figosita: clampStat(current.figosita + 20),
+        soldi: clampStat(current.soldi + 150, 0, 1000)
+      }))
+      announce('Hai VINTO la gara! Sei una LEGGENDA! +25 Coattaggine, +20 Figosità, +150 Soldi')
+    } else {
+      setStats((current) => ({
+        ...current,
+        figosita: clampStat(current.figosita - 20),
+        coattaggine: clampStat(current.coattaggine - 15),
+        soldi: clampStat(current.soldi - 80, 0, 1000)
+      }))
+      announce('Hai PERSO la gara! Che SCHIFO! -20 Figosità, -15 Coattaggine, -80 Soldi (scommessa)')
+    }
+  }
+
+  const handleStreetRaceRifiuta = () => {
+    setShowStreetRaceEvent(false)
+    setStats((current) => ({
+      ...current,
+      coattaggine: clampStat(current.coattaggine - 15),
+      figosita: clampStat(current.figosita - 10)
+    }))
+    announce('Hai RIFIUTATO la sfida! Sei un FIFONE! -15 Coattaggine, -10 Figosità')
+  }
+
+  const handleBulliResisti = () => {
+    setShowBulliEvent(false)
+    if (stats.muscoli > 50) {
+      setStats((current) => ({
+        ...current,
+        coattaggine: clampStat(current.coattaggine + 20),
+        muscoli: clampStat(current.muscoli + 5)
+      }))
+      announce('Li hai MENATI! Ora ti RISPETTANO! +20 Coattaggine, +5 Muscoli')
+    } else {
+      setStats((current) => ({
+        ...current,
+        soldi: clampStat(current.soldi - 30, 0, 1000),
+        coattaggine: clampStat(current.coattaggine - 10),
+        muscoli: clampStat(current.muscoli - 5)
+      }))
+      announce('Ti hanno PESTATO! -30 Soldi, -10 Coattaggine, -5 Muscoli')
+    }
+  }
+
+  const handleBulliCedi = () => {
+    setShowBulliEvent(false)
+    setStats((current) => ({
+      ...current,
+      soldi: clampStat(current.soldi - 20, 0, 1000),
+      coattaggine: clampStat(current.coattaggine - 15)
+    }))
+    announce('Hai CEDUTO alla loro prepotenza! Sei un PERDENTE! -20 Soldi, -15 Coattaggine')
   }
 
   const handlePalestra = () => {
@@ -287,7 +412,7 @@ function App() {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (gameOver || showResetDialog || showMetallariEvent || showAtipaEvent) return
+      if (gameOver || showResetDialog || showMetallariEvent || showAtipaEvent || showPoliceEvent || showStreetRaceEvent || showBulliEvent) return
       
       const key = e.key.toLowerCase()
       
@@ -311,7 +436,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, stats, grades])
+  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, stats, grades])
 
   const currentMedia = calculateMedia(grades)
 
@@ -555,6 +680,84 @@ function App() {
             <AlertDialogAction onClick={handleAtipaProva} className="bg-accent border-2">
               <Heart size={24} weight="fill" className="mr-2" />
               PROVA! (Costa 80€)
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showPoliceEvent} onOpenChange={setShowPoliceEvent}>
+        <AlertDialogContent className="border-2 border-secondary">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl text-secondary flex items-center gap-2">
+              <SirenLight size={32} weight="fill" className="text-secondary animate-pulse" />
+              CONTROLLO POLIZIA!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-lg">
+              {currentEvent}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handlePoliceScappa} className="border-2 border-destructive">
+              <Running size={24} className="mr-2" />
+              Scappa! (Serve Coattaggine &gt; 70)
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handlePoliceCollabora} className="bg-secondary border-2">
+              <HandCoins size={24} className="mr-2" />
+              Dai Mazzetta (50€)
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showStreetRaceEvent} onOpenChange={setShowStreetRaceEvent}>
+        <AlertDialogContent className="border-2 border-primary">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl text-primary flex items-center gap-2">
+              <Flag size={32} weight="fill" className="text-primary" />
+              GARA DI MOTORINI!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-lg space-y-2">
+              <p>{currentEvent}</p>
+              <p className="text-primary font-bold">
+                Probabilità di vincita: {raceWinChance}%
+              </p>
+              <p className="text-sm text-muted-foreground">
+                (Basato su Coattaggine, Figosità e Muscoli)
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleStreetRaceRifiuta} className="border-2">
+              <Running size={24} className="mr-2" />
+              Rifiuta (-15 Coattaggine)
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleStreetRaceAccetta} className="bg-primary border-2">
+              <Flag size={24} weight="fill" className="mr-2" />
+              ACCETTA LA SFIDA!
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showBulliEvent} onOpenChange={setShowBulliEvent}>
+        <AlertDialogContent className="border-2 border-destructive">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl text-destructive flex items-center gap-2">
+              <ShieldWarning size={32} weight="fill" className="text-destructive" />
+              INCONTRO CON I BULLI!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-lg">
+              {currentEvent}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleBulliCedi} className="border-2">
+              <HandCoins size={24} className="mr-2" />
+              Cedi (-20 Soldi, -15 Coattaggine)
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulliResisti} className="bg-destructive border-2">
+              <Fist size={24} className="mr-2" />
+              Resisti! (Serve Muscoli &gt; 50)
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
