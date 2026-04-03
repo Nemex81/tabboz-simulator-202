@@ -92,6 +92,13 @@ function App() {
   const ariaLiveRef = useRef<HTMLDivElement>(null)
   const prevReputationRef = useRef<number>(stats.reputazione)
 
+  const announce = (message: string) => {
+    if (ariaLiveRef.current) {
+      ariaLiveRef.current.textContent = message
+    }
+    toast(message)
+  }
+
   const handleSchoolSelection = (selected: SchoolType) => {
     playSound.success()
     setSchoolType(selected)
@@ -101,13 +108,6 @@ function App() {
 
   if (!schoolType) {
     return <SchoolSelection onSelectSchool={handleSchoolSelection} />
-  }
-
-  const announce = (message: string) => {
-    if (ariaLiveRef.current) {
-      ariaLiveRef.current.textContent = message
-    }
-    toast(message)
   }
 
   const consumeAction = () => {
