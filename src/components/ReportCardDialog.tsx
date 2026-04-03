@@ -96,29 +96,46 @@ export function ReportCardDialog({
           </div>
         </div>
 
-        <div className="text-center mb-4">
+        <div className="text-center mb-4 space-y-2">
           {isPassed && !isLastYear && (
-            <div className="text-lg font-bold text-accent">
-              Complimenti! Sei passato alla {getYearName(schoolYear + 1)}!
-            </div>
+            <>
+              <div className="text-lg font-bold text-accent">
+                ⭐ Complimenti! Sei passato alla {getYearName(schoolYear + 1)}! ⭐
+              </div>
+              <div className="text-sm text-muted-foreground">
+                I voti verranno resettati a 6 per il nuovo anno scolastico
+              </div>
+            </>
           )}
           {isPassed && isLastYear && (
-            <div className="text-lg font-bold text-accent">
-              🎉 INCREDIBILE! Hai completato le superiori! Sei una LEGGENDA! 🎉
-            </div>
+            <>
+              <div className="text-2xl font-black text-accent animate-pulse mb-2">
+                🎉 INCREDIBILE! HAI VINTO! 🎉
+              </div>
+              <div className="text-lg font-bold text-accent">
+                Hai completato le superiori! Sei una LEGGENDA del quartiere!
+              </div>
+            </>
           )}
           {!isPassed && (
-            <div className="text-lg font-bold text-destructive">
-              Media sotto il 6! Devi ripetere l'anno! SFIGATO!
-            </div>
+            <>
+              <div className="text-lg font-bold text-destructive">
+                ❌ Media sotto il 6! BOCCIATO! ❌
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {schoolYear === 5 
+                  ? 'Bocciato alla MATURITÀ! Che SFIGA!' 
+                  : 'Dovrai ripetere l\'anno! SFIGATO!'}
+              </div>
+            </>
           )}
         </div>
 
         <AlertDialogFooter>
           <AlertDialogAction onClick={onContinue} className="w-full text-lg py-6">
-            {isPassed && !isLastYear && `Vai alla ${getYearName(schoolYear + 1)}`}
-            {isPassed && isLastYear && 'Completa il Gioco!'}
-            {!isPassed && 'Ripeti l\'Anno'}
+            {isPassed && !isLastYear && `Avanza alla ${getYearName(schoolYear + 1)}`}
+            {isPassed && isLastYear && '🏆 HAI VINTO! 🏆'}
+            {!isPassed && 'Torna al Menu Principale'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

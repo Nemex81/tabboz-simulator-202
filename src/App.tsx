@@ -749,13 +749,23 @@ function App() {
     }
     
     if (reportCardPassed) {
+      const newYear = gameTime.schoolYear.currentYear + 1
+      
       setGameTime((current) => ({
         ...current,
-        schoolYear: calculateNextSchoolYear(current.schoolYear)
+        schoolYear: calculateNextSchoolYear(current.schoolYear),
+        age: current.age + 1
       }))
+      
+      setGrades((current) => ({
+        matematica: 6,
+        italiano: 6,
+        storia: 6,
+        edFisica: 6
+      }))
+      
       playSound.success()
-      const newYear = gameTime.schoolYear.currentYear + 1
-      announce(`Promosso! Ora sei in ${newYear}° superiore!`)
+      announce(`PROMOSSO! Ora sei in ${newYear}° superiore! I voti sono stati resettati.`)
     } else {
       playSound.gameOver()
       setGameOver(true)
@@ -915,6 +925,55 @@ function App() {
               </div>
               <div className="mt-4 pt-4 border-t border-border text-sm text-muted-foreground">
                 <p>La tua reputazione nel quartiere influenza gli eventi casuali e come ti vedono gli altri.</p>
+              </div>
+            </Card>
+
+            <Card className="p-6 border-2 border-accent bg-gradient-to-br from-accent/10 to-primary/10">
+              <div className="flex items-start gap-4">
+                <Trophy size={48} weight="fill" className="text-accent flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-accent mb-2">🎯 OBIETTIVO DEL GIOCO</h3>
+                  <p className="text-foreground mb-3">
+                    Completa tutti e 5 gli anni di scuola superiore e supera la MATURITÀ per vincere!
+                  </p>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 1 ? 'bg-accent' : 'bg-muted'}`} />
+                      <span className={gameTime.schoolYear.currentYear === 1 ? 'text-accent font-bold' : ''}>
+                        1° Superiore (14 anni)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 2 ? 'bg-accent' : 'bg-muted'}`} />
+                      <span className={gameTime.schoolYear.currentYear === 2 ? 'text-accent font-bold' : ''}>
+                        2° Superiore (15 anni)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 3 ? 'bg-accent' : 'bg-muted'}`} />
+                      <span className={gameTime.schoolYear.currentYear === 3 ? 'text-accent font-bold' : ''}>
+                        3° Superiore (16 anni)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 4 ? 'bg-accent' : 'bg-muted'}`} />
+                      <span className={gameTime.schoolYear.currentYear === 4 ? 'text-accent font-bold' : ''}>
+                        4° Superiore (17 anni)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 5 ? 'bg-accent' : 'bg-muted'}`} />
+                      <span className={gameTime.schoolYear.currentYear === 5 ? 'text-accent font-bold' : ''}>
+                        5° Superiore - MATURITÀ (18 anni)
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      ⚠️ <strong>Attenzione:</strong> Se la tua media scende sotto il 6 alla pagella, sarai BOCCIATO e il gioco finirà!
+                    </p>
+                  </div>
+                </div>
               </div>
             </Card>
 

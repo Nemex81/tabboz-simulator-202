@@ -1,4 +1,4 @@
-import { Calendar, Clock, GraduationCap, Cake } from '@phosphor-icons/react'
+import { Calendar, Clock, GraduationCap, Cake, Trophy } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { GameTime } from '@/lib/types'
 import { formatDate, getSchoolYearName, getDaysUntilReportCard } from '@/lib/time-utils'
@@ -12,6 +12,8 @@ export function TimeDisplay({ gameTime }: TimeDisplayProps) {
     gameTime.currentDate,
     gameTime.schoolYear.reportCardDate
   )
+
+  const progressPercentage = (gameTime.schoolYear.currentYear / 5) * 100
 
   return (
     <Card className="p-6 border-2 border-accent bg-card/50">
@@ -43,12 +45,34 @@ export function TimeDisplay({ gameTime }: TimeDisplayProps) {
 
           <div className="flex items-center gap-3">
             <GraduationCap size={32} weight="fill" className="text-primary" />
-            <div>
+            <div className="flex-1">
               <div className="text-sm text-muted-foreground uppercase font-semibold">
                 Anno Scolastico
               </div>
               <div className="text-2xl font-bold text-primary">
                 {getSchoolYearName(gameTime.schoolYear.currentYear)}
+              </div>
+              <div className="mt-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <Trophy size={16} weight="fill" className="text-accent" />
+                  <span className="text-xs text-muted-foreground font-semibold">
+                    Progresso verso la MATURITÀ
+                  </span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-primary via-accent to-secondary transition-all duration-500 neon-glow"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Anno {gameTime.schoolYear.currentYear} di 5 ({Math.round(progressPercentage)}%)
+                </div>
+                {gameTime.schoolYear.currentYear === 5 && (
+                  <div className="text-xs text-accent font-bold mt-1 animate-pulse">
+                    🎯 ULTIMO ANNO! Supera la pagella e VINCI! 🎯
+                  </div>
+                )}
               </div>
             </div>
           </div>

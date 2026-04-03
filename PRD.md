@@ -12,12 +12,12 @@ Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) 
 
 ## Essential Features
 
-### Sistema Scolastico con Corruzione
-- **Functionality**: Gestione di 4 materie (Matematica, Italiano, Storia, Ed. Fisica) con media da 0-10. Se scende sotto 4 = bocciatura (game over)
-- **Purpose**: Core mechanic del gioco - bilanciare studio legittimo vs metodi "alternativi"
-- **Trigger**: Accesso alla sezione "Scuola" dal menu principale
-- **Progression**: Visualizza voti per materia → Scelta azione (Studia/Corrompi/Minaccia) → Calcolo probabilistico esito → Aggiornamento statistiche → ARIA live announcement
-- **Success criteria**: Media calcolata correttamente, eventi di espulsione al 30% per "Minaccia", costi applicati per corruzione
+### Sistema Scolastico con Corruzione e Progressione Annuale
+- **Functionality**: Gestione di 4 materie (Matematica, Italiano, Storia, Ed. Fisica) con media da 0-10. Se scende sotto 4 = bocciatura (game over). Il giocatore inizia in Prima Superiore (età 14) e deve superare 5 anni scolastici per vincere. Ogni anno scolastico va dal 15 settembre al 10 giugno, con pagella finale. Se promosso (media ≥ 6), avanza all'anno successivo con voti resettati a 6. Se supera la pagella di Quinta Superiore, vince il gioco.
+- **Purpose**: Core mechanic del gioco - bilanciare studio legittimo vs metodi "alternativi" mentre si progredisce verso la vittoria finale (diploma di maturità)
+- **Trigger**: Accesso alla sezione "Scuola" dal menu principale, visualizzazione pagella automatica il 10 giugno di ogni anno
+- **Progression**: Visualizza voti per materia → Scelta azione (Studia/Corrompi/Minaccia) → Calcolo probabilistico esito → Aggiornamento statistiche → ARIA live announcement → Al 10 giugno: mostra pagella → Se media ≥ 6: promosso (voti reset a 6, anno +1, età +1) → Se anno 5 e promosso: VITTORIA → Se media < 6: BOCCIATO (game over)
+- **Success criteria**: Media calcolata correttamente, eventi di espulsione al 30% per "Minaccia", costi applicati per corruzione, progressione tra anni funzionante, reset voti dopo promozione, gestione vittoria in Quinta Superiore, UI mostra progresso verso maturità con barra grafica
 
 ### Sistema Statistiche e Progressione
 - **Functionality**: 6 statistiche principali (Coattaggine, Muscoli, Figosità, Soldi, Media Scolastica, Stanchezza) che si influenzano a vicenda, più una settima statistica derivata: **Reputazione**
