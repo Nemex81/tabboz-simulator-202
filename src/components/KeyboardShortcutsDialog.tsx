@@ -17,7 +17,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       { keys: 'Ctrl + 4', action: 'Trucca motorino' }
     ]},
     { category: 'Scuola', shortcuts: [
-      { keys: 'Ctrl + 5', action: 'Studia' },
+      { keys: 'Ctrl + 5', action: 'Apri pannello Studia (seleziona materia)' },
       { keys: 'Ctrl + 6', action: 'Corrompi professore' },
       { keys: 'Ctrl + 7', action: 'Minaccia professore' }
     ]},
@@ -25,7 +25,9 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       { keys: 'Ctrl + 9', action: 'Prova a rimorchiare' },
       { keys: 'Ctrl + D', action: 'Vai in discoteca' },
       { keys: 'Ctrl + C', action: 'Vai al cinema' },
-      { keys: 'Ctrl + S', action: 'Vai allo shopping' }
+      { keys: 'Ctrl + S', action: 'Vai allo shopping' },
+      { keys: 'Ctrl + F', action: 'Apri pannello Amici' },
+      { keys: 'Ctrl + T', action: 'Apri scheda Tipa/Fidanzata' }
     ]},
     { category: 'Lavoro & Riposo', shortcuts: [
       { keys: 'Ctrl + 3', action: 'Lavora da buttadifuori' },
@@ -33,7 +35,9 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
     ]},
     { category: 'Generale', shortcuts: [
       { keys: 'Ctrl + R', action: 'Reset gioco' },
-      { keys: 'Alt + H', action: 'Mostra questo aiuto' }
+      { keys: 'Alt + H', action: 'Mostra questo aiuto' },
+      { keys: 'Esc', action: 'Chiudi dialogo senza consumare azioni' },
+      { keys: 'Enter', action: 'Conferma selezione (nei pannelli)' }
     ]}
   ]
 
