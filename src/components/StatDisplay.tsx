@@ -12,7 +12,8 @@ interface StatDisplayProps {
 }
 
 export function StatDisplay({ icon, label, value, max = 100, color, ariaLabel }: StatDisplayProps) {
-  const percentage = (value / max) * 100
+  const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0
+  const percentage = (safeValue / max) * 100
   
   return (
     <Card className="p-4 border-2 border-primary bg-card neon-glow">
@@ -26,9 +27,9 @@ export function StatDisplay({ icon, label, value, max = 100, color, ariaLabel }:
           </div>
           <div 
             className="text-2xl font-bold text-primary neon-text-glow" 
-            aria-label={ariaLabel || `${label}: ${value}`}
+            aria-label={ariaLabel || `${label}: ${safeValue}`}
           >
-            {value.toFixed(label === 'Media' ? 1 : 0)}
+            {safeValue.toFixed(label === 'Media' ? 1 : 0)}
           </div>
         </div>
       </div>

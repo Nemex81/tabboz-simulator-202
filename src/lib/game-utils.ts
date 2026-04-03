@@ -6,8 +6,10 @@ export const clampStat = (value: number, min: number = 0, max: number = 100): nu
 
 export const calculateMedia = (grades: { [key: string]: number }): number => {
   const values = Object.values(grades)
+  if (values.length === 0) return 0
   const sum = values.reduce((acc, val) => acc + val, 0)
-  return Number((sum / values.length).toFixed(1))
+  const average = sum / values.length
+  return Number(average.toFixed(1))
 }
 
 export const randomChance = (percentage: number): boolean => {
