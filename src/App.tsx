@@ -106,10 +106,6 @@ function App() {
     announce(`Hai scelto: ${selected.toUpperCase()}! Buona fortuna!`)
   }
 
-  if (!schoolType) {
-    return <SchoolSelection onSelectSchool={handleSchoolSelection} />
-  }
-
   const consumeAction = () => {
     setGameTime((current) => ({
       ...current,
@@ -852,7 +848,7 @@ function App() {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (gameOver || showResetDialog || showMetallariEvent || showAtipaEvent || showPoliceEvent || showStreetRaceEvent || showBulliEvent) return
+      if (gameOver || showResetDialog || showMetallariEvent || showAtipaEvent || showPoliceEvent || showStreetRaceEvent || showBulliEvent || !schoolType) return
       
       if (!e.ctrlKey && !e.altKey) return
       
@@ -887,7 +883,11 @@ function App() {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, showReportCard, stats, grades, gameTime])
+  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, showReportCard, stats, grades, gameTime, schoolType])
+
+  if (!schoolType) {
+    return <SchoolSelection onSelectSchool={handleSchoolSelection} />
+  }
 
   const currentMedia = calculateMedia(grades)
 
