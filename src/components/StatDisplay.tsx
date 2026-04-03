@@ -25,15 +25,16 @@ export function StatDisplay({ icon, label, value, max = 100, color, ariaLabel }:
     if (Math.abs(diff) >= 5) {
       setChange(diff)
       setShowChange(true)
+      prevValueRef.current = safeValue
       
       const timer = setTimeout(() => {
         setShowChange(false)
       }, 1500)
       
       return () => clearTimeout(timer)
+    } else {
+      prevValueRef.current = safeValue
     }
-    
-    prevValueRef.current = safeValue
   }, [safeValue])
   
   const isPositiveChange = change > 0

@@ -82,7 +82,8 @@ export const getParentEventByMedia = (media: number, stats: GameStats): SchoolEv
             label: 'Vai alle ripetizioni',
             action: () => ({
               message: 'Hai studiato tanto! +1 voto casuale, -50 Soldi (costo ripetizioni), +30 Stanchezza',
-              statChanges: { soldi: -50, stanchezza: 30 }
+              statChanges: { soldi: -50, stanchezza: 30 },
+              gradeChanges: { subject: 'random', change: 1 }
             })
           },
           {

@@ -173,7 +173,7 @@ function App() {
     }
     
     prevReputationRef.current = newReputation
-  }, [stats.coattaggine, stats.muscoli, stats.figosita, stats.soldi, stats.media])
+  }, [stats.coattaggine, stats.muscoli, stats.figosita, stats.soldi, stats.media, setStats])
 
   useEffect(() => {
     const checkStatus = checkGameOver({ ...stats, media: calculateMedia(grades) })

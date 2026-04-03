@@ -79,21 +79,16 @@ export const calculateNextSchoolYear = (currentSchoolYear: SchoolYear): SchoolYe
 
 export const advanceGameTime = (gameTime: GameTime): GameTime => {
   const newDate = advanceDay(gameTime.currentDate)
-  let newSchoolYear = gameTime.schoolYear
+  let newSchoolYear = { ...gameTime.schoolYear }
   let newAge = gameTime.age
 
   const isInSchoolPeriod = isSchoolPeriod(newDate, newSchoolYear)
   newSchoolYear.isSchoolPeriod = isInSchoolPeriod
 
-  if (compareDates(newDate, { day: 1, month: 1, year: newDate.year }) === 0) {
-    const birthdayMonth = 9
-    const birthdayDay = 1
-    const lastBirthday = { day: birthdayDay, month: birthdayMonth, year: newDate.year - 1 }
-    const nextBirthday = { day: birthdayDay, month: birthdayMonth, year: newDate.year }
-    
-    if (isDateAfterOrEqual(newDate, nextBirthday)) {
-      newAge++
-    }
+  const birthdayMonth = 9
+  const birthdayDay = 1
+  if (compareDates(newDate, { day: birthdayDay, month: birthdayMonth, year: newDate.year }) === 0) {
+    newAge++
   }
 
   return {
