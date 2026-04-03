@@ -91,15 +91,40 @@ export const validateFriends = (friends: unknown): Friend[] => {
     return []
   }
 
-  return friends.filter((friend): friend is Friend => {
-    return (
-      friend &&
-      typeof friend === 'object' &&
-      typeof friend.id === 'string' &&
-      typeof friend.name === 'string' &&
-      typeof friend.legameLevel === 'number'
-    )
-  })
+  const validTypes = ['coatto', 'secchione', 'sportivo', 'ribelle', 'generico']
+
+  return friends
+    .filter((friend): friend is Record<string, unknown> => {
+      return (
+        friend !== null &&
+        typeof friend === 'object' &&
+        typeof (friend as Record<string, unknown>).id === 'string' &&
+        typeof (friend as Record<string, unknown>).name === 'string'
+      )
+    })
+    .map((friend): Friend => {
+      // Migrazione dati legacy: legameLevel (1-10) -> affinita (0-100)
+      const affinita: number =
+        typeof friend.affinita === 'number'
+          ? Math.min(100, Math.max(0, friend.affinita))
+          : typeof friend.legameLevel === 'number'
+          ? Math.min(100, Math.max(0, (friend.legameLevel as number) * 10))
+          : 50
+
+      const type =
+        typeof friend.type === 'string' && validTypes.includes(friend.type as string)
+          ? (friend.type as Friend['type'])
+          : 'generico'
+
+      return {
+        id: friend.id as string,
+        name: friend.name as string,
+        type,
+        affinita,
+        intelligenza: typeof friend.intelligenza === 'number' ? (friend.intelligenza as number) : undefined,
+        unlocked: typeof friend.unlocked === 'boolean' ? (friend.unlocked as boolean) : true
+      }
+    })
 }
 
 export const validateRelationships = (relationships: unknown): Relationship[] => {

@@ -1,11 +1,12 @@
 import { ScheduledExam, SubjectGrades, GameStats, ExamDifficulty } from '@/lib/types'
 import { randomChance, clampStat } from '@/lib/game-utils'
 
+// A3 — Moltiplicatori corretti: brutale ora dà ~1.0 di guadagno netto con int=50 e preparazione
 const DIFFICULTY_MULTIPLIERS: Record<ExamDifficulty, number> = {
   facile: 1.5,
   normale: 1.0,
-  difficile: 0.6,
-  brutale: 0.35
+  difficile: 0.7,
+  brutale: 0.5
 }
 
 export const generateScheduledExam = (subjects: string[]): ScheduledExam => {
@@ -81,11 +82,12 @@ export const calculateExamGrade = (
     }
   }
   
+  // A3 — Penalità ridotte: brutale con preparazione ora premia realmente lo studio
   const diffPenalty = {
-    facile: 0.5,
+    facile: 0.3,
     normale: 0,
-    difficile: -0.5,
-    brutale: -1.0
+    difficile: -0.3,
+    brutale: -0.5
   }[difficulty]
   
   const newGrade = clampStat(currentGrade + gradeChange + diffPenalty, 0, 10)

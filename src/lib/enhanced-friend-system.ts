@@ -1,16 +1,8 @@
-import { GameStats } from '@/lib/types'
+import { GameStats, Friend, FriendType } from '@/lib/types'
 import { randomChance } from '@/lib/game-utils'
 
-export type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle'
-
-export interface EnhancedFriend {
-  id: string
-  name: string
-  type: FriendType
-  affinita: number
-  unlocked: boolean
-  intelligenza?: number
-}
+// Re-export per compatibilità con componenti che importano da qui
+export type { FriendType, Friend as EnhancedFriend }
 
 const ITALIAN_MALE_NAMES = [
   'Davide', 'Mirko', 'Cristian', 'Fabio', 'Luca', 'Kevin', 'Daniele',
@@ -18,7 +10,7 @@ const ITALIAN_MALE_NAMES = [
   'Stefano', 'Giovanni', 'Francesco', 'Riccardo', 'Tommaso', 'Federico', 'Paolo'
 ]
 
-export const generateRandomEnhancedFriend = (): EnhancedFriend => {
+export const generateRandomEnhancedFriend = (): Friend => {
   const name = ITALIAN_MALE_NAMES[Math.floor(Math.random() * ITALIAN_MALE_NAMES.length)]
   const types: FriendType[] = ['coatto', 'secchione', 'sportivo', 'ribelle']
   const type = types[Math.floor(Math.random() * types.length)]
@@ -59,7 +51,7 @@ export interface FriendAction {
   description: string
   cost: number
   effects: string
-  requirements: (stats: GameStats, friend: EnhancedFriend) => { canDo: boolean; reason?: string }
+  requirements: (stats: GameStats, friend: Friend) => { canDo: boolean; reason?: string }
   compatibleTypes?: FriendType[]
 }
 
@@ -159,7 +151,7 @@ export const FRIEND_ACTIONS: FriendAction[] = [
 export const applyFriendActionEffects = (
   actionId: string,
   stats: GameStats,
-  friend: EnhancedFriend
+  friend: Friend
 ): {
   newStats: Partial<GameStats>
   newAffinita: number
@@ -173,7 +165,7 @@ export const applyFriendActionEffects = (
   const newStats: Partial<GameStats> = {}
   let newAffinita = friend.affinita
   let message = ''
-  
+
   switch (actionId) {
     case 'esci':
       newStats.coattaggine = (stats.coattaggine || 0) + 10

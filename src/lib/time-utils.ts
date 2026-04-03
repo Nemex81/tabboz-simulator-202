@@ -1,4 +1,4 @@
-import { GameDate, GameTime, SchoolYear } from '@/lib/types'
+import { GameDate, GameTime, SchoolYear, DayPhase, DayType, DayPhaseConfig, GameTimeV2 } from '@/lib/types'
 
 const MONTHS = [
   'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -143,3 +143,108 @@ export const shouldReceivePaghetta = (currentDate: GameDate, lastPaghettaDate: G
   
   return isSaturday(currentDate) && currentWeek !== lastWeek
 }
+
+// ─── Fasce Orarie (Fase B) ──────────────────────────────────────────────────
+
+/** Classifica il giorno rispetto a festività italiane fisse, sabato, domenica. */
+export const getDayType = (date: GameDate): DayType => {
+  const jsDate = new Date(date.year, date.month - 1, date.day)
+  const dow = jsDate.getDay() // 0=Dom, 6=Sab
+
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const key = `${date.year}-${pad(date.month)}-${pad(date.day)}`
+
+  const festivita = [
+    `${date.year}-01-01`, // Capodanno
+    `${date.year}-01-06`, // Epifania
+    `${date.year}-04-25`, // Liberazione
+    `${date.year}-05-01`, // Festa del Lavoro
+    `${date.year}-06-02`, // Repubblica
+    `${date.year}-08-15`, // Ferragosto
+    `${date.year}-11-01`, // Ognissanti
+    `${date.year}-12-08`, // Immacolata
+    `${date.year}-12-25`, // Natale
+    `${date.year}-12-26`, // Santo Stefano
+  ]
+
+  if (festivita.includes(key)) return 'festivo'
+  if (dow === 0) return 'domenica'
+  if (dow === 6) return 'sabato'
+  return 'feriale'
+}
+
+/** Sequenza fissa delle fasi in un giorno. */
+export const PHASE_SEQUENCE: DayPhase[] = ['mattina', 'pomeriggio', 'sera', 'notte']
+
+/** Configurazione statica delle fasce per ogni combinazione (DayPhase, DayType). */
+export const DAY_PHASE_CONFIG: Record<DayType, Record<DayPhase, DayPhaseConfig>> = {
+  feriale: {
+    mattina:    { label: 'Mattina',    timeRange: '07:00–13:00', maxActions: 2, energyCost: 5,  nightRecovery: 0 },
+    pomeriggio: { label: 'Pomeriggio', timeRange: '13:00–18:00', maxActions: 2, energyCost: 8,  nightRecovery: 0 },
+    sera:       { label: 'Sera',       timeRange: '18:00–23:00', maxActions: 1, energyCost: 10, nightRecovery: 0 },
+    notte:      { label: 'Notte',      timeRange: '23:00–07:00', maxActions: 0, energyCost: 0,  nightRecovery: -20 },
+  },
+  sabato: {
+    mattina:    { label: 'Mattina',    timeRange: '08:00–13:00', maxActions: 2, energyCost: 5,  nightRecovery: 0 },
+    pomeriggio: { label: 'Pomeriggio', timeRange: '13:00–19:00', maxActions: 3, energyCost: 8,  nightRecovery: 0 },
+    sera:       { label: 'Sera',       timeRange: '19:00–24:00', maxActions: 2, energyCost: 10, nightRecovery: 0 },
+    notte:      { label: 'Notte',      timeRange: '00:00–08:00', maxActions: 0, energyCost: 0,  nightRecovery: -25 },
+  },
+  domenica: {
+    mattina:    { label: 'Mattina',    timeRange: '09:00–13:00', maxActions: 1, energyCost: 5,  nightRecovery: 0 },
+    pomeriggio: { label: 'Pomeriggio', timeRange: '13:00–18:00', maxActions: 2, energyCost: 8,  nightRecovery: 0 },
+    sera:       { label: 'Sera',       timeRange: '18:00–22:00', maxActions: 1, energyCost: 10, nightRecovery: 0 },
+    notte:      { label: 'Notte',      timeRange: '22:00–09:00', maxActions: 0, energyCost: 0,  nightRecovery: -30 },
+  },
+  festivo: {
+    mattina:    { label: 'Mattina',    timeRange: '09:00–13:00', maxActions: 1, energyCost: 5,  nightRecovery: 0 },
+    pomeriggio: { label: 'Pomeriggio', timeRange: '13:00–18:00', maxActions: 2, energyCost: 8,  nightRecovery: 0 },
+    sera:       { label: 'Sera',       timeRange: '18:00–22:00', maxActions: 1, energyCost: 10, nightRecovery: 0 },
+    notte:      { label: 'Notte',      timeRange: '22:00–09:00', maxActions: 0, energyCost: 0,  nightRecovery: -30 },
+  },
+}
+
+/**
+ * Avanza alla fase successiva del giorno.
+ * Se la fase successiva è 'mattina' avanza anche il giorno.
+ */
+export const advancePhase = (gameTime: GameTimeV2): GameTimeV2 => {
+  const currentIdx = PHASE_SEQUENCE.indexOf(gameTime.currentPhase)
+  const nextIdx = (currentIdx + 1) % PHASE_SEQUENCE.length
+  const nextPhase = PHASE_SEQUENCE[nextIdx]
+
+  // Fine del giorno: passa a mattina del giorno successivo
+  if (nextPhase === 'mattina') {
+    const newGameTime = advanceGameTime(gameTime) // avanza la data base
+    const newDayType = getDayType(newGameTime.currentDate)
+    const cfg = DAY_PHASE_CONFIG[newDayType]['mattina']
+    return {
+      ...newGameTime,
+      currentPhase: 'mattina',
+      dayType: newDayType,
+      phaseActionsRemaining: cfg.maxActions,
+    }
+  }
+
+  // Stessa giornata, fase successiva
+  const cfg = DAY_PHASE_CONFIG[gameTime.dayType][nextPhase]
+  return {
+    ...gameTime,
+    currentPhase: nextPhase,
+    phaseActionsRemaining: cfg.maxActions,
+  }
+}
+
+/** Costruisce un GameTimeV2 da un GameTime esistente (migrazione). */
+export const toGameTimeV2 = (gt: GameTime): GameTimeV2 => {
+  const dayType = getDayType(gt.currentDate)
+  const phase: DayPhase = 'mattina'
+  const cfg = DAY_PHASE_CONFIG[dayType][phase]
+  return {
+    ...gt,
+    currentPhase: phase,
+    dayType,
+    phaseActionsRemaining: cfg.maxActions,
+  }
+}
+

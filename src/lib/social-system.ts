@@ -1,4 +1,4 @@
-import { Friend, Relationship, GameStats } from '@/lib/types'
+import { Friend, Relationship, GameStats, FriendType } from '@/lib/types'
 import { randomChance } from '@/lib/game-utils'
 
 export const FRIEND_NAMES = [
@@ -13,21 +13,23 @@ export const GIRL_NAMES = [
 
 export const generateRandomFriend = (): Friend => {
   const name = FRIEND_NAMES[Math.floor(Math.random() * FRIEND_NAMES.length)]
-  const specialties = [
-    'Studia tanto',
-    'È bravo in palestra',
-    'Ha tanta grana',
-    'È un coatto',
-    'È super figo',
-    'È un fenomeno'
-  ]
-  
+  const friendTypes: FriendType[] = ['coatto', 'secchione', 'sportivo', 'ribelle']
+  const type = friendTypes[Math.floor(Math.random() * friendTypes.length)]
+
+  let intelligenza = Math.floor(Math.random() * 60) + 20
+  if (type === 'secchione') {
+    intelligenza = Math.floor(Math.random() * 30) + 70
+  } else if (type === 'ribelle' || type === 'coatto') {
+    intelligenza = Math.floor(Math.random() * 30) + 20
+  }
+
   return {
     id: `friend_${Date.now()}_${Math.random()}`,
     name,
-    legameLevel: 1,
-    intelligenza: Math.floor(Math.random() * 60) + 20,
-    specialty: specialties[Math.floor(Math.random() * specialties.length)]
+    type,
+    affinita: 50,
+    intelligenza,
+    unlocked: true
   }
 }
 

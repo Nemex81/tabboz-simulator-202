@@ -64,7 +64,7 @@ Tutto il codice usa `Math.random()` direttamente. Questo rende impossibile ripro
 
 Ordine di esecuzione consigliato prima di aggiungere nuove funzionalità.
 
-### Priorità 1 — Guardia Centralizzata per i Soldi
+### - [x] Priorità 1 — Guardia Centralizzata per i Soldi
 
 **File coinvolti**: `src/lib/game-utils.ts`, `src/lib/enhanced-friend-system.ts`, `src/App.tsx`
 
@@ -92,7 +92,7 @@ export const spendMoney = (
 
 Tutti i punti del codice che sottraggono soldi devono passare per questa funzione. I pulsanti in JSX devono avere `disabled={stats.soldi < COSTO}` con `aria-label` descrittivo.
 
-### Priorità 2 — Consolidare il Modello Friend
+### - [x] Priorità 2 — Consolidare il Modello Friend
 
 **File coinvolti**: `src/lib/types.ts`, `src/lib/social-system.ts`, `src/lib/enhanced-friend-system.ts`
 
@@ -113,7 +113,7 @@ export interface Friend {
 
 Rimuovere `EnhancedFriend` da `enhanced-friend-system.ts` e aggiornare tutti i riferimenti.
 
-### Priorità 3 — Fix Bilanciamento calculateExamGrade
+### - [x] Priorità 3 — Fix Bilanciamento calculateExamGrade
 
 **File coinvolti**: `src/lib/exam-system.ts`
 
@@ -134,7 +134,7 @@ const diffPenalty = { facile: 0.3, normale: 0, difficile: -0.3, brutale: -0.5 }
 Con intelligenza=50 e preparazione, un esame brutale darà ora:
 `2 * 1.5 * 0.5 - 0.5 = 1.0` → guadagno reale e sensato.
 
-### Priorità 4 — Refactor App.tsx in Custom Hook
+### - [x] Priorità 4 — Refactor App.tsx in Custom Hook
 
 **File da creare**:
 - `src/hooks/useGameTime.ts` — gestione tempo e fasce orarie
@@ -144,7 +144,7 @@ Con intelligenza=50 e preparazione, un esame brutale darà ora:
 
 `App.tsx` diventa un orchestratore che monta i hook e passa le prop ai componenti. Non contiene logica di dominio.
 
-### Priorità 5 — Seed Random
+### - [x] Priorità 5 — Seed Random
 
 **File coinvolti**: `src/lib/game-utils.ts`, `src/lib/types.ts`
 
@@ -167,7 +167,7 @@ export const randomChance = (percentage: number): boolean => {
 
 Il seed viene generato una volta alla creazione della partita (`Date.now()`) e salvato nello storage. Ogni partita è ora riproducibile.
 
-### Priorità 6 — Memoizzazione Componenti
+### - [ ] Priorità 6 — Memoizzazione Componenti
 
 **File coinvolti**: `src/components/` (pannelli statistiche, dialog stabili)
 
@@ -424,35 +424,35 @@ const [phaseActionsRemaining, setPhaseActionsRemaining] = useState<number>(2)
 
 ### Fase A — Stabilizzazione (da fare prima di tutto)
 
-| # | Intervento | File | Priorità |
-|---|---|---|---|
-| A1 | Guardia centralizzata `spendMoney()` | `game-utils.ts`, `enhanced-friend-system.ts`, `App.tsx` | 🔴 Alta |
-| A2 | Consolidare modello `Friend` (rimuovi `EnhancedFriend`) | `types.ts`, `social-system.ts`, `enhanced-friend-system.ts` | 🔴 Alta |
-| A3 | Fix bilanciamento `calculateExamGrade` | `exam-system.ts` | 🟡 Media |
-| A4 | Refactor `App.tsx` in custom hook | `src/hooks/` (nuovi file) | 🔴 Alta |
-| A5 | Seed random con LCG | `game-utils.ts`, `types.ts` | 🟡 Media |
+| Stato | # | Intervento | File | Priorità |
+|---|---|---|---|---|
+| - [x] | A1 | Guardia centralizzata `spendMoney()` | `game-utils.ts`, `enhanced-friend-system.ts`, `App.tsx` | 🔴 Alta |
+| - [x] | A2 | Consolidare modello `Friend` (rimuovi `EnhancedFriend`) | `types.ts`, `social-system.ts`, `enhanced-friend-system.ts` | 🔴 Alta |
+| - [x] | A3 | Fix bilanciamento `calculateExamGrade` | `exam-system.ts` | 🟡 Media |
+| - [x] | A4 | Refactor `App.tsx` in custom hook | `src/hooks/` (nuovi file) | 🔴 Alta |
+| - [x] | A5 | Seed random con LCG | `game-utils.ts`, `types.ts` | 🟡 Media |
 
 ### Fase B — Sistema Fasce Orarie
 
-| # | Intervento | File | Note |
-|---|---|---|---|
-| B1 | Aggiungi tipi `DayPhase`, `DayType`, `DayPhaseConfig`, `GameTimeV2` | `types.ts` | Prerequisito di tutto |
-| B2 | Aggiungi `getDayType()` e `DAY_PHASE_CONFIG` | `time-utils.ts` | Non rompe niente di esistente |
-| B3 | Implementa `advancePhase()` | `time-utils.ts` | Sostituisce `advanceDay` nel flusso |
-| B4 | Aggiungi `EventConstraint` e vincoli agli eventi esistenti | `types.ts`, `school-events.ts` | Filtra eventi per contesto |
-| B5 | Crea `phase-actions.ts` con pool azioni per fascia | `src/lib/phase-actions.ts` | Nuovo file |
-| B6 | Integra in `App.tsx` (o hook `useGameTime`) | `App.tsx` / `useGameTime.ts` | Solo dopo A4 |
-| B7 | Evento speciale "Ansia del Lunedì" | `school-events.ts` | Dopo B4 |
-| B8 | UI: mostra fascia oraria corrente e azioni disponibili filtrate | `src/components/` | Ultimo step |
+| Stato | # | Intervento | File | Note |
+|---|---|---|---|---|
+| - [x] | B1 | Aggiungi tipi `DayPhase`, `DayType`, `DayPhaseConfig`, `GameTimeV2` | `types.ts` | Prerequisito di tutto |
+| - [x] | B2 | Aggiungi `getDayType()` e `DAY_PHASE_CONFIG` | `time-utils.ts` | Non rompe niente di esistente |
+| - [x] | B3 | Implementa `advancePhase()` | `time-utils.ts` | Sostituisce `advanceDay` nel flusso |
+| - [x] | B4 | Aggiungi `EventConstraint` e vincoli agli eventi esistenti | `types.ts`, `school-events.ts` | Filtra eventi per contesto |
+| - [x] | B5 | Crea `phase-actions.ts` con pool azioni per fascia | `src/lib/phase-actions.ts` | Nuovo file |
+| - [x] | B6 | Integra in `App.tsx` (o hook `useGameTime`) | `App.tsx` / `useGameTime.ts` | Solo dopo A4 |
+| - [x] | B7 | Evento speciale "Ansia del Lunedì" | `school-events.ts` | Dopo B4 |
+| - [x] | B8 | UI: mostra fascia oraria corrente e azioni disponibili filtrate | `src/components/` | Ultimo step |
 
 ### Fase C — Ottimizzazioni Performance e UX
 
-| # | Intervento | File | Note |
-|---|---|---|---|
-| C1 | `React.memo` sui pannelli statistiche | `src/components/` | Dopo A4 |
-| C2 | `React.lazy` per dialog poco frequenti | `src/components/` | Dopo A4 |
-| C3 | Dashboard riassuntiva con grafici (TanStack Query + lib grafici già installate) | Nuovo componente | Ultima priorità |
-| C4 | Feedback visivi per azioni bloccate (tooltip con requisiti) | `src/components/` | Dopo B8 |
+| Stato | # | Intervento | File | Note |
+|---|---|---|---|---|
+| - [x] | C1 | `React.memo` sui pannelli statistiche | `src/components/` | Dopo A4 |
+| - [x] | C2 | `React.lazy` per dialog poco frequenti | `src/components/` | Dopo A4 |
+| - [x] | C3 | Dashboard riassuntiva con grafici (TanStack Query + lib grafici già installate) | Nuovo componente | Ultima priorità |
+| - [x] | C4 | Feedback visivi per azioni bloccate (tooltip con requisiti) | `src/components/` | Dopo B8 |
 
 ---
 

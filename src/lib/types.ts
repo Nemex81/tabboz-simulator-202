@@ -19,12 +19,15 @@ export type ReputationLevel =
 
 export type SchoolType = 'tecnico' | 'agraria' | 'artistico'
 
+export type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
+
 export interface Friend {
   id: string
   name: string
-  legameLevel: number
+  type: FriendType
+  affinita: number
   intelligenza?: number
-  specialty?: string
+  unlocked: boolean
 }
 
 export interface Relationship {
@@ -108,6 +111,37 @@ export interface GameTime {
   age: number
   lastPaghettaDate?: GameDate
 }
+
+// ─── Fasce Orarie (Fase B) ──────────────────────────────────────────────────
+
+export type DayPhase = 'mattina' | 'pomeriggio' | 'sera' | 'notte'
+
+export type DayType = 'feriale' | 'sabato' | 'domenica' | 'festivo'
+
+export interface DayPhaseConfig {
+  label: string
+  timeRange: string
+  maxActions: number
+  energyCost: number   // stanchezza aggiunta per azione
+  nightRecovery: number // riduzione stanchezza durante la notte (negativo = recupero)
+}
+
+/** Estensione di GameTime con supporto fasce orarie. Compatibile con GameTime. */
+export interface GameTimeV2 extends GameTime {
+  currentPhase: DayPhase
+  dayType: DayType
+  phaseActionsRemaining: number
+}
+
+export interface EventConstraint {
+  allowedPhases: DayPhase[]
+  allowedDayTypes: DayType[]
+  requiresSchoolPeriod?: boolean
+  minSchoolYear?: number
+  blockedWhenExhausted?: boolean
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export type ExamDifficulty = 'facile' | 'normale' | 'difficile' | 'brutale'
 

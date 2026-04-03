@@ -1,14 +1,23 @@
 import React from 'react'
 import { Friend } from '@/lib/types'
 import { Card } from '@/components/ui/card'
-import { UserCircle, Brain, Star } from '@phosphor-icons/react'
+import { UserCircle, Brain, Lightning, Barbell, Fist, User } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+
+const FRIEND_TYPE_LABELS: Record<Friend['type'], string> = {
+  coatto: 'COATTO',
+  secchione: 'SECCHIONE',
+  sportivo: 'SPORTIVO',
+  ribelle: 'RIBELLE',
+  generico: 'GENERICO'
+}
 
 interface FriendsPanelProps {
   friends: Friend[]
 }
 
-export function FriendsPanel({ friends }: FriendsPanelProps) {
+export const FriendsPanel = React.memo(function FriendsPanel({ friends }: FriendsPanelProps) {
   if (friends.length === 0) {
     return (
       <Card className="p-6 border-2 border-muted bg-card/50">
@@ -39,16 +48,15 @@ export function FriendsPanel({ friends }: FriendsPanelProps) {
                   <UserCircle size={24} weight="fill" className="text-accent" />
                   <span className="font-bold text-lg">{friend.name}</span>
                   <Badge variant="outline" className="ml-auto">
-                    Livello {friend.legameLevel}
+                    {FRIEND_TYPE_LABELS[friend.type]}
                   </Badge>
                 </div>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  {friend.specialty && (
-                    <div className="flex items-center gap-2">
-                      <Star size={16} weight="fill" className="text-accent" />
-                      <span>{friend.specialty}</span>
-                    </div>
-                  )}
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Affinità</span>
+                    <Progress value={friend.affinita} className="flex-1 h-1.5" />
+                    <span className="text-xs font-mono">{friend.affinita}</span>
+                  </div>
                   {friend.intelligenza && friend.intelligenza > 60 && (
                     <div className="flex items-center gap-2">
                       <Brain size={16} weight="fill" className="text-primary" />
@@ -65,4 +73,4 @@ export function FriendsPanel({ friends }: FriendsPanelProps) {
       </div>
     </Card>
   )
-}
+})

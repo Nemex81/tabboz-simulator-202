@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 
@@ -11,18 +12,20 @@ interface ActionButtonProps {
   disabled?: boolean
   variant?: 'default' | 'destructive' | 'secondary'
   ariaLabel?: string
+  blockedReason?: string
 }
 
-export function ActionButton({ 
+export const ActionButton = React.memo(function ActionButton({ 
   icon, 
   label, 
   shortcut, 
   onClick, 
   disabled = false, 
   variant = 'default',
-  ariaLabel 
+  ariaLabel,
+  blockedReason
 }: ActionButtonProps) {
-  return (
+  const buttonContent = (
     <motion.div
       whileHover={{ scale: disabled ? 1 : 1.05 }}
       whileTap={{ scale: disabled ? 1 : 0.95 }}
@@ -62,4 +65,21 @@ export function ActionButton({
       </Button>
     </motion.div>
   )
-}
+
+  if (disabled && blockedReason) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="cursor-not-allowed">{buttonContent}</span>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs text-center">
+            {blockedReason}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
+  return buttonContent
+})

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { 
   Lightning, 
@@ -15,6 +15,7 @@ import {
   Running,
   Heart,
   Sparkle,
+  Clock,
   SirenLight,
   Flag,
   ShieldWarning,
@@ -34,15 +35,19 @@ import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
 import { ActionButton } from '@/components/ActionButton'
 import { TimeDisplay } from '@/components/TimeDisplay'
-import { ReportCardDialog } from '@/components/ReportCardDialog'
+// Dialog poco frequenti caricati in lazy per ridurre il bundle iniziale
+const ReportCardDialog = lazy(() => import('@/components/ReportCardDialog').then(m => ({ default: m.ReportCardDialog })))
+const SchoolEventDialog = lazy(() => import('@/components/SchoolEventDialog').then(m => ({ default: m.SchoolEventDialog })))
+const KeyboardShortcutsDialog = lazy(() => import('@/components/KeyboardShortcutsDialog').then(m => ({ default: m.KeyboardShortcutsDialog })))
+const SubjectSelectionDialog = lazy(() => import('@/components/SubjectSelectionDialog').then(m => ({ default: m.SubjectSelectionDialog })))
+// Pannelli social caricati in lazy (tab non visibile all'avvio)
+const FriendsPanel = lazy(() => import('@/components/FriendsPanel').then(m => ({ default: m.FriendsPanel })))
+const GirlfriendPanel = lazy(() => import('@/components/GirlfriendPanel').then(m => ({ default: m.GirlfriendPanel })))
+const RelationshipsPanel = lazy(() => import('@/components/RelationshipsPanel').then(m => ({ default: m.RelationshipsPanel })))
+const ExamsPanel = lazy(() => import('@/components/ExamsPanel').then(m => ({ default: m.ExamsPanel })))
+// Dashboard lazy (tab nascosto all'avvio)
+const StatsDashboard = lazy(() => import('@/components/StatsDashboard').then(m => ({ default: m.StatsDashboard })))
 import { SchoolSelection } from '@/components/SchoolSelection'
-import { SchoolEventDialog } from '@/components/SchoolEventDialog'
-import { FriendsPanel } from '@/components/FriendsPanel'
-import { GirlfriendPanel } from '@/components/GirlfriendPanel'
-import { RelationshipsPanel } from '@/components/RelationshipsPanel'
-import { ExamsPanel } from '@/components/ExamsPanel'
-import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
-import { SubjectSelectionDialog } from '@/components/SubjectSelectionDialog'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -57,6 +62,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam } from '@/lib/types'
+import { useGameStats } from '@/hooks/useGameStats'
+import { useGameTime } from '@/hooks/useGameTime'
+import { useEventEngine } from '@/hooks/useEventEngine'
+import { useGameActions } from '@/hooks/useGameActions'
 import { Ragazza, generateRandomGirlfriend, performGirlfriendAction, shouldGirlfriendBreakup } from '@/lib/girlfriend-system'
 import { 
   validateStats, 
@@ -105,997 +114,150 @@ import {
 
 function App() {
   const [rawSchoolType, setRawSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
-  const [rawStats, setRawStats] = useKV<GameStats>('tabboz-stats', DEFAULT_GAME_STATE.stats)
   const [rawGrades, setRawGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
-  const [rawGameTime, setRawGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
   const [rawFriends, setRawFriends] = useKV<Friend[]>('tabboz-friends', [])
   const [rawRelationships, setRawRelationships] = useKV<Relationship[]>('tabboz-relationships', [])
-  const [rawScheduledExams, setRawScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
   const [rawGirlfriend, setRawGirlfriend] = useKV<Ragazza | null>('tabboz-girlfriend', null)
-  
+
   const schoolType = validateSchoolType(rawSchoolType)
-  const stats = validateStats(rawStats)
   const grades = validateGrades(rawGrades, schoolType)
-  const gameTime = validateGameTime(rawGameTime)
   const friends = validateFriends(rawFriends)
   const relationships = validateRelationships(rawRelationships)
-  const scheduledExams = validateScheduledExams(rawScheduledExams)
   const girlfriend = rawGirlfriend
-  
+
   const setSchoolType = setRawSchoolType
-  const setStats = setRawStats
   const setGrades = setRawGrades
-  const setGameTime = setRawGameTime
   const setFriends = setRawFriends
   const setRelationships = setRawRelationships
-  const setScheduledExams = setRawScheduledExams
   const setGirlfriend = setRawGirlfriend
-  
+
   const [gameOver, setGameOver] = useState(false)
   const [gameOverReason, setGameOverReason] = useState('')
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [showReportCard, setShowReportCard] = useState(false)
   const [reportCardPassed, setReportCardPassed] = useState(false)
   const [gameWon, setGameWon] = useState(false)
-  const [currentEvent, setCurrentEvent] = useState<string>('')
-  const [showMetallariEvent, setShowMetallariEvent] = useState(false)
-  const [showAtipaEvent, setShowAtipaEvent] = useState(false)
-  const [atipaName, setAtipaName] = useState('')
-  const [atipaSuccessChance, setAtipaSuccessChance] = useState(0)
-  const [showPoliceEvent, setShowPoliceEvent] = useState(false)
-  const [showStreetRaceEvent, setShowStreetRaceEvent] = useState(false)
-  const [showBulliEvent, setShowBulliEvent] = useState(false)
-  const [raceWinChance, setRaceWinChance] = useState(0)
   const [schoolEvent, setSchoolEvent] = useState<SchoolEvent | null>(null)
   const [showSchoolEvent, setShowSchoolEvent] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showSubjectDialog, setShowSubjectDialog] = useState(false)
-  
-  const ariaLiveRef = useRef<HTMLDivElement>(null)
-  const prevReputationRef = useRef<number>(stats.reputazione)
 
-  const announce = (message: string) => {
+  const ariaLiveRef = useRef<HTMLDivElement>(null)
+
+  const announce = useCallback((message: string) => {
     if (ariaLiveRef.current) {
       ariaLiveRef.current.textContent = message
     }
     toast(message)
-  }
+  }, [])
+
+  // --- Custom Hooks ---
+  const { stats, setStats } = useGameStats(announce)
+
+  const {
+    gameTime, setGameTime, scheduledExams, setScheduledExams,
+    consumeAction, advanceToNextDay,
+    currentPhase, dayType, phaseActionsRemaining, advancePhaseOnly,
+  } = useGameTime({
+    grades,
+    stats,
+    schoolType,
+    setStats,
+    setReportCardPassed,
+    setShowReportCard,
+    setGameWon,
+    setSchoolEvent,
+    setShowSchoolEvent,
+    announce
+  })
+
+  const events = useEventEngine({
+    stats,
+    setStats,
+    friends,
+    setFriends,
+    relationships,
+    setRelationships,
+    girlfriend,
+    setGirlfriend,
+    gameTime,
+    consumeAction,
+    announce
+  })
+
+  const actions = useGameActions({
+    stats,
+    setStats,
+    grades,
+    setGrades,
+    gameTime,
+    schoolType,
+    scheduledExams,
+    setScheduledExams,
+    friends,
+    relationships,
+    setRelationships,
+    girlfriend,
+    setGirlfriend,
+    setGameOver,
+    setGameOverReason,
+    consumeAction,
+    announce,
+    triggerRandomEvent: events.triggerRandomEvent,
+    checkForNewFriend: events.checkForNewFriend,
+    checkForNewRelationship: events.checkForNewRelationship,
+    checkForNewGirlfriend: events.checkForNewGirlfriend,
+    setShowSubjectDialog
+  })
+
+  // Destructure event engine results per compatibilità con JSX esistente
+  const {
+    showMetallariEvent, setShowMetallariEvent,
+    showAtipaEvent, setShowAtipaEvent,
+    atipaName, atipaSuccessChance,
+    showPoliceEvent, setShowPoliceEvent,
+    showStreetRaceEvent, setShowStreetRaceEvent,
+    showBulliEvent, setShowBulliEvent,
+    raceWinChance,
+    currentEvent,
+    checkForNewFriend,
+    checkForNewRelationship,
+    checkForNewGirlfriend,
+    triggerRandomEvent,
+    handleMetallariScappa, handleMetallariCombatti,
+    handlePoliceScappa, handlePoliceCollabora,
+    handleStreetRaceAccetta, handleStreetRaceRifiuta,
+    handleBulliResisti, handleBulliCedi,
+    handleProvarciConAtipa, handleAtipaRinuncia, handleAtipaProva
+  } = events
+
+  // Destructure game actions per compatibilità con JSX esistente
+  const {
+    handlePalestra,
+    handleLampada,
+    handleLavoro,
+    handleMotorino,
+    handleStudia,
+    handleStudySubject,
+    handleCorrompi,
+    handleMinaccia,
+    handleDisco,
+    handleCinema,
+    handleShoppingMall,
+    handleTryRelationship,
+    handlePrepareExam,
+    handleFriendAction,
+    handleGirlfriendAction,
+    handleGirlfriendBreakup
+  } = actions
+
+  const handleRiposa = () => actions.handleRiposa(advanceToNextDay)
 
   const handleSchoolSelection = (selected: SchoolType) => {
     playSound.success()
     setSchoolType(selected)
     setGrades(getDefaultGradesForSchoolType(selected))
     announce(`Hai scelto: ${selected.toUpperCase()}! Buona fortuna!`)
-  }
-
-  const consumeAction = () => {
-    setGameTime((current) => ({
-      ...current,
-      actionsRemaining: Math.max(0, current.actionsRemaining - 1)
-    }))
-  }
-
-  const advanceToNextDay = () => {
-    setGameTime((current) => {
-      const newGameTime = advanceGameTime(current)
-      
-      const currentMedia = calculateMedia(grades)
-      if (shouldReceivePaghetta(newGameTime.currentDate, current.lastPaghettaDate)) {
-        if (currentMedia >= 7) {
-          const paghetta = 50
-          setStats((s) => ({ ...s, soldi: clampStat(s.soldi + paghetta, 0, 1000) }))
-          playSound.moneyEarned()
-          announce(`SABATO! I tuoi ti hanno dato la PAGHETTA! +${paghetta}€ (media ≥ 7)`)
-          return { ...newGameTime, lastPaghettaDate: newGameTime.currentDate }
-        } else {
-          const parentEvent = getParentEventByMedia(currentMedia, stats)
-          if (parentEvent) {
-            setSchoolEvent(parentEvent)
-            setShowSchoolEvent(true)
-          }
-          return { ...newGameTime, lastPaghettaDate: newGameTime.currentDate }
-        }
-      }
-      
-      if (shouldShowReportCard(newGameTime.currentDate, newGameTime.schoolYear.reportCardDate)) {
-        const media = calculateMedia(grades)
-        const passed = media >= 6
-        setReportCardPassed(passed)
-        setShowReportCard(true)
-        
-        if (passed && newGameTime.schoolYear.currentYear === 5) {
-          setGameWon(true)
-        }
-      }
-      
-      if (Math.random() < 0.15 && newGameTime.schoolYear.isSchoolPeriod && schoolType) {
-        const teacherEvent = getTeacherEvent(schoolType)
-        setSchoolEvent(teacherEvent)
-        setShowSchoolEvent(true)
-      }
-      
-      setScheduledExams((currentExams) => {
-        const updatedExams = currentExams.map(exam => {
-          const newDaysUntil = exam.daysUntil - 1
-          
-          if (newDaysUntil === 3 && !exam.announced) {
-            const announcementText = getDifficultyAnnouncement(getSubjectDisplayName(exam.subject), exam.difficulty)
-            playSound.eventTrigger()
-            announce(announcementText)
-            return { ...exam, daysUntil: newDaysUntil, announced: true }
-          }
-          
-          if (newDaysUntil <= 0) {
-            const examGrade = calculateExamGrade(
-              grades[exam.subject] || 6,
-              stats.intelligenza,
-              exam.isPrepared,
-              currentMedia,
-              exam.difficulty
-            )
-            setGrades((g) => ({
-              ...g,
-              [exam.subject]: examGrade
-            }))
-            const diffText = getDifficultyText(exam.difficulty)
-            const resultText = exam.isPrepared 
-              ? `VERIFICA ${diffText} di ${getSubjectDisplayName(exam.subject)}! Eri PREPARATO! Voto: ${examGrade.toFixed(1)}`
-              : `VERIFICA ${diffText} di ${getSubjectDisplayName(exam.subject)}! Non eri preparato... Voto: ${examGrade.toFixed(1)}`
-            announce(resultText)
-            return null
-          }
-          return { ...exam, daysUntil: newDaysUntil }
-        }).filter((e): e is ScheduledExam => e !== null)
-        
-        if (newGameTime.schoolYear.isSchoolPeriod && updatedExams.length < 3 && Math.random() < 0.3 && schoolType) {
-          const subjects = Object.keys(grades)
-          const newExam = generateScheduledExam(subjects)
-          announce(`NUOVA VERIFICA programmata di ${getSubjectDisplayName(newExam.subject)} tra ${newExam.daysUntil} giorni! Difficoltà: ${getDifficultyText(newExam.difficulty)}`)
-          return [...updatedExams, newExam]
-        }
-        
-        return updatedExams
-      })
-      
-      return newGameTime
-    })
-    playSound.success()
-    announce('Nuovo giorno! Azioni ripristinate.')
-  }
-
-  useEffect(() => {
-    const newReputation = calculateReputationFromStats(stats)
-    const oldLevel = getReputationLevel(prevReputationRef.current)
-    const newLevel = getReputationLevel(newReputation)
-    
-    if (Math.abs(newReputation - stats.reputazione) > 2) {
-      setStats((current) => ({ ...current, reputazione: newReputation }))
-      
-      if (oldLevel !== newLevel) {
-        playSound.reputationUp()
-        announce(`CAMBIO DI REPUTAZIONE! Ora sei: ${newLevel}`)
-      }
-    }
-    
-    prevReputationRef.current = newReputation
-  }, [stats.coattaggine, stats.muscoli, stats.figosita, stats.soldi, stats.media, stats.carisma, setStats])
-
-  useEffect(() => {
-    const checkStatus = checkGameOver({ ...stats, media: calculateMedia(grades) })
-    if (checkStatus.isOver) {
-      playSound.gameOver()
-      setGameOver(true)
-      setGameOverReason(checkStatus.reason)
-      announce(checkStatus.reason)
-    }
-  }, [stats, grades])
-
-  const triggerRandomEvent = () => {
-    const reputationModifier = getReputationEventModifier(stats.reputazione)
-    const baseRoll = Math.random() * 100
-    const adjustedRoll = baseRoll * reputationModifier.encounterChanceMultiplier
-    
-    if (adjustedRoll < 12) {
-      if (canAvoidNegativeEventWithCharisma(stats.carisma)) {
-        playSound.success()
-        announce('I METALLARI ti riconoscono! Con la tua PARLANTINA li hai convinti a lasciarti stare!')
-        return
-      }
-      const respectBonus = reputationModifier.respectBonus
-      if (respectBonus >= 15) {
-        playSound.success()
-        announce('I METALLARI ti riconoscono e ti salutano con rispetto! La tua REPUTAZIONE ti precede!')
-        return
-      }
-      playSound.dangerAlert()
-      setShowMetallariEvent(true)
-      setCurrentEvent('Incontro con i METALLARI! Vogliono la tua grana!')
-      announce('Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!')
-    } else if (adjustedRoll < 22) {
-      if (canAvoidNegativeEventWithCharisma(stats.carisma)) {
-        playSound.success()
-        setStats((current) => ({ ...current, carisma: clampStat(current.carisma + 5) }))
-        announce('I POLIZIOTTI ti hanno fermato ma con la tua PARLANTINA li hai convinti! +5 Carisma!')
-        return
-      }
-      if (reputationModifier.respectBonus >= 15) {
-        playSound.success()
-        announce('I POLIZIOTTI ti hanno fermato ma ti lasciano andare! Sei troppo RISPETTATO nel quartiere!')
-        return
-      }
-      playSound.dangerAlert()
-      setShowPoliceEvent(true)
-      setCurrentEvent('I POLIZIOTTI ti hanno fermato! Controllo documenti!')
-      announce('Evento casuale: Controllo della POLIZIA!')
-    } else if (adjustedRoll < 30) {
-      const winChance = Math.min(85, Math.max(15, 
-        (stats.coattaggine * 0.5) + 
-        (stats.figosita * 0.3) + 
-        (stats.muscoli * 0.2) +
-        reputationModifier.positiveOutcomeBonus
-      ))
-      setRaceWinChance(Math.round(winChance))
-      playSound.eventTrigger()
-      setShowStreetRaceEvent(true)
-      setCurrentEvent('Un TAMARRO ti sfida ad una GARA con il motorino!')
-      announce(`Evento casuale: GARA di motorini! Possibilità di vincita: ${Math.round(winChance)}%`)
-    } else if (adjustedRoll < 36) {
-      if (reputationModifier.respectBonus >= 10) {
-        playSound.success()
-        announce('I BULLI della scuola ti vedono e si allontanano! Hanno PAURA della tua REPUTAZIONE!')
-        return
-      }
-      playSound.dangerAlert()
-      setShowBulliEvent(true)
-      setCurrentEvent('I BULLI della scuola ti vogliono rubare la merenda!')
-      announce('Evento casuale: Incontro con i BULLI!')
-    }
-  }
-
-  const checkForNewFriend = (location: string) => {
-    if (checkNewFriendEvent(stats.carisma, location)) {
-      const newFriend = generateRandomFriend()
-      setFriends((current) => [...current, newFriend])
-      playSound.success()
-      announce(`Hai conosciuto ${newFriend.name} ${location}! Nuovo amico aggiunto alla RUBRICA! (${newFriend.specialty})`)
-    }
-  }
-
-  const checkForNewRelationship = () => {
-    if (relationships.length < 6 && randomChance(20)) {
-      const newRelationship = generateRandomRelationship()
-      setRelationships((current) => [...current, newRelationship])
-      playSound.eventTrigger()
-      announce(`Hai notato ${newRelationship.name}! Aggiunta alle ragazze disponibili!`)
-    }
-  }
-
-  const handleTryRelationship = (relationshipId: string) => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta!')
-      return
-    }
-    if (stats.soldi < 80) {
-      playSound.failure()
-      announce('Servono 80€ per uscire!')
-      return
-    }
-
-    const relationship = relationships.find(r => r.id === relationshipId)
-    if (!relationship) return
-
-    const successChance = calculateRelationshipSuccess(stats, relationship)
-    
-    if (randomChance(successChance)) {
-      playSound.bigWin()
-      setRelationships((current) =>
-        current.map(r =>
-          r.id === relationshipId
-            ? { ...r, isActive: true, relationshipLevel: 1 }
-            : r
-        )
-      )
-      setStats((current) => ({
-        ...current,
-        figosita: clampStat(current.figosita + 30),
-        carisma: clampStat(current.carisma + 15),
-        soldi: clampStat(current.soldi - 80, 0, 1000)
-      }))
-      consumeAction()
-      announce(`${relationship.name} ha detto SÌ! Siete INSIEME! +30 Figosità, +15 Carisma, -80 Soldi`)
-    } else {
-      playSound.bigLoss()
-      setStats((current) => ({
-        ...current,
-        figosita: clampStat(current.figosita - 20),
-        carisma: clampStat(current.carisma - 10),
-        soldi: clampStat(current.soldi - 40, 0, 1000)
-      }))
-      consumeAction()
-      announce(`${relationship.name} ti ha dato il PALO! RIFIUTATO! -20 Figosità, -10 Carisma, -40 Soldi`)
-    }
-  }
-
-  const handlePrepareExam = (examSubject: string) => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta!')
-      return
-    }
-    if (stats.stanchezza > 80) {
-      playSound.failure()
-      announce('Troppo stanco per studiare!')
-      return
-    }
-
-    const examIndex = scheduledExams.findIndex(e => e.subject === examSubject)
-    if (examIndex === -1) return
-
-    const exam = scheduledExams[examIndex]
-    const result = prepareForExam(exam, stats.intelligenza)
-
-    setScheduledExams((current) =>
-      current.map((e, i) =>
-        i === examIndex ? { ...e, isPrepared: true } : e
-      )
-    )
-
-    setStats((current) => ({
-      ...current,
-      intelligenza: clampStat(current.intelligenza + result.intelligenceGain),
-      stanchezza: clampStat(current.stanchezza + 25)
-    }))
-
-    consumeAction()
-    playSound.success()
-    announce(result.message)
-  }
-
-  const handleMetallariScappa = () => {
-    playSound.failure()
-    setShowMetallariEvent(false)
-    setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 10) }))
-    announce('Sei scappato come un CONIGLIO! -10 Coattaggine')
-  }
-
-  const handleMetallariCombatti = () => {
-    setShowMetallariEvent(false)
-    if (stats.muscoli > 60) {
-      playSound.bigWin()
-      setStats((current) => ({
-        ...current,
-        coattaggine: clampStat(current.coattaggine + 15),
-        soldi: clampStat(current.soldi + 30, 0, 1000)
-      }))
-      announce('Li hai STESI! +15 Coattaggine, +30 Soldi rubati')
-    } else {
-      playSound.bigLoss()
-      setStats((current) => ({
-        ...current,
-        soldi: clampStat(current.soldi - 50, 0, 1000),
-        muscoli: clampStat(current.muscoli - 5)
-      }))
-      announce('Ti hanno FATTO IL CULO! -50 Soldi, -5 Muscoli')
-    }
-  }
-
-  const handlePoliceScappa = () => {
-    setShowPoliceEvent(false)
-    if (stats.coattaggine > 70) {
-      playSound.success()
-      setStats((current) => ({
-        ...current,
-        coattaggine: clampStat(current.coattaggine + 10)
-      }))
-      announce('Sei SCAPPATO dai poliziotti! Che COATTO! +10 Coattaggine')
-    } else {
-      playSound.bigLoss()
-      setStats((current) => ({
-        ...current,
-        soldi: clampStat(current.soldi - 100, 0, 1000),
-        coattaggine: clampStat(current.coattaggine - 15)
-      }))
-      announce('Ti hanno BECCATO! Multa di 100€! -100 Soldi, -15 Coattaggine')
-    }
-  }
-
-  const handlePoliceCollabora = () => {
-    setShowPoliceEvent(false)
-    if (stats.soldi >= 50) {
-      playSound.moneySpent()
-      setStats((current) => ({
-        ...current,
-        soldi: clampStat(current.soldi - 50, 0, 1000)
-      }))
-      announce('Hai dato una MAZZETTA! Ti lasciano andare. -50 Soldi')
-    } else {
-      playSound.bigLoss()
-      setStats((current) => ({
-        ...current,
-        soldi: 0,
-        coattaggine: clampStat(current.coattaggine - 20)
-      }))
-      announce('Non hai GRANA per la mazzetta! Ti hanno portato in questura! -Tutti i Soldi, -20 Coattaggine')
-    }
-  }
-
-  const handleStreetRaceAccetta = () => {
-    setShowStreetRaceEvent(false)
-    
-    if (randomChance(raceWinChance)) {
-      playSound.bigWin()
-      setStats((current) => ({
-        ...current,
-        coattaggine: clampStat(current.coattaggine + 25),
-        figosita: clampStat(current.figosita + 20),
-        soldi: clampStat(current.soldi + 150, 0, 1000)
-      }))
-      announce('Hai VINTO la gara! Sei una LEGGENDA! +25 Coattaggine, +20 Figosità, +150 Soldi')
-    } else {
-      playSound.bigLoss()
-      setStats((current) => ({
-        ...current,
-        figosita: clampStat(current.figosita - 20),
-        coattaggine: clampStat(current.coattaggine - 15),
-        soldi: clampStat(current.soldi - 80, 0, 1000)
-      }))
-      announce('Hai PERSO la gara! Che SCHIFO! -20 Figosità, -15 Coattaggine, -80 Soldi (scommessa)')
-    }
-  }
-
-  const handleStreetRaceRifiuta = () => {
-    playSound.failure()
-    setShowStreetRaceEvent(false)
-    setStats((current) => ({
-      ...current,
-      coattaggine: clampStat(current.coattaggine - 15),
-      figosita: clampStat(current.figosita - 10)
-    }))
-    announce('Hai RIFIUTATO la sfida! Sei un FIFONE! -15 Coattaggine, -10 Figosità')
-  }
-
-  const handleBulliResisti = () => {
-    setShowBulliEvent(false)
-    if (stats.muscoli > 50) {
-      playSound.bigWin()
-      setStats((current) => ({
-        ...current,
-        coattaggine: clampStat(current.coattaggine + 20),
-        muscoli: clampStat(current.muscoli + 5)
-      }))
-      announce('Li hai MENATI! Ora ti RISPETTANO! +20 Coattaggine, +5 Muscoli')
-    } else {
-      playSound.bigLoss()
-      setStats((current) => ({
-        ...current,
-        soldi: clampStat(current.soldi - 30, 0, 1000),
-        coattaggine: clampStat(current.coattaggine - 10),
-        muscoli: clampStat(current.muscoli - 5)
-      }))
-      announce('Ti hanno PESTATO! -30 Soldi, -10 Coattaggine, -5 Muscoli')
-    }
-  }
-
-  const handleBulliCedi = () => {
-    playSound.failure()
-    setShowBulliEvent(false)
-    setStats((current) => ({
-      ...current,
-      soldi: clampStat(current.soldi - 20, 0, 1000),
-      coattaggine: clampStat(current.coattaggine - 15)
-    }))
-    announce('Hai CEDUTO alla loro prepotenza! Sei un PERDENTE! -20 Soldi, -15 Coattaggine')
-  }
-
-  const handlePalestra = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (stats.soldi < 20) {
-      playSound.failure()
-      announce('Non hai abbastanza GRANA per la palestra! Servono 20€')
-      return
-    }
-    playSound.buttonClick()
-    playSound.statIncrease()
-    setStats((current) => ({
-      ...current,
-      muscoli: clampStat(current.muscoli + 10),
-      figosita: clampStat(current.figosita + 5),
-      soldi: clampStat(current.soldi - 20, 0, 1000),
-      stanchezza: clampStat(current.stanchezza + 15)
-    }))
-    consumeAction()
-    announce('Hai pompato FERRO! +10 Muscoli, +5 Figosità, -20 Soldi, +15 Stanchezza')
-    checkForNewFriend('in palestra')
-    checkForNewRelationship()
-    triggerRandomEvent()
-  }
-
-  const handleLampada = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (stats.soldi < 30) {
-      playSound.failure()
-      announce('Non hai abbastanza GRANA per la lampada! Servono 30€')
-      return
-    }
-    playSound.buttonClick()
-    playSound.statIncrease()
-    setStats((current) => ({
-      ...current,
-      coattaggine: clampStat(current.coattaggine + 15),
-      figosita: clampStat(current.figosita + 10),
-      soldi: clampStat(current.soldi - 30, 0, 1000)
-    }))
-    consumeAction()
-    announce('Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -30 Soldi')
-    triggerRandomEvent()
-  }
-
-  const handleLavoro = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (stats.muscoli < 40) {
-      playSound.failure()
-      announce('Sei troppo SMILZO per fare il buttadifuori! Servono 40 Muscoli')
-      return
-    }
-    if (stats.stanchezza > 80) {
-      playSound.failure()
-      announce('Sei troppo DISTRUTTO per lavorare! Riposa!')
-      return
-    }
-    playSound.buttonClick()
-    playSound.moneyEarned()
-    setStats((current) => ({
-      ...current,
-      soldi: clampStat(current.soldi + 80, 0, 1000),
-      stanchezza: clampStat(current.stanchezza + 20),
-      coattaggine: clampStat(current.coattaggine + 5)
-    }))
-    consumeAction()
-    announce('Hai lavorato come BUTTADIFUORI! +80 Soldi, +5 Coattaggine, +20 Stanchezza')
-    triggerRandomEvent()
-  }
-
-  const handleMotorino = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (stats.soldi < 50) {
-      playSound.failure()
-      announce('Non hai abbastanza GRANA per truccare il motorino! Servono 50€')
-      return
-    }
-    playSound.buttonClick()
-    playSound.statIncrease()
-    setStats((current) => ({
-      ...current,
-      coattaggine: clampStat(current.coattaggine + 20),
-      figosita: clampStat(current.figosita + 15),
-      soldi: clampStat(current.soldi - 50, 0, 1000)
-    }))
-    consumeAction()
-    announce('Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -50 Soldi')
-    triggerRandomEvent()
-  }
-
-  const handleStudia = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (!gameTime.schoolYear.isSchoolPeriod) {
-      playSound.failure()
-      announce('Non puoi studiare durante le VACANZE ESTIVE! Goditi l\'estate!')
-      return
-    }
-    if (stats.stanchezza > 80) {
-      playSound.failure()
-      announce('Sei troppo DISTRUTTO per studiare! Riposa!')
-      return
-    }
-    playSound.buttonClick()
-    setShowSubjectDialog(true)
-  }
-
-  const handleStudySubject = (selectedSubject: string) => {
-    setShowSubjectDialog(false)
-    
-    const hasFriendBonus = getFriendStudyBonus(friends) > 0
-    const gradeIncrease = calculateStudyGradeIncrease(stats.intelligenza, hasFriendBonus)
-    const intelligenzaGain = Math.floor(Math.random() * 3) + 1
-    
-    setGrades((current) => ({
-      ...current,
-      [selectedSubject]: clampStat(current[selectedSubject] + gradeIncrease, 0, 10)
-    }))
-    setStats((current) => ({
-      ...current,
-      stanchezza: clampStat(current.stanchezza + 20),
-      coattaggine: clampStat(current.coattaggine - 5),
-      intelligenza: clampStat(current.intelligenza + intelligenzaGain)
-    }))
-    consumeAction()
-    playSound.statIncrease()
-    
-    const bonusText = hasFriendBonus ? ' (BONUS AMICO INTELLIGENTE!)' : ''
-    announce(`Hai studiato ${getSubjectDisplayName(selectedSubject)}! +${gradeIncrease.toFixed(1)} al voto, +${intelligenzaGain} Intelligenza${bonusText}, +20 Stanchezza, -5 Coattaggine`)
-    
-    if (shouldTriggerSurpriseQuiz() && gameTime.schoolYear.isSchoolPeriod) {
-      const subjects = Object.keys(grades) as Array<keyof SubjectGrades>
-      const surpriseSubject = subjects[Math.floor(Math.random() * subjects.length)]
-      const quizResult = calculateSurpriseQuizGrade(grades[surpriseSubject], stats)
-      setGrades((current) => ({
-        ...current,
-        [surpriseSubject]: quizResult.newGrade
-      }))
-      playSound.eventTrigger()
-      announce(`${quizResult.message} in ${getSubjectDisplayName(surpriseSubject)}!`)
-    }
-  }
-
-  const handleCorrompi = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (!gameTime.schoolYear.isSchoolPeriod) {
-      playSound.failure()
-      announce('La scuola è CHIUSA! Aspetta settembre!')
-      return
-    }
-    if (stats.soldi < 100) {
-      playSound.failure()
-      announce('Non hai abbastanza GRANA per la MAZZETTA! Servono 100€')
-      return
-    }
-    playSound.buttonClick()
-    playSound.moneySpent()
-    const subjects = Object.keys(grades) as Array<keyof SubjectGrades>
-    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
-    
-    setGrades((current) => ({
-      ...current,
-      [randomSubject]: clampStat(current[randomSubject] + 2, 0, 10)
-    }))
-    setStats((current) => ({
-      ...current,
-      soldi: clampStat(current.soldi - 100, 0, 1000)
-    }))
-    consumeAction()
-    playSound.success()
-    announce(`MAZZETTA al prof di ${randomSubject.toUpperCase()}! +2 al voto, -100 Soldi. EZPZ!`)
-  }
-
-  const handleMinaccia = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (!gameTime.schoolYear.isSchoolPeriod) {
-      playSound.failure()
-      announce('La scuola è CHIUSA! Aspetta settembre!')
-      return
-    }
-    playSound.buttonClick()
-    if (randomChance(30)) {
-      playSound.gameOver()
-      setGameOver(true)
-      setGameOverReason('Hai PESTATO il prof ma ti hanno ESPULSO! Torna a settembre, violento!')
-      announce('ESPULSO dalla scuola per violenza!')
-      return
-    }
-    
-    playSound.bigWin()
-    const subjects = Object.keys(grades) as Array<keyof SubjectGrades>
-    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
-    
-    setGrades((current) => ({
-      ...current,
-      [randomSubject]: clampStat(current[randomSubject] + 3, 0, 10)
-    }))
-    setStats((current) => ({
-      ...current,
-      coattaggine: clampStat(current.coattaggine + 15)
-    }))
-    consumeAction()
-    announce(`Hai MINACCIATO il prof di ${randomSubject.toUpperCase()}! +3 al voto, +15 Coattaggine. Rischiosa ma ha funzionato!`)
-  }
-
-  const handleRiposa = () => {
-    playSound.buttonClick()
-    setStats((current) => ({
-      ...current,
-      stanchezza: clampStat(current.stanchezza - 40)
-    }))
-    
-    if (gameTime.actionsRemaining === 0) {
-      advanceToNextDay()
-    } else {
-      announce('Hai riposato un po\'! -40 Stanchezza')
-    }
-  }
-
-  const handleDisco = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (stats.soldi < 60) {
-      playSound.failure()
-      announce('Non hai abbastanza GRANA per entrare in discoteca! Servono 60€')
-      return
-    }
-    if (stats.stanchezza > 70) {
-      playSound.failure()
-      announce('Sei troppo DISTRUTTO per andare in disco! Riposa!')
-      return
-    }
-    
-    playSound.buttonClick()
-    const reputationModifier = getReputationEventModifier(stats.reputazione)
-    
-    const successChance = Math.min(85, Math.max(20, 
-      (stats.figosita * 0.4) + 
-      (stats.coattaggine * 0.3) + 
-      (stats.muscoli * 0.2) +
-      (stats.carisma * 0.25) +
-      reputationModifier.positiveOutcomeBonus
-    ))
-    
-    if (randomChance(successChance)) {
-      playSound.bigWin()
-      setStats((current) => ({
-        ...current,
-        figosita: clampStat(current.figosita + 25),
-        coattaggine: clampStat(current.coattaggine + 15),
-        carisma: clampStat(current.carisma + 10),
-        soldi: clampStat(current.soldi - 60, 0, 1000),
-        stanchezza: clampStat(current.stanchezza + 25)
-      }))
-      announce('Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, +10 Carisma, -60 Soldi, +25 Stanchezza')
-    } else {
-      playSound.failure()
-      setStats((current) => ({
-        ...current,
-        figosita: clampStat(current.figosita - 10),
-        soldi: clampStat(current.soldi - 60, 0, 1000),
-        stanchezza: clampStat(current.stanchezza + 20)
-      }))
-      announce('Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -60 Soldi, +20 Stanchezza')
-    }
-    consumeAction()
-    checkForNewFriend('in discoteca')
-    checkForNewRelationship()
-    checkForNewGirlfriend()
-    triggerRandomEvent()
-  }
-
-  const handleCinema = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (stats.soldi < 40) {
-      playSound.failure()
-      announce('Non hai abbastanza GRANA per il cinema! Servono 40€')
-      return
-    }
-    
-    playSound.buttonClick()
-    const roll = Math.random()
-    if (roll < 0.4) {
-      playSound.success()
-      const names = ['Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer']
-      const randomName = names[Math.floor(Math.random() * names.length)]
-      setStats((current) => ({
-        ...current,
-        figosita: clampStat(current.figosita + 15),
-        carisma: clampStat(current.carisma + 10),
-        soldi: clampStat(current.soldi - 80, 0, 1000),
-        stanchezza: clampStat(current.stanchezza - 10)
-      }))
-      announce(`Hai incontrato ${randomName} al cinema! Avete visto il film INSIEME! +15 Figosità, +10 Carisma, -80 Soldi (biglietti + popcorn), -10 Stanchezza`)
-    } else {
-      setStats((current) => ({
-        ...current,
-        soldi: clampStat(current.soldi - 40, 0, 1000),
-        stanchezza: clampStat(current.stanchezza - 15)
-      }))
-      announce('Hai visto un bel film! Serata tranquilla. -40 Soldi, -15 Stanchezza')
-    }
-    consumeAction()
-    checkForNewFriend('al cinema')
-    checkForNewRelationship()
-    checkForNewGirlfriend()
-    triggerRandomEvent()
-  }
-
-  const handleShoppingMall = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    if (stats.soldi < 100) {
-      playSound.failure()
-      announce('Non hai abbastanza GRANA per fare shopping! Servono 100€')
-      return
-    }
-    
-    playSound.buttonClick()
-    playSound.statIncrease()
-    setStats((current) => ({
-      ...current,
-      figosita: clampStat(current.figosita + 20),
-      coattaggine: clampStat(current.coattaggine + 10),
-      carisma: clampStat(current.carisma + 5),
-      soldi: clampStat(current.soldi - 100, 0, 1000)
-    }))
-    consumeAction()
-    announce('Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -100 Soldi')
-    checkForNewFriend('al centro commerciale')
-    checkForNewRelationship()
-    checkForNewGirlfriend()
-    triggerRandomEvent()
-  }
-
-  const handleProvarciConAtipa = () => {
-    if (gameTime.actionsRemaining === 0) {
-      playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
-      return
-    }
-    playSound.buttonClick()
-    playSound.eventTrigger()
-    const names = ['Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer']
-    const randomName = names[Math.floor(Math.random() * names.length)]
-    setAtipaName(randomName)
-    
-    const reputationModifier = getReputationEventModifier(stats.reputazione)
-    
-    const successChance = Math.min(90, Math.max(10, 
-      (stats.figosita * 0.4) + 
-      (stats.coattaggine * 0.3) + 
-      (stats.muscoli * 0.2) + 
-      (stats.soldi / 10) +
-      reputationModifier.positiveOutcomeBonus
-    ))
-    
-    setAtipaSuccessChance(Math.round(successChance))
-    setCurrentEvent(`Hai adocchiato ${randomName} al centro commerciale! Ti vuoi provare?`)
-    setShowAtipaEvent(true)
-    announce(`Evento: Hai incontrato ${randomName}! Possibilità di successo: ${Math.round(successChance)}% (bonus reputazione: +${reputationModifier.positiveOutcomeBonus})`)
-  }
-
-  const handleAtipaRinuncia = () => {
-    playSound.failure()
-    setShowAtipaEvent(false)
-    setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 5) }))
-    consumeAction()
-    announce(`Hai CAGATO sotto! -5 Coattaggine`)
-  }
-
-  const handleAtipaProva = () => {
-    setShowAtipaEvent(false)
-    
-    if (randomChance(atipaSuccessChance)) {
-      playSound.bigWin()
-      setStats((current) => ({
-        ...current,
-        figosita: clampStat(current.figosita + 20),
-        coattaggine: clampStat(current.coattaggine + 10),
-        soldi: clampStat(current.soldi - 80, 0, 1000)
-      }))
-      announce(`${atipaName} ha detto SÌ! Uscita EPICA! +20 Figosità, +10 Coattaggine, -80 Soldi (cinema + pizza)`)
-    } else {
-      playSound.bigLoss()
-      setStats((current) => ({
-        ...current,
-        figosita: clampStat(current.figosita - 15),
-        coattaggine: clampStat(current.coattaggine - 10)
-      }))
-      announce(`${atipaName} ti ha dato il PALO! Bruciata DEVASTANTE! -15 Figosità, -10 Coattaggine`)
-    }
-    consumeAction()
-  }
-
-  const handleGirlfriendAction = (action: string) => {
-    if (!girlfriend) return
-    
-    if (gameTime.actionsRemaining === 0 && action !== 'messaggio') {
-      playSound.failure()
-      announce('Nessuna azione rimasta!')
-      return
-    }
-    
-    const currentDateString = `${gameTime.currentDate.day}/${gameTime.currentDate.month}/${gameTime.currentDate.year}`
-    
-    const result = performGirlfriendAction(action, stats, girlfriend, currentDateString)
-    
-    setGirlfriend(result.updatedGirlfriend)
-    
-    if (result.statChanges) {
-      setStats((current) => {
-        const updated = { ...current }
-        Object.entries(result.statChanges).forEach(([key, value]) => {
-          const statKey = key as keyof GameStats
-          if (statKey === 'soldi') {
-            updated[statKey] = clampStat((updated[statKey] as number) + value, 0, 1000)
-          } else {
-            updated[statKey] = clampStat((updated[statKey] as number) + value)
-          }
-        })
-        return updated
-      })
-    }
-    
-    if (result.gradeChange && result.gradeChange > 0) {
-      const subjects = Object.keys(grades)
-      subjects.forEach(subject => {
-        setGrades((current) => ({
-          ...current,
-          [subject]: clampStat(current[subject] + result.gradeChange!, 0, 10)
-        }))
-      })
-    }
-    
-    if (action !== 'messaggio') {
-      consumeAction()
-    }
-    
-    if (action === 'dichiarati' && result.updatedGirlfriend.relationshipStatus === 'fidanzata') {
-      playSound.bigWin()
-    } else if (action === 'dichiarati') {
-      playSound.bigLoss()
-    } else {
-      playSound.success()
-    }
-    
-    announce(result.message)
-    
-    if (shouldGirlfriendBreakup(result.updatedGirlfriend)) {
-      playSound.gameOver()
-      announce(`${girlfriend.nome} ti ha lasciato! La relazione è finita...`)
-      setGirlfriend(null)
-    }
-  }
-  
-  const handleGirlfriendBreakup = () => {
-    if (!girlfriend) return
-    
-    playSound.failure()
-    announce(`Hai lasciato ${girlfriend.nome}. La storia è finita.`)
-    setGirlfriend(null)
-  }
-  
-  const checkForNewGirlfriend = () => {
-    if (girlfriend || relationships.length > 0) return
-    
-    if (randomChance(10)) {
-      const newGirl = generateRandomGirlfriend()
-      setGirlfriend(newGirl)
-      playSound.eventTrigger()
-      announce(`Hai notato ${newGirl.nome} ${newGirl.cognome}! Sembra interessante...`)
-    }
   }
 
   const handleReset = () => {
@@ -1114,6 +276,16 @@ function App() {
     setSchoolType(null)
     announce('Gioco RESETTATO! Scegli di nuovo l\'indirizzo!')
   }
+
+  useEffect(() => {
+    const checkStatus = checkGameOver({ ...stats, media: calculateMedia(grades) })
+    if (checkStatus.isOver) {
+      playSound.gameOver()
+      setGameOver(true)
+      setGameOverReason(checkStatus.reason)
+      announce(checkStatus.reason)
+    }
+  }, [stats, grades])
 
   const handleSchoolEventChoice = (choiceIndex: number) => {
     if (!schoolEvent) return
@@ -1309,7 +481,12 @@ function App() {
           </div>
         </section>
 
-        <TimeDisplay gameTime={gameTime} />
+        <TimeDisplay
+          gameTime={gameTime}
+          currentPhase={currentPhase}
+          dayType={dayType}
+          phaseActionsRemaining={phaseActionsRemaining}
+        />
 
         <Tabs defaultValue="status" className="w-full">
           <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-2 bg-muted/50 p-1 h-auto">
@@ -1342,6 +519,11 @@ function App() {
               <Buildings size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Sociale</span>
               <span className="sm:hidden">Vita</span>
+            </TabsTrigger>
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <ChartBar size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Dashboard</span>
+              <span className="sm:hidden">📊</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1637,6 +819,7 @@ function App() {
                     shortcut="Ctrl+5"
                     onClick={handleStudia}
                     disabled={gameTime.actionsRemaining === 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.stanchezza > 80 ? 'Sei troppo stanco per studiare!' : 'Non è periodo scolastico'}
                     variant="secondary"
                     ariaLabel="Studia per aumentare i voti. Costa stanchezza, riduce coattaggine. Tasto rapido: Ctrl+5"
                   />
@@ -1647,6 +830,13 @@ function App() {
                     onClick={handleRiposa}
                     variant="secondary"
                     ariaLabel="Riposa per ridurre la stanchezza. Tasto rapido: Ctrl+8"
+                  />
+                  <ActionButton
+                    icon={<Clock size={48} />}
+                    label={`Avanza Fascia (${currentPhase ?? 'mattina'})`}
+                    onClick={advancePhaseOnly}
+                    variant="outline"
+                    ariaLabel="Salta alla prossima fascia oraria della giornata"
                   />
                 </div>
               </Card>
@@ -1663,6 +853,7 @@ function App() {
                     shortcut="Ctrl+6"
                     onClick={handleCorrompi}
                     disabled={gameTime.actionsRemaining === 0 || stats.soldi < 100 || !gameTime.schoolYear.isSchoolPeriod}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.soldi < 100 ? 'Servono almeno 100€' : 'Non è periodo scolastico'}
                     variant="default"
                     ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
                   />
@@ -1672,6 +863,7 @@ function App() {
                     shortcut="Ctrl+7"
                     onClick={handleMinaccia}
                     disabled={gameTime.actionsRemaining === 0 || !gameTime.schoolYear.isSchoolPeriod}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Non è periodo scolastico'}
                     variant="destructive"
                     ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
                   />
@@ -1681,6 +873,12 @@ function App() {
                 </div>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="dashboard" className="space-y-6 mt-6">
+            <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento dashboard...</div>}>
+              <StatsDashboard stats={stats} grades={grades} />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6 mt-6">
@@ -1697,6 +895,7 @@ function App() {
                     shortcut="Ctrl+1"
                     onClick={handlePalestra}
                     disabled={gameTime.actionsRemaining === 0 || stats.soldi < 20}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 20€'}
                     ariaLabel="Vai in palestra per pompare muscoli. Costa 20 euro e aumenta la stanchezza. Tasto rapido: Ctrl+1"
                   />
                   <ActionButton
@@ -1705,6 +904,7 @@ function App() {
                     shortcut="Ctrl+2"
                     onClick={handleLampada}
                     disabled={gameTime.actionsRemaining === 0 || stats.soldi < 30}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 30€'}
                     ariaLabel="Vai alla lampada abbronzante per aumentare la coattaggine. Costa 30 euro. Tasto rapido: Ctrl+2"
                   />
                   <ActionButton
@@ -1713,6 +913,7 @@ function App() {
                     shortcut="Ctrl+4"
                     onClick={handleMotorino}
                     disabled={gameTime.actionsRemaining === 0 || stats.soldi < 50}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 50€'}
                     ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
                   />
                 </div>
@@ -1730,6 +931,7 @@ function App() {
                     shortcut="Ctrl+9"
                     onClick={handleProvarciConAtipa}
                     disabled={gameTime.actionsRemaining === 0 || stats.soldi < 80}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 80€'}
                     variant="default"
                     ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: Ctrl+9"
                   />
@@ -1739,6 +941,7 @@ function App() {
                     shortcut="Ctrl+D"
                     onClick={handleDisco}
                     disabled={gameTime.actionsRemaining === 0 || stats.soldi < 60 || stats.stanchezza > 70}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.soldi < 60 ? 'Servono almeno 60€' : 'Sei troppo stanco per ballare!'}
                     variant="default"
                     ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: Ctrl+D"
                   />
@@ -1748,6 +951,7 @@ function App() {
                     shortcut="Ctrl+C"
                     onClick={handleCinema}
                     disabled={gameTime.actionsRemaining === 0 || stats.soldi < 40}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 40€'}
                     variant="secondary"
                     ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: Ctrl+C"
                   />
@@ -1766,6 +970,7 @@ function App() {
                     shortcut="Ctrl+3"
                     onClick={handleLavoro}
                     disabled={gameTime.actionsRemaining === 0 || stats.muscoli < 40 || stats.stanchezza > 80}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.muscoli < 40 ? 'Servono almeno 40 Muscoli' : 'Sei troppo stanco per lavorare!'}
                     ariaLabel="Lavora come buttadifuori. Richiede 40 muscoli. Guadagni soldi e coattaggine. Tasto rapido: Ctrl+3"
                   />
                   <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
@@ -1789,6 +994,7 @@ function App() {
                     shortcut="Ctrl+S"
                     onClick={handleShoppingMall}
                     disabled={gameTime.actionsRemaining === 0 || stats.soldi < 100}
+                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 100€'}
                     variant="default"
                     ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: Ctrl+S"
                   />
@@ -1804,12 +1010,14 @@ function App() {
           </TabsContent>
 
           <TabsContent value="exams" className="space-y-6 mt-6">
-            <ExamsPanel
-              exams={scheduledExams}
-              onPrepareExam={handlePrepareExam}
-              actionsRemaining={gameTime.actionsRemaining}
-              stanchezza={stats.stanchezza}
-            />
+            <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
+              <ExamsPanel
+                exams={scheduledExams}
+                onPrepareExam={handlePrepareExam}
+                actionsRemaining={gameTime.actionsRemaining}
+                stanchezza={stats.stanchezza}
+              />
+            </Suspense>
             <Card className="p-6 border-2 border-accent bg-card/50">
               <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
                 <Brain size={28} weight="fill" />
@@ -1831,13 +1039,15 @@ function App() {
           </TabsContent>
 
           <TabsContent value="friends" className="space-y-6 mt-6">
-            <FriendsPanel friends={friends} />
-            <RelationshipsPanel
-              relationships={relationships}
-              stats={stats}
-              onTryRelationship={handleTryRelationship}
-              actionsRemaining={gameTime.actionsRemaining}
-            />
+            <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
+              <FriendsPanel friends={friends} />
+              <RelationshipsPanel
+                relationships={relationships}
+                stats={stats}
+                onTryRelationship={handleTryRelationship}
+                actionsRemaining={gameTime.actionsRemaining}
+              />
+            </Suspense>
             <Card className="p-6 border-2 border-accent bg-card/50">
               <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
                 <Chats size={28} weight="fill" />
@@ -1859,13 +1069,15 @@ function App() {
           </TabsContent>
           
           <TabsContent value="girlfriend" className="space-y-6 mt-6">
-            <GirlfriendPanel
-              girlfriend={girlfriend}
-              stats={stats}
-              actionsRemaining={gameTime.actionsRemaining}
-              onAction={handleGirlfriendAction}
-              onBreakup={handleGirlfriendBreakup}
-            />
+            <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
+              <GirlfriendPanel
+                girlfriend={girlfriend}
+                stats={stats}
+                actionsRemaining={gameTime.actionsRemaining}
+                onAction={handleGirlfriendAction}
+                onBreakup={handleGirlfriendBreakup}
+              />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
@@ -2036,35 +1248,37 @@ function App() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <ReportCardDialog
-        open={showReportCard}
-        grades={grades}
-        media={currentMedia}
-        isPassed={reportCardPassed}
-        schoolYear={gameTime.schoolYear.currentYear}
-        onContinue={handleReportCardContinue}
-        isLastYear={gameTime.schoolYear.currentYear === 5 && reportCardPassed}
-      />
+      <Suspense fallback={null}>
+        <ReportCardDialog
+          open={showReportCard}
+          grades={grades}
+          media={currentMedia}
+          isPassed={reportCardPassed}
+          schoolYear={gameTime.schoolYear.currentYear}
+          onContinue={handleReportCardContinue}
+          isLastYear={gameTime.schoolYear.currentYear === 5 && reportCardPassed}
+        />
 
-      <SchoolEventDialog
-        open={showSchoolEvent}
-        event={schoolEvent}
-        onChoice={handleSchoolEventChoice}
-        onClose={() => setShowSchoolEvent(false)}
-      />
+        <SchoolEventDialog
+          open={showSchoolEvent}
+          event={schoolEvent}
+          onChoice={handleSchoolEventChoice}
+          onClose={() => setShowSchoolEvent(false)}
+        />
 
-      <KeyboardShortcutsDialog
-        open={showKeyboardHelp}
-        onOpenChange={setShowKeyboardHelp}
-      />
+        <KeyboardShortcutsDialog
+          open={showKeyboardHelp}
+          onOpenChange={setShowKeyboardHelp}
+        />
 
-      <SubjectSelectionDialog
-        open={showSubjectDialog}
-        onClose={() => setShowSubjectDialog(false)}
-        grades={grades}
-        onSelectSubject={handleStudySubject}
-        stanchezza={stats.stanchezza}
-      />
+        <SubjectSelectionDialog
+          open={showSubjectDialog}
+          onClose={() => setShowSubjectDialog(false)}
+          grades={grades}
+          onSelectSubject={handleStudySubject}
+          stanchezza={stats.stanchezza}
+        />
+      </Suspense>
     </main>
   )
 }

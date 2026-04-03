@@ -1,4 +1,4 @@
-import { SchoolType, GameStats } from '@/lib/types'
+import { SchoolType, GameStats, EventConstraint } from '@/lib/types'
 import { randomChance } from '@/lib/game-utils'
 
 export interface SchoolEvent {
@@ -381,4 +381,124 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
 
   const allEvents = [...commonEvents, ...specificEvents[schoolType]]
   return allEvents[Math.floor(Math.random() * allEvents.length)]
+}
+
+// ─── Vincoli Evento ───────────────────────────────────────────────────────────
+
+export const SCHOOL_EVENT_CONSTRAINTS: Record<string, EventConstraint> = {
+  interrogazione: {
+    allowedPhases: ['mattina'],
+    allowedDayTypes: ['feriale'],
+    requiresSchoolPeriod: true,
+  },
+  studioConAmico: {
+    allowedPhases: ['pomeriggio'],
+    allowedDayTypes: ['feriale'],
+    requiresSchoolPeriod: true,
+  },
+  lavoro: {
+    allowedPhases: ['pomeriggio'],
+    allowedDayTypes: ['feriale', 'sabato'],
+    minSchoolYear: 3,
+  },
+  uscitaAmici: {
+    allowedPhases: ['sera'],
+    allowedDayTypes: ['feriale', 'sabato'],
+  },
+  garaMotorini: {
+    allowedPhases: ['pomeriggio', 'sera'],
+    allowedDayTypes: ['sabato'],
+  },
+  discoteca: {
+    allowedPhases: ['sera'],
+    allowedDayTypes: ['sabato'],
+  },
+  rissaMetallari: {
+    allowedPhases: ['notte'],
+    allowedDayTypes: ['sabato'],
+    blockedWhenExhausted: false,
+  },
+  pranzoFamiglia: {
+    allowedPhases: ['mattina'],
+    allowedDayTypes: ['domenica'],
+  },
+  studioPrelunedi: {
+    allowedPhases: ['pomeriggio', 'sera'],
+    allowedDayTypes: ['domenica'],
+    requiresSchoolPeriod: true,
+  },
+}
+
+// ─── Evento Speciale: Domenica Sera — Ansia del Lunedì ───────────────────────
+
+export interface AnsiaDelLunediOutcome {
+  level: 'sereno' | 'preoccupato' | 'panico'
+  message: string
+  choices: Array<{
+    label: string
+    action: () => EventOutcome
+  }>
+}
+
+export const getAnsiaDelLunediEvent = (media: number): AnsiaDelLunediOutcome => {
+  if (media >= 7.0) {
+    return {
+      level: 'sereno',
+      message: `Media ${media.toFixed(1)} — Sei a posto, lunedì si spacca! 💪`,
+      choices: [
+        {
+          label: 'Rilassati serenamente',
+          action: () => ({
+            message: 'Sei tranquillo! +5 Carisma, nessuna penalità.',
+            statChanges: { carisma: 5 },
+          }),
+        },
+      ],
+    }
+  }
+
+  if (media >= 5.0) {
+    return {
+      level: 'preoccupato',
+      message: `Media ${media.toFixed(1)} — Hmm, qualche materia fa un po' schifo...`,
+      choices: [
+        {
+          label: 'Studia ancora un po\'',
+          action: () => ({
+            message: 'Hai studiato! +0.2 media, +15 Stanchezza.',
+            statChanges: { stanchezza: 15 },
+            gradeChanges: { subject: 'random', change: 0.2 },
+          }),
+        },
+        {
+          label: 'Lascia perdere',
+          action: () => ({
+            message: 'Bah, domani si vede...',
+          }),
+        },
+      ],
+    }
+  }
+
+  return {
+    level: 'panico',
+    message: `Media ${media.toFixed(1)} — PANICO TOTALE! Sei a rischio bocciatura! 😱`,
+    choices: [
+      {
+        label: 'Studia ADESSO',
+        action: () => ({
+          message: 'Notte sui libri! +0.4 media, +25 Stanchezza.',
+          statChanges: { stanchezza: 25 },
+          gradeChanges: { subject: 'random', change: 0.4 },
+        }),
+      },
+      {
+        label: 'Crolla dal sonno',
+        action: () => ({
+          message: 'Troppo stanco per studiare! -0.1 media.',
+          gradeChanges: { subject: 'random', change: -0.1 },
+        }),
+      },
+    ],
+  }
 }

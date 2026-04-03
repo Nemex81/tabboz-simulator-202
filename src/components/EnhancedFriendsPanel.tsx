@@ -1,24 +1,24 @@
+import React from 'react'
 import { User, Users, Barbell, Brain, Lightning, Fist, HandCoins, XCircle, Crown } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { GameStats } from '@/lib/types'
+import { GameStats, Friend } from '@/lib/types'
 import {
-  EnhancedFriend,
   getFriendTypeDescription,
   FRIEND_ACTIONS,
   checkBestFriend
 } from '@/lib/enhanced-friend-system'
 
 interface EnhancedFriendsPanelProps {
-  friends: EnhancedFriend[]
+  friends: Friend[]
   stats: GameStats
   actionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
 }
 
-export function EnhancedFriendsPanel({
+export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   friends,
   stats,
   actionsRemaining,
@@ -193,4 +193,4 @@ export function EnhancedFriendsPanel({
       })}
     </div>
   )
-}
+})

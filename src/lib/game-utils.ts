@@ -4,6 +4,37 @@ export const clampStat = (value: number, min: number = 0, max: number = 100): nu
   return Math.max(min, Math.min(max, value))
 }
 
+// A1 — Guardia centralizzata per le spese
+export const spendMoney = (
+  currentSoldi: number,
+  amount: number,
+  actionName: string
+): { success: boolean; newSoldi: number; errorMessage?: string } => {
+  if (amount < 0) {
+    return { success: false, newSoldi: currentSoldi, errorMessage: 'Importo non valido' }
+  }
+  if (currentSoldi < amount) {
+    return {
+      success: false,
+      newSoldi: currentSoldi,
+      errorMessage: `Non hai abbastanza soldi per "${actionName}". Servono ${amount}€, hai ${currentSoldi}€.`
+    }
+  }
+  return { success: true, newSoldi: currentSoldi - amount }
+}
+
+// A5 — Generatore random con seed LCG (Linear Congruential Generator)
+let _seed = Date.now()
+
+export const initRandom = (seed: number): void => {
+  _seed = seed >>> 0
+}
+
+export const seededRandom = (): number => {
+  _seed = ((_seed * 1664525 + 1013904223) & 0xffffffff) >>> 0
+  return _seed / 0xffffffff
+}
+
 export const calculateMedia = (grades: { [key: string]: number }): number => {
   const values = Object.values(grades)
   if (values.length === 0) return 0
@@ -13,7 +44,7 @@ export const calculateMedia = (grades: { [key: string]: number }): number => {
 }
 
 export const randomChance = (percentage: number): boolean => {
-  return Math.random() * 100 < percentage
+  return seededRandom() * 100 < percentage
 }
 
 export const checkGameOver = (stats: GameStats): { isOver: boolean; reason: string } => {

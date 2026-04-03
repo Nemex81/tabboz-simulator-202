@@ -1,14 +1,31 @@
 import React from 'react'
-import { Calendar, Clock, GraduationCap, Cake, Trophy } from '@phosphor-icons/react'
+import { Calendar, Clock, GraduationCap, Cake, Trophy, Sun, Moon } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
-import { GameTime } from '@/lib/types'
-import { formatDate, getSchoolYearName, getDaysUntilReportCard } from '@/lib/time-utils'
+import { GameTime, DayPhase, DayType } from '@/lib/types'
+import { formatDate, getSchoolYearName, getDaysUntilReportCard, DAY_PHASE_CONFIG } from '@/lib/time-utils'
 
 interface TimeDisplayProps {
   gameTime: GameTime
+  currentPhase?: DayPhase
+  dayType?: DayType
+  phaseActionsRemaining?: number
 }
 
-export function TimeDisplay({ gameTime }: TimeDisplayProps) {
+const PHASE_ICONS: Record<DayPhase, string> = {
+  mattina: '🌅',
+  pomeriggio: '☀️',
+  sera: '🌆',
+  notte: '🌙',
+}
+
+const DAY_TYPE_LABEL: Record<DayType, string> = {
+  feriale: 'Giorno Scolastico',
+  sabato: 'Sabato',
+  domenica: 'Domenica',
+  festivo: 'Festivo',
+}
+
+export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPhase, dayType, phaseActionsRemaining }: TimeDisplayProps) {
   const daysUntilReportCard = getDaysUntilReportCard(
     gameTime.currentDate,
     gameTime.schoolYear.reportCardDate
@@ -134,8 +151,26 @@ export function TimeDisplay({ gameTime }: TimeDisplayProps) {
               </div>
             </div>
           )}
+
+          {/* Fascia oraria */}
+          {currentPhase && dayType && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">{PHASE_ICONS[currentPhase]}</span>
+                <span className="text-sm font-bold text-accent uppercase">
+                  {DAY_PHASE_CONFIG[dayType][currentPhase].label}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {DAY_PHASE_CONFIG[dayType][currentPhase].timeRange}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {DAY_TYPE_LABEL[dayType]} — Azioni fascia: {phaseActionsRemaining ?? DAY_PHASE_CONFIG[dayType][currentPhase].maxActions}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Card>
   )
-}
+})

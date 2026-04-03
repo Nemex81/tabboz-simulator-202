@@ -12,7 +12,7 @@ interface StatDisplayProps {
   ariaLabel?: string
 }
 
-export function StatDisplay({ icon, label, value, max = 100, color, ariaLabel }: StatDisplayProps) {
+export const StatDisplay = React.memo(function StatDisplay({ icon, label, value, max = 100, color, ariaLabel }: StatDisplayProps) {
   const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0
   const percentage = (safeValue / max) * 100
   const prevValueRef = useRef(safeValue)
@@ -111,4 +111,4 @@ export function StatDisplay({ icon, label, value, max = 100, color, ariaLabel }:
       </Card>
     </motion.div>
   )
-}
+})
