@@ -1,3 +1,4 @@
+import React from 'react'
 import { Calendar, Clock, GraduationCap, Cake, Trophy } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { GameTime } from '@/lib/types'

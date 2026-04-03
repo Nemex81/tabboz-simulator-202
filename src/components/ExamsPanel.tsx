@@ -1,3 +1,4 @@
+import React from 'react'
 import { ScheduledExam } from '@/lib/types'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

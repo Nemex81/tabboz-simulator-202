@@ -1,3 +1,4 @@
+import React from 'react'
 import { Friend } from '@/lib/types'
 import { Card } from '@/components/ui/card'
 import { UserCircle, Brain, Star } from '@phosphor-icons/react'
