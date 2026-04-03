@@ -17,7 +17,10 @@ import {
   Sparkle,
   SirenLight,
   Flag,
-  ShieldWarning
+  ShieldWarning,
+  MusicNotes,
+  FilmSlate,
+  ShoppingCart
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
@@ -356,6 +359,87 @@ function App() {
     announce('Hai riposato un po\'! -40 Stanchezza')
   }
 
+  const handleDisco = () => {
+    if (stats.soldi < 60) {
+      announce('Non hai abbastanza GRANA per entrare in discoteca! Servono 60€')
+      return
+    }
+    if (stats.stanchezza > 70) {
+      announce('Sei troppo DISTRUTTO per andare in disco! Riposa!')
+      return
+    }
+    
+    const successChance = Math.min(85, Math.max(20, 
+      (stats.figosita * 0.4) + 
+      (stats.coattaggine * 0.3) + 
+      (stats.muscoli * 0.2)
+    ))
+    
+    if (randomChance(successChance)) {
+      setStats((current) => ({
+        ...current,
+        figosita: clampStat(current.figosita + 25),
+        coattaggine: clampStat(current.coattaggine + 15),
+        soldi: clampStat(current.soldi - 60, 0, 1000),
+        stanchezza: clampStat(current.stanchezza + 25)
+      }))
+      announce('Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, -60 Soldi, +25 Stanchezza')
+    } else {
+      setStats((current) => ({
+        ...current,
+        figosita: clampStat(current.figosita - 10),
+        soldi: clampStat(current.soldi - 60, 0, 1000),
+        stanchezza: clampStat(current.stanchezza + 20)
+      }))
+      announce('Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -60 Soldi, +20 Stanchezza')
+    }
+    triggerRandomEvent()
+  }
+
+  const handleCinema = () => {
+    if (stats.soldi < 40) {
+      announce('Non hai abbastanza GRANA per il cinema! Servono 40€')
+      return
+    }
+    
+    const roll = Math.random()
+    if (roll < 0.4) {
+      const names = ['Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer']
+      const randomName = names[Math.floor(Math.random() * names.length)]
+      setStats((current) => ({
+        ...current,
+        figosita: clampStat(current.figosita + 15),
+        soldi: clampStat(current.soldi - 80, 0, 1000),
+        stanchezza: clampStat(current.stanchezza - 10)
+      }))
+      announce(`Hai incontrato ${randomName} al cinema! Avete visto il film INSIEME! +15 Figosità, -80 Soldi (biglietti + popcorn), -10 Stanchezza`)
+    } else {
+      setStats((current) => ({
+        ...current,
+        soldi: clampStat(current.soldi - 40, 0, 1000),
+        stanchezza: clampStat(current.stanchezza - 15)
+      }))
+      announce('Hai visto un bel film! Serata tranquilla. -40 Soldi, -15 Stanchezza')
+    }
+    triggerRandomEvent()
+  }
+
+  const handleShoppingMall = () => {
+    if (stats.soldi < 100) {
+      announce('Non hai abbastanza GRANA per fare shopping! Servono 100€')
+      return
+    }
+    
+    setStats((current) => ({
+      ...current,
+      figosita: clampStat(current.figosita + 20),
+      coattaggine: clampStat(current.coattaggine + 10),
+      soldi: clampStat(current.soldi - 100, 0, 1000)
+    }))
+    announce('Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, -100 Soldi')
+    triggerRandomEvent()
+  }
+
   const handleProvarciConAtipa = () => {
     const names = ['Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer']
     const randomName = names[Math.floor(Math.random() * names.length)]
@@ -426,10 +510,13 @@ function App() {
         case '7': handleMinaccia(); break
         case '8': handleRiposa(); break
         case '9': handleProvarciConAtipa(); break
+        case 'd': handleDisco(); break
+        case 'c': handleCinema(); break
+        case 's': handleShoppingMall(); break
         case 'r': setShowResetDialog(true); break
         case '?':
         case 'h':
-          announce('Tasti rapidi: 1=Palestra, 2=Lampada, 3=Lavoro, 4=Motorino, 5=Studia, 6=Corrompi, 7=Minaccia, 8=Riposa, 9=Atipa, R=Reset')
+          announce('Tasti rapidi: 1=Palestra, 2=Lampada, 3=Lavoro, 4=Motorino, 5=Studia, 6=Corrompi, 7=Minaccia, 8=Riposa, 9=Atipa, D=Disco, C=Cinema, S=Shopping, R=Reset')
           break
       }
     }
@@ -576,7 +663,7 @@ function App() {
           <h2 id="actions-heading" className="text-2xl font-bold mb-4 text-secondary">
             AZIONI VITA SOCIALE
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
             <ActionButton
               icon={<Barbell size={48} />}
               label="Palestra"
@@ -617,6 +704,33 @@ function App() {
               disabled={stats.soldi < 80}
               variant="default"
               ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: 9"
+            />
+            <ActionButton
+              icon={<MusicNotes size={48} />}
+              label="Discoteca"
+              shortcut="D"
+              onClick={handleDisco}
+              disabled={stats.soldi < 60 || stats.stanchezza > 70}
+              variant="default"
+              ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: D"
+            />
+            <ActionButton
+              icon={<FilmSlate size={48} />}
+              label="Cinema"
+              shortcut="C"
+              onClick={handleCinema}
+              disabled={stats.soldi < 40}
+              variant="secondary"
+              ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: C"
+            />
+            <ActionButton
+              icon={<ShoppingCart size={48} />}
+              label="Shopping"
+              shortcut="S"
+              onClick={handleShoppingMall}
+              disabled={stats.soldi < 100}
+              variant="default"
+              ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: S"
             />
           </div>
         </section>
