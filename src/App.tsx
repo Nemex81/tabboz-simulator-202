@@ -12,7 +12,9 @@ import {
   Brain,
   HandCoins,
   Fist,
-  Running
+  Running,
+  Heart,
+  Sparkle
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
@@ -40,6 +42,9 @@ function App() {
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [currentEvent, setCurrentEvent] = useState<string>('')
   const [showMetallariEvent, setShowMetallariEvent] = useState(false)
+  const [showAtipaEvent, setShowAtipaEvent] = useState(false)
+  const [atipaName, setAtipaName] = useState('')
+  const [atipaSuccessChance, setAtipaSuccessChance] = useState(0)
   
   const ariaLiveRef = useRef<HTMLDivElement>(null)
 
@@ -100,10 +105,11 @@ function App() {
     setStats((current) => ({
       ...current,
       muscoli: clampStat(current.muscoli + 10),
+      figosita: clampStat(current.figosita + 5),
       soldi: clampStat(current.soldi - 20, 0, 1000),
       stanchezza: clampStat(current.stanchezza + 15)
     }))
-    announce('Hai pompato FERRO! +10 Muscoli, -20 Soldi, +15 Stanchezza')
+    announce('Hai pompato FERRO! +10 Muscoli, +5 Figosità, -20 Soldi, +15 Stanchezza')
     triggerRandomEvent()
   }
 
@@ -115,9 +121,10 @@ function App() {
     setStats((current) => ({
       ...current,
       coattaggine: clampStat(current.coattaggine + 15),
+      figosita: clampStat(current.figosita + 10),
       soldi: clampStat(current.soldi - 30, 0, 1000)
     }))
-    announce('Ora sei ABBRONZATISSIMO! +15 Coattaggine, -30 Soldi')
+    announce('Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -30 Soldi')
     triggerRandomEvent()
   }
 
@@ -148,9 +155,10 @@ function App() {
     setStats((current) => ({
       ...current,
       coattaggine: clampStat(current.coattaggine + 20),
+      figosita: clampStat(current.figosita + 15),
       soldi: clampStat(current.soldi - 50, 0, 1000)
     }))
-    announce('Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, -50 Soldi')
+    announce('Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -50 Soldi')
     triggerRandomEvent()
   }
 
@@ -223,6 +231,51 @@ function App() {
     announce('Hai riposato un po\'! -40 Stanchezza')
   }
 
+  const handleProvarciConAtipa = () => {
+    const names = ['Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer']
+    const randomName = names[Math.floor(Math.random() * names.length)]
+    setAtipaName(randomName)
+    
+    const successChance = Math.min(90, Math.max(10, 
+      (stats.figosita * 0.4) + 
+      (stats.coattaggine * 0.3) + 
+      (stats.muscoli * 0.2) + 
+      (stats.soldi / 10)
+    ))
+    
+    setAtipaSuccessChance(Math.round(successChance))
+    setCurrentEvent(`Hai adocchiato ${randomName} al centro commerciale! Ti vuoi provare?`)
+    setShowAtipaEvent(true)
+    announce(`Evento: Hai incontrato ${randomName}! Possibilità di successo: ${Math.round(successChance)}%`)
+  }
+
+  const handleAtipaRinuncia = () => {
+    setShowAtipaEvent(false)
+    setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 5) }))
+    announce(`Hai CAGATO sotto! -5 Coattaggine`)
+  }
+
+  const handleAtipaProva = () => {
+    setShowAtipaEvent(false)
+    
+    if (randomChance(atipaSuccessChance)) {
+      setStats((current) => ({
+        ...current,
+        figosita: clampStat(current.figosita + 20),
+        coattaggine: clampStat(current.coattaggine + 10),
+        soldi: clampStat(current.soldi - 80, 0, 1000)
+      }))
+      announce(`${atipaName} ha detto SÌ! Uscita EPICA! +20 Figosità, +10 Coattaggine, -80 Soldi (cinema + pizza)`)
+    } else {
+      setStats((current) => ({
+        ...current,
+        figosita: clampStat(current.figosita - 15),
+        coattaggine: clampStat(current.coattaggine - 10)
+      }))
+      announce(`${atipaName} ti ha dato il PALO! Bruciata DEVASTANTE! -15 Figosità, -10 Coattaggine`)
+    }
+  }
+
   const handleReset = () => {
     setStats(DEFAULT_GAME_STATE.stats)
     setGrades(DEFAULT_GAME_STATE.grades)
@@ -234,7 +287,7 @@ function App() {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (gameOver || showResetDialog || showMetallariEvent) return
+      if (gameOver || showResetDialog || showMetallariEvent || showAtipaEvent) return
       
       const key = e.key.toLowerCase()
       
@@ -247,17 +300,18 @@ function App() {
         case '6': handleCorrompi(); break
         case '7': handleMinaccia(); break
         case '8': handleRiposa(); break
+        case '9': handleProvarciConAtipa(); break
         case 'r': setShowResetDialog(true); break
         case '?':
         case 'h':
-          announce('Tasti rapidi: 1=Palestra, 2=Lampada, 3=Lavoro, 4=Motorino, 5=Studia, 6=Corrompi, 7=Minaccia, 8=Riposa, R=Reset')
+          announce('Tasti rapidi: 1=Palestra, 2=Lampada, 3=Lavoro, 4=Motorino, 5=Studia, 6=Corrompi, 7=Minaccia, 8=Riposa, 9=Atipa, R=Reset')
           break
       }
     }
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [gameOver, showResetDialog, showMetallariEvent, stats, grades])
+  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, stats, grades])
 
   const currentMedia = calculateMedia(grades)
 
@@ -286,7 +340,7 @@ function App() {
           <h2 id="stats-heading" className="text-2xl font-bold mb-4 text-secondary">
             LE TUE STATISTICHE
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <StatDisplay 
               icon={<Lightning size={32} weight="fill" />}
               label="Coattaggine"
@@ -296,6 +350,11 @@ function App() {
               icon={<Barbell size={32} weight="fill" />}
               label="Muscoli"
               value={stats.muscoli}
+            />
+            <StatDisplay 
+              icon={<Sparkle size={32} weight="fill" />}
+              label="Figosità"
+              value={stats.figosita}
             />
             <StatDisplay 
               icon={<CurrencyDollar size={32} weight="fill" />}
@@ -392,7 +451,7 @@ function App() {
           <h2 id="actions-heading" className="text-2xl font-bold mb-4 text-secondary">
             AZIONI VITA SOCIALE
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             <ActionButton
               icon={<Barbell size={48} />}
               label="Palestra"
@@ -424,6 +483,15 @@ function App() {
               onClick={handleMotorino}
               disabled={stats.soldi < 50}
               ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: 4"
+            />
+            <ActionButton
+              icon={<Heart size={48} />}
+              label="Atipa"
+              shortcut="9"
+              onClick={handleProvarciConAtipa}
+              disabled={stats.soldi < 80}
+              variant="default"
+              ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: 9"
             />
           </div>
         </section>
@@ -457,6 +525,36 @@ function App() {
             <AlertDialogAction onClick={handleMetallariCombatti} className="bg-destructive border-2">
               <Fist size={24} className="mr-2" />
               Combatti (Serve Muscoli &gt; 60)
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showAtipaEvent} onOpenChange={setShowAtipaEvent}>
+        <AlertDialogContent className="border-2 border-accent">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl text-accent flex items-center gap-2">
+              <Heart size={32} weight="fill" className="text-accent" />
+              RIMORCHIO TIME!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-lg space-y-2">
+              <p>{currentEvent}</p>
+              <p className="text-primary font-bold">
+                Probabilità di successo: {atipaSuccessChance}%
+              </p>
+              <p className="text-sm text-muted-foreground">
+                (Basato su Figosità, Coattaggine, Muscoli e Soldi)
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleAtipaRinuncia} className="border-2">
+              <Running size={24} className="mr-2" />
+              Lascia stare (-5 Coattaggine)
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleAtipaProva} className="bg-accent border-2">
+              <Heart size={24} weight="fill" className="mr-2" />
+              PROVA! (Costa 80€)
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

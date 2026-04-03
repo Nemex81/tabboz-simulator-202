@@ -4,6 +4,7 @@ export interface GameStats {
   soldi: number
   media: number
   stanchezza: number
+  figosita: number
 }
 
 export interface SubjectGrades {
@@ -25,7 +26,8 @@ export const DEFAULT_STATS: GameStats = {
   muscoli: 50,
   soldi: 100,
   media: 6,
-  stanchezza: 0
+  stanchezza: 0,
+  figosita: 50
 }
 
 export const DEFAULT_GRADES: SubjectGrades = {
