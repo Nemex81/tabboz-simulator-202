@@ -6,6 +6,8 @@ export interface GameStats {
   stanchezza: number
   figosita: number
   reputazione: number
+  intelligenza: number
+  carisma: number
 }
 
 export type ReputationLevel = 
@@ -16,6 +18,23 @@ export type ReputationLevel =
   | 'Leggenda del Quartiere'
 
 export type SchoolType = 'tecnico' | 'agraria' | 'artistico'
+
+export interface Friend {
+  id: string
+  name: string
+  legameLevel: number
+  intelligenza?: number
+  specialty?: string
+}
+
+export interface Relationship {
+  id: string
+  name: string
+  difficulty: 'facile' | 'media' | 'difficile'
+  preference: 'muscoli' | 'figosita' | 'intelligenza'
+  relationshipLevel: number
+  isActive: boolean
+}
 
 export interface SubjectGrades {
   [key: string]: number
@@ -90,6 +109,12 @@ export interface GameTime {
   lastPaghettaDate?: GameDate
 }
 
+export interface ScheduledExam {
+  subject: string
+  daysUntil: number
+  isPrepared: boolean
+}
+
 export interface GameState {
   stats: GameStats
   grades: SubjectGrades
@@ -97,6 +122,9 @@ export interface GameState {
   gameOver: boolean
   gameOverReason: string
   schoolType?: SchoolType
+  friends?: Friend[]
+  relationships?: Relationship[]
+  scheduledExams?: ScheduledExam[]
 }
 
 export const DEFAULT_STATS: GameStats = {
@@ -106,55 +134,57 @@ export const DEFAULT_STATS: GameStats = {
   media: 6,
   stanchezza: 0,
   figosita: 50,
-  reputazione: 50
+  reputazione: 50,
+  intelligenza: 10,
+  carisma: 10
 }
 
 export const getDefaultGradesForSchoolType = (schoolType: SchoolType): SubjectGrades => {
   switch (schoolType) {
     case 'tecnico':
       return {
-        matematica: 6,
-        italiano: 6,
-        storia: 6,
-        edFisica: 6,
-        informatica: 6,
-        elettronica: 6,
-        meccanica: 6,
-        sistemi: 6,
-        inglese: 6,
-        fisica: 6,
-        chimica: 6,
-        tecnologia: 6
+        matematica: 6.0,
+        italiano: 6.0,
+        storia: 6.0,
+        edFisica: 6.0,
+        informatica: 6.0,
+        elettronica: 6.0,
+        meccanica: 6.0,
+        sistemi: 6.0,
+        inglese: 6.0,
+        fisica: 6.0,
+        chimica: 6.0,
+        tecnologia: 6.0
       } as TecnicoGrades
     case 'agraria':
       return {
-        matematica: 6,
-        italiano: 6,
-        storia: 6,
-        edFisica: 6,
-        biologia: 6,
-        agronomia: 6,
-        zootecnia: 6,
-        ecologia: 6,
-        inglese: 6,
-        chimica: 6,
-        botanica: 6,
-        gestAziendale: 6
+        matematica: 6.0,
+        italiano: 6.0,
+        storia: 6.0,
+        edFisica: 6.0,
+        biologia: 6.0,
+        agronomia: 6.0,
+        zootecnia: 6.0,
+        ecologia: 6.0,
+        inglese: 6.0,
+        chimica: 6.0,
+        botanica: 6.0,
+        gestAziendale: 6.0
       } as AgrariaGrades
     case 'artistico':
       return {
-        matematica: 6,
-        italiano: 6,
-        storia: 6,
-        edFisica: 6,
-        disegno: 6,
-        pittura: 6,
-        scultura: 6,
-        storiaArte: 6,
-        inglese: 6,
-        anatomia: 6,
-        grafica: 6,
-        architettura: 6
+        matematica: 6.0,
+        italiano: 6.0,
+        storia: 6.0,
+        edFisica: 6.0,
+        disegno: 6.0,
+        pittura: 6.0,
+        scultura: 6.0,
+        storiaArte: 6.0,
+        inglese: 6.0,
+        anatomia: 6.0,
+        grafica: 6.0,
+        architettura: 6.0
       } as ArtisticoGrades
   }
 }

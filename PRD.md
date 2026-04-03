@@ -1,14 +1,14 @@
-# Tabboz Simulator: 2026 Edition
+# Tabboz Simulator: 2026 Edition - RPG Gestionale
 
-Un simulatore di vita da "coatto" anni '90-2000, completamente accessibile e ironico, che celebra la cultura tamarra italiana con meccaniche scolastiche rischiose e scelte moralmente discutibili.
+Un simulatore di vita da "coatto" anni '90-2000 evoluto in un **RPG gestionale complesso**, completamente accessibile e ironico, che celebra la cultura tamarra italiana con meccaniche scolastiche avanzate, sistema sociale profondo, intelligenza strategica e relazioni sentimentali.
 
 **Experience Qualities:**
-1. **Nostalgico** - Riporta il giocatore agli anni d'oro del gaming italiano trash, con linguaggio gergale e riferimenti culturali del periodo
-2. **Rischioso** - Ogni scelta importante ha conseguenze reali: corrompere un prof può salvarti o farti espellere
-3. **Accessibile** - Screen reader ready con ARIA live regions, shortcuts da tastiera, e contrasto estremo per ipovedenti
+1. **Nostalgico & Strategico** - Riporta il giocatore agli anni d'oro del gaming italiano trash, ma con meccaniche RPG profonde che richiedono pianificazione e gestione delle risorse
+2. **Realistico & Progressivo** - Sistema di voti decimali, verifiche programmate, amicizie che aiutano, relazioni romantiche complesse, e intelligenza che influenza lo studio
+3. **Accessibile & Complesso** - Screen reader ready con ARIA live regions, shortcuts da tastiera, UI organizzata in 5 schede tematiche per gestire la complessità
 
-**Complexity Level:** Light Application (multiple features with basic state)
-Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) con un'interfaccia organizzata a schede per facilitare la navigazione. Perfetto per sessioni brevi con progressione salvata.
+**Complexity Level:** Complex Application (advanced functionality with multiple interconnected systems)
+Il gioco ora ha sistemi RPG profondi: statistiche mentali (Intelligenza, Carisma), voti decimali con moltiplicatori, verifiche programmate, rubrica amici con benefici, relazioni sentimentali a più livelli, interrogazioni a sorpresa basate su formule, e social events che influenzano la rete di conoscenze.
 
 ## Essential Features
 
@@ -19,12 +19,47 @@ Il gioco ha diverse meccaniche interconnesse (scuola, palestra, lavoro, eventi) 
 - **Progression**: Visualizza voti per materia → Scelta azione (Studia/Corrompi/Minaccia) → Calcolo probabilistico esito → Aggiornamento statistiche → ARIA live announcement → Al 10 giugno: mostra pagella → Se media ≥ 6: promosso (voti reset a 6, anno +1, età +1) → Se anno 5 e promosso: VITTORIA → Se media < 6: BOCCIATO (game over)
 - **Success criteria**: Media calcolata correttamente, eventi di espulsione al 30% per "Minaccia", costi applicati per corruzione, progressione tra anni funzionante, reset voti dopo promozione, gestione vittoria in Quinta Superiore, UI mostra progresso verso maturità con barra grafica
 
-### Sistema Statistiche e Progressione
-- **Functionality**: 6 statistiche principali (Coattaggine, Muscoli, Figosità, Soldi, Media Scolastica, Stanchezza) che si influenzano a vicenda, più una settima statistica derivata: **Reputazione**
-- **Purpose**: Creare scelte strategiche - spendere soldi in palestra o corrompere? Studiare o lavorare? La Reputazione è calcolata automaticamente da tutte le altre stat e influenza significativamente gli eventi casuali
-- **Trigger**: Sempre visibili in dashboard, aggiornate dopo ogni azione
-- **Progression**: Azione selezionata → Verifica prerequisiti (es. abbastanza soldi?) → Applicazione modifiche → Calcolo automatico Reputazione → Annuncio vocale cambiamenti
-- **Success criteria**: Tutte le stat reagiscono correttamente, limiti rispettati (es. Stanchezza max 100), Reputazione si aggiorna automaticamente e annuncia cambio livello
+### Sistema Statistiche e Progressione Avanzato (RPG)
+- **Functionality**: 8 statistiche principali divise in **Fisiche** (Coattaggine, Muscoli, Figosità), **Mentali** (Intelligenza, Carisma), **Risorse** (Soldi, Stanchezza, Media Scolastica), più una derivata (Reputazione). Intelligenza e Carisma sono le nuove stat che trasformano il gioco in RPG gestionale.
+- **Purpose**: Creare scelte strategiche profonde - investire in Intelligenza per dominare la scuola con meno sforzo, o in Carisma per eccellere socialmente e evitare guai? La Reputazione ora considera anche il Carisma (20% del totale)
+- **Trigger**: Sempre visibili in dashboard espansa (8 stat invece di 6), aggiornate dopo ogni azione
+- **Progression**: Azione selezionata → Verifica prerequisiti → Applicazione modifiche → Calcolo automatico Reputazione (include Carisma) → Annuncio vocale cambiamenti dettagliati
+- **Success criteria**: Intelligenza influenza correttamente lo studio con moltiplicatori visibili, Carisma modifica eventi sociali, UI mostra chiaramente i benefici di ogni stat mentale con tooltip informativi
+
+### Sistema Intelligenza e Studio Decimale
+- **Functionality**: L'Intelligenza (0-100, partenza a 10) agisce come **moltiplicatore dello studio**. Formula: `incremento_voto = 0.2 * (Intelligenza / 50)`. Studiare aumenta anche l'Intelligenza di 1-3 punti. I voti sono ora **decimali** (es. 6.4, 7.2) visualizzati con `.toFixed(1)`. Amici con Intelligenza > 60 danno bonus 50% allo studio ("studiamo insieme").
+- **Purpose**: Rendere la progressione scolastica più fluida e realistica, premiare l'investimento in Intelligenza con benefici esponenziali
+- **Trigger**: Ogni azione "Studia" utilizza la formula con Intelligenza attuale + eventuale bonus amici
+- **Progression**: Studia → Calcola boost Intelligenza → Applica formula decimale → Aggiorna voto con decimale → Aumenta Intelligenza di 1-3 → Annuncia incremento preciso (es. "+0.4 al voto in Matematica, +2 Intelligenza")
+- **Success criteria**: Voti mostrati sempre con 1 decimale, Intelligenza visibilmente influenza quanto si impara (UI mostra "+X.X per studio"), amici intelligenti danno bonus chiaro, progressione più smooth senza "salti" da voto intero
+
+### Sistema Verifiche e Interrogazioni Programmate
+- **Functionality**: Sistema di **esami programmati** che appaiono casualmente (30% chance al cambio giorno, max 3 contemporanei). Ogni verifica ha subject, giorni rimanenti, e stato preparazione. Il giocatore può "Preparare" usando un'azione (consuma stanchezza, aumenta Intelligenza). Al giorno della verifica: se preparato, voto = `voto_attuale + (2 * (1 + Intelligenza/100))`. **Interrogazioni a sorpresa** hanno 10% chance durante "Studia": esito basato su `(Media + Intelligenza) / 2`.
+- **Purpose**: Aggiungere tensione strategica e pianificazione a lungo termine, premiare preparazione anticipata e investimento in Intelligenza
+- **Trigger**: Verifiche generate casualmente ogni giorno scolare, interrogazioni sorpresa durante azione Studia
+- **Progression**: Nuovo giorno → 30% chance verifica programmata → Appare nel tab "Verifiche" → Giocatore può prepararsi (1 azione, +Intelligenza) → Al giorno X: calcola voto con moltiplicatore Intelligenza se preparato → Annuncio risultato → Rimuove verifica dalla lista
+- **Success criteria**: UI mostra countdown giorni rimanenti, stato preparazione visibile (badge), verifiche preparate danno voti significativamente più alti, interrogazioni sorpresa premiano alta Intelligenza, annunci ARIA live per nuove verifiche e risultati
+
+### Sistema Carisma e Parlantina
+- **Functionality**: Il Carisma (0-100, partenza a 10) influenza **tutte le interazioni sociali**: Disco (+25% successo), Rimorchio (bonus variabile), chance nuovi amici (+Carisma/10 alla probabilità base 15%). **Parlantina speciale**: Con Carisma > 70, hai 20% di evitare completamente eventi negativi (Metallari, Polizia, Bulli) con flavor text tipo "Li hai convinti con la PARLANTINA! +5 Carisma" invece di combattere/scappare/pagare.
+- **Purpose**: Creare un percorso alternativo "social" al muscoli/coattaggine, permettere build "diplomat" che risolve tutto col dialogo
+- **Trigger**: Check Carisma all'inizio di ogni interazione sociale ed evento negativo
+- **Progression**: Evento negativo → Se Carisma > 70: 20% roll → Se successo: auto-risolvi con Parlantina (nessuna perdita, +5 Carisma, flavor text) → Altrimenti: evento normale con bonus Carisma applicato
+- **Success criteria**: Carisma > 70 mostra chiaramente badge "Parlantina Attiva" in UI, eventi risolti con dialogo hanno messaggi distintivi, successo sociale visibilmente più alto con Carisma alto, UI mostra modificatori Carisma nelle probabilità
+
+### Sistema Amicizie e Benefici
+- **Functionality**: **Rubrica Amici** persistente con nome, livello legame, specialità, e Intelligenza propria. Probabilità di conoscere amico: `15% base + (Carisma / 10)` durante Palestra/Disco/Cinema/Shopping. Amici con Intelligenza > 60 danno **bonus 50% allo studio** ("facciamo i compiti insieme"). Ogni amico ha flavor text specialità (es. "Studia tanto", "È un coatto", "Ha tanta grana").
+- **Purpose**: Costruire rete sociale che da benefici tangibili, incentivare Carisma alto e partecipazione ad eventi sociali
+- **Trigger**: Check probabilità post ogni attività sociale
+- **Progression**: Azione sociale completata → Roll (15% + Carisma/10) → Se successo: genera amico casuale → Aggiunge a lista persistente → ARIA announce "Hai conosciuto Marco in palestra! (È bravo in palestra)" → Amici INT > 60 automaticamente attivi per bonus studio
+- **Success criteria**: Lista amici visualizzata in tab dedicato, amici intelligenti mostrano badge speciale, bonus studio visibile in tooltip, probabilità aumenta chiaramente con Carisma, annunci ARIA per nuove amicizie
+
+### Sistema Relazioni Sentimentali Complesso
+- **Functionality**: Lista **ragazze disponibili** con nome, difficoltà (facile/media/difficile), preferenza stat (muscoli/figosità/intelligenza), livello relazione. Generate casualmente (20% ogni attività sociale, max 6). "Provarci" costa 80€ e 1 azione. Successo basato su: `chance_base (60/40/20 per difficoltà) + (stat_preferita / 5) + (Carisma / 3)`. Se successo: relazione diventa "attiva", +30 Figosità +15 Carisma. Se fallisce: -20 Figosità -10 Carisma -40€.
+- **Purpose**: Aggiungere obiettivi a lungo termine, incentivare build bilanciate (devi avere la stat giusta + Carisma), ricompensare investimento sociale
+- **Trigger**: Generazione casuale ragazze durante attività sociali, azione manuale "Provarci" dal tab Amici
+- **Progression**: Attività sociale → 20% genera nuova ragazza → Appare in lista con preferenze visibili → Giocatore decide quando provare → Calcola probabilità (mostra % in UI) → Roll → Se sì: +relazione attiva +stat → Se no: malus -stat -soldi → ARIA announce esito drammatico
+- **Success criteria**: UI mostra chiaramente preferenze ragazze, probabilità calcolata mostrata prima di provare, relazioni attive hanno UI distintiva (badge, colore), successo/fallimento have flavor text specifico per ogni ragazza, Carisma visibilmente aumenta chance
 
 ### Sistema di Reputazione Dinamico
 - **Functionality**: La Reputazione (0-100) è calcolata automaticamente da: Coattaggine (30%), Muscoli (20%), Figosità (25%), Soldi (15%), Media Scolastica (10%). Ha 5 livelli: "Sfigato Totale" (<20), "Nessuno" (20-39), "Coatto Base" (40-59), "Rispettato" (60-79), "Leggenda del Quartiere" (80+)

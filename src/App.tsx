@@ -25,7 +25,9 @@ import {
   ChartBar,
   User,
   Buildings,
-  Trophy
+  Trophy,
+  UserCircle,
+  Chats
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
@@ -34,6 +36,9 @@ import { TimeDisplay } from '@/components/TimeDisplay'
 import { ReportCardDialog } from '@/components/ReportCardDialog'
 import { SchoolSelection } from '@/components/SchoolSelection'
 import { SchoolEventDialog } from '@/components/SchoolEventDialog'
+import { FriendsPanel } from '@/components/FriendsPanel'
+import { RelationshipsPanel } from '@/components/RelationshipsPanel'
+import { ExamsPanel } from '@/components/ExamsPanel'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -47,7 +52,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam } from '@/lib/types'
 import { 
   clampStat, 
   calculateMedia, 
@@ -55,7 +60,9 @@ import {
   checkGameOver,
   calculateReputationFromStats,
   getReputationLevel,
-  getReputationEventModifier
+  getReputationEventModifier,
+  calculateStudyGradeIncrease,
+  canAvoidNegativeEventWithCharisma
 } from '@/lib/game-utils'
 import { 
   advanceGameTime, 
@@ -65,12 +72,29 @@ import {
 } from '@/lib/time-utils'
 import { playSound } from '@/lib/sound-effects'
 import { getTeacherEvent, getParentEventByMedia, SchoolEvent, EventOutcome } from '@/lib/school-events'
+import { 
+  generateRandomFriend, 
+  generateRandomRelationship, 
+  checkNewFriendEvent,
+  calculateRelationshipSuccess,
+  getFriendStudyBonus
+} from '@/lib/social-system'
+import {
+  generateScheduledExam,
+  calculateExamGrade,
+  calculateSurpriseQuizGrade,
+  shouldTriggerSurpriseQuiz,
+  prepareForExam
+} from '@/lib/exam-system'
 
 function App() {
   const [schoolType, setSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
   const [stats, setStats] = useKV<GameStats>('tabboz-stats', DEFAULT_GAME_STATE.stats)
   const [grades, setGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
   const [gameTime, setGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
+  const [friends, setFriends] = useKV<Friend[]>('tabboz-friends', [])
+  const [relationships, setRelationships] = useKV<Relationship[]>('tabboz-relationships', [])
+  const [scheduledExams, setScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
   const [gameOver, setGameOver] = useState(false)
   const [gameOverReason, setGameOverReason] = useState('')
   const [showResetDialog, setShowResetDialog] = useState(false)
@@ -152,6 +176,39 @@ function App() {
         setShowSchoolEvent(true)
       }
       
+      setScheduledExams((currentExams) => {
+        const updatedExams = currentExams.map(exam => {
+          const newDaysUntil = exam.daysUntil - 1
+          if (newDaysUntil <= 0) {
+            const examGrade = calculateExamGrade(
+              grades[exam.subject] || 6,
+              stats.intelligenza,
+              exam.isPrepared,
+              currentMedia
+            )
+            setGrades((g) => ({
+              ...g,
+              [exam.subject]: examGrade
+            }))
+            const resultText = exam.isPrepared 
+              ? `VERIFICA di ${getSubjectDisplayName(exam.subject)}! Eri PREPARATO! Voto: ${examGrade.toFixed(1)}`
+              : `VERIFICA di ${getSubjectDisplayName(exam.subject)}! Non eri preparato... Voto: ${examGrade.toFixed(1)}`
+            announce(resultText)
+            return null
+          }
+          return { ...exam, daysUntil: newDaysUntil }
+        }).filter((e): e is ScheduledExam => e !== null)
+        
+        if (newGameTime.schoolYear.isSchoolPeriod && updatedExams.length < 3 && Math.random() < 0.3 && schoolType) {
+          const subjects = Object.keys(grades)
+          const newExam = generateScheduledExam(subjects)
+          announce(`NUOVA VERIFICA programmata di ${getSubjectDisplayName(newExam.subject)} tra ${newExam.daysUntil} giorni!`)
+          return [...updatedExams, newExam]
+        }
+        
+        return updatedExams
+      })
+      
       return newGameTime
     })
     playSound.success()
@@ -173,7 +230,7 @@ function App() {
     }
     
     prevReputationRef.current = newReputation
-  }, [stats.coattaggine, stats.muscoli, stats.figosita, stats.soldi, stats.media, setStats])
+  }, [stats.coattaggine, stats.muscoli, stats.figosita, stats.soldi, stats.media, stats.carisma, setStats])
 
   useEffect(() => {
     const checkStatus = checkGameOver({ ...stats, media: calculateMedia(grades) })
@@ -191,6 +248,11 @@ function App() {
     const adjustedRoll = baseRoll * reputationModifier.encounterChanceMultiplier
     
     if (adjustedRoll < 12) {
+      if (canAvoidNegativeEventWithCharisma(stats.carisma)) {
+        playSound.success()
+        announce('I METALLARI ti riconoscono! Con la tua PARLANTINA li hai convinti a lasciarti stare!')
+        return
+      }
       const respectBonus = reputationModifier.respectBonus
       if (respectBonus >= 15) {
         playSound.success()
@@ -202,6 +264,12 @@ function App() {
       setCurrentEvent('Incontro con i METALLARI! Vogliono la tua grana!')
       announce('Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!')
     } else if (adjustedRoll < 22) {
+      if (canAvoidNegativeEventWithCharisma(stats.carisma)) {
+        playSound.success()
+        setStats((current) => ({ ...current, carisma: clampStat(current.carisma + 5) }))
+        announce('I POLIZIOTTI ti hanno fermato ma con la tua PARLANTINA li hai convinti! +5 Carisma!')
+        return
+      }
       if (reputationModifier.respectBonus >= 15) {
         playSound.success()
         announce('I POLIZIOTTI ti hanno fermato ma ti lasciano andare! Sei troppo RISPETTATO nel quartiere!')
@@ -234,6 +302,106 @@ function App() {
       setCurrentEvent('I BULLI della scuola ti vogliono rubare la merenda!')
       announce('Evento casuale: Incontro con i BULLI!')
     }
+  }
+
+  const checkForNewFriend = (location: string) => {
+    if (checkNewFriendEvent(stats.carisma, location)) {
+      const newFriend = generateRandomFriend()
+      setFriends((current) => [...current, newFriend])
+      playSound.success()
+      announce(`Hai conosciuto ${newFriend.name} ${location}! Nuovo amico aggiunto alla RUBRICA! (${newFriend.specialty})`)
+    }
+  }
+
+  const checkForNewRelationship = () => {
+    if (relationships.length < 6 && randomChance(20)) {
+      const newRelationship = generateRandomRelationship()
+      setRelationships((current) => [...current, newRelationship])
+      playSound.eventTrigger()
+      announce(`Hai notato ${newRelationship.name}! Aggiunta alle ragazze disponibili!`)
+    }
+  }
+
+  const handleTryRelationship = (relationshipId: string) => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta!')
+      return
+    }
+    if (stats.soldi < 80) {
+      playSound.failure()
+      announce('Servono 80€ per uscire!')
+      return
+    }
+
+    const relationship = relationships.find(r => r.id === relationshipId)
+    if (!relationship) return
+
+    const successChance = calculateRelationshipSuccess(stats, relationship)
+    
+    if (randomChance(successChance)) {
+      playSound.bigWin()
+      setRelationships((current) =>
+        current.map(r =>
+          r.id === relationshipId
+            ? { ...r, isActive: true, relationshipLevel: 1 }
+            : r
+        )
+      )
+      setStats((current) => ({
+        ...current,
+        figosita: clampStat(current.figosita + 30),
+        carisma: clampStat(current.carisma + 15),
+        soldi: clampStat(current.soldi - 80, 0, 1000)
+      }))
+      consumeAction()
+      announce(`${relationship.name} ha detto SÌ! Siete INSIEME! +30 Figosità, +15 Carisma, -80 Soldi`)
+    } else {
+      playSound.bigLoss()
+      setStats((current) => ({
+        ...current,
+        figosita: clampStat(current.figosita - 20),
+        carisma: clampStat(current.carisma - 10),
+        soldi: clampStat(current.soldi - 40, 0, 1000)
+      }))
+      consumeAction()
+      announce(`${relationship.name} ti ha dato il PALO! RIFIUTATO! -20 Figosità, -10 Carisma, -40 Soldi`)
+    }
+  }
+
+  const handlePrepareExam = (examSubject: string) => {
+    if (gameTime.actionsRemaining === 0) {
+      playSound.failure()
+      announce('Nessuna azione rimasta!')
+      return
+    }
+    if (stats.stanchezza > 80) {
+      playSound.failure()
+      announce('Troppo stanco per studiare!')
+      return
+    }
+
+    const examIndex = scheduledExams.findIndex(e => e.subject === examSubject)
+    if (examIndex === -1) return
+
+    const exam = scheduledExams[examIndex]
+    const result = prepareForExam(exam, stats.intelligenza)
+
+    setScheduledExams((current) =>
+      current.map((e, i) =>
+        i === examIndex ? { ...e, isPrepared: true } : e
+      )
+    )
+
+    setStats((current) => ({
+      ...current,
+      intelligenza: clampStat(current.intelligenza + result.intelligenceGain),
+      stanchezza: clampStat(current.stanchezza + 25)
+    }))
+
+    consumeAction()
+    playSound.success()
+    announce(result.message)
   }
 
   const handleMetallariScappa = () => {
@@ -394,6 +562,8 @@ function App() {
     }))
     consumeAction()
     announce('Hai pompato FERRO! +10 Muscoli, +5 Figosità, -20 Soldi, +15 Stanchezza')
+    checkForNewFriend('in palestra')
+    checkForNewRelationship()
     triggerRandomEvent()
   }
 
@@ -494,18 +664,36 @@ function App() {
     const subjects = Object.keys(grades) as Array<keyof SubjectGrades>
     const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
     
+    const hasFriendBonus = getFriendStudyBonus(friends) > 0
+    const gradeIncrease = calculateStudyGradeIncrease(stats.intelligenza, hasFriendBonus)
+    const intelligenzaGain = Math.floor(Math.random() * 3) + 1
+    
     setGrades((current) => ({
       ...current,
-      [randomSubject]: clampStat(current[randomSubject] + 1, 0, 10)
+      [randomSubject]: clampStat(current[randomSubject] + gradeIncrease, 0, 10)
     }))
     setStats((current) => ({
       ...current,
       stanchezza: clampStat(current.stanchezza + 20),
-      coattaggine: clampStat(current.coattaggine - 5)
+      coattaggine: clampStat(current.coattaggine - 5),
+      intelligenza: clampStat(current.intelligenza + intelligenzaGain)
     }))
     consumeAction()
     playSound.statIncrease()
-    announce(`Hai studiato ${randomSubject.toUpperCase()}! +1 al voto, +20 Stanchezza, -5 Coattaggine`)
+    
+    const bonusText = hasFriendBonus ? ' (BONUS AMICO INTELLIGENTE!)' : ''
+    announce(`Hai studiato ${getSubjectDisplayName(randomSubject)}! +${gradeIncrease.toFixed(1)} al voto, +${intelligenzaGain} Intelligenza${bonusText}, +20 Stanchezza, -5 Coattaggine`)
+    
+    if (shouldTriggerSurpriseQuiz() && gameTime.schoolYear.isSchoolPeriod) {
+      const surpriseSubject = subjects[Math.floor(Math.random() * subjects.length)]
+      const quizResult = calculateSurpriseQuizGrade(grades[surpriseSubject], stats)
+      setGrades((current) => ({
+        ...current,
+        [surpriseSubject]: quizResult.newGrade
+      }))
+      playSound.eventTrigger()
+      announce(`${quizResult.message} in ${getSubjectDisplayName(surpriseSubject)}!`)
+    }
   }
 
   const handleCorrompi = () => {
@@ -616,6 +804,7 @@ function App() {
       (stats.figosita * 0.4) + 
       (stats.coattaggine * 0.3) + 
       (stats.muscoli * 0.2) +
+      (stats.carisma * 0.25) +
       reputationModifier.positiveOutcomeBonus
     ))
     
@@ -625,10 +814,11 @@ function App() {
         ...current,
         figosita: clampStat(current.figosita + 25),
         coattaggine: clampStat(current.coattaggine + 15),
+        carisma: clampStat(current.carisma + 10),
         soldi: clampStat(current.soldi - 60, 0, 1000),
         stanchezza: clampStat(current.stanchezza + 25)
       }))
-      announce('Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, -60 Soldi, +25 Stanchezza')
+      announce('Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, +10 Carisma, -60 Soldi, +25 Stanchezza')
     } else {
       playSound.failure()
       setStats((current) => ({
@@ -640,6 +830,8 @@ function App() {
       announce('Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -60 Soldi, +20 Stanchezza')
     }
     consumeAction()
+    checkForNewFriend('in discoteca')
+    checkForNewRelationship()
     triggerRandomEvent()
   }
 
@@ -664,10 +856,11 @@ function App() {
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita + 15),
+        carisma: clampStat(current.carisma + 10),
         soldi: clampStat(current.soldi - 80, 0, 1000),
         stanchezza: clampStat(current.stanchezza - 10)
       }))
-      announce(`Hai incontrato ${randomName} al cinema! Avete visto il film INSIEME! +15 Figosità, -80 Soldi (biglietti + popcorn), -10 Stanchezza`)
+      announce(`Hai incontrato ${randomName} al cinema! Avete visto il film INSIEME! +15 Figosità, +10 Carisma, -80 Soldi (biglietti + popcorn), -10 Stanchezza`)
     } else {
       setStats((current) => ({
         ...current,
@@ -677,6 +870,8 @@ function App() {
       announce('Hai visto un bel film! Serata tranquilla. -40 Soldi, -15 Stanchezza')
     }
     consumeAction()
+    checkForNewFriend('al cinema')
+    checkForNewRelationship()
     triggerRandomEvent()
   }
 
@@ -698,10 +893,13 @@ function App() {
       ...current,
       figosita: clampStat(current.figosita + 20),
       coattaggine: clampStat(current.coattaggine + 10),
+      carisma: clampStat(current.carisma + 5),
       soldi: clampStat(current.soldi - 100, 0, 1000)
     }))
     consumeAction()
-    announce('Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, -100 Soldi')
+    announce('Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -100 Soldi')
+    checkForNewFriend('al centro commerciale')
+    checkForNewRelationship()
     triggerRandomEvent()
   }
 
@@ -770,6 +968,9 @@ function App() {
     setStats(DEFAULT_GAME_STATE.stats)
     setGrades(schoolType ? getDefaultGradesForSchoolType(schoolType) : DEFAULT_GAME_STATE.grades)
     setGameTime(DEFAULT_GAME_STATE.gameTime)
+    setFriends([])
+    setRelationships([])
+    setScheduledExams([])
     setGameOver(false)
     setGameOverReason('')
     setShowResetDialog(false)
@@ -914,7 +1115,7 @@ function App() {
 
         <section aria-labelledby="quick-stats">
           <h2 id="quick-stats" className="sr-only">Panoramica Statistiche</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             <StatDisplay 
               icon={<Lightning size={28} weight="fill" />}
               label="Coattaggine"
@@ -929,6 +1130,16 @@ function App() {
               icon={<Sparkle size={28} weight="fill" />}
               label="Figosità"
               value={stats.figosita}
+            />
+            <StatDisplay 
+              icon={<Brain size={28} weight="fill" />}
+              label="Intelligenza"
+              value={stats.intelligenza}
+            />
+            <StatDisplay 
+              icon={<Chats size={28} weight="fill" />}
+              label="Carisma"
+              value={stats.carisma}
             />
             <StatDisplay 
               icon={<CurrencyDollar size={28} weight="fill" />}
@@ -953,21 +1164,31 @@ function App() {
         <TimeDisplay gameTime={gameTime} />
 
         <Tabs defaultValue="status" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 gap-2 bg-muted/50 p-1 h-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 bg-muted/50 p-1 h-auto">
             <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <ChartBar size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Profilo & Status</span>
+              <span className="hidden sm:inline">Profilo</span>
               <span className="sm:hidden">Status</span>
             </TabsTrigger>
             <TabsTrigger value="school" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               <GraduationCap size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Scuola & Studio</span>
+              <span className="hidden sm:inline">Scuola</span>
               <span className="sm:hidden">Scuola</span>
+            </TabsTrigger>
+            <TabsTrigger value="exams" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Brain size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Verifiche</span>
+              <span className="sm:hidden">Test</span>
+            </TabsTrigger>
+            <TabsTrigger value="friends" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+              <UserCircle size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Amici</span>
+              <span className="sm:hidden">Amici</span>
             </TabsTrigger>
             <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
               <Buildings size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Vita Sociale</span>
-              <span className="sm:hidden">Sociale</span>
+              <span className="hidden sm:inline">Sociale</span>
+              <span className="sm:hidden">Vita</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1058,7 +1279,7 @@ function App() {
               <Card className="p-6 border-2 border-primary bg-card">
                 <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
                   <User size={24} weight="fill" />
-                  CARATTERISTICHE
+                  CARATTERISTICHE FISICHE
                 </h3>
                 <div className="space-y-4">
                   <div>
@@ -1100,6 +1321,53 @@ function App() {
                 </div>
               </Card>
 
+              <Card className="p-6 border-2 border-accent bg-card">
+                <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+                  <Brain size={24} weight="fill" />
+                  CARATTERISTICHE MENTALI
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                        <Brain size={20} weight="fill" className="text-primary" />
+                        Intelligenza
+                      </span>
+                      <span className="text-2xl font-bold text-primary">{stats.intelligenza}</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary transition-all duration-300" style={{ width: `${stats.intelligenza}%` }} />
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Boost studio: +{calculateStudyGradeIncrease(stats.intelligenza).toFixed(1)} per azione
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                        <Chats size={20} weight="fill" className="text-accent" />
+                        Carisma
+                      </span>
+                      <span className="text-2xl font-bold text-accent">{stats.carisma}</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-accent transition-all duration-300" style={{ width: `${stats.carisma}%` }} />
+                    </div>
+                    {stats.carisma > 70 && (
+                      <div className="text-xs text-accent mt-1 font-bold">
+                        ✨ PARLANTINA ATTIVA! 20% di evitare guai!
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-4 p-3 bg-muted/30 rounded">
+                    <p><strong>Intelligenza:</strong> Moltiplica i voti quando studi</p>
+                    <p className="mt-1"><strong>Carisma:</strong> Migliora le interazioni sociali</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
               <Card className="p-6 border-2 border-secondary bg-card">
                 <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
                   <CurrencyDollar size={24} weight="fill" />
@@ -1177,7 +1445,7 @@ function App() {
                       {getSubjectDisplayName(subject)}
                     </div>
                     <div className={`text-3xl font-bold ${grade < 6 ? 'text-destructive' : 'text-secondary'}`}>
-                      {grade}
+                      {grade.toFixed(1)}
                     </div>
                     <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
                       <div 
@@ -1380,6 +1648,61 @@ function App() {
                 </div>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="exams" className="space-y-6 mt-6">
+            <ExamsPanel
+              exams={scheduledExams}
+              onPrepareExam={handlePrepareExam}
+              actionsRemaining={gameTime.actionsRemaining}
+              stanchezza={stats.stanchezza}
+            />
+            <Card className="p-6 border-2 border-accent bg-card/50">
+              <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+                <Brain size={28} weight="fill" />
+                SISTEMA INTELLIGENZA
+              </h3>
+              <div className="space-y-4 text-sm text-muted-foreground">
+                <p>
+                  <strong className="text-accent">L'Intelligenza</strong> è la tua arma segreta per dominare la scuola!
+                </p>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Studiare aumenta i voti in modo DECIMALE basato sulla tua Intelligenza</li>
+                  <li>Formula: <code className="bg-muted px-2 py-1 rounded">+{calculateStudyGradeIncrease(stats.intelligenza).toFixed(1)}</code> per ogni studio</li>
+                  <li>Preparare le verifiche aumenta l'Intelligenza e moltiplica il voto finale!</li>
+                  <li>Le interrogazioni a sorpresa dipendono da (Media + Intelligenza) / 2</li>
+                  <li>Amici intelligenti (INT {'>'} 60) aumentano del 50% l'efficacia dello studio!</li>
+                </ul>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="friends" className="space-y-6 mt-6">
+            <FriendsPanel friends={friends} />
+            <RelationshipsPanel
+              relationships={relationships}
+              stats={stats}
+              onTryRelationship={handleTryRelationship}
+              actionsRemaining={gameTime.actionsRemaining}
+            />
+            <Card className="p-6 border-2 border-accent bg-card/50">
+              <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+                <Chats size={28} weight="fill" />
+                SISTEMA CARISMA
+              </h3>
+              <div className="space-y-4 text-sm text-muted-foreground">
+                <p>
+                  <strong className="text-accent">Il Carisma</strong> è la tua capacità di convincere e socializzare!
+                </p>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Influenza TUTTE le interazioni sociali (Disco, Cinema, Rimorchio)</li>
+                  <li>Con Carisma {'>'} 70 hai 20% di evitare eventi negativi con la PARLANTINA!</li>
+                  <li>Aumenta le probabilità di fare nuove amicizie (base 15% + bonus Carisma)</li>
+                  <li>Migliora le chance con le ragazze (ogni tipo ha preferenze diverse!)</li>
+                  <li>Contribuisce al 20% della tua REPUTAZIONE totale!</li>
+                </ul>
+              </div>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

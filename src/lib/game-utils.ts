@@ -38,20 +38,63 @@ export const getReputationLevel = (reputazione: number): ReputationLevel => {
 }
 
 export const calculateReputationFromStats = (stats: GameStats): number => {
-  const coattaggineWeight = 0.3
-  const muscoliWeight = 0.2
-  const figositaWeight = 0.25
-  const soldiWeight = 0.15
+  const coattaggineWeight = 0.25
+  const muscoliWeight = 0.15
+  const figositaWeight = 0.2
+  const soldiWeight = 0.1
   const mediaWeight = 0.1
+  const carismaWeight = 0.2
   
   const reputationScore = 
     (stats.coattaggine * coattaggineWeight) +
     (stats.muscoli * muscoliWeight) +
     (stats.figosita * figositaWeight) +
     (Math.min(stats.soldi / 10, 100) * soldiWeight) +
-    (Math.min(stats.media * 10, 100) * mediaWeight)
+    (Math.min(stats.media * 10, 100) * mediaWeight) +
+    (stats.carisma * carismaWeight)
   
   return clampStat(reputationScore)
+}
+
+export const calculateStudyGradeIncrease = (intelligenza: number, hasFriendBonus: boolean = false): number => {
+  const baseIncrease = 0.2 * (intelligenza / 50)
+  const friendMultiplier = hasFriendBonus ? 1.5 : 1
+  return Number((baseIncrease * friendMultiplier).toFixed(1))
+}
+
+export const calculateSocialSuccessChance = (
+  stats: GameStats,
+  baseStats: { figosita?: number; muscoli?: number; intelligenza?: number },
+  carismaBoost: boolean = true
+): number => {
+  let totalChance = 0
+  let statCount = 0
+  
+  if (baseStats.figosita) {
+    totalChance += stats.figosita * 0.4
+    statCount++
+  }
+  if (baseStats.muscoli) {
+    totalChance += stats.muscoli * 0.3
+    statCount++
+  }
+  if (baseStats.intelligenza) {
+    totalChance += stats.intelligenza * 0.3
+    statCount++
+  }
+  
+  if (carismaBoost && stats.carisma > 0) {
+    totalChance += stats.carisma * 0.3
+  }
+  
+  return Math.min(95, Math.max(5, totalChance))
+}
+
+export const canAvoidNegativeEventWithCharisma = (carisma: number): boolean => {
+  if (carisma > 70) {
+    return randomChance(20)
+  }
+  return false
 }
 
 export const getReputationEventModifier = (reputazione: number): {
