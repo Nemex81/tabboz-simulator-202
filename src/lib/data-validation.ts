@@ -66,7 +66,8 @@ export const validateGameTime = (gameTime: Partial<GameTime> | null | undefined)
         reportCardDate: { day: 10, month: 6, year: 2025 }
       },
       age: 14,
-      lastPaghettaDate: undefined
+      lastPaghettaDate: undefined,
+      extraActions: 0
     }
   }
 
@@ -82,7 +83,8 @@ export const validateGameTime = (gameTime: Partial<GameTime> | null | undefined)
       reportCardDate: { day: 10, month: 6, year: 2025 }
     },
     age: Math.max(14, Math.min(gameTime.age ?? 14, 25)),
-    lastPaghettaDate: gameTime.lastPaghettaDate
+    lastPaghettaDate: gameTime.lastPaghettaDate,
+    extraActions: Math.max(0, gameTime.extraActions ?? 0)
   }
 }
 

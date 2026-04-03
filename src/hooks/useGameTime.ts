@@ -17,6 +17,7 @@ import { getParentEventByMedia, getTeacherEvent } from '@/lib/school-events'
 import { calculateMedia, clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 import { SchoolEvent } from '@/lib/school-events'
+import { drawSchoolMorningEvents, SchoolMorningEvent } from '@/lib/school-morning-events'
 
 interface UseGameTimeParams {
   grades: SubjectGrades
@@ -28,6 +29,8 @@ interface UseGameTimeParams {
   setGameWon: (v: boolean) => void
   setSchoolEvent: (v: SchoolEvent | null) => void
   setShowSchoolEvent: (v: boolean) => void
+  setSchoolMorningEvents: (events: SchoolMorningEvent[]) => void
+  setShowSchoolMorning: (v: boolean) => void
   announce: (msg: string) => void
 }
 
@@ -41,6 +44,8 @@ export function useGameTime({
   setGameWon,
   setSchoolEvent,
   setShowSchoolEvent,
+  setSchoolMorningEvents,
+  setShowSchoolMorning,
   announce
 }: UseGameTimeParams) {
   const [rawGameTime, setRawGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
@@ -63,12 +68,9 @@ export function useGameTime({
   schoolTypeRef.current = schoolType
 
   const consumeAction = useCallback(() => {
-    setRawGameTime((current) => ({
-      ...current,
-      actionsRemaining: Math.max(0, current.actionsRemaining - 1)
-    }))
+    // Solo phaseActionsRemaining viene decrementata (Fix5)
     setPhaseActionsRemaining((n) => Math.max(0, n - 1))
-  }, [setRawGameTime, setPhaseActionsRemaining])
+  }, [setPhaseActionsRemaining])
 
   /** Avanza alla fase successiva; se torna a 'mattina' avanza anche il giorno. */
   const advancePhaseOnly = useCallback(() => {
@@ -84,6 +86,14 @@ export function useGameTime({
         setDayType(newDayType)
         setCurrentPhase('mattina')
         setPhaseActionsRemaining(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
+
+        // Fix4: genera eventi scolastici se è un giorno feriale scolastico
+        if (newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
+          const morningEvents = drawSchoolMorningEvents(3)
+          setSchoolMorningEvents(morningEvents)
+          setShowSchoolMorning(true)
+        }
+
         return newGt
       })
     } else {
@@ -93,7 +103,8 @@ export function useGameTime({
     }
     playSound.buttonClick()
     announce(`Fascia oraria: ${nextPhase.charAt(0).toUpperCase() + nextPhase.slice(1)}`)
-  }, [currentPhase, dayType, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining, announce])
+  }, [currentPhase, dayType, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining,
+      setSchoolMorningEvents, setShowSchoolMorning, announce])
 
   const advanceToNextDay = useCallback(() => {
     setRawGameTime((current) => {
@@ -210,6 +221,14 @@ export function useGameTime({
     setPhaseActionsRemaining
   ])
 
+  const gainExtraAction = useCallback(() => {
+    setRawGameTime((current) => ({
+      ...current,
+      extraActions: (current.extraActions ?? 0) + 1
+    }))
+    announce('Hai guadagnato un\'AZIONE EXTRA! Usala saggiamente.')
+  }, [setRawGameTime, announce])
+
   return {
     gameTime,
     setGameTime: setRawGameTime,
@@ -217,6 +236,7 @@ export function useGameTime({
     setScheduledExams: setRawScheduledExams,
     consumeAction,
     advanceToNextDay,
+    gainExtraAction,
     // Fasce orarie
     currentPhase,
     setCurrentPhase,

@@ -30,8 +30,8 @@ export interface PhaseActionEntry {
 export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>> = {
   feriale: {
     mattina: [
-      { id: 'studia', label: 'Studia (mattina scolastica)', requiresSchoolPeriod: true },
-      { id: 'riposa', label: 'Torna a dormire (bugiardo!)' },
+      // 'studia' rimossa: la mattina scolastica è gestita da SchoolMorningPanel
+      { id: 'riposa', label: 'Sei a scuola! (salta per oggi)' },
     ],
     pomeriggio: [
       { id: 'palestra', label: 'Vai in palestra' },

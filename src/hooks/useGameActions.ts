@@ -44,6 +44,10 @@ interface UseGameActionsParams {
   checkForNewRelationship: () => void
   checkForNewGirlfriend: () => void
   setShowSubjectDialog: (v: boolean) => void
+  // Fix2: gate azioni per fascia oraria
+  currentPhase: import('@/lib/types').DayPhase
+  dayType: import('@/lib/types').DayType
+  phaseActionsRemaining: number
 }
 
 export function useGameActions({
@@ -68,7 +72,10 @@ export function useGameActions({
   checkForNewFriend,
   checkForNewRelationship,
   checkForNewGirlfriend,
-  setShowSubjectDialog
+  setShowSubjectDialog,
+  currentPhase,
+  dayType,
+  phaseActionsRemaining,
 }: UseGameActionsParams) {
   // Refs per accesso stabile
   const statsRef = useRef(stats)
@@ -83,13 +90,19 @@ export function useGameActions({
   girlfriendRef.current = girlfriend
   const scheduledExamsRef = useRef(scheduledExams)
   scheduledExamsRef.current = scheduledExams
+  const phaseActionsRemainingRef = useRef(phaseActionsRemaining)
+  phaseActionsRemainingRef.current = phaseActionsRemaining
+  const currentPhaseRef = useRef(currentPhase)
+  currentPhaseRef.current = currentPhase
+  const dayTypeRef = useRef(dayType)
+  dayTypeRef.current = dayType
 
   const handlePalestra = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     if (s.soldi < 20) {
@@ -116,9 +129,15 @@ export function useGameActions({
   const handleLampada = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    // Fix2: lampada non disponibile la mattina feriale (sei a scuola)
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina') {
+      playSound.failure()
+      announce('Vai a scuola! Non è ora di abbronzature.')
       return
     }
     if (s.soldi < 30) {
@@ -142,9 +161,9 @@ export function useGameActions({
   const handleLavoro = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     if (s.muscoli < 40) {
@@ -173,9 +192,9 @@ export function useGameActions({
   const handleMotorino = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     if (s.soldi < 50) {
@@ -204,9 +223,15 @@ export function useGameActions({
   const handleStudia = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    // Fix2: studia non disponibile durante le ore scolastiche del mattino
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Sei a scuola! Non puoi studiare per conto tuo adesso.')
       return
     }
     if (!gt.schoolYear.isSchoolPeriod) {
@@ -264,9 +289,9 @@ export function useGameActions({
   const handleCorrompi = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     if (!gt.schoolYear.isSchoolPeriod) {
@@ -298,9 +323,9 @@ export function useGameActions({
 
   const handleMinaccia = useCallback(() => {
     const gt = gameTimeRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     if (!gt.schoolYear.isSchoolPeriod) {
@@ -331,27 +356,33 @@ export function useGameActions({
     announce(`Hai MINACCIATO il prof di ${randomSubject.toUpperCase()}! +3 al voto, +15 Coattaggine. Rischiosa ma ha funzionato!`)
   }, [setGrades, setStats, setGameOver, setGameOverReason, consumeAction, announce])
 
-  const handleRiposa = useCallback((advanceToNextDay: () => void) => {
+  const handleRiposa = useCallback(() => {
+    if (phaseActionsRemainingRef.current <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
     playSound.buttonClick()
     setStats((current) => ({
       ...current,
       stanchezza: clampStat(current.stanchezza - 40)
     }))
-    if (gameTimeRef.current.actionsRemaining <= 1) {
-      consumeAction()
-      advanceToNextDay()
-    } else {
-      consumeAction()
-      announce('Hai riposato un po\'! -40 Stanchezza')
-    }
+    consumeAction()
+    announce('Hai riposato un po\'! -40 Stanchezza')
   }, [setStats, consumeAction, announce])
 
   const handleDisco = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    // Fix2: discoteca non disponibile di mattina
+    if (currentPhaseRef.current === 'mattina') {
+      playSound.failure()
+      announce('La discoteca di mattina?! Ci vuoi andare a quest\'ora?!')
       return
     }
     if (s.soldi < 60) {
@@ -404,9 +435,9 @@ export function useGameActions({
   const handleCinema = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     if (s.soldi < 40) {
@@ -450,9 +481,9 @@ export function useGameActions({
   const handleShoppingMall = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     if (s.soldi < 100) {
@@ -480,9 +511,9 @@ export function useGameActions({
   const handleTryRelationship = useCallback((relationshipId: string) => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     if (s.soldi < 80) {
@@ -526,9 +557,9 @@ export function useGameActions({
   const handlePrepareExam = useCallback((examSubject: string) => {
     const gt = gameTimeRef.current
     const s = statsRef.current
-    if (gt.actionsRemaining === 0) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     if (s.stanchezza > 80) {
@@ -590,9 +621,9 @@ export function useGameActions({
     const gf = girlfriendRef.current
     if (!gf) return
     const gt = gameTimeRef.current
-    if (gt.actionsRemaining === 0 && action !== 'messaggio') {
+    if (phaseActionsRemainingRef.current <= 0 && action !== 'messaggio') {
       playSound.failure()
-      announce('Nessuna azione rimasta!')
+      announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
     const currentDateString = `${gt.currentDate.day}/${gt.currentDate.month}/${gt.currentDate.year}`

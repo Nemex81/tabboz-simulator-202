@@ -47,6 +47,8 @@ const RelationshipsPanel = lazy(() => import('@/components/RelationshipsPanel').
 const ExamsPanel = lazy(() => import('@/components/ExamsPanel').then(m => ({ default: m.ExamsPanel })))
 // Dashboard lazy (tab nascosto all'avvio)
 const StatsDashboard = lazy(() => import('@/components/StatsDashboard').then(m => ({ default: m.StatsDashboard })))
+// SchoolMorningPanel lazy (solo mattina feriale scolastica)
+const SchoolMorningPanel = lazy(() => import('@/components/SchoolMorningPanel').then(m => ({ default: m.SchoolMorningPanel })))
 import { SchoolSelection } from '@/components/SchoolSelection'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -95,6 +97,7 @@ import {
 } from '@/lib/time-utils'
 import { playSound } from '@/lib/sound-effects'
 import { getTeacherEvent, getParentEventByMedia, SchoolEvent, EventOutcome } from '@/lib/school-events'
+import { drawSchoolMorningEvents, SchoolMorningEvent } from '@/lib/school-morning-events'
 import { 
   generateRandomFriend, 
   generateRandomRelationship, 
@@ -141,6 +144,9 @@ function App() {
   const [showSchoolEvent, setShowSchoolEvent] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showSubjectDialog, setShowSubjectDialog] = useState(false)
+  // School morning state
+  const [schoolMorningEvents, setSchoolMorningEvents] = useState<SchoolMorningEvent[]>([])
+  const [showSchoolMorning, setShowSchoolMorning] = useState(false)
 
   const ariaLiveRef = useRef<HTMLDivElement>(null)
 
@@ -156,7 +162,7 @@ function App() {
 
   const {
     gameTime, setGameTime, scheduledExams, setScheduledExams,
-    consumeAction, advanceToNextDay,
+    consumeAction, advanceToNextDay, gainExtraAction,
     currentPhase, dayType, phaseActionsRemaining, advancePhaseOnly,
   } = useGameTime({
     grades,
@@ -168,6 +174,8 @@ function App() {
     setGameWon,
     setSchoolEvent,
     setShowSchoolEvent,
+    setSchoolMorningEvents,
+    setShowSchoolMorning,
     announce
   })
 
@@ -207,7 +215,10 @@ function App() {
     checkForNewFriend: events.checkForNewFriend,
     checkForNewRelationship: events.checkForNewRelationship,
     checkForNewGirlfriend: events.checkForNewGirlfriend,
-    setShowSubjectDialog
+    setShowSubjectDialog,
+    currentPhase,
+    dayType,
+    phaseActionsRemaining,
   })
 
   // Destructure event engine results per compatibilità con JSX esistente
@@ -251,7 +262,23 @@ function App() {
     handleGirlfriendBreakup
   } = actions
 
-  const handleRiposa = () => actions.handleRiposa(advanceToNextDay)
+  const handleRiposa = () => actions.handleRiposa()
+
+  // Fix4: init useEffect — rileva mattina scolastica al caricamento della pagina
+  useEffect(() => {
+    if (
+      dayType === 'feriale' &&
+      currentPhase === 'mattina' &&
+      gameTime.schoolYear.isSchoolPeriod &&
+      !showSchoolMorning &&
+      schoolMorningEvents.length === 0
+    ) {
+      const events = drawSchoolMorningEvents(3)
+      setSchoolMorningEvents(events)
+      setShowSchoolMorning(true)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSchoolSelection = (selected: SchoolType) => {
     playSound.success()
@@ -768,6 +795,22 @@ function App() {
           </TabsContent>
 
           <TabsContent value="school" className="space-y-6 mt-6">
+            {/* Fix4: SchoolMorningPanel — mattina scolastica feriale */}
+            {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && (
+              <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
+                <SchoolMorningPanel
+                  events={schoolMorningEvents}
+                  stats={stats}
+                  onStatChange={setStats}
+                  onGainExtraAction={gainExtraAction}
+                  onFinishMorning={() => {
+                    setShowSchoolMorning(false)
+                    advancePhaseOnly()
+                  }}
+                  announce={announce}
+                />
+              </Suspense>
+            )}
             <Card className="p-6 border-2 border-secondary bg-card">
               <h3 className="text-2xl font-bold mb-6 text-secondary flex items-center gap-2">
                 <GraduationCap size={32} weight="fill" />
@@ -818,8 +861,8 @@ function App() {
                     label="Studia"
                     shortcut="Ctrl+5"
                     onClick={handleStudia}
-                    disabled={gameTime.actionsRemaining === 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.stanchezza > 80 ? 'Sei troppo stanco per studiare!' : 'Non è periodo scolastico'}
+                    disabled={phaseActionsRemaining <= 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.stanchezza > 80 ? 'Sei troppo stanco per studiare!' : 'Non è periodo scolastico'}
                     variant="secondary"
                     ariaLabel="Studia per aumentare i voti. Costa stanchezza, riduce coattaggine. Tasto rapido: Ctrl+5"
                   />
@@ -852,8 +895,8 @@ function App() {
                     label="Corrompi"
                     shortcut="Ctrl+6"
                     onClick={handleCorrompi}
-                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 100 || !gameTime.schoolYear.isSchoolPeriod}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.soldi < 100 ? 'Servono almeno 100€' : 'Non è periodo scolastico'}
+                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 100 || !gameTime.schoolYear.isSchoolPeriod}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 100 ? 'Servono almeno 100€' : 'Non è periodo scolastico'}
                     variant="default"
                     ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
                   />
@@ -862,8 +905,8 @@ function App() {
                     label="Minaccia"
                     shortcut="Ctrl+7"
                     onClick={handleMinaccia}
-                    disabled={gameTime.actionsRemaining === 0 || !gameTime.schoolYear.isSchoolPeriod}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Non è periodo scolastico'}
+                    disabled={phaseActionsRemaining <= 0 || !gameTime.schoolYear.isSchoolPeriod}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Non è periodo scolastico'}
                     variant="destructive"
                     ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
                   />
@@ -894,8 +937,8 @@ function App() {
                     label="Palestra"
                     shortcut="Ctrl+1"
                     onClick={handlePalestra}
-                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 20}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 20€'}
+                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 20}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 20€'}
                     ariaLabel="Vai in palestra per pompare muscoli. Costa 20 euro e aumenta la stanchezza. Tasto rapido: Ctrl+1"
                   />
                   <ActionButton
@@ -903,8 +946,8 @@ function App() {
                     label="Lampada"
                     shortcut="Ctrl+2"
                     onClick={handleLampada}
-                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 30}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 30€'}
+                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 30}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 30€'}
                     ariaLabel="Vai alla lampada abbronzante per aumentare la coattaggine. Costa 30 euro. Tasto rapido: Ctrl+2"
                   />
                   <ActionButton
@@ -912,8 +955,8 @@ function App() {
                     label="Motorino"
                     shortcut="Ctrl+4"
                     onClick={handleMotorino}
-                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 50 || stats.stanchezza > 80}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
+                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 50 || stats.stanchezza > 80}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
                     ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
                   />
                 </div>
@@ -930,8 +973,8 @@ function App() {
                     label="Atipa"
                     shortcut="Ctrl+9"
                     onClick={handleProvarciConAtipa}
-                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 80}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 80€'}
+                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 80}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 80€'}
                     variant="default"
                     ariaLabel="Prova a rimorchiare un'atipa. Richiede 80 euro per l'uscita. Dipende da Figosità, Coattaggine e Muscoli. Tasto rapido: Ctrl+9"
                   />
@@ -940,8 +983,8 @@ function App() {
                     label="Discoteca"
                     shortcut="Ctrl+D"
                     onClick={handleDisco}
-                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 60 || stats.stanchezza > 70}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.soldi < 60 ? 'Servono almeno 60€' : 'Sei troppo stanco per ballare!'}
+                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 60 || stats.stanchezza > 70}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 60 ? 'Servono almeno 60€' : 'Sei troppo stanco per ballare!'}
                     variant="default"
                     ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: Ctrl+D"
                   />
@@ -950,8 +993,8 @@ function App() {
                     label="Cinema"
                     shortcut="Ctrl+C"
                     onClick={handleCinema}
-                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 40}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 40€'}
+                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 40}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 40€'}
                     variant="secondary"
                     ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: Ctrl+C"
                   />
@@ -969,8 +1012,8 @@ function App() {
                     label="Lavoro"
                     shortcut="Ctrl+3"
                     onClick={handleLavoro}
-                    disabled={gameTime.actionsRemaining === 0 || stats.muscoli < 40 || stats.stanchezza > 80}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : stats.muscoli < 40 ? 'Servono almeno 40 Muscoli' : 'Sei troppo stanco per lavorare!'}
+                    disabled={phaseActionsRemaining <= 0 || stats.muscoli < 40 || stats.stanchezza > 80}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.muscoli < 40 ? 'Servono almeno 40 Muscoli' : 'Sei troppo stanco per lavorare!'}
                     ariaLabel="Lavora come buttadifuori. Richiede 40 muscoli. Guadagni soldi e coattaggine. Tasto rapido: Ctrl+3"
                   />
                   <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
@@ -993,8 +1036,8 @@ function App() {
                     label="Shopping"
                     shortcut="Ctrl+S"
                     onClick={handleShoppingMall}
-                    disabled={gameTime.actionsRemaining === 0 || stats.soldi < 100}
-                    blockedReason={gameTime.actionsRemaining === 0 ? 'Nessuna azione disponibile' : 'Servono almeno 100€'}
+                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 100}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 100€'}
                     variant="default"
                     ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: Ctrl+S"
                   />

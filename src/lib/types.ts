@@ -110,6 +110,7 @@ export interface GameTime {
   schoolYear: SchoolYear
   age: number
   lastPaghettaDate?: GameDate
+  extraActions?: number   // azioni bonus guadagnate tramite eventi speciali
 }
 
 // ─── Fasce Orarie (Fase B) ──────────────────────────────────────────────────
