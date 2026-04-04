@@ -16,6 +16,7 @@ interface SchoolMorningPanelProps {
   stats: GameStats
   onStatChange: (updater: (prev: GameStats) => GameStats) => void
   onGainExtraAction: () => void
+  onConsumeAction: () => void
   announce: (msg: string) => void
 }
 
@@ -88,6 +89,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
   stats,
   onStatChange,
   onGainExtraAction,
+  onConsumeAction,
   announce,
 }: SchoolMorningPanelProps) {
   const [resolvedIds, setResolvedIds] = React.useState<Set<string>>(new Set())
@@ -115,13 +117,15 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
 
       if (choice.grantsExtraAction) {
         onGainExtraAction()
+      } else {
+        onConsumeAction()
       }
 
       playSound.buttonClick()
       announce(result.message)
       setResolvedIds((prev) => new Set([...prev, event.id]))
     },
-    [resolvedIds, stats, onStatChange, onGainExtraAction, announce]
+    [resolvedIds, stats, onStatChange, onGainExtraAction, onConsumeAction, announce]
   )
 
   return (

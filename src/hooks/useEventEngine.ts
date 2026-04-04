@@ -88,7 +88,7 @@ export function useEventEngine({
   }, [setRelationships, announce])
 
   const checkForNewGirlfriend = useCallback(() => {
-    if (girlfriendRef.current || relationshipsRef.current.length > 0) return
+    if (girlfriendRef.current) return
     if (randomChance(10)) {
       const newGirl = generateRandomGirlfriend()
       setGirlfriend(newGirl)

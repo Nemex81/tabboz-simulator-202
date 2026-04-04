@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { GameStats, SubjectGrades, GameTime, SchoolType, Friend, Relationship, ScheduledExam } from '@/lib/types'
-import { Ragazza, performGirlfriendAction, shouldGirlfriendBreakup } from '@/lib/girlfriend-system'
+import { Ragazza, performGirlfriendAction, shouldGirlfriendBreakup, generateGirlfriendFromRelationship } from '@/lib/girlfriend-system'
 import {
   clampStat,
   randomChance,
@@ -600,6 +600,11 @@ export function useGameActions({
         figosita: clampStat(current.figosita + 30),
         carisma: clampStat(current.carisma + 15),
       }))
+      // Crea Ragazza dall'oggetto Relationship e imposta come fidanzata
+      const gt = gameTimeRef.current
+      const dateString = `${gt.currentDate.day}/${gt.currentDate.month}/${gt.currentDate.year}`
+      const newGirlfriend = generateGirlfriendFromRelationship(relationship, dateString)
+      setGirlfriend(newGirlfriend)
       consumeAction()
       announce(`${relationship.name} ha detto SÌ! Siete INSIEME! +30 Figosità, +15 Carisma`)
     } else {
@@ -613,7 +618,7 @@ export function useGameActions({
       consumeAction()
       announce(`${relationship.name} ti ha dato il PALO! RIFIUTATO! -20 Figosità, -10 Carisma, -40 Soldi`)
     }
-  }, [relationships, setRelationships, setStats, consumeAction, announce])
+  }, [relationships, setRelationships, setStats, setGirlfriend, consumeAction, announce])
 
   const handlePrepareExam = useCallback((examSubject: string) => {
     const gt = gameTimeRef.current

@@ -869,6 +869,7 @@ function App() {
                   stats={stats}
                   onStatChange={setStats}
                   onGainExtraAction={gainExtraAction}
+                  onConsumeAction={consumeAction}
                   announce={announce}
                 />
               </Suspense>

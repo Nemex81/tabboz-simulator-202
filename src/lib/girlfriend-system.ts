@@ -1,4 +1,5 @@
 import { GameStats } from '@/lib/types'
+import { Relationship } from '@/lib/types'
 import { randomChance } from '@/lib/game-utils'
 
 export type AspettoType = 'carina' | 'bellissima' | 'normale' | 'alternativa'
@@ -159,6 +160,80 @@ export const generateRandomGirlfriend = (): Ragazza => {
       trustLevel: 50,
       happinessLevel: 50
     }
+  }
+}
+
+/**
+ * Crea una Ragazza a partire da una Relationship esistente (es. dopo il successo di handleTryRelationship).
+ * Il nome viene estratto dalla relationship; gli attributi sono parzialmente derivati dalla difficoltà/preferenza.
+ */
+export const generateGirlfriendFromRelationship = (r: Relationship, currentDateString: string): Ragazza => {
+  const parts = r.name.trim().split(' ')
+  const nome = parts[0] ?? r.name
+  const cognome = parts.slice(1).join(' ') || COGNOMI[Math.floor(Math.random() * COGNOMI.length)]
+
+  // Mappa preferenza → statPreferita
+  const statPreferita: 'figosita' | 'muscoli' | 'intelligenza' | 'carisma' =
+    r.preference === 'figosita' ? 'figosita'
+    : r.preference === 'muscoli' ? 'muscoli'
+    : r.preference === 'intelligenza' ? 'intelligenza'
+    : 'carisma'
+
+  // Mappa difficoltà → aspetto e soglie
+  const aspettoMap: Record<Relationship['difficulty'], AspettoType> = {
+    facile: 'normale',
+    media: 'carina',
+    difficile: 'bellissima',
+  }
+  const aspetto = aspettoMap[r.difficulty]
+
+  let figositaRichiesta = aspetto === 'bellissima' ? 70 : aspetto === 'carina' ? 50 : 40
+  let statusSociale = aspetto === 'bellissima' ? 80 : aspetto === 'carina' ? 60 : 50
+
+  const personalita: PersonalitaType[] = ['timida', 'estroversa', 'secchiona', 'ribelle', 'vanitosa']
+  const personalitaScelta = personalita[Math.floor(Math.random() * personalita.length)]
+  if (personalitaScelta === 'vanitosa') { figositaRichiesta += 15; statusSociale += 20 }
+  else if (personalitaScelta === 'timida') { figositaRichiesta -= 10; statusSociale -= 15 }
+
+  const gelosa = personalitaScelta === 'vanitosa' || personalitaScelta === 'ribelle'
+
+  const shuffledHobbies = [...HOBBY_OPTIONS].sort(() => Math.random() - 0.5)
+  const hobby = shuffledHobbies.slice(0, Math.floor(Math.random() * 2) + 2)
+
+  const eta = Math.floor(Math.random() * 5) + 14
+  const anno = Math.floor(Math.random() * 5) + 1
+  const sezione = String.fromCharCode(65 + Math.floor(Math.random() * 5))
+
+  return {
+    id: `girl_rel_${r.id}_${Date.now()}`,
+    nome,
+    cognome,
+    eta,
+    classe: `${anno}${sezione}`,
+    aspetto,
+    personalita: personalitaScelta,
+    interessePerTe: 80,
+    figositaRichiesta: Math.min(100, Math.max(20, figositaRichiesta)),
+    statusSociale: Math.min(100, Math.max(20, statusSociale)),
+    gelosa,
+    hobby,
+    coloreCapelli: COLORI_CAPELLI[Math.floor(Math.random() * COLORI_CAPELLI.length)],
+    scuola: SCUOLE[Math.floor(Math.random() * SCUOLE.length)],
+    statPreferita,
+    relationshipStatus: 'fidanzata',
+    stats: {
+      totalDates: 1,
+      messagesExchanged: 0,
+      giftsGiven: 0,
+      fightsHad: 0,
+      dateActivities: [],
+      relationshipStartDate: currentDateString,
+      daysTogether: 0,
+      jealousyLevel: gelosa ? 50 : 20,
+      trustLevel: 60,
+      happinessLevel: 80,
+    },
+    lastInteractionDate: currentDateString,
   }
 }
 

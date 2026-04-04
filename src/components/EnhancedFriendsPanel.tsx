@@ -10,6 +10,7 @@ import {
   getFriendTypeDescription,
   FRIEND_ACTIONS,
 } from '@/lib/enhanced-friend-system'
+import { GirlfriendPanel } from '@/components/GirlfriendPanel'
 
 interface EnhancedFriendsPanelProps {
   friends: Friend[]
@@ -30,20 +31,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   onGirlfriendAction,
   onGirlfriendBreakup,
 }: EnhancedFriendsPanelProps) {
-  if (friends.length === 0) {
-    return (
-      <Card className="p-6 border-2 border-muted bg-card/50 text-center">
-        <Users size={64} className="mx-auto mb-4 text-muted-foreground opacity-50" weight="fill" />
-        <p className="text-lg text-muted-foreground">
-          Nessun amico ancora. Esci di più (Palestra, Disco, Cinema, Shopping) per conoscere gente!
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">
-          💡 Probabilità base 15% + bonus Carisma. Max 4 amici contemporaneamente.
-        </p>
-      </Card>
-    )
-  }
-  
+  // FIX-A: early-return rimosso — la sezione fidanzata deve renderizzarsi anche senza amici
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'sportivo':
@@ -76,56 +64,27 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   
   return (
     <div className="space-y-6">
-      {/* C2-3: card fidanzata — mostrata in cima al pannello amicizie se presente */}
+      {/* C3-2: GirlfriendPanel embedded — sostituisce la card inline di C2-3 */}
       {girlfriend && (
-        <Card className="p-6 border-2 border-red-400 bg-red-50 dark:bg-red-950 mb-4">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-4xl">
-              {girlfriend.relationshipStatus === 'fidanzata' ? '❤️' : '💋'}
-            </span>
-            <div>
-              <h3 className="text-2xl font-bold text-red-600">
-                {girlfriend.nome} {girlfriend.cognome}
-              </h3>
-              <Badge className={
-                girlfriend.relationshipStatus === 'fidanzata'
-                  ? 'bg-red-500 text-white mt-1'
-                  : 'bg-pink-400 text-white mt-1'
-              }>
-                {girlfriend.relationshipStatus === 'fidanzata' ? '❤️ Fidanzata' : '💋 Trombamica'}
-              </Badge>
-            </div>
-          </div>
+        <GirlfriendPanel
+          girlfriend={girlfriend}
+          stats={stats}
+          actionsRemaining={actionsRemaining}
+          onAction={onGirlfriendAction}
+          onBreakup={onGirlfriendBreakup}
+        />
+      )}
 
-          <div className="text-sm text-muted-foreground mb-4 grid grid-cols-2 gap-2">
-            <span>Interesse: <strong>{girlfriend.interessePerTe}</strong></span>
-            <span>Fiducia: <strong>{girlfriend.stats.trustLevel}</strong></span>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="outline"
-              onClick={() => onGirlfriendAction('messaggio')}>
-              💬 Messaggio
-            </Button>
-            <Button size="sm" variant="outline"
-              onClick={() => onGirlfriendAction('esci')}>
-              🎬 Esci insieme
-            </Button>
-            <Button size="sm" variant="outline"
-              onClick={() => onGirlfriendAction('complimento')}>
-              💐 Complimento
-            </Button>
-            {girlfriend.relationshipStatus !== 'fidanzata' && (
-              <Button size="sm" variant="outline"
-                onClick={() => onGirlfriendAction('dichiarati')}>
-                💍 Dichiarati
-              </Button>
-            )}
-            <Button size="sm" variant="destructive"
-              onClick={onGirlfriendBreakup}>
-              💔 Lascia
-            </Button>
-          </div>
+      {/* FIX-A: messaggio amici vuoti inline — non blocca più il rendering della fidanzata */}
+      {friends.length === 0 && (
+        <Card className="p-6 border-2 border-muted bg-card/50 text-center">
+          <Users size={64} className="mx-auto mb-4 text-muted-foreground opacity-50" weight="fill" />
+          <p className="text-lg text-muted-foreground">
+            Nessun amico ancora. Esci di più (Palestra, Disco, Cinema, Shopping) per conoscere gente!
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            💡 Probabilità base 15% + bonus Carisma. Max 4 amici contemporaneamente.
+          </p>
         </Card>
       )}
 

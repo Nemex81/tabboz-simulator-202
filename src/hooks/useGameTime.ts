@@ -235,12 +235,9 @@ export function useGameTime({
   ])
 
   const gainExtraAction = useCallback(() => {
-    setRawGameTime((current) => ({
-      ...current,
-      extraActions: (current.extraActions ?? 0) + 1
-    }))
+    setPhaseActionsRemaining((n) => n + 1)
     announce('Hai guadagnato un\'AZIONE EXTRA! Usala saggiamente.')
-  }, [setRawGameTime, announce])
+  }, [setPhaseActionsRemaining, announce])
 
   // A6 — Nuova azione dormi
   const handleDormi = useCallback(() => {

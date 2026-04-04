@@ -30,7 +30,7 @@ import {
 } from '@/lib/girlfriend-system'
 
 interface GirlfriendPanelProps {
-  girlfriend: Ragazza | null
+  girlfriend: Ragazza          // C3-1: non più nullable — il guard è nel padre
   stats: GameStats
   actionsRemaining: number
   onAction: (action: string) => void
@@ -44,19 +44,7 @@ export function GirlfriendPanel({
   onAction,
   onBreakup
 }: GirlfriendPanelProps) {
-  const [selectedAction, setSelectedAction] = useState<string | null>(null)
-  
-  if (!girlfriend) {
-    return (
-      <Card className="p-6 border-2 border-muted bg-card/50 text-center">
-        <Heart size={64} className="mx-auto mb-4 text-muted-foreground opacity-50" weight="fill" />
-        <p className="text-lg text-muted-foreground">
-          Nessuna ragazza al momento. Esci di più per conoscere qualcuna!
-        </p>
-      </Card>
-    )
-  }
-  
+  // C3-1: guard null rimosso — il componente è sempre renderizzato dentro {girlfriend && ...}
   const interesseColor = girlfriend.interessePerTe < 30 
     ? 'bg-destructive'
     : girlfriend.interessePerTe < 60
@@ -257,9 +245,10 @@ export function GirlfriendPanel({
             </h3>
             
             <div className="space-y-3">
+              {/* FIX-B: messaggio è gratuito (non consuma azione) — non va mai disabilitato per azioni esaurite */}
               <Button
                 onClick={() => onAction('messaggio')}
-                disabled={actionsRemaining === 0}
+                disabled={false}
                 className="w-full justify-start"
                 variant="secondary"
               >
