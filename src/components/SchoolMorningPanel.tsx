@@ -129,7 +129,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
       <div className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-center">
         <p className="font-bold text-amber-800">🏫 Mattina scolastica</p>
         <p className="text-sm text-amber-700">
-          Sei a scuola. Gestisci gli eventi della mattina, poi premi "Fine mattina" per passare al pomeriggio.
+          Sei a scuola. Gestisci gli eventi della mattina, poi usa i controlli nella schermata principale per passare al pomeriggio.
         </p>
       </div>
 
