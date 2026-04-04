@@ -21,6 +21,19 @@ export type SchoolType = 'tecnico' | 'agraria' | 'artistico'
 
 export type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
 
+/** C2-2: livelli di profondità relazionale */
+export type RelationshipTier =
+  | 'sconosciuto'
+  | 'conoscente'
+  | 'amico'
+  | 'amico_stretto'
+  | 'migliore_amico'
+  | 'trombamica'
+  | 'fidanzata'
+
+/** C2-2: tipo del legame — amicizia vs relazione romantica */
+export type SocialBondType = 'amicizia' | 'romantico'
+
 export interface Friend {
   id: string
   name: string
@@ -28,6 +41,8 @@ export interface Friend {
   affinita: number
   intelligenza?: number
   unlocked: boolean
+  tier?: RelationshipTier
+  bondType?: SocialBondType
 }
 
 export interface Relationship {
@@ -298,4 +313,35 @@ export const getSubjectDisplayName = (subjectKey: string): string => {
     architettura: 'Architettura'
   }
   return displayNames[subjectKey] || subjectKey
+}
+
+/** C2-2: calcola il tier della relazione in base ad affinita e bondType */
+export const getRelationshipTier = (
+  affinita: number,
+  bondType: SocialBondType = 'amicizia'
+): RelationshipTier => {
+  if (affinita <= 0) return 'sconosciuto'
+  if (bondType === 'romantico') {
+    if (affinita >= 80) return 'fidanzata'
+    if (affinita >= 70) return 'trombamica'
+    return 'conoscente'
+  }
+  if (affinita >= 90) return 'migliore_amico'
+  if (affinita >= 60) return 'amico_stretto'
+  if (affinita >= 30) return 'amico'
+  return 'conoscente'
+}
+
+/** C2-2: etichetta emoji + testo per ciascun tier */
+export const getRelationshipTierLabel = (tier: RelationshipTier): string => {
+  const labels: Record<RelationshipTier, string> = {
+    sconosciuto:    '💔 Sconosciuto',
+    conoscente:     '😐 Conoscente',
+    amico:          '😊 Amico',
+    amico_stretto:  '😎 Amico Stretto',
+    migliore_amico: '👑 Migliore Amico',
+    trombamica:     '💋 Trombamica',
+    fidanzata:      '❤️ Fidanzata',
+  }
+  return labels[tier]
 }

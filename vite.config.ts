@@ -22,4 +22,9 @@ export default defineConfig({
       '@': resolve(projectRoot, 'src')
     }
   },
+  server: {
+    host: '127.0.0.1',
+    port: 5000,
+    strictPort: false,
+  },
 });

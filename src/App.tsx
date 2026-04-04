@@ -42,7 +42,8 @@ const KeyboardShortcutsDialog = lazy(() => import('@/components/KeyboardShortcut
 const SubjectSelectionDialog = lazy(() => import('@/components/SubjectSelectionDialog').then(m => ({ default: m.SubjectSelectionDialog })))
 // Pannelli social caricati in lazy (tab non visibile all'avvio)
 const FriendsPanel = lazy(() => import('@/components/FriendsPanel').then(m => ({ default: m.FriendsPanel })))
-const GirlfriendPanel = lazy(() => import('@/components/GirlfriendPanel').then(m => ({ default: m.GirlfriendPanel })))
+const EnhancedFriendsPanel = lazy(() => import('@/components/EnhancedFriendsPanel').then(m => ({ default: m.EnhancedFriendsPanel })))
+// const GirlfriendPanel = lazy(() => import('@/components/GirlfriendPanel').then(m => ({ default: m.GirlfriendPanel })))
 const RelationshipsPanel = lazy(() => import('@/components/RelationshipsPanel').then(m => ({ default: m.RelationshipsPanel })))
 const ExamsPanel = lazy(() => import('@/components/ExamsPanel').then(m => ({ default: m.ExamsPanel })))
 // Dashboard lazy (tab nascosto all'avvio)
@@ -519,6 +520,72 @@ function App() {
           phaseActionsRemaining={phaseActionsRemaining}
         />
 
+        {/* ── Controlli Giornata ────────────────────────────────────────────── */}
+        {(() => {
+          const nextPhaseLabel =
+            currentPhase === 'mattina' ? 'Pomeriggio' :
+            currentPhase === 'pomeriggio' ? 'Sera' :
+            currentPhase === 'sera' ? 'Notte' : 'Mattina'
+          const canAdvance = phaseActionsRemaining === 0
+          const showRiposa =
+            currentPhase === 'pomeriggio' ||
+            (currentPhase === 'mattina' && (dayType !== 'feriale' || !gameTime.schoolYear.isSchoolPeriod))
+          const showDormi = currentPhase === 'sera' || currentPhase === 'notte'
+          return (
+            <div className="mb-4 p-4 bg-muted/30 rounded-xl border border-border">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Gestione Giornata
+                </span>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  canAdvance
+                    ? 'bg-primary/20 text-primary'
+                    : 'bg-destructive/15 text-destructive'
+                }`}>
+                  {canAdvance ? '✓ Pronto ad avanzare' : `${phaseActionsRemaining} azioni rimaste`}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {showRiposa && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRiposa}
+                    disabled={phaseActionsRemaining <= 0}
+                    title="Recupera parte della stanchezza (consuma 1 azione)"
+                    className="flex items-center gap-1"
+                  >
+                    😴 <span>Riposa</span>
+                  </Button>
+                )}
+                {showDormi && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDormi}
+                    title="Vai a dormire: recupero totale, avanza al giorno dopo (sempre disponibile)"
+                    className="flex items-center gap-1"
+                  >
+                    🌙 <span>Vai a dormire</span>
+                  </Button>
+                )}
+                <Button
+                  variant={canAdvance ? 'default' : 'secondary'}
+                  size="sm"
+                  onClick={advancePhaseOnly}
+                  disabled={!canAdvance}
+                  title={canAdvance ? `Avanza a: ${nextPhaseLabel}` : `Consuma prima le ${phaseActionsRemaining} azioni rimaste`}
+                  className="flex items-center gap-1"
+                >
+                  ⏩ <span>Prossima fase</span>
+                  <span className="ml-1 text-xs opacity-70">({nextPhaseLabel})</span>
+                </Button>
+              </div>
+            </div>
+          )
+        })()}
+        {/* ──────────────────────────────────────────────────────────────────── */}
+
         <Tabs defaultValue="status" className="w-full">
           <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-2 bg-muted/50 p-1 h-auto">
             <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -540,11 +607,6 @@ function App() {
               <UserCircle size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Amici</span>
               <span className="sm:hidden">Amici</span>
-            </TabsTrigger>
-            <TabsTrigger value="girlfriend" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-              <Heart size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Fidanzata</span>
-              <span className="sm:hidden">💕</span>
             </TabsTrigger>
             <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
               <Buildings size={20} className="mr-2" weight="fill" />
@@ -807,10 +869,6 @@ function App() {
                   stats={stats}
                   onStatChange={setStats}
                   onGainExtraAction={gainExtraAction}
-                  onFinishMorning={() => {
-                    setShowSchoolMorning(false)
-                    advancePhaseOnly()
-                  }}
                   announce={announce}
                 />
               </Suspense>
@@ -893,8 +951,10 @@ function App() {
                     icon={<Clock size={48} />}
                     label={`Avanza Fascia (${currentPhase ?? 'mattina'})`}
                     onClick={advancePhaseOnly}
+                    disabled={phaseActionsRemaining > 0}
+                    blockedReason={phaseActionsRemaining > 0 ? 'Consuma prima tutte le azioni della fase' : undefined}
                     variant="outline"
-                    ariaLabel="Salta alla prossima fascia oraria della giornata"
+                    ariaLabel="Salta alla prossima fascia oraria della giornata (disponibile solo a 0 azioni rimaste)"
                   />
                 </div>
               </Card>
@@ -1134,7 +1194,15 @@ function App() {
 
           <TabsContent value="friends" className="space-y-6 mt-6">
             <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
-              <FriendsPanel friends={friends} />
+              <EnhancedFriendsPanel
+                friends={friends}
+                stats={stats}
+                actionsRemaining={phaseActionsRemaining}
+                onFriendAction={handleFriendAction}
+                girlfriend={girlfriend}
+                onGirlfriendAction={handleGirlfriendAction}
+                onGirlfriendBreakup={handleGirlfriendBreakup}
+              />
               <RelationshipsPanel
                 relationships={relationships}
                 stats={stats}
@@ -1160,18 +1228,6 @@ function App() {
                 </ul>
               </div>
             </Card>
-          </TabsContent>
-          
-          <TabsContent value="girlfriend" className="space-y-6 mt-6">
-            <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
-              <GirlfriendPanel
-                girlfriend={girlfriend}
-                stats={stats}
-                actionsRemaining={phaseActionsRemaining}
-                onAction={handleGirlfriendAction}
-                onBreakup={handleGirlfriendBreakup}
-              />
-            </Suspense>
           </TabsContent>
         </Tabs>
       </div>

@@ -599,10 +599,9 @@ export function useGameActions({
         ...current,
         figosita: clampStat(current.figosita + 30),
         carisma: clampStat(current.carisma + 15),
-        soldi: clampStat(current.soldi - 80, 0, 1000)
       }))
       consumeAction()
-      announce(`${relationship.name} ha detto SÌ! Siete INSIEME! +30 Figosità, +15 Carisma, -80 Soldi`)
+      announce(`${relationship.name} ha detto SÌ! Siete INSIEME! +30 Figosità, +15 Carisma`)
     } else {
       playSound.bigLoss()
       setStats((current) => ({
@@ -761,11 +760,7 @@ export function useGameActions({
       return
     }
     const gt = gameTimeRef.current
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
-      playSound.failure()
-      announce('Sei a scuola! Concentrati sulle lezioni.')
-      return
-    }
+    const isSchoolMorning = dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod
     playSound.buttonClick()
     setStats((current) => ({
       ...current,
@@ -774,7 +769,10 @@ export function useGameActions({
       stanchezza: clampStat(current.stanchezza + 5)
     }))
     consumeAction()
-    announce('Hai chiacchierato con qualcuno! +5 Carisma, +3 Reputazione')
+    announce(isSchoolMorning
+      ? 'Chiacchieri con un compagno tra una lezione e l\'altra! +5 Carisma, +3 Reputazione'
+      : 'Hai chiacchierato con qualcuno! +5 Carisma, +3 Reputazione'
+    )
     checkForNewFriend('in giro per il paese')
     checkForNewRelationship()
   }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship])
@@ -814,11 +812,7 @@ export function useGameActions({
       return
     }
     const gt = gameTimeRef.current
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
-      playSound.failure()
-      announce('Sei a scuola! Concentrati sulle lezioni.')
-      return
-    }
+    const isSchoolMorning = dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod
     if (friendsRef.current.length === 0) {
       playSound.failure()
       announce('Non hai amici da chiamare! Esci e socializza prima.')
@@ -831,7 +825,10 @@ export function useGameActions({
       carisma: clampStat(current.carisma + 3)
     }))
     consumeAction()
-    announce(`Hai chiamato ${randomFriend.name}! Bella chiacchierata. +3 Carisma`)
+    announce(isSchoolMorning
+      ? `Hai mandato un messaggio a ${randomFriend.name} durante la ricreazione! +3 Carisma`
+      : `Hai chiamato ${randomFriend.name}! Bella chiacchierata. +3 Carisma`
+    )
   }, [setStats, consumeAction, announce])
 
   return {

@@ -97,37 +97,66 @@ export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPh
         </div>
 
         <div>
-          <div className="flex items-center gap-3 mb-4">
-            <Clock size={32} weight="fill" className="text-primary" />
-            <div>
-              <div className="text-sm text-muted-foreground uppercase font-semibold">
-                Azioni Rimanenti
-              </div>
-              <div className="text-4xl font-black text-primary neon-text-glow">
-                {gameTime.actionsRemaining} / {gameTime.maxActionsPerDay}
+          {/* Contatore azioni fascia corrente */}
+          {currentPhase && dayType ? (() => {
+            const maxPhaseActions = DAY_PHASE_CONFIG[dayType][currentPhase].maxActions
+            const remaining = phaseActionsRemaining ?? maxPhaseActions
+            return (
+              <>
+                <div className="flex items-center gap-3 mb-3">
+                  <Clock size={32} weight="fill" className="text-primary" />
+                  <div>
+                    <div className="text-sm text-muted-foreground uppercase font-semibold">
+                      Azioni Fase Corrente
+                    </div>
+                    <div className={`text-4xl font-black neon-text-glow ${remaining === 0 ? 'text-destructive' : 'text-primary'}`}>
+                      {remaining} / {maxPhaseActions}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2 mb-3">
+                  <div className="flex gap-2">
+                    {maxPhaseActions > 0
+                      ? Array.from({ length: maxPhaseActions }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`h-3 flex-1 rounded-full transition-all duration-300 ${
+                              i < remaining ? 'bg-primary neon-glow' : 'bg-muted'
+                            }`}
+                          />
+                        ))
+                      : <div className="h-3 flex-1 rounded-full bg-muted opacity-40" />
+                    }
+                  </div>
+                  {remaining === 0 && maxPhaseActions > 0 && (
+                    <div className="text-xs text-destructive font-bold animate-pulse">
+                      Azioni fase terminate! Avanza alla prossima fascia.
+                    </div>
+                  )}
+                </div>
+                {(gameTime.extraActions ?? 0) > 0 && (
+                  <div className="flex items-center gap-2 mb-3 px-2 py-1 rounded bg-accent/10 border border-accent/30">
+                    <span className="text-sm">⚡</span>
+                    <span className="text-xs font-semibold text-accent">
+                      Azioni Extra disponibili: {gameTime.extraActions}
+                    </span>
+                  </div>
+                )}
+              </>
+            )
+          })() : (
+            <div className="flex items-center gap-3 mb-4">
+              <Clock size={32} weight="fill" className="text-primary" />
+              <div>
+                <div className="text-sm text-muted-foreground uppercase font-semibold">
+                  Azioni Rimanenti
+                </div>
+                <div className="text-4xl font-black text-primary neon-text-glow">
+                  {gameTime.actionsRemaining} / {gameTime.maxActionsPerDay}
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              {Array.from({ length: gameTime.maxActionsPerDay }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-3 flex-1 rounded-full transition-all duration-300 ${
-                    i < gameTime.actionsRemaining
-                      ? 'bg-primary neon-glow'
-                      : 'bg-muted'
-                  }`}
-                />
-              ))}
-            </div>
-            {gameTime.actionsRemaining === 0 && (
-              <div className="text-xs text-destructive font-bold animate-pulse">
-                Nessuna azione rimasta! Vai a riposare per passare al giorno successivo!
-              </div>
-            )}
-          </div>
+          )}
 
           {gameTime.schoolYear.isSchoolPeriod && (
             <div className="mt-4 pt-4 border-t border-border">
@@ -165,7 +194,7 @@ export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPh
                 </span>
               </div>
               <div className="text-xs text-muted-foreground">
-                {DAY_TYPE_LABEL[dayType]} — Azioni fascia: {phaseActionsRemaining ?? DAY_PHASE_CONFIG[dayType][currentPhase].maxActions}
+                {DAY_TYPE_LABEL[dayType]}
               </div>
             </div>
           )}

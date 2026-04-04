@@ -4,11 +4,11 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { GameStats, Friend } from '@/lib/types'
+import { GameStats, Friend, getRelationshipTier, getRelationshipTierLabel } from '@/lib/types'
+import type { Ragazza } from '@/lib/girlfriend-system'
 import {
   getFriendTypeDescription,
   FRIEND_ACTIONS,
-  checkBestFriend
 } from '@/lib/enhanced-friend-system'
 
 interface EnhancedFriendsPanelProps {
@@ -16,13 +16,19 @@ interface EnhancedFriendsPanelProps {
   stats: GameStats
   actionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
+  girlfriend: Ragazza | null
+  onGirlfriendAction: (action: string) => void
+  onGirlfriendBreakup: () => void
 }
 
 export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   friends,
   stats,
   actionsRemaining,
-  onFriendAction
+  onFriendAction,
+  girlfriend,
+  onGirlfriendAction,
+  onGirlfriendBreakup,
 }: EnhancedFriendsPanelProps) {
   if (friends.length === 0) {
     return (
@@ -70,8 +76,63 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   
   return (
     <div className="space-y-6">
+      {/* C2-3: card fidanzata — mostrata in cima al pannello amicizie se presente */}
+      {girlfriend && (
+        <Card className="p-6 border-2 border-red-400 bg-red-50 dark:bg-red-950 mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-4xl">
+              {girlfriend.relationshipStatus === 'fidanzata' ? '❤️' : '💋'}
+            </span>
+            <div>
+              <h3 className="text-2xl font-bold text-red-600">
+                {girlfriend.nome} {girlfriend.cognome}
+              </h3>
+              <Badge className={
+                girlfriend.relationshipStatus === 'fidanzata'
+                  ? 'bg-red-500 text-white mt-1'
+                  : 'bg-pink-400 text-white mt-1'
+              }>
+                {girlfriend.relationshipStatus === 'fidanzata' ? '❤️ Fidanzata' : '💋 Trombamica'}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="text-sm text-muted-foreground mb-4 grid grid-cols-2 gap-2">
+            <span>Interesse: <strong>{girlfriend.interessePerTe}</strong></span>
+            <span>Fiducia: <strong>{girlfriend.stats.trustLevel}</strong></span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline"
+              onClick={() => onGirlfriendAction('messaggio')}>
+              💬 Messaggio
+            </Button>
+            <Button size="sm" variant="outline"
+              onClick={() => onGirlfriendAction('esci')}>
+              🎬 Esci insieme
+            </Button>
+            <Button size="sm" variant="outline"
+              onClick={() => onGirlfriendAction('complimento')}>
+              💐 Complimento
+            </Button>
+            {girlfriend.relationshipStatus !== 'fidanzata' && (
+              <Button size="sm" variant="outline"
+                onClick={() => onGirlfriendAction('dichiarati')}>
+                💍 Dichiarati
+              </Button>
+            )}
+            <Button size="sm" variant="destructive"
+              onClick={onGirlfriendBreakup}>
+              💔 Lascia
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {friends.map((friend) => {
-        const isBestFriend = checkBestFriend(friend.affinita)
+        const tier = getRelationshipTier(friend.affinita, friend.bondType)
+        const isBestFriend = tier === 'migliore_amico'
+        const isRomantic = tier === 'trombamica' || tier === 'fidanzata'
         const affinitaColor = friend.affinita < 30 
           ? 'bg-destructive'
           : friend.affinita < 60
@@ -135,11 +196,21 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
                 className="h-2"
               />
               <div className="mt-1 text-xs text-muted-foreground">
-                {friend.affinita <= 0 && '💔 Amicizia finita'}
-                {friend.affinita > 0 && friend.affinita < 30 && '😐 Conoscente'}
-                {friend.affinita >= 30 && friend.affinita < 60 && '😊 Amico'}
-                {friend.affinita >= 60 && friend.affinita < 100 && '😎 Amico stretto'}
-                {friend.affinita >= 100 && '👑 Migliore amico - Copertura genitori sbloccata!'}
+                <span className="font-medium">
+                  {getRelationshipTierLabel(tier)}
+                </span>
+                {tier === 'migliore_amico' && (
+                  <span className="ml-2 text-xs text-primary">— Copertura genitori sbloccata!</span>
+                )}
+                {isRomantic && (
+                  <Badge className={`ml-2 ${
+                    tier === 'fidanzata'
+                      ? 'bg-red-500 text-white'
+                      : 'bg-pink-400 text-white'
+                  }`}>
+                    {getRelationshipTierLabel(tier)}
+                  </Badge>
+                )}
               </div>
             </div>
             

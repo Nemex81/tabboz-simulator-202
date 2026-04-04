@@ -16,7 +16,6 @@ interface SchoolMorningPanelProps {
   stats: GameStats
   onStatChange: (updater: (prev: GameStats) => GameStats) => void
   onGainExtraAction: () => void
-  onFinishMorning: () => void
   announce: (msg: string) => void
 }
 
@@ -89,7 +88,6 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
   stats,
   onStatChange,
   onGainExtraAction,
-  onFinishMorning,
   announce,
 }: SchoolMorningPanelProps) {
   const [resolvedIds, setResolvedIds] = React.useState<Set<string>>(new Set())
@@ -126,8 +124,6 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
     [resolvedIds, stats, onStatChange, onGainExtraAction, announce]
   )
 
-  const allResolved = events.length === 0 || events.every(e => resolvedIds.has(e.id))
-
   return (
     <div className="space-y-4">
       <div className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-center">
@@ -154,16 +150,6 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
           resolved={resolvedIds.has(event.id)}
         />
       ))}
-
-      {allResolved && (
-        <Button
-          className="w-full mt-2"
-          onClick={onFinishMorning}
-          size="lg"
-        >
-          Fine mattina → Vai al pomeriggio
-        </Button>
-      )}
     </div>
   )
 })
