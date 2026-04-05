@@ -41,6 +41,7 @@ const ReportCardDialog = lazy(() => import('@/components/ReportCardDialog').then
 const SchoolEventDialog = lazy(() => import('@/components/SchoolEventDialog').then(m => ({ default: m.SchoolEventDialog })))
 const KeyboardShortcutsDialog = lazy(() => import('@/components/KeyboardShortcutsDialog').then(m => ({ default: m.KeyboardShortcutsDialog })))
 const SubjectSelectionDialog = lazy(() => import('@/components/SubjectSelectionDialog').then(m => ({ default: m.SubjectSelectionDialog })))
+const TeacherSelectionDialog = lazy(() => import('@/components/TeacherSelectionDialog').then(m => ({ default: m.TeacherSelectionDialog })))
 // Pannelli social caricati in lazy (tab non visibile all'avvio)
 const FriendsPanel = lazy(() => import('@/components/FriendsPanel').then(m => ({ default: m.FriendsPanel })))
 const EnhancedFriendsPanel = lazy(() => import('@/components/EnhancedFriendsPanel').then(m => ({ default: m.EnhancedFriendsPanel })))
@@ -151,7 +152,8 @@ function App() {
   const [showSchoolEvent, setShowSchoolEvent] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showSubjectDialog, setShowSubjectDialog] = useState(false)
-  // School morning state
+  const [showTeacherDialog, setShowTeacherDialog] = useState(false)
+  const [teacherActionType, setTeacherActionType] = useState<'corrompi' | 'minaccia'>('corrompi')
   const [schoolMorningEvents, setSchoolMorningEvents] = useState<SchoolMorningEvent[]>([])
   const [showSchoolMorning, setShowSchoolMorning] = useState(false)
 
@@ -259,7 +261,9 @@ function App() {
     handleStudia,
     handleStudySubject,
     handleCorrompi,
+    handleCorrompiSubject,
     handleMinaccia,
+    handleMinacciaSubject,
     handleDisco,
     handleCinema,
     handleShoppingMall,
@@ -274,6 +278,60 @@ function App() {
   } = actions
 
   const handleRiposa = () => actions.handleRiposa()
+
+  const handleOpenCorrompiDialog = () => {
+    if (phaseActionsRemaining <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    if (stats.soldi < 100) {
+      playSound.failure()
+      announce('Non hai abbastanza GRANA per la MAZZETTA! Servono 100€')
+      return
+    }
+    setTeacherActionType('corrompi')
+    setShowTeacherDialog(true)
+  }
+
+  const handleOpenMinacciaDialog = () => {
+    if (phaseActionsRemaining <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    setTeacherActionType('minaccia')
+    setShowTeacherDialog(true)
+  }
+
+  const handleTeacherSelection = (subject: string) => {
+    if (teacherActionType === 'corrompi') {
+      handleCorrompiSubject(subject)
+    } else {
+      handleMinacciaSubject(subject)
+    }
+  }
+
+  const handleVaiAScuola = () => {
+    if (phaseActionsRemaining <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    if (dayType !== 'feriale' || currentPhase !== 'mattina' || !gameTime.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Puoi andare a scuola solo la mattina dei giorni feriali durante il periodo scolastico!')
+      return
+    }
+    playSound.buttonClick()
+    setStats((current) => ({
+      ...current,
+      intelligenza: clampStat(current.intelligenza + 2),
+      stanchezza: clampStat(current.stanchezza + 10)
+    }))
+    consumeAction()
+    announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
+  }
 
   useEffect(() => {
     const htmlElement = document.querySelector('html')
@@ -423,8 +481,8 @@ function App() {
           case '3': handleLavoro(); break
           case '4': handleMotorino(); break
           case '5': handleStudia(); break
-          case '6': handleCorrompi(); break
-          case '7': handleMinaccia(); break
+          case '6': handleOpenCorrompiDialog(); break
+          case '7': handleOpenMinacciaDialog(); break
           case '8': handleRiposa(); break
           case '9': handleProvarciConAtipa(); break
           case 'd': handleDisco(); break
@@ -450,7 +508,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, showReportCard, stats, grades, gameTime, schoolType])
+  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, showReportCard, stats, grades, gameTime, schoolType, phaseActionsRemaining])
 
   if (!schoolType) {
     return <SchoolSelection onSelectSchool={handleSchoolSelection} />
@@ -579,25 +637,11 @@ function App() {
         {/* ──────────────────────────────────────────────────────────────────── */}
 
         <Tabs defaultValue="school" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 gap-2 bg-muted/50 p-1 h-auto">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-muted/50 p-1 h-auto">
             <TabsTrigger value="school" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               <GraduationCap size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Scuola</span>
               <span className="sm:hidden">Scuola</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="exams"
-              className="rounded-none rounded-t-sm border border-b-0 border-border data-[state=active]:bg-card data-[state=active]:border-primary data-[state=active]:text-primary data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground px-3 py-2 text-xs font-semibold"
-            >
-              <Brain size={14} className="mr-1" weight="fill" />
-              Verifiche
-            </TabsTrigger>
-            <TabsTrigger
-              value="friends"
-              className="rounded-none rounded-t-sm border border-b-0 border-border data-[state=active]:bg-card data-[state=active]:border-accent data-[state=active]:text-accent data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground px-3 py-2 text-xs font-semibold"
-            >
-              <UserCircle size={14} className="mr-1" weight="fill" />
-              Amici
             </TabsTrigger>
             <TabsTrigger value="city" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Buildings size={20} className="mr-2" weight="fill" />
@@ -613,11 +657,6 @@ function App() {
               <ChartBar size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Controllo</span>
               <span className="sm:hidden">⚙️</span>
-            </TabsTrigger>
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Trophy size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Dashboard</span>
-              <span className="sm:hidden">📊</span>
             </TabsTrigger>
           </TabsList>
 
@@ -713,119 +752,234 @@ function App() {
           </TabsContent>
 
           <TabsContent value="school" className="space-y-6 mt-6">
-            {/* Fix4: SchoolMorningPanel — mattina scolastica feriale */}
-            {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && (
-              <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
-                <SchoolMorningPanel
-                  events={schoolMorningEvents}
-                  stats={stats}
-                  onStatChange={setStats}
-                  onGainExtraAction={gainExtraAction}
-                  onConsumeAction={consumeAction}
-                  announce={announce}
-                />
-              </Suspense>
-            )}
-            <Card className="p-3 border-2 border-secondary bg-card">
-              <h3 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
-                <GraduationCap size={32} weight="fill" />
-                VOTI SCOLASTICI
-              </h3>
-              <div
-                role="table"
-                aria-label="Voti scolastici"
-                className="divide-y divide-border"
-              >
-                {Object.entries(grades).map(([subject, grade]) => (
+            <Tabs defaultValue="grades" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-card/50 p-1">
+                <TabsTrigger value="grades" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                  <GraduationCap size={18} className="mr-2" weight="fill" />
+                  Voti
+                </TabsTrigger>
+                <TabsTrigger value="exams" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Brain size={18} className="mr-2" weight="fill" />
+                  Verifiche
+                </TabsTrigger>
+                <TabsTrigger value="friends" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+                  <UserCircle size={18} className="mr-2" weight="fill" />
+                  Amici
+                </TabsTrigger>
+                <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Trophy size={18} className="mr-2" weight="fill" />
+                  Dashboard
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="grades" className="space-y-6 mt-6">
+                {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && (
+                  <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
+                    <SchoolMorningPanel
+                      events={schoolMorningEvents}
+                      stats={stats}
+                      onStatChange={setStats}
+                      onGainExtraAction={gainExtraAction}
+                      onConsumeAction={consumeAction}
+                      announce={announce}
+                    />
+                  </Suspense>
+                )}
+
+                <Card className="p-4 border-2 border-primary bg-card">
+                  <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                    <GraduationCap size={28} weight="fill" />
+                    VAI A SCUOLA
+                  </h3>
+                  <ActionButton
+                    icon={<GraduationCap size={48} />}
+                    label="Vai a Scuola"
+                    onClick={handleVaiAScuola}
+                    disabled={
+                      phaseActionsRemaining <= 0 || 
+                      dayType !== 'feriale' || 
+                      currentPhase !== 'mattina' || 
+                      !gameTime.schoolYear.isSchoolPeriod
+                    }
+                    blockedReason={
+                      phaseActionsRemaining <= 0 
+                        ? 'Nessuna azione per questa fascia oraria' 
+                        : dayType !== 'feriale' 
+                          ? 'Disponibile solo nei giorni feriali' 
+                          : currentPhase !== 'mattina'
+                            ? 'Disponibile solo la mattina'
+                            : 'Non è periodo scolastico'
+                    }
+                    variant="default"
+                    ariaLabel="Vai a scuola durante la mattina dei giorni feriali. +2 Intelligenza, +10 Stanchezza."
+                    helpText="Frequenta le lezioni a scuola. Disponibile solo la mattina dei giorni feriali durante il periodo scolastico. +2 Intelligenza, +10 Stanchezza."
+                    announce={announce}
+                  />
+                  <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
+                    <p className="font-semibold mb-1">Effetti:</p>
+                    <p>• +2 Intelligenza</p>
+                    <p>• +10 Stanchezza</p>
+                    <p className="mt-2 text-primary font-semibold">📅 Disponibile: Mattina dei giorni feriali (periodo scolastico)</p>
+                  </div>
+                </Card>
+
+                <Card className="p-3 border-2 border-secondary bg-card">
+                  <h3 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
+                    <GraduationCap size={32} weight="fill" />
+                    VOTI SCOLASTICI
+                  </h3>
                   <div
-                    key={subject}
-                    role="row"
-                    aria-label={`${getSubjectDisplayName(subject)}: ${grade.toFixed(1)} su 10${grade < 6 ? ' — INSUFFICIENTE' : ''}`}
-                    className="flex items-center gap-2 py-1.5 px-2"
+                    role="table"
+                    aria-label="Voti scolastici"
+                    className="divide-y divide-border"
                   >
-                    <span className="text-xs text-muted-foreground flex-1">
-                      {getSubjectDisplayName(subject)}
-                    </span>
-                    <span className={`text-sm font-bold w-8 text-right ${grade < 6 ? 'text-destructive' : 'text-secondary'}`}>
-                      {grade.toFixed(1)}
-                    </span>
-                    <div className="w-16 h-1.5 bg-muted rounded-sm overflow-hidden" aria-hidden="true">
+                    {Object.entries(grades).map(([subject, grade]) => (
                       <div
-                        className={`h-full ${grade < 6 ? 'bg-destructive' : 'bg-secondary'}`}
-                        style={{ width: `${(grade / 10) * 100}%` }}
-                      />
+                        key={subject}
+                        role="row"
+                        aria-label={`${getSubjectDisplayName(subject)}: ${grade.toFixed(1)} su 10${grade < 6 ? ' — INSUFFICIENTE' : ''}`}
+                        className="flex items-center gap-2 py-1.5 px-2"
+                      >
+                        <span className="text-xs text-muted-foreground flex-1">
+                          {getSubjectDisplayName(subject)}
+                        </span>
+                        <span className={`text-sm font-bold w-8 text-right ${grade < 6 ? 'text-destructive' : 'text-secondary'}`}>
+                          {grade.toFixed(1)}
+                        </span>
+                        <div className="w-16 h-1.5 bg-muted rounded-sm overflow-hidden" aria-hidden="true">
+                          <div
+                            className={`h-full ${grade < 6 ? 'bg-destructive' : 'bg-secondary'}`}
+                            style={{ width: `${(grade / 10) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg text-muted-foreground">Media totale:</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-3xl font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-accent'}`}>
+                          {currentMedia.toFixed(1)}
+                        </span>
+                        {currentMedia < 4 && (
+                          <span className="text-destructive font-bold animate-pulse">BOCCIATO!</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-              <div className="mt-6 pt-6 border-t border-border">
-                <div className="flex items-center justify-between">
-                  <span className="text-lg text-muted-foreground">Media totale:</span>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-3xl font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-accent'}`}>
-                      {currentMedia.toFixed(1)}
-                    </span>
-                    {currentMedia < 4 && (
-                      <span className="text-destructive font-bold animate-pulse">BOCCIATO!</span>
-                    )}
+                </Card>
+
+                <Card className="p-3 border-2 border-destructive bg-card">
+                  <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
+                    <HandCoins size={24} weight="fill" />
+                    METODI ALTERNATIVI
+                  </h3>
+                  <div className="space-y-3">
+                    <ActionButton
+                      icon={<HandCoins size={48} />}
+                      label="Corrompi Professore"
+                      shortcut="Ctrl+6"
+                      onClick={handleOpenCorrompiDialog}
+                      disabled={phaseActionsRemaining <= 0 || stats.soldi < 100}
+                      blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 100€'}
+                      variant="default"
+                      ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
+                      helpText="Corrompi un professore con 100 euro. Scegli quale professore corrompere. Aumenta i voti di 0.5 punti nella materia scelta."
+                      announce={announce}
+                    />
+                    <ActionButton
+                      icon={<Fist size={48} />}
+                      label="Minaccia Professore"
+                      shortcut="Ctrl+7"
+                      onClick={handleOpenMinacciaDialog}
+                      disabled={phaseActionsRemaining <= 0}
+                      blockedReason="Nessuna azione per questa fascia oraria"
+                      variant="destructive"
+                      ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
+                      helpText="Minaccia un professore. Scegli quale professore minacciare. Rischio del 30% di essere espulso dal gioco! Se riesce, +1.5 al voto e +15 coattaggine. Usare con cautela."
+                      announce={announce}
+                    />
                   </div>
-                </div>
-              </div>
-            </Card>
+                  <div className="mt-4 pt-4 border-t border-border text-xs text-destructive">
+                    <p className="font-bold">⚠️ ATTENZIONE: Metodi rischiosi! L'opzione Minaccia ha 30% di probabilità di ESPULSIONE!</p>
+                  </div>
+                </Card>
+              </TabsContent>
 
-            <Card className="p-3 border-2 border-destructive bg-card">
-              <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
-                <HandCoins size={24} weight="fill" />
-                METODI ALTERNATIVI
-              </h3>
-              <div className="space-y-3">
-                <ActionButton
-                  icon={<HandCoins size={48} />}
-                  label="Corrompi"
-                  shortcut="Ctrl+6"
-                  onClick={handleCorrompi}
-                  disabled={phaseActionsRemaining <= 0 || stats.soldi < 100 || !gameTime.schoolYear.isSchoolPeriod}
-                  blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 100 ? 'Servono almeno 100€' : 'Non è periodo scolastico'}
-                  variant="default"
-                  ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
-                  helpText="Corrompi un professore con 100 euro. Aumenta i voti di 0.5 punti in una materia casuale. Richiede periodo scolastico."
-                  announce={announce}
-                />
-                <ActionButton
-                  icon={<Fist size={48} />}
-                  label="Minaccia"
-                  shortcut="Ctrl+7"
-                  onClick={handleMinaccia}
-                  disabled={phaseActionsRemaining <= 0 || !gameTime.schoolYear.isSchoolPeriod}
-                  blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Non è periodo scolastico'}
-                  variant="destructive"
-                  ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
-                  helpText="Minaccia un professore. Rischio del 30% di essere espulso dal gioco! Se riesce, aumenta molto i voti e la coattaggine. Usare con cautela."
-                  announce={announce}
-                />
-                <hr className="border-border my-2" />
-                <ActionButton
-                  icon={<Clock size={48} />}
-                  label={`Avanza Fascia (${currentPhase ?? 'mattina'})`}
-                  onClick={advancePhaseOnly}
-                  disabled={phaseActionsRemaining > 0}
-                  blockedReason={phaseActionsRemaining > 0 ? 'Consuma prima tutte le azioni della fase' : undefined}
-                  variant="outline"
-                  ariaLabel="Salta alla prossima fascia oraria della giornata (disponibile solo a 0 azioni rimaste)"
-                  helpText="Salta alla prossima fascia oraria della giornata. Disponibile solo quando tutte le azioni della fase attuale sono state usate."
-                  announce={announce}
-                />
-              </div>
-              <div className="mt-4 pt-4 border-t border-border text-xs text-destructive">
-                <p className="font-bold">⚠️ ATTENZIONE: Metodi rischiosi! L'opzione Minaccia ha 30% di probabilità di ESPULSIONE!</p>
-              </div>
-            </Card>
-          </TabsContent>
+              <TabsContent value="exams" className="space-y-6 mt-6">
+                <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
+                  <ExamsPanel
+                    exams={scheduledExams}
+                    onPrepareExam={handlePrepareExam}
+                    actionsRemaining={phaseActionsRemaining}
+                    stanchezza={stats.stanchezza}
+                  />
+                </Suspense>
+                <Card className="p-3 border-2 border-accent bg-card">
+                  <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+                    <Brain size={28} weight="fill" />
+                    SISTEMA INTELLIGENZA
+                  </h3>
+                  <div className="space-y-4 text-sm text-muted-foreground">
+                    <p>
+                      <strong className="text-accent">L'Intelligenza</strong> è la tua arma segreta per dominare la scuola!
+                    </p>
+                    <ul className="list-disc list-inside space-y-2">
+                      <li>Studiare aumenta i voti in modo DECIMALE basato sulla tua Intelligenza</li>
+                      <li>Formula: <code className="bg-muted px-2 py-1 rounded">+{calculateStudyGradeIncrease(stats.intelligenza).toFixed(1)}</code> per ogni studio</li>
+                      <li>Preparare le verifiche aumenta l'Intelligenza e moltiplica il voto finale!</li>
+                      <li>Le interrogazioni a sorpresa dipendono da (Media + Intelligenza) / 2</li>
+                      <li>Amici intelligenti (INT {'>'} 60) aumentano del 50% l'efficacia dello studio!</li>
+                    </ul>
+                  </div>
+                </Card>
+              </TabsContent>
 
-          <TabsContent value="dashboard" className="space-y-6 mt-6">
-            <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento dashboard...</div>}>
-              <StatsDashboard stats={stats} grades={grades} />
-            </Suspense>
+              <TabsContent value="friends" className="space-y-6 mt-6">
+                <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
+                  <EnhancedFriendsPanel
+                    friends={friends}
+                    stats={stats}
+                    actionsRemaining={phaseActionsRemaining}
+                    onFriendAction={handleFriendAction}
+                    girlfriend={girlfriend}
+                    onGirlfriendAction={handleGirlfriendAction}
+                    onGirlfriendBreakup={handleGirlfriendBreakup}
+                  />
+                  <RelationshipsPanel
+                    relationships={relationships}
+                    stats={stats}
+                    onTryRelationship={handleTryRelationship}
+                    actionsRemaining={phaseActionsRemaining}
+                  />
+                </Suspense>
+                <Card className="p-3 border-2 border-accent bg-card">
+                  <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+                    <Chats size={28} weight="fill" />
+                    SISTEMA CARISMA
+                  </h3>
+                  <div className="space-y-4 text-sm text-muted-foreground">
+                    <p>
+                      <strong className="text-accent">Il Carisma</strong> è la tua capacità di convincere e socializzare!
+                    </p>
+                    <ul className="list-disc list-inside space-y-2">
+                      <li>Influenza TUTTE le interazioni sociali (Disco, Cinema, Rimorchio)</li>
+                      <li>Con Carisma {'>'} 70 hai 20% di evitare eventi negativi con la PARLANTINA!</li>
+                      <li>Aumenta le probabilità di fare nuove amicizie (base 15% + bonus Carisma)</li>
+                      <li>Migliora le chance con le ragazze (ogni tipo ha preferenze diverse!)</li>
+                      <li>Contribuisce al 20% della tua REPUTAZIONE totale!</li>
+                    </ul>
+                  </div>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="dashboard" className="space-y-6 mt-6">
+                <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento dashboard...</div>}>
+                  <StatsDashboard stats={stats} grades={grades} />
+                </Suspense>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6 mt-6">
@@ -956,73 +1110,6 @@ function App() {
               muscoli={stats.muscoli}
               stanchezza={stats.stanchezza}
             />
-          </TabsContent>
-
-          <TabsContent value="exams" className="space-y-6 mt-6">
-            <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
-              <ExamsPanel
-                exams={scheduledExams}
-                onPrepareExam={handlePrepareExam}
-                actionsRemaining={phaseActionsRemaining}
-                stanchezza={stats.stanchezza}
-              />
-            </Suspense>
-            <Card className="p-3 border-2 border-accent bg-card">
-              <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
-                <Brain size={28} weight="fill" />
-                SISTEMA INTELLIGENZA
-              </h3>
-              <div className="space-y-4 text-sm text-muted-foreground">
-                <p>
-                  <strong className="text-accent">L'Intelligenza</strong> è la tua arma segreta per dominare la scuola!
-                </p>
-                <ul className="list-disc list-inside space-y-2">
-                  <li>Studiare aumenta i voti in modo DECIMALE basato sulla tua Intelligenza</li>
-                  <li>Formula: <code className="bg-muted px-2 py-1 rounded">+{calculateStudyGradeIncrease(stats.intelligenza).toFixed(1)}</code> per ogni studio</li>
-                  <li>Preparare le verifiche aumenta l'Intelligenza e moltiplica il voto finale!</li>
-                  <li>Le interrogazioni a sorpresa dipendono da (Media + Intelligenza) / 2</li>
-                  <li>Amici intelligenti (INT {'>'} 60) aumentano del 50% l'efficacia dello studio!</li>
-                </ul>
-              </div>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="friends" className="space-y-6 mt-6">
-            <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
-              <EnhancedFriendsPanel
-                friends={friends}
-                stats={stats}
-                actionsRemaining={phaseActionsRemaining}
-                onFriendAction={handleFriendAction}
-                girlfriend={girlfriend}
-                onGirlfriendAction={handleGirlfriendAction}
-                onGirlfriendBreakup={handleGirlfriendBreakup}
-              />
-              <RelationshipsPanel
-                relationships={relationships}
-                stats={stats}
-                onTryRelationship={handleTryRelationship}
-                actionsRemaining={phaseActionsRemaining}
-              />
-            </Suspense>
-            <Card className="p-3 border-2 border-accent bg-card">
-              <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
-                <Chats size={28} weight="fill" />
-                SISTEMA CARISMA
-              </h3>
-              <div className="space-y-4 text-sm text-muted-foreground">
-                <p>
-                  <strong className="text-accent">Il Carisma</strong> è la tua capacità di convincere e socializzare!
-                </p>
-                <ul className="list-disc list-inside space-y-2">
-                  <li>Influenza TUTTE le interazioni sociali (Disco, Cinema, Rimorchio)</li>
-                  <li>Con Carisma {'>'} 70 hai 20% di evitare eventi negativi con la PARLANTINA!</li>
-                  <li>Aumenta le probabilità di fare nuove amicizie (base 15% + bonus Carisma)</li>
-                  <li>Migliora le chance con le ragazze (ogni tipo ha preferenze diverse!)</li>
-                  <li>Contribuisce al 20% della tua REPUTAZIONE totale!</li>
-                </ul>
-              </div>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>
@@ -1222,6 +1309,15 @@ function App() {
           grades={grades}
           onSelectSubject={handleStudySubject}
           stanchezza={stats.stanchezza}
+        />
+
+        <TeacherSelectionDialog
+          open={showTeacherDialog}
+          onClose={() => setShowTeacherDialog(false)}
+          grades={grades}
+          onSelectTeacher={handleTeacherSelection}
+          actionType={teacherActionType}
+          soldi={stats.soldi}
         />
       </Suspense>
     </main>

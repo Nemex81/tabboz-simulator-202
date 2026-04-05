@@ -312,16 +312,10 @@ export function useGameActions({
   }, [setGrades, setStats, consumeAction, announce, setShowSubjectDialog])
 
   const handleCorrompi = useCallback(() => {
-    const gt = gameTimeRef.current
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
-      return
-    }
-    if (!gt.schoolYear.isSchoolPeriod) {
-      playSound.failure()
-      announce('La scuola è CHIUSA! Aspetta settembre!')
       return
     }
     if (s.soldi < 100) {
@@ -330,12 +324,21 @@ export function useGameActions({
       return
     }
     playSound.buttonClick()
+    setShowSubjectDialog(true)
+  }, [announce, setShowSubjectDialog])
+
+  const handleCorrompiSubject = useCallback((subject: string) => {
+    const s = statsRef.current
+    if (s.soldi < 100) {
+      playSound.failure()
+      announce('Non hai abbastanza GRANA per la MAZZETTA! Servono 100€')
+      return
+    }
+    playSound.buttonClick()
     playSound.moneySpent()
-    const subjects = Object.keys(gradesRef.current)
-    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
     setGrades((current) => ({
       ...current,
-      [randomSubject]: clampStat(current[randomSubject] + 2, 0, 10)
+      [subject]: clampStat(current[subject] + 0.5, 0, 10)
     }))
     setStats((current) => ({
       ...current,
@@ -343,22 +346,20 @@ export function useGameActions({
     }))
     consumeAction()
     playSound.success()
-    announce(`MAZZETTA al prof di ${getSubjectDisplayName(randomSubject)}! +2 al voto, -100 Soldi. EZPZ!`)
+    announce(`MAZZETTA al prof di ${getSubjectDisplayName(subject)}! +0.5 al voto, -100 Soldi. EZPZ!`)
   }, [setGrades, setStats, consumeAction, announce])
 
-  // B1-FIX-1 applicato
   const handleMinaccia = useCallback(() => {
-    const gt = gameTimeRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
       return
     }
-    if (!gt.schoolYear.isSchoolPeriod) {
-      playSound.failure()
-      announce('La scuola è CHIUSA! Aspetta settembre!')
-      return
-    }
+    playSound.buttonClick()
+    setShowSubjectDialog(true)
+  }, [announce, setShowSubjectDialog])
+
+  const handleMinacciaSubject = useCallback((subject: string) => {
     playSound.buttonClick()
     if (randomChance(30)) {
       playSound.gameOver()
@@ -368,18 +369,16 @@ export function useGameActions({
       return
     }
     playSound.bigWin()
-    const subjects = Object.keys(gradesRef.current)
-    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)]
     setGrades((current) => ({
       ...current,
-      [randomSubject]: clampStat(current[randomSubject] + 3, 0, 10)
+      [subject]: clampStat(current[subject] + 1.5, 0, 10)
     }))
     setStats((current) => ({
       ...current,
       coattaggine: clampStat(current.coattaggine + 15)
     }))
     consumeAction()
-    announce(`Hai MINACCIATO il prof di ${getSubjectDisplayName(randomSubject)}! +3 al voto, +15 Coattaggine. Rischiosa ma ha funzionato!`)
+    announce(`Hai MINACCIATO il prof di ${getSubjectDisplayName(subject)}! +1.5 al voto, +15 Coattaggine. Rischiosa ma ha funzionato!`)
   }, [setGrades, setStats, setGameOver, setGameOverReason, consumeAction, announce])
 
   const handleRiposa = useCallback(() => {
@@ -844,7 +843,9 @@ export function useGameActions({
     handleStudia,
     handleStudySubject,
     handleCorrompi,
+    handleCorrompiSubject,
     handleMinaccia,
+    handleMinacciaSubject,
     handleRiposa,
     handleDisco,
     handleCinema,
