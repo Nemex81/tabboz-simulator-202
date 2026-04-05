@@ -62,42 +62,72 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (gameOver || showResetDialog || showMetallariEvent || showAtipaEvent || showPoliceEvent || showStreetRaceEvent || showBulliEvent || !schoolType) return
-      
       if (!e.ctrlKey && !e.altKey) return
-      
+      if (gameOver || showResetDialog || showMetallariEvent || showAtipaEvent || showPoliceEvent || showStreetRaceEvent || showBulliEvent || showReportCard) return
+      if (!schoolType) return
+
       const key = e.key.toLowerCase()
-      
-      if (e.ctrlKey && !e.altKey && !e.shiftKey) {
+
+      if (e.altKey && key === 'h') {
         e.preventDefault()
-        switch(key) {
-          case '1': handlePalestra(); break
-          case '2': handleLampada(); break
-          case '3': handleLavoro(); break
-          case '4': handleMotorino(); break
-          case '5': handleStudia(); break
-          case '6': handleOpenCorrompiDialog(); break
-          case '7': handleOpenMinacciaDialog(); break
-          case '8': handleRiposa(); break
-          case '9': handleProvarciConAtipa(); break
-          case 'd': handleDisco(); break
-          case 'c': handleCinema(); break
-          case 's': handleShoppingMall(); break
-          case 'r': setShowResetDialog(true); break
-          case 'n': 
-            if (phaseActionsRemaining === 0) {
-              advancePhaseOnly()
-            }
-            break
-        }
+        setShowKeyboardHelp(true)
+        announce('Aiuto scorciatoie da tastiera aperto')
+        return
       }
-      
-      if (e.altKey && !e.ctrlKey && !e.shiftKey) {
-        e.preventDefault()
-        if (key === 'h' || key === '?') {
-          setShowKeyboardHelp(true)
-          announce('Aiuto scorciatoie da tastiera aperto')
-        }
+
+      if (!e.ctrlKey) return
+
+      e.preventDefault()
+
+      if (phaseActionsRemaining <= 0 && key !== 'r' && key !== 'n') {
+        announce('Hai esaurito le azioni per questa fascia oraria!')
+        return
+      }
+
+      switch (key) {
+        case '1':
+          handlePalestra()
+          break
+        case '2':
+          handleLampada()
+          break
+        case '3':
+          handleLavoro()
+          break
+        case '4':
+          handleMotorino()
+          break
+        case '5':
+          handleStudia()
+          break
+        case '6':
+          handleOpenCorrompiDialog()
+          break
+        case '7':
+          handleOpenMinacciaDialog()
+          break
+        case '8':
+          handleRiposa()
+          break
+        case '9':
+          handleProvarciConAtipa()
+          break
+        case 'd':
+          handleDisco()
+          break
+        case 'c':
+          handleCinema()
+          break
+        case 's':
+          handleShoppingMall()
+          break
+        case 'n':
+          advancePhaseOnly()
+          break
+        case 'r':
+          setShowResetDialog(true)
+          announce('Aperto dialogo reset gioco')
+          break
       }
     }
 
