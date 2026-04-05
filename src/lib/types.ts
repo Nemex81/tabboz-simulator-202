@@ -2,20 +2,33 @@ import type { TraitId } from '@/lib/character-traits'
 
 export type ExamDifficulty = 'facile' | 'normale' | 'difficile' | 'brutale'
 
+export type SchoolType = 'tecnico' | 'agraria' | 'artistico'
+
+export type ThemeVariant = 'default' | 'dark' | 'green'
+
+export type Gender = 'maschio' | 'femmina'
+
+export type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
+
+export type RelationshipDifficulty = 'facile' | 'media' | 'difficile'
+
+export type RelationshipPreference = 'muscoli' | 'figosita' | 'intelligenza'
+
+export type TimePhase = 'mattina' | 'pomeriggio' | 'sera' | 'notte'
+
+export type DayType = 'feriale' | 'weekend'
+
+export interface GameStats {
   coattaggine: number
+  muscoli: number
   soldi: number
-
+  media: number
+  stanchezza: number
+  figosita: number
   reputazione: number
+  intelligenza: number
   carisma: number
-
-  [subject: str
-
-  day: number
-  year: number
-
-  currentYear: number
-  carisma: number
- 
+}
 
 export interface SubjectGrades {
   [subject: string]: number
@@ -30,102 +43,95 @@ export interface GameDate {
 export interface SchoolYear {
   currentYear: number
   isSchoolPeriod: boolean
+  schoolStartDate: GameDate
+  schoolEndDate: GameDate
+  reportCardDate: GameDate
+}
+
+export interface GameTime {
+  currentDate: GameDate
+  actionsRemaining: number
+  maxActionsPerDay: number
+  schoolYear: SchoolYear
+  age: number
+  lastPaghettaDate?: GameDate
+  currentPhase?: TimePhase
+  extraActions: number
+}
+
+export interface Friend {
+  id: string
   name: string
+  type: FriendType
   affinita: number
+  intelligenza?: number
+  unlocked: boolean
   lastInteraction?: number
+}
 
-
+export interface Relationship {
+  id: string
+  name: string
+  difficulty: RelationshipDifficulty
+  preference: RelationshipPreference
+  relationshipLevel: number
+  isActive: boolean
   attraction: number
-  lastInteraction?: num
+  lastInteraction?: number
+}
 
+export interface ScheduledExam {
   subject: string
+  daysUntil: number
+  difficulty: ExamDifficulty
   isPrepared: boolean
   announced: boolean
+}
 
+export interface PlayerProfile {
+  name: string
+  gender: Gender
+  traits: TraitId[]
+}
 
- 
+export interface SchoolRecord {
+  condotta: number
+  assenze: number
+  note: number
+  sospensioni: number
+  wentToSchoolToday: boolean
+  consecutiveGoodDays: number
+}
 
-    filosofia: 1.1,
-    inglese: 1
-  },
-    matematica: 1.4
- 
-
+export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
+  tecnico: {
+    matematica: 1.5,
+    fisica: 1.4,
+    informatica: 1.5,
+    elettronica: 1.3,
+    italiano: 1.0,
+    inglese: 1.0,
     edFisica: 0.7
-  professionale: {
-    laboratorio: 
-    tecnologia
-    storia: 0.8,
   },
+  agraria: {
+    matematica: 1.2,
+    scienze: 1.5,
+    agronomia: 1.6,
+    chimica: 1.4,
+    italiano: 1.0,
+    edFisica: 0.8
+  },
+  artistico: {
     arte: 1.7,
- 
-
-  }
-
-  coattaggine:
-  soldi: 100,
-  stanchezza: 0,
-  reputazione: 50,
-  carisma: 10
-
-
-  note: 0,
-  wentToScho
-}
-export const DEFAULT
-  grades: {
-    matematica: 6,
- 
-
-    currentDate: { day: 15, mont
-    schoolYear: {
-      isSchoolPerio
-      schoolEndDate: 
-    },
-    maxActionsPerDay
- 
-
-
-
-  professionale: ['matematica', 'laboratorio', 'economia', 'tecnologia', 'it
-}
-export function getD
-  return subjects.
-    return acc
-}
-export function 
-    matematica: '
-    latino: 'Lati
-    
-    edFisica
-    informatica: 'In
-    laboratorio:
-    tecnologia: 'Tecn
-    storia_arte: 'Sto
+    storia_arte: 1.5,
+    disegno: 1.6,
+    italiano: 1.1,
+    matematica: 0.9,
+    edFisica: 0.7
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export const DEFAULT_STATS: GameStats = {
   coattaggine: 50,
   muscoli: 50,
   soldi: 100,
@@ -174,9 +180,8 @@ export const DEFAULT_GAME_STATE = {
 }
 
 export const SCHOOL_SUBJECTS: Record<SchoolType, string[]> = {
-  liceo: ['matematica', 'italiano', 'latino', 'filosofia', 'storia', 'inglese', 'edFisica'],
   tecnico: ['matematica', 'fisica', 'informatica', 'elettronica', 'italiano', 'inglese', 'edFisica'],
-  professionale: ['matematica', 'laboratorio', 'economia', 'tecnologia', 'italiano', 'storia', 'edFisica'],
+  agraria: ['matematica', 'scienze', 'agronomia', 'chimica', 'italiano', 'edFisica'],
   artistico: ['arte', 'storia_arte', 'disegno', 'italiano', 'matematica', 'edFisica']
 }
 
@@ -205,7 +210,10 @@ export function getSubjectDisplayName(subject: string): string {
     tecnologia: 'Tecnologia',
     arte: 'Arte',
     storia_arte: 'Storia dell\'Arte',
-    disegno: 'Disegno'
+    disegno: 'Disegno',
+    scienze: 'Scienze',
+    agronomia: 'Agronomia',
+    chimica: 'Chimica'
   }
   return displayNames[subject] || subject
 }
