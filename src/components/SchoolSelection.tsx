@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,13 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
   const [playerName, setPlayerName] = useState('')
   const [playerGender, setPlayerGender] = useState<PlayerGender | null>(null)
   const [selectedTheme, setSelectedTheme] = useState<ThemeVariant>('default')
+
+  useEffect(() => {
+    const htmlElement = document.querySelector('html')
+    if (htmlElement) {
+      htmlElement.setAttribute('data-theme', selectedTheme)
+    }
+  }, [selectedTheme])
 
   const handleProfileComplete = () => {
     if (playerName.trim() && playerGender) {

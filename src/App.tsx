@@ -275,7 +275,13 @@ function App() {
 
   const handleRiposa = () => actions.handleRiposa()
 
-  // Fix4: init useEffect — rileva mattina scolastica al caricamento della pagina
+  useEffect(() => {
+    const htmlElement = document.querySelector('html')
+    if (htmlElement) {
+      htmlElement.setAttribute('data-theme', currentTheme)
+    }
+  }, [currentTheme])
+
   useEffect(() => {
     if (
       dayType === 'feriale' &&
@@ -290,10 +296,6 @@ function App() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', currentTheme)
-  }, [currentTheme])
 
   const handleSchoolSelection = (selected: SchoolType, profile: PlayerProfile, theme: ThemeVariant) => {
     playSound.success()
