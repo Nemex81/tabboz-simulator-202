@@ -1,234 +1,234 @@
 import { lazy, Suspense } from 'react'
-import {
-  Running,
-  Fist,
+  Runnin
   Shield,
-  ShieldWarning,
-  HandCoins,
-  Heart,
+  HandC
   Flag,
-} from '@phosphor-icons/react'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
+  AlertDialo
+  AlertD
+  Alert
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { SubjectGrades, SchoolEvent } from '@/lib/types'
-
-const ReportCardDialog = lazy(() => import('@/components/ReportCardDialog').then(m => ({ default: m.ReportCardDialog })))
-const SchoolEventDialog = lazy(() => import('@/components/SchoolEventDialog').then(m => ({ default: m.SchoolEventDialog })))
-const KeyboardShortcutsDialog = lazy(() => import('@/components/KeyboardShortcutsDialog').then(m => ({ default: m.KeyboardShortcutsDialog })))
-const SubjectSelectionDialog = lazy(() => import('@/components/SubjectSelectionDialog').then(m => ({ default: m.SubjectSelectionDialog })))
-const TeacherSelectionDialog = lazy(() => import('@/components/TeacherSelectionDialog').then(m => ({ default: m.TeacherSelectionDialog })))
-
-export interface GameDialogsProps {
-  showMetallariEvent: boolean
-  setShowMetallariEvent: (value: boolean) => void
-  currentEvent: string
-  handleMetallariScappa: () => void
-  handleMetallariCombatti: () => void
-  showAtipaEvent: boolean
-  setShowAtipaEvent: (value: boolean) => void
-  atipaSuccessChance: number
-  handleAtipaRinuncia: () => void
+import {
+const ReportCa
+const KeyboardShortc
+const TeacherSelecti
+export interface Game
+  setShowMetallariEvent: 
+  handleMetallariSca
+  showAtipaEvent: bo
+  atipaSuccessChanc
   handleAtipaProva: () => void
-  showPoliceEvent: boolean
   setShowPoliceEvent: (value: boolean) => void
-  handlePoliceScappa: () => void
-  handlePoliceCollabora: () => void
-  showStreetRaceEvent: boolean
+
   setShowStreetRaceEvent: (value: boolean) => void
-  raceWinChance: number
   handleStreetRaceRifiuta: () => void
-  handleStreetRaceAccetta: () => void
   showBulliEvent: boolean
-  setShowBulliEvent: (value: boolean) => void
   handleBulliCedi: () => void
-  handleBulliResisti: () => void
   gameOver: boolean
-  gameOverReason: string
-  handleReset: () => void
-  showResetDialog: boolean
-  setShowResetDialog: (value: boolean) => void
-  showReportCard: boolean
+
+  setShowResetDialog: (value: boole
   grades: SubjectGrades
-  currentMedia: number
   reportCardPassed: boolean
-  schoolYear: number
-  handleReportCardContinue: () => void
-  showSchoolEvent: boolean
+  handleReportCardCont
   schoolEvent: SchoolEvent | null
-  handleSchoolEventChoice: (choiceIndex: number) => void
-  setShowSchoolEvent: (value: boolean) => void
-  showKeyboardHelp: boolean
-  setShowKeyboardHelp: (value: boolean) => void
-  showSubjectDialog: boolean
-  setShowSubjectDialog: (value: boolean) => void
-  handleStudySubject: (subject: string) => void
+  setShowSchoolEvent: (value: boolean
+  setShowKeyboardHelp: (v
+  setShowSubjectDialog: (value: boolean) => v
   stanchezza: number
-  showTeacherDialog: boolean
-  setShowTeacherDialog: (value: boolean) => void
-  handleTeacherSelection: (subject: string) => void
-  teacherActionType: 'corrompi' | 'minaccia'
-  soldi: number
+  setShowTeacherDialog: (value: b
+  teacherActionType: 'corrompi
 }
-
 export function GameDialogs({
-  showMetallariEvent,
   setShowMetallariEvent,
-  currentEvent,
   handleMetallariScappa,
-  handleMetallariCombatti,
   showAtipaEvent,
-  setShowAtipaEvent,
   atipaSuccessChance,
-  handleAtipaRinuncia,
   handleAtipaProva,
-  showPoliceEvent,
   setShowPoliceEvent,
-  handlePoliceScappa,
   handlePoliceCollabora,
-  showStreetRaceEvent,
   setShowStreetRaceEvent,
-  raceWinChance,
   handleStreetRaceRifiuta,
-  handleStreetRaceAccetta,
   showBulliEvent,
-  setShowBulliEvent,
   handleBulliCedi,
-  handleBulliResisti,
   gameOver,
-  gameOverReason,
   handleReset,
-  showResetDialog,
   setShowResetDialog,
-  showReportCard,
   grades,
-  currentMedia,
   reportCardPassed,
-  schoolYear,
-  handleReportCardContinue,
-  showSchoolEvent,
+  handleReportCardContinu
   schoolEvent,
-  handleSchoolEventChoice,
   setShowSchoolEvent,
-  showKeyboardHelp,
   setShowKeyboardHelp,
-  showSubjectDialog,
-  setShowSubjectDialog,
-  handleStudySubject,
+  setShowSubjectDial
   stanchezza,
-  showTeacherDialog,
   setShowTeacherDialog,
-  handleTeacherSelection,
   teacherActionType,
-  soldi,
 }: GameDialogsProps) {
-  return (
     <>
-      <AlertDialog open={showMetallariEvent} onOpenChange={setShowMetallariEvent}>
-        <AlertDialogContent className="border-2 border-destructive" aria-describedby="event-description">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-destructive">
-              ⚠️ EVENTO CASUALE ⚠️
-            </AlertDialogTitle>
-            <AlertDialogDescription id="event-description" className="text-lg">
+        <AlertDialogContent
+            <AlertDialogTitle className="text-2
+            </AlertDialogTit
               {currentEvent}
-            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleMetallariScappa} className="border-2">
-              <Running size={24} className="mr-2" />
-              Scappa (-10 Coattaggine)
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleMetallariCombatti} className="bg-destructive border-2">
-              <Fist size={24} className="mr-2" />
+            <AlertDi
+              Scappa (-10 Co
+            <AlertDialogAction onClick={handleMe
               Combatti (Serve Muscoli &gt; 60)
-            </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      </AlertDi
+ 
 
-      <AlertDialog open={showAtipaEvent} onOpenChange={setShowAtipaEvent}>
-        <AlertDialogContent className="border-2 border-accent">
+              <Heart size={32
+            </AlertDi
+              <p>{curren
+               
+              <p classNa
+              </p>
+          </Alert
+            <AlertDi
+              Lascia 
+            <AlertDial
+              PROVA
+          </AlertD
+      </AlertDialog>
+      <AlertDialog op
+          <AlertDialogHe
+              <Shield 
+            </AlertDialog
+              {c
+          </AlertDialogHea
+            <AlertDialogCa
+              Sca
+            <AlertDi
+              Dai 
+          </AlertDial
+      </Ale
+      <AlertDialo
+          <Ale
+              <Fla
+            </AlertDi
+              <p>
+         
+              <
+              </p>
+          </A
+            <AlertDialogCan
+              Rifi
+            <A
+              ACCETTA LA S
+          </AlertDial
+      </AlertDialog
+      <AlertDialog ope
+          <AlertDial
+              <ShieldWa
+            </AlertDi
+             
+          </AlertDia
+            <AlertDialo
+              Cedi (-20 S
+            <AlertDi
+        
+}: GameDialogsProps) {logAction>
+  return (
+    <>t>
+
+      <AlertDialog open={gameOver}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-accent flex items-center gap-2">
-              <Heart size={32} weight="fill" className="text-accent" />
-              RIMORCHIO TIME!
+          <AlertDialogHeader>
+              ⚠️ EVENTO CASUALE ⚠️
+              💀 GAME OVER 💀
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-lg space-y-2">
-              <p>{currentEvent}</p>
-              <p className="text-primary font-bold">
-                Probabilità di successo: {atipaSuccessChance}%
-              </p>
-              <p className="text-sm text-muted-foreground">
-                (Basato su Figosità, Coattaggine, Muscoli e Soldi)
-              </p>
+              {currentEvent}
+              {gameOverReason}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleAtipaRinuncia} className="border-2">
               <Running size={24} className="mr-2" />
-              Lascia stare (-5 Coattaggine)
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleAtipaProva} className="bg-accent border-2">
-              <Heart size={24} weight="fill" className="mr-2" />
-              PROVA! (Gratis)
+              🔄 Riprova da capo
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={showPoliceEvent} onOpenChange={setShowPoliceEvent}>
-        <AlertDialogContent className="border-2 border-secondary">
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        </AlertDialogContent>uctive">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-secondary flex items-center gap-2">
-              <Shield size={32} weight="fill" className="text-secondary animate-pulse" />
-              CONTROLLO POLIZIA!
+ogTitle className="text-2xl text-destructive">
+              ⚠️ CONFERMA RESET
             </AlertDialogTitle>
             <AlertDialogDescription className="text-lg">
-              {currentEvent}
+              Sei sicuro di voler resettare TUTTO il gioco? Perderai tutti i progressi!
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handlePoliceScappa} className="border-2 border-destructive">
-              <Running size={24} className="mr-2" />
-              Scappa! (Serve Coattaggine &gt; 70)
+            <AlertDialogCancel className="border-2">
+              Annulla
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handlePoliceCollabora} className="bg-secondary border-2">
-              <HandCoins size={24} className="mr-2" />
-              Dai Mazzetta (50€)
+            <AlertDialogAction onClick={handleReset} className="bg-destructive border-2">
+              Sì, RESET TUTTO
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={showStreetRaceEvent} onOpenChange={setShowStreetRaceEvent}>
-        <AlertDialogContent className="border-2 border-primary">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-primary flex items-center gap-2">
-              <Flag size={32} weight="fill" className="text-primary" />
-              GARA DI MOTORINI!
+      <Suspense fallback={null}>
+        {showReportCard && (
+          <ReportCardDialog
+            open={showReportCard}
+            grades={grades}
+            currentMedia={currentMedia}
+            passed={reportCardPassed}
+            schoolYear={schoolYear}
+            onContinue={handleReportCardContinue}
+          />
+        )}
+      </Suspense>
+
+      <Suspense fallback={null}>
+        {showSchoolEvent && schoolEvent && (
+          <SchoolEventDialog
+            open={showSchoolEvent}
+            event={schoolEvent}
+            onChoice={handleSchoolEventChoice}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-lg space-y-2">
-              <p>{currentEvent}</p>
-              <p className="text-primary font-bold">
-                Probabilità di vincita: {raceWinChance}%
+          />
+        )}
+      </Suspense>
+
+      <Suspense fallback={null}>
+        {showKeyboardHelp && (
+          <KeyboardShortcutsDialog
+            open={showKeyboardHelp}
+            onClose={() => setShowKeyboardHelp(false)}
+          />
+        )}
+      </Suspense>
+
+      <Suspense fallback={null}>
+        {showSubjectDialog && (
+      </AlertDialog>
+
+            onClose={() => setShowSubjectDialog(false)}
+            onSelectSubject={handleStudySubject}
+            stanchezza={stanchezza}
+          />
+        )}
+      </Suspense>
+
+      <Suspense fallback={null}>
+        {showTeacherDialog && (
+          <TeacherSelectionDialog
+            open={showTeacherDialog}
               </p>
-              <p className="text-sm text-muted-foreground">
-                (Basato su Coattaggine, Figosità e Muscoli)
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleStreetRaceRifiuta} className="border-2">
-              <Running size={24} className="mr-2" />
-              Rifiuta (-15 Coattaggine)
+            onSelectSubject={handleTeacherSelection}
+            actionType={teacherActionType}
+            soldi={soldi}
+          />
+        )}
+      </Suspense>
+    </>
+  )
+}
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleStreetRaceAccetta} className="bg-primary border-2">
               <Flag size={24} weight="fill" className="mr-2" />
