@@ -1262,7 +1262,15 @@ function App() {
           </TabsContent>
 
           <TabsContent value="character">
-            <CharacterSheet />
+            <CharacterSheet
+              playerProfile={playerProfile}
+              stats={stats}
+              schoolType={schoolType}
+              schoolYear={gameTime.schoolYear.currentYear}
+              age={gameTime.age}
+              schoolRecord={schoolRecord}
+              currentMedia={currentMedia}
+            />
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6 mt-6">
