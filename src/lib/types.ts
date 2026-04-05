@@ -61,6 +61,14 @@ export interface SubjectGrades {
   [key: string]: number
 }
 
+export interface SchoolRecord {
+  assenze: number
+  condotta: number
+  note: number
+  sospensioni: number
+  wentToSchoolToday: boolean
+}
+
 export interface TecnicoGrades extends SubjectGrades {
   matematica: number
   italiano: number
@@ -197,7 +205,8 @@ export interface GameState {
   friends?: Friend[]
   relationships?: Relationship[]
   scheduledExams?: ScheduledExam[]
-  traits?: TraitId[]   // C4: tratti caratteriali del personaggio (2-3 al massimo)
+  traits?: TraitId[]
+  schoolRecord?: SchoolRecord
 }
 
 export const DEFAULT_STATS: GameStats = {
@@ -285,12 +294,21 @@ export const DEFAULT_GAME_TIME: GameTime = {
   lastPaghettaDate: undefined
 }
 
+export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
+  assenze: 0,
+  condotta: 10,
+  note: 0,
+  sospensioni: 0,
+  wentToSchoolToday: false
+}
+
 export const DEFAULT_GAME_STATE: GameState = {
   stats: DEFAULT_STATS,
   grades: DEFAULT_GRADES,
   gameTime: DEFAULT_GAME_TIME,
   gameOver: false,
-  gameOverReason: ''
+  gameOverReason: '',
+  schoolRecord: DEFAULT_SCHOOL_RECORD
 }
 
 export const getSchoolTypeName = (schoolType: SchoolType): string => {

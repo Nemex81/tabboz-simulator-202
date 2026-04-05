@@ -327,6 +327,7 @@ export function GameDialogs({
             open={showSubjectDialog}
             onClose={() => setShowSubjectDialog(false)}
             onSelectSubject={handleStudySubject}
+            grades={grades}
             stanchezza={stanchezza}
           />
         )}

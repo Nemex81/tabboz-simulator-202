@@ -38,7 +38,7 @@ import { CityPanel } from '@/components/CityPanel'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant, SchoolRecord, DEFAULT_SCHOOL_RECORD } from '@/lib/types'
 import { useGameStats } from '@/hooks/useGameStats'
 import { useGameTime } from '@/hooks/useGameTime'
 import { useEventEngine } from '@/hooks/useEventEngine'
@@ -100,6 +100,7 @@ function App() {
   const [rawRelationships, setRawRelationships] = useKV<Relationship[]>('tabboz-relationships', [])
   const [rawGirlfriend, setRawGirlfriend] = useKV<Ragazza | null>('tabboz-girlfriend', null)
   const [currentTheme, setCurrentTheme] = useKV<ThemeVariant>('tabboz-theme', 'default')
+  const [rawSchoolRecord, setRawSchoolRecord] = useKV<SchoolRecord>('tabboz-school-record', DEFAULT_SCHOOL_RECORD)
 
   const schoolType = validateSchoolType(rawSchoolType)
   const playerProfile = rawPlayerProfile
@@ -107,6 +108,7 @@ function App() {
   const friends = validateFriends(rawFriends)
   const relationships = validateRelationships(rawRelationships)
   const girlfriend = rawGirlfriend
+  const schoolRecord = rawSchoolRecord || DEFAULT_SCHOOL_RECORD
 
   const setSchoolType = setRawSchoolType
   const setPlayerProfile = setRawPlayerProfile
@@ -114,6 +116,7 @@ function App() {
   const setFriends = setRawFriends
   const setRelationships = setRawRelationships
   const setGirlfriend = setRawGirlfriend
+  const setSchoolRecord = setRawSchoolRecord
 
   const {
     gameOver,
@@ -174,7 +177,9 @@ function App() {
     setShowSchoolEvent,
     setSchoolMorningEvents,
     setShowSchoolMorning,
-    announce
+    announce,
+    setSchoolRecord,
+    schoolRecord
   })
 
   const events = useEventEngine({
@@ -218,6 +223,8 @@ function App() {
     currentPhase,
     dayType,
     phaseActionsRemaining,
+    schoolRecord,
+    setSchoolRecord,
   })
 
   // Destructure event engine results per compatibilità con JSX esistente
@@ -312,14 +319,29 @@ function App() {
       announce('Puoi andare a scuola solo la mattina dei giorni feriali durante il periodo scolastico!')
       return
     }
+    if (schoolRecord.wentToSchoolToday) {
+      playSound.failure()
+      announce('Sei già andato a scuola oggi!')
+      return
+    }
     playSound.buttonClick()
     setStats((current) => ({
       ...current,
       intelligenza: clampStat(current.intelligenza + 2),
       stanchezza: clampStat(current.stanchezza + 10)
     }))
+    setSchoolRecord((current) => ({
+      ...current,
+      wentToSchoolToday: true
+    }))
     consumeAction()
     announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
+    
+    if (schoolMorningEvents.length === 0) {
+      const events = drawSchoolMorningEvents(6)
+      setSchoolMorningEvents(events)
+      setShowSchoolMorning(true)
+    }
   }
 
   useEffect(() => {
@@ -328,21 +350,6 @@ function App() {
       htmlElement.setAttribute('data-theme', currentTheme)
     }
   }, [currentTheme])
-
-  useEffect(() => {
-    if (
-      dayType === 'feriale' &&
-      currentPhase === 'mattina' &&
-      gameTime.schoolYear.isSchoolPeriod &&
-      !showSchoolMorning &&
-      schoolMorningEvents.length === 0
-    ) {
-      const events = drawSchoolMorningEvents(6)
-      setSchoolMorningEvents(events)
-      setShowSchoolMorning(true)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const handleSchoolSelection = (selected: SchoolType, profile: PlayerProfile, theme: ThemeVariant) => {
     playSound.success()
@@ -373,6 +380,7 @@ function App() {
     setGameWon(false)
     setSchoolType(null)
     setPlayerProfile(null)
+    setSchoolRecord(DEFAULT_SCHOOL_RECORD)
     announce('Gioco RESETTATO! Crea di nuovo il tuo personaggio!')
   }
 
@@ -415,6 +423,14 @@ function App() {
       setGrades((current) => ({
         ...current,
         [targetSubject]: clampStat(current[targetSubject] + outcome.gradeChanges!.change, 0, 10)
+      }))
+    }
+    
+    if (outcome.conductChange || outcome.noteChange) {
+      setSchoolRecord((current) => ({
+        ...current,
+        condotta: outcome.conductChange ? clampStat(current.condotta + outcome.conductChange, 0, 10) : current.condotta,
+        note: outcome.noteChange ? current.note + outcome.noteChange : current.note
       }))
     }
     
@@ -881,7 +897,7 @@ function App() {
                     ))}
                   </div>
                   <div className="mt-6 pt-6 border-t border-border">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                       <span className="text-lg text-muted-foreground">Media totale:</span>
                       <div className="flex items-center gap-2">
                         <span className={`text-3xl font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-accent'}`}>
@@ -890,6 +906,40 @@ function App() {
                         {currentMedia < 4 && (
                           <span className="text-destructive font-bold animate-pulse">BOCCIATO!</span>
                         )}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
+                      <div>
+                        <span className="text-sm text-muted-foreground">Condotta:</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-2xl font-bold ${schoolRecord.condotta < 6 ? 'text-destructive' : 'text-primary'}`}>
+                            {schoolRecord.condotta.toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Assenze:</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-2xl font-bold ${schoolRecord.assenze > 20 ? 'text-destructive' : 'text-foreground'}`}>
+                            {schoolRecord.assenze}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Note:</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold text-foreground">
+                            {schoolRecord.note}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Sospensioni:</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-2xl font-bold ${schoolRecord.sospensioni > 0 ? 'text-destructive' : 'text-foreground'}`}>
+                            {schoolRecord.sospensioni}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { GameStats, SubjectGrades, GameTime, SchoolType, Friend, Relationship, ScheduledExam } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, SchoolType, Friend, Relationship, ScheduledExam, SchoolRecord } from '@/lib/types'
 import { Ragazza, performGirlfriendAction, shouldGirlfriendBreakup, generateGirlfriendFromRelationship } from '@/lib/girlfriend-system'
 import {
   clampStat,
@@ -44,10 +44,11 @@ interface UseGameActionsParams {
   checkForNewRelationship: () => void
   checkForNewGirlfriend: () => void
   setShowSubjectDialog: (v: boolean) => void
-  // Fix2: gate azioni per fascia oraria
   currentPhase: import('@/lib/types').DayPhase
   dayType: import('@/lib/types').DayType
   phaseActionsRemaining: number
+  schoolRecord: SchoolRecord
+  setSchoolRecord: (updater: ((prev: SchoolRecord) => SchoolRecord) | SchoolRecord) => void
 }
 
 export function useGameActions({
@@ -76,6 +77,8 @@ export function useGameActions({
   currentPhase,
   dayType,
   phaseActionsRemaining,
+  schoolRecord,
+  setSchoolRecord,
 }: UseGameActionsParams) {
   // Refs per accesso stabile
   const statsRef = useRef(stats)
@@ -361,13 +364,36 @@ export function useGameActions({
 
   const handleMinacciaSubject = useCallback((subject: string) => {
     playSound.buttonClick()
-    if (randomChance(30)) {
+    const roll = Math.random() * 100
+    
+    if (roll < 5) {
       playSound.gameOver()
       setGameOver(true)
-      setGameOverReason('Hai PESTATO il prof ma ti hanno ESPULSO! Torna a settembre, violento!')
+      setGameOverReason('Hai AGGREDITO il prof e ti hanno ESPULSO DEFINITIVAMENTE! Game Over!')
       announce('ESPULSO dalla scuola per violenza!')
       return
+    } else if (roll < 15) {
+      playSound.failure()
+      setSchoolRecord((current) => ({
+        ...current,
+        sospensioni: current.sospensioni + 1,
+        condotta: clampStat(current.condotta - 2, 0, 10)
+      }))
+      announce(`SOSPESO per 3 giorni! +1 Sospensione, -2 Condotta. Hai esagerato!`)
+      consumeAction()
+      return
+    } else if (roll < 30) {
+      playSound.failure()
+      setSchoolRecord((current) => ({
+        ...current,
+        note: current.note + 1,
+        condotta: clampStat(current.condotta - 0.5, 0, 10)
+      }))
+      announce(`Ti hanno dato una NOTA disciplinare! +1 Nota, -0.5 Condotta.`)
+      consumeAction()
+      return
     }
+    
     playSound.bigWin()
     setGrades((current) => ({
       ...current,
@@ -377,9 +403,13 @@ export function useGameActions({
       ...current,
       coattaggine: clampStat(current.coattaggine + 15)
     }))
+    setSchoolRecord((current) => ({
+      ...current,
+      condotta: clampStat(current.condotta - 0.3, 0, 10)
+    }))
     consumeAction()
-    announce(`Hai MINACCIATO il prof di ${getSubjectDisplayName(subject)}! +1.5 al voto, +15 Coattaggine. Rischiosa ma ha funzionato!`)
-  }, [setGrades, setStats, setGameOver, setGameOverReason, consumeAction, announce])
+    announce(`Hai MINACCIATO il prof di ${getSubjectDisplayName(subject)}! +1.5 al voto, +15 Coattaggine, -0.3 Condotta. Rischiosa ma ha funzionato!`)
+  }, [setGrades, setStats, setGameOver, setGameOverReason, consumeAction, announce, setSchoolRecord])
 
   const handleRiposa = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {

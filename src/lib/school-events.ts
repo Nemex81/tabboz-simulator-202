@@ -17,6 +17,8 @@ export interface EventOutcome {
   message: string
   statChanges?: Partial<GameStats>
   gradeChanges?: { subject: string; change: number }
+  conductChange?: number
+  noteChange?: number
 }
 
 export const getParentEventByMedia = (media: number, stats: GameStats): SchoolEvent | null => {
@@ -130,15 +132,18 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
           action: () => {
             if (randomChance(40)) {
               return {
-                message: 'Sei riuscito a copiare! +1 al voto, +5 Coattaggine',
+                message: 'Sei riuscito a copiare! +1 al voto, +5 Coattaggine, -0.3 Condotta',
                 statChanges: { coattaggine: 5 },
-                gradeChanges: { subject: 'random', change: 1 }
+                gradeChanges: { subject: 'random', change: 1 },
+                conductChange: -0.3
               }
             } else {
               return {
-                message: 'Il prof ti ha BECCATO! -2 al voto, -15 Coattaggine',
+                message: 'Il prof ti ha BECCATO! -2 al voto, -15 Coattaggine, -1 Condotta, +1 Nota',
                 statChanges: { coattaggine: -15 },
-                gradeChanges: { subject: 'random', change: -2 }
+                gradeChanges: { subject: 'random', change: -2 },
+                conductChange: -1,
+                noteChange: 1
               }
             }
           }
@@ -163,15 +168,18 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
           action: () => {
             if (randomChance(50)) {
               return {
-                message: 'Hai copiato TUTTO! +2 al voto, +10 Coattaggine',
+                message: 'Hai copiato TUTTO! +2 al voto, +10 Coattaggine, -0.5 Condotta',
                 statChanges: { coattaggine: 10 },
-                gradeChanges: { subject: 'random', change: 2 }
+                gradeChanges: { subject: 'random', change: 2 },
+                conductChange: -0.5
               }
             } else {
               return {
-                message: 'SGAMATO! Il prof ti ha dato ZERO! -3 al voto, -20 Coattaggine',
+                message: 'SGAMATO! Il prof ti ha dato ZERO! -3 al voto, -20 Coattaggine, -1.5 Condotta, +1 Nota',
                 statChanges: { coattaggine: -20 },
-                gradeChanges: { subject: 'random', change: -3 }
+                gradeChanges: { subject: 'random', change: -3 },
+                conductChange: -1.5,
+                noteChange: 1
               }
             }
           }
@@ -186,17 +194,19 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
         {
           label: 'Fai casino',
           action: () => ({
-            message: 'Hai fatto CASINO in classe! +15 Coattaggine, -5 al voto',
+            message: 'Hai fatto CASINO in classe! +15 Coattaggine, -1 al voto, -0.8 Condotta',
             statChanges: { coattaggine: 15 },
-            gradeChanges: { subject: 'random', change: -1 }
+            gradeChanges: { subject: 'random', change: -1 },
+            conductChange: -0.8
           })
         },
         {
           label: 'Studia da solo',
           action: () => ({
-            message: 'Hai studiato per i fatti tuoi! +1 al voto, -5 Coattaggine',
+            message: 'Hai studiato per i fatti tuoi! +1 al voto, -5 Coattaggine, +0.3 Condotta',
             statChanges: { coattaggine: -5 },
-            gradeChanges: { subject: 'random', change: 1 }
+            gradeChanges: { subject: 'random', change: 1 },
+            conductChange: 0.3
           })
         }
       ]

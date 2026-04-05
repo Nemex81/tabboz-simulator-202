@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { GameTime, SubjectGrades, GameStats, SchoolType, ScheduledExam, DayPhase, DayType } from '@/lib/types'
+import { GameTime, SubjectGrades, GameStats, SchoolType, ScheduledExam, DayPhase, DayType, SchoolRecord } from '@/lib/types'
 import { DEFAULT_GAME_STATE, getDefaultGradesForSchoolType, getSubjectDisplayName } from '@/lib/types'
 import { validateGameTime, validateScheduledExams } from '@/lib/data-validation'
 import {
@@ -32,6 +32,8 @@ interface UseGameTimeParams {
   setSchoolMorningEvents: (events: SchoolMorningEvent[]) => void
   setShowSchoolMorning: (v: boolean) => void
   announce: (msg: string) => void
+  setSchoolRecord: (updater: ((prev: SchoolRecord) => SchoolRecord) | SchoolRecord) => void
+  schoolRecord: SchoolRecord
 }
 
 export function useGameTime({
@@ -46,7 +48,9 @@ export function useGameTime({
   setShowSchoolEvent,
   setSchoolMorningEvents,
   setShowSchoolMorning,
-  announce
+  announce,
+  setSchoolRecord,
+  schoolRecord
 }: UseGameTimeParams) {
   const [rawGameTime, setRawGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
   const [rawScheduledExams, setRawScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
@@ -84,7 +88,6 @@ export function useGameTime({
     const nextPhase = PHASE_SEQUENCE[nextIdx]
 
     if (nextPhase === 'mattina') {
-      // Fine giornata → applica recupero notturno (da "Avanza Fascia" in fase notte)
       const nightRecovery = DAY_PHASE_CONFIG[dayType]['notte'].nightRecovery
       if (nightRecovery !== 0) {
         setStats((current) => ({
@@ -92,7 +95,6 @@ export function useGameTime({
           stanchezza: clampStat(current.stanchezza + nightRecovery)
         }))
       }
-      // Fine giornata → avanza data e ricalcola
       setRawGameTime((current) => {
         const newGt = advanceGameTime(current)
         const newDayType = getDayType(newGt.currentDate)
@@ -100,12 +102,19 @@ export function useGameTime({
         setCurrentPhase('mattina')
         setPhaseActionsRemaining(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
 
-        // Fix4: genera eventi scolastici se è un giorno feriale scolastico
-        if (newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
-          const morningEvents = drawSchoolMorningEvents(6)
-          setSchoolMorningEvents(morningEvents)
-          setShowSchoolMorning(true)
+        if (!schoolRecord.wentToSchoolToday && newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
+          setSchoolRecord((prev) => ({
+            ...prev,
+            assenze: prev.assenze + 1,
+            condotta: clampStat(prev.condotta - 0.2, 0, 10)
+          }))
+          announce('Non sei andato a scuola ieri! +1 Assenza, -0.2 Condotta')
         }
+
+        setSchoolRecord((prev) => ({
+          ...prev,
+          wentToSchoolToday: false
+        }))
 
         return newGt
       })
@@ -117,7 +126,7 @@ export function useGameTime({
     playSound.buttonClick()
     announce(`Fascia oraria: ${nextPhase.charAt(0).toUpperCase() + nextPhase.slice(1)}`)
   }, [currentPhase, dayType, setStats, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining,
-      setSchoolMorningEvents, setShowSchoolMorning, announce])
+      setSchoolMorningEvents, setShowSchoolMorning, announce, schoolRecord, setSchoolRecord])
 
   const advanceToNextDay = useCallback(() => {
     setRawGameTime((current) => {
