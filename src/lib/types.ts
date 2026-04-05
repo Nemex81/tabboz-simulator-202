@@ -2,21 +2,21 @@ import type { TraitId } from '@/lib/character-traits'
 
 export interface GameStats {
   figosita: number
-  intelligenza: number
-  muscoli: number
   media: number
+  muscoli: number
+  carisma: numb
   coattaggine: number
-  reputazione: number
-  carisma: number
-  soldi: number
-  stanchezza: number
 }
+  carisma: number
+  | 'Sfigato To
+  stanchezza: number
+ 
 
 export type ReputationLevel = 
   | 'Sfigato Totale' 
-  | 'Nessuno' 
+
   | 'Conosciuto'
-  | 'Rispettato' 
+export type Relat
   | 'Leggenda del Quartiere'
 
 export type SchoolType = 'tecnico' | 'agraria' | 'artistico'
@@ -26,21 +26,21 @@ export type PlayerGender = 'maschio' | 'femmina'
 export type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
 
 export type RelationshipTier =
-  | 'sconosciuto'
+  affinita: numbe
   | 'conoscente'
-  | 'amico'
+}
   | 'amico_stretto'
   | 'migliore_amico'
   | 'trombamica'
-  | 'fidanzata'
+  preference: '
 
 export type SocialBondType = 'amicizia' | 'romantico'
 
-export interface Friend {
+}
   id: string
   name: string
   type: FriendType
-  affinita: number
+  sospensioni: num
   unlocked: boolean
   bondType?: SocialBondType
 }
@@ -48,84 +48,84 @@ export interface Friend {
 export interface Relationship {
   id: string
   name: string
-  difficulty: 'facile' | 'media' | 'difficile'
+  elettronica: number
   preference: 'muscoli' | 'figosita' | 'intelligenza'
   isActive: boolean
-}
+ 
 
 export interface SubjectGrades {
   [key: string]: number
-}
+ 
 
 export interface SchoolRecord {
   assenze: number
   condotta: number
   note: number
   sospensioni: number
-  wentToSchoolToday: boolean
-  consecutiveGoodDays?: number
-  scheduledSchoolEvent?: { subject: string }
-}
+    agronomia: 1.3,
+    chimica: 1.2,
+    ecologia: 1.0,
+ 
 
-export interface TecnicoGrades extends SubjectGrades {
-  matematica: number
-  italiano: number
-  storia: number
-  edFisica: number
-  informatica: number
-  elettronica: number
-  meccanica: number
-  sistemi: number
-  inglese: number
-  fisica: number
-  tecnologia: number
-}
-
-export interface AgrariaGrades extends SubjectGrades {
-  matematica: number
-  italiano: number
-  storia: number
-  edFisica: number
-  agronomia: number
-  biologia: number
-  zootecnia: number
-  ecologia: number
-  inglese: number
-  chimica: number
-  botanica: number
-}
-
-export interface ArtisticoGrades extends SubjectGrades {
-  matematica: number
-  italiano: number
-  storia: number
-  edFisica: number
-  disegno: number
-  pittura: number
-  storiaArte: number
-  scultura: number
-  anatomia: number
-  grafica: number
-  architettura: number
-}
-
-export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
-  tecnico: {
-    matematica: 1.5,
+  artistico: {
     italiano: 1.5,
-    informatica: 1.3,
-    elettronica: 1.2,
-    sistemi: 1.2,
-    meccanica: 1.1,
-    fisica: 1.0,
+    disegno: 1.3,
+    scultura: 1.
+    grafica: 1.0,
     storia: 0.8,
-    inglese: 0.9,
-    tecnologia: 1.0,
-    edFisica: 0.5,
-  },
-  agraria: {
-    matematica: 1.5,
-    italiano: 1.5,
+  }
+
+  day: number
+  year: number
+
+  currentYear: numbe
+ 
+
+}
+export interface Gam
+  actionsRemaining
+  age: number
+  lastPaghettaDate
+}
+export type DayPha
+export type DayType
+export interface D
+  timeRange: stri
+}
+export interface G
+ 
+
+export interface EventConstraint {
+  allowedDayTypes: D
+  minSchoolYear?: 
+}
+export type ExamDi
+export interface 
+  subject: string
+  isPrepared: boolea
+}
+export type ThemeV
+export interface 
+  gender: PlayerGender
+}
+
+}
+export inter
+  grades: SubjectGra
+  gameOver: boolea
+  schoolType?: School
+  friends?: Friend[]
+  scheduledExams?
+  schoolRecord?: Sc
+
+  coattaggine: 5
+  media: 6,
+  figosita: 50,
+  intelligenza: 10
+  ca
+
+  assenze: 0,
+  note: 0,
     agronomia: 1.3,
     biologia: 1.2,
     chimica: 1.2,
@@ -149,7 +149,7 @@ export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
     storia: 0.8,
     edFisica: 0.5,
   }
-}
+ 
 
 export interface GameDate {
   day: number
@@ -258,108 +258,108 @@ export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   consecutiveGoodDays: 0,
 }
 
-export const getDefaultGradesForSchoolType = (schoolType: SchoolType): SubjectGrades => {
-  switch (schoolType) {
-    case 'tecnico':
-      return {
-        matematica: 6.0,
-        italiano: 6.0,
-        storia: 6.0,
-        edFisica: 6.0,
-        informatica: 6.0,
-        elettronica: 6.0,
-        meccanica: 6.0,
-        sistemi: 6.0,
-        inglese: 6.0,
-        fisica: 6.0,
-        tecnologia: 6.0,
-      }
-    case 'agraria':
-      return {
-        matematica: 6.0,
-        italiano: 6.0,
-        storia: 6.0,
-        edFisica: 6.0,
-        agronomia: 6.0,
-        biologia: 6.0,
-        zootecnia: 6.0,
-        ecologia: 6.0,
-        inglese: 6.0,
-        chimica: 6.0,
-        botanica: 6.0,
-      }
-    case 'artistico':
-      return {
-        matematica: 6.0,
-        italiano: 6.0,
-        storia: 6.0,
-        edFisica: 6.0,
-        disegno: 6.0,
-        pittura: 6.0,
-        storiaArte: 6.0,
-        scultura: 6.0,
-        anatomia: 6.0,
-        grafica: 6.0,
-        architettura: 6.0,
-      }
-  }
-}
 
-export const getSubjectDisplayName = (subject: string): string => {
-  const displayNames: Record<string, string> = {
-    matematica: 'Matematica',
-    italiano: 'Italiano',
-    storia: 'Storia',
-    edFisica: 'Ed. Fisica',
-    informatica: 'Informatica',
-    elettronica: 'Elettronica',
-    meccanica: 'Meccanica',
-    sistemi: 'Sistemi',
-    inglese: 'Inglese',
-    fisica: 'Fisica',
-    tecnologia: 'Tecnologia',
-    agronomia: 'Agronomia',
-    biologia: 'Biologia',
-    zootecnia: 'Zootecnia',
-    ecologia: 'Ecologia',
-    chimica: 'Chimica',
-    botanica: 'Botanica',
-    disegno: 'Disegno',
-    pittura: 'Pittura',
-    storiaArte: 'Storia dell\'Arte',
-    scultura: 'Scultura',
-    anatomia: 'Anatomia',
-    grafica: 'Grafica',
-    architettura: 'Architettura',
-  }
-  return displayNames[subject] || subject
-}
 
-export const DEFAULT_GAME_STATE: GameState = {
-  stats: DEFAULT_STATS,
-  grades: {
-    matematica: 6,
-    italiano: 6,
-    storia: 6,
-    edFisica: 6,
-  },
-  gameTime: {
-    currentDate: { day: 15, month: 9, year: 2026 },
-    actionsRemaining: 6,
-    maxActionsPerDay: 6,
-    age: 14,
-    schoolYear: {
-      currentYear: 1,
-      isSchoolPeriod: true,
-      schoolStartDate: { day: 15, month: 9, year: 2026 },
-      schoolEndDate: { day: 10, month: 6, year: 2027 },
-      reportCardDate: { day: 10, month: 6, year: 2027 },
-    }
-  },
-  gameOver: false,
-  gameOverReason: '',
-  friends: [],
-  relationships: [],
-  scheduledExams: [],
-  schoolRecord: DEFAULT_SCHOOL_RECORD,
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
