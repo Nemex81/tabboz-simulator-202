@@ -4,33 +4,33 @@ import { Button } from '@/components/ui/button'
 import { ThemeVariant } from '@/lib/types'
 import { Sun, Moon, Plant, Palette } from '@phosphor-icons/react'
 
-}
+interface ThemeSelectorProps {
   currentTheme: ThemeVariant
-  const themes: Array<{
+  onThemeChange: (theme: ThemeVariant) => void
 }
 
 export function ThemeSelector({ currentTheme, onThemeChange }: ThemeSelectorProps) {
-    {
+  const themes: Array<{
     id: ThemeVariant
-      description
+    label: string
     description: string
-      label: 'Green Ganja
-      ic
-  ]
-  return (
-      <h3 className="te
-        TEMA VISIVO
-      
-      
-
-        {themes.m
-            key={the
-            className={`p-6 rounded-lg border-2 transition-all tex
-                ? 'border-primary bg-primary
-      
-     
-            <div c
-      label: 'Green Ganja',
+    icon: React.ReactNode
+  }> = [
+    {
+      id: 'default',
+      label: 'Default Neon Blu',
+      description: 'Tema classico con tonalità blu/teal neon',
+      icon: <Sun size={32} weight="fill" />
+    },
+    {
+      id: 'dark',
+      label: 'Dark Nero Viola',
+      description: 'Tema scuro con accenti viola e rosa',
+      icon: <Moon size={32} weight="fill" />
+    },
+    {
+      id: 'green',
+      label: 'Green Ganja Style',
       description: 'Tema ispirato alla ganja con verdi intensi',
       icon: <Plant size={32} weight="fill" />
     }
@@ -62,29 +62,25 @@ export function ThemeSelector({ currentTheme, onThemeChange }: ThemeSelectorProp
           >
             <div className="flex flex-col items-center text-center space-y-3">
               <div className={currentTheme === theme.id ? 'text-primary' : 'text-muted-foreground'}>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                {theme.icon}
+              </div>
+              <div>
+                <h4 className={`font-bold text-lg mb-1 ${currentTheme === theme.id ? 'text-primary' : 'text-foreground'}`}>
+                  {theme.label}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {theme.description}
+                </p>
+              </div>
+              {currentTheme === theme.id && (
+                <div className="text-xs text-primary font-bold">
+                  ✓ Attivo
+                </div>
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+    </Card>
+  )
+}
