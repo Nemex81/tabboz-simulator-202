@@ -2,66 +2,66 @@ import type { TraitId } from '@/lib/character-traits'
 
 export interface GameStats {
   muscoli: number
-  coattaggine: number
+  carisma: number
   reputazione: number
-  carisma: number
+  intelligenza: n
   soldi: number
-  figosita: number
-  intelligenza: number
-  stanchezza: number
-  media: number
-}
-
-export interface Friend {
-  name: string
-  relationshipLevel: number
-  intelligenza: number
+  relationshipLeve
   carisma: number
-}
 
-export interface Relationship {
   name: string
-  preference: RelationshipPreference
-  attraction?: number
-}
+ 
 
-export type RelationshipPreference = 'muscoli' | 'intelligenza' | 'figosita' | 'coattaggine' | 'carisma'
 
-export interface ScheduledExam {
-  subject: string
-  daysUntil: number
+  subject: str
   difficulty: number
-  preparationLevel: number
 }
+export type Schoo
+e
 
-export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'agrario'
-
-export function getSchoolTypeName(schoolType: SchoolType): string {
-  const names: Record<SchoolType, string> = {
-    liceo: 'Liceo Scientifico',
-    tecnico: 'Istituto Tecnico',
-    artistico: 'Istituto Artistico',
-    agrario: 'Istituto Agrario'
+    artistico: 'Istituto Artist
   }
-  return names[schoolType]
+}
+export interface Subj
 }
 
-export interface SubjectGrades {
-  [subject: string]: number
-}
-
-export interface SchoolYear {
-  currentYear: number
   isSchoolPeriod: boolean
-  daysUntilBreak: number
-}
 
 export interface SchoolRecord {
-  wentToSchoolToday: boolean
   assenze: number
-  note: number
   condotta: number
-  sospensioni: number
+  consecutiveGoodDay
+
+ 
+
+  sospensioni: 0,
+
+export function getDefaultGradesForSchoolType(schoolType: SchoolTyp
+    case 'liceo':
+        matematica: 6,
+        italiano: 6,
+        storia: 6,
+        edFisica: 6,
+   
+        matematica: 6,
+ 
+
+        edFisica: 6,
+    case 'artistico':
+ 
+
+        storia: 6,
+      }
+      return {
+        scienze: 6,
+ 
+
+  }
+
+  const displayNa
+    fisica: 'F
+    inglese: 'Ingl
+    scienze: 'Scienze
   consecutiveGoodDays: number
 }
 
@@ -80,101 +80,101 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
       return {
         matematica: 6,
         fisica: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        scienze: 6,
-        edFisica: 6,
-      }
-    case 'tecnico':
-      return {
-        matematica: 6,
-        fisica: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        informatica: 6,
-        edFisica: 6,
-      }
-    case 'artistico':
-      return {
-        arte: 6,
-        disegno: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        edFisica: 6,
-      }
-    case 'agrario':
-      return {
-        pratica: 6,
-        scienze: 6,
-        matematica: 6,
-        italiano: 6,
-        storia: 6,
-        edFisica: 6,
-      }
-  }
-}
-
-export function getSubjectDisplayName(subject: string): string {
-  const displayNames: Record<string, string> = {
-    matematica: 'Matematica',
-    fisica: 'Fisica',
-    italiano: 'Italiano',
-    inglese: 'Inglese',
-    storia: 'Storia',
-    scienze: 'Scienze',
-    pratica: 'Pratica',
-    disegno: 'Disegno',
-    arte: 'Arte',
-    informatica: 'Informatica',
-    edFisica: 'Ed. Fisica'
-  }
-  return displayNames[subject] || subject
-}
-
-export interface GameDate {
-  day: number
-  month: number
-  year: number
-}
-
-export interface PhaseActions {
-  mattina: number
-  pomeriggio: number
-  sera: number
-  notte: number
-}
-
-export type DayPhase = 'mattina' | 'pomeriggio' | 'sera' | 'notte'
-
-export interface GameTime {
-  currentDate: GameDate
-  currentPhase: DayPhase
-  age: number
-  schoolYear: SchoolYear
-  phaseActions: PhaseActions
-}
-
-export type ThemeVariant = 'default' | 'dark' | 'green'
-
-export interface PlayerProfile {
-  name: string
-  gender: 'maschio' | 'femmina'
   traits: TraitId[]
-}
 
-export interface GameState {
   stats: GameStats
-  grades: SubjectGrades
-  gameTime: GameTime
+  gameTime: GameTim
+
+  stats
+    coattaggine: 50
+    soldi: 100
+    intelligenza: 50,
+    carisma: 50,
+  },
+    matematica: 6,
+    italiano: 6,
+    storia: 6,
+    edFisica: 6,
+  gameT
+    currentPhase: 'ma
+    schoolYear
+      isSchoolPe
+    },
+      mattina: 2,
+      sera: 2,
+    }
 }
 
-export const DEFAULT_GAME_STATE: GameState = {
-  stats: {
-    muscoli: 50,
-    coattaggine: 50,
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     reputazione: 50,
     soldi: 100,
     figosita: 50,
