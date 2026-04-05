@@ -165,8 +165,9 @@ export function useGameTime({
       setGameOverReason('Sei stato ESPULSO dalla scuola per condotta pessima! Game Over.')
       playSound.gameOver()
     }
-    // STEP 4: eventi condotta — 25% di probabilit\u00e0 se condotta < 6
-    if (gameTime.schoolYear.isSchoolPeriod) {
+    // STEP 4: eventi condotta — solo mattina o pomeriggio, non sera/notte
+    if (gameTime.schoolYear.isSchoolPeriod
+      && (currentPhase === 'mattina' || currentPhase === 'pomeriggio')) {
       const conductEvent = getConductEvent(schoolRecord.condotta, schoolRecord.note)
       if (conductEvent && Math.random() < 0.25) {
         setSchoolEvent(conductEvent)
@@ -276,6 +277,31 @@ export function useGameTime({
 
       return newGameTime
     })
+    // FIX2-DORMI: controlla assenza non registrata prima di resettare la flag
+    const currentGt = validateGameTime(rawGameTime)
+    const currentDayType = getDayType(currentGt.currentDate)
+    if (!schoolRecord.wentToSchoolToday && currentDayType === 'feriale' && currentGt.schoolYear.isSchoolPeriod) {
+      announce('📋 Sei andato a dormire senza andare a scuola! +1 Assenza, -0.2 Condotta.')
+      setSchoolRecord((prev) => ({
+        ...prev,
+        assenze: prev.assenze + 1,
+        condotta: clampStat(prev.condotta - 0.2, 0, 10),
+        consecutiveGoodDays: 0,
+      }))
+      const newAssenze = schoolRecord.assenze + 1
+      if (newAssenze >= 35) {
+        setGameOver(true)
+        setGameOverReason('Troppe assenze! Non sei stato AMMESSO allo scrutinio. Bocciato per assenze!')
+        playSound.gameOver()
+      } else if (newAssenze === 25) {
+        announce('⚠️ ATTENZIONE: 25 assenze! Rischi di non essere ammesso allo scrutinio!')
+        playSound.eventTrigger()
+      } else if (newAssenze === 15) {
+        announce('📬 I tuoi genitori hanno ricevuto una LETTERA dalla scuola! -50 Soldi (punizione)')
+        setStats((s) => ({ ...s, soldi: clampStat(s.soldi - 50, 0, 1000) }))
+        playSound.moneySpent()
+      }
+    }
     // F3: reset flag presenza giornaliera (per handleDormi che salta le fasi)
     setSchoolRecord((prev) => ({ ...prev, wentToSchoolToday: false }))
     playSound.success()
@@ -292,7 +318,12 @@ export function useGameTime({
     announce,
     setDayType,
     setCurrentPhase,
-    setPhaseActionsRemaining
+    setPhaseActionsRemaining,
+    schoolRecord,
+    setSchoolRecord,
+    setGameOver,
+    setGameOverReason,
+    rawGameTime,
   ])
 
   const gainExtraAction = useCallback(() => {

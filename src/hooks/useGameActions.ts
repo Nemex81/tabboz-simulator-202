@@ -882,8 +882,7 @@ export function useGameActions({
     setSchoolRecord((prev) => ({
       ...prev,
       assenze: prev.assenze + 1,
-      consecutiveGoodDays: 0,
-    }))
+      consecutiveGoodDays: 0,      wentToSchoolToday: true,    }))
     gainExtraAction()
     consumeAction()
     playSound.buttonClick()
@@ -913,8 +912,8 @@ export function useGameActions({
     }))
     setSchoolRecord((prev) => ({
       ...prev,
-      assenzeGiustificate: prev.assenzeGiustificate + 1,
-    }))
+      assenzeGiustificate: prev.assenzeGiustificate + 1,      consecutiveGoodDays: 0,
+      wentToSchoolToday: true,    }))
     gainExtraAction()
     consumeAction()
     playSound.buttonClick()

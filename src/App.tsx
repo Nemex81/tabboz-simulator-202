@@ -1018,13 +1018,13 @@ function App() {
                             : 'Non è periodo scolastico'
                     }
                     variant="destructive"
-                    ariaLabel="Marina la scuola. +1 Assenza esplicita (+1 passiva a fine giornata), +5 Coattaggine, azione extra."
-                    helpText="Non vai a scuola. +1 Assenza (più +1 passivo a fine giornata = +2 totali), +5 Coattaggine, guadagni 1 azione extra. ATTENZIONE: oltre 35 assenze = BOCCIATO!"
+                    ariaLabel="Marina la scuola. +1 Assenza, +5 Coattaggine, 1 azione extra. ATTENZIONE: oltre 35 assenze = BOCCIATO!"
+                    helpText="Non vai a scuola. Guadagni 1 azione extra ma accumuli 1 Assenza e perdi reputazione scolastica. Oltre 35 assenze sei bocciato automaticamente!"
                     announce={announce}
                   />
                   <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
                     <p className="font-semibold mb-1">Effetti:</p>
-                    <p>• +1 Assenza ora (+1 passiva a fine giornata = 2 totali)</p>
+                    <p>• +1 Assenza (registrata subito, nessun doppio conteggio)</p>
                     <p>• +5 Coattaggine</p>
                     <p>• +1 Azione extra (compensazione libertà)</p>
                     <p className="mt-2 text-destructive font-semibold">⚠️ Oltre 35 assenze = BOCCIATO automaticamente!</p>
@@ -1155,6 +1155,7 @@ function App() {
                             {schoolRecord.assenzeGiustificate ?? 0}
                           </span>
                         </div>
+                        <span className="text-xs text-muted-foreground">Non contano per le soglie bocciatura</span>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">Note:</span>
