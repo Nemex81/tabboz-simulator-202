@@ -10,7 +10,12 @@ import {
   Trophy,
   UserCircle,
   Chats,
-  Keyboard
+  Keyboard,
+  ChartBar,
+  HandCoins,
+  Fist,
+  Running,
+  ShieldWarning
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
