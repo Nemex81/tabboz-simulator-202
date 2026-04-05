@@ -51,6 +51,7 @@ const StatsDashboard = lazy(() => import('@/components/StatsDashboard').then(m =
 // SchoolMorningPanel lazy (solo mattina feriale scolastica)
 const SchoolMorningPanel = lazy(() => import('@/components/SchoolMorningPanel').then(m => ({ default: m.SchoolMorningPanel })))
 import { SchoolSelection } from '@/components/SchoolSelection'
+import { CityPanel } from '@/components/CityPanel'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -64,7 +65,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam, PlayerProfile } from '@/lib/types'
 import { useGameStats } from '@/hooks/useGameStats'
 import { useGameTime } from '@/hooks/useGameTime'
 import { useEventEngine } from '@/hooks/useEventEngine'
@@ -118,18 +119,21 @@ import {
 
 function App() {
   const [rawSchoolType, setRawSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
+  const [rawPlayerProfile, setRawPlayerProfile] = useKV<PlayerProfile | null>('tabboz-player-profile', null)
   const [rawGrades, setRawGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
   const [rawFriends, setRawFriends] = useKV<Friend[]>('tabboz-friends', [])
   const [rawRelationships, setRawRelationships] = useKV<Relationship[]>('tabboz-relationships', [])
   const [rawGirlfriend, setRawGirlfriend] = useKV<Ragazza | null>('tabboz-girlfriend', null)
 
   const schoolType = validateSchoolType(rawSchoolType)
+  const playerProfile = rawPlayerProfile
   const grades = validateGrades(rawGrades, schoolType)
   const friends = validateFriends(rawFriends)
   const relationships = validateRelationships(rawRelationships)
   const girlfriend = rawGirlfriend
 
   const setSchoolType = setRawSchoolType
+  const setPlayerProfile = setRawPlayerProfile
   const setGrades = setRawGrades
   const setFriends = setRawFriends
   const setRelationships = setRawRelationships
@@ -285,11 +289,12 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleSchoolSelection = (selected: SchoolType) => {
+  const handleSchoolSelection = (selected: SchoolType, profile: PlayerProfile) => {
     playSound.success()
     setSchoolType(selected)
+    setPlayerProfile(profile)
     setGrades(getDefaultGradesForSchoolType(selected))
-    announce(`Hai scelto: ${selected.toUpperCase()}! Buona fortuna!`)
+    announce(`Ciao ${profile.name}! Hai scelto: ${selected.toUpperCase()}! Buona fortuna!`)
   }
 
   const handleReset = () => {
@@ -306,7 +311,8 @@ function App() {
     setShowResetDialog(false)
     setGameWon(false)
     setSchoolType(null)
-    announce('Gioco RESETTATO! Scegli di nuovo l\'indirizzo!')
+    setPlayerProfile(null)
+    announce('Gioco RESETTATO! Crea di nuovo il tuo personaggio!')
   }
 
   useEffect(() => {
@@ -449,6 +455,16 @@ function App() {
             TABBOZ SIMULATOR
           </h1>
           <p className="text-xl md:text-2xl text-secondary font-bold">2026 EDITION - VITA DA COATTO</p>
+          {playerProfile && (
+            <div className="mt-3 flex items-center justify-center gap-3 text-lg text-accent">
+              <User size={24} weight="fill" />
+              <span className="font-bold">{playerProfile.name}</span>
+              <span className="text-muted-foreground">•</span>
+              <span>{playerProfile.gender === 'maschio' ? '♂ Maschio' : '♀ Femmina'}</span>
+              <span className="text-muted-foreground">•</span>
+              <span>{gameTime.age} anni</span>
+            </div>
+          )}
           <div className="flex items-center justify-center gap-4 mt-4">
             <p className="text-sm text-muted-foreground">
               Usa <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+numero</kbd> o <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+lettera</kbd> per le scorciatoie.
@@ -464,54 +480,6 @@ function App() {
             </Button>
           </div>
         </header>
-
-        <section aria-labelledby="quick-stats">
-          <h2 id="quick-stats" className="sr-only">Panoramica Statistiche</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            <StatDisplay 
-              icon={<Lightning size={28} weight="fill" />}
-              label="Coattaggine"
-              value={stats.coattaggine}
-            />
-            <StatDisplay 
-              icon={<Barbell size={28} weight="fill" />}
-              label="Muscoli"
-              value={stats.muscoli}
-            />
-            <StatDisplay 
-              icon={<Sparkle size={28} weight="fill" />}
-              label="Figosità"
-              value={stats.figosita}
-            />
-            <StatDisplay 
-              icon={<Brain size={28} weight="fill" />}
-              label="Intelligenza"
-              value={stats.intelligenza}
-            />
-            <StatDisplay 
-              icon={<Chats size={28} weight="fill" />}
-              label="Carisma"
-              value={stats.carisma}
-            />
-            <StatDisplay 
-              icon={<CurrencyDollar size={28} weight="fill" />}
-              label="Soldi"
-              value={stats.soldi}
-              max={1000}
-            />
-            <StatDisplay 
-              icon={<GraduationCap size={28} weight="fill" />}
-              label="Media"
-              value={currentMedia}
-              max={10}
-            />
-            <StatDisplay 
-              icon={<Battery size={28} weight="fill" />}
-              label="Stanchezza"
-              value={stats.stanchezza}
-            />
-          </div>
-        </section>
 
         <TimeDisplay
           gameTime={gameTime}
@@ -586,13 +554,8 @@ function App() {
         })()}
         {/* ──────────────────────────────────────────────────────────────────── */}
 
-        <Tabs defaultValue="status" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-2 bg-muted/50 p-1 h-auto">
-            <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <ChartBar size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Profilo</span>
-              <span className="sm:hidden">Status</span>
-            </TabsTrigger>
+        <Tabs defaultValue="school" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 gap-2 bg-muted/50 p-1 h-auto">
             <TabsTrigger value="school" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               <GraduationCap size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Scuola</span>
@@ -608,19 +571,76 @@ function App() {
               <span className="hidden sm:inline">Amici</span>
               <span className="sm:hidden">Amici</span>
             </TabsTrigger>
-            <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+            <TabsTrigger value="city" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Buildings size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Città</span>
+              <span className="sm:hidden">Roma</span>
+            </TabsTrigger>
+            <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+              <Chats size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Sociale</span>
-              <span className="sm:hidden">Vita</span>
+              <span className="sm:hidden">Social</span>
+            </TabsTrigger>
+            <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <ChartBar size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Profilo</span>
+              <span className="sm:hidden">Io</span>
             </TabsTrigger>
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <ChartBar size={20} className="mr-2" weight="fill" />
+              <Trophy size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Dashboard</span>
               <span className="sm:hidden">📊</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="status" className="space-y-6 mt-6">
+            <section aria-labelledby="player-stats">
+              <h2 id="player-stats" className="sr-only">Le Mie Statistiche</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+                <StatDisplay 
+                  icon={<Lightning size={28} weight="fill" />}
+                  label="Coattaggine"
+                  value={stats.coattaggine}
+                />
+                <StatDisplay 
+                  icon={<Barbell size={28} weight="fill" />}
+                  label="Muscoli"
+                  value={stats.muscoli}
+                />
+                <StatDisplay 
+                  icon={<Sparkle size={28} weight="fill" />}
+                  label="Figosità"
+                  value={stats.figosita}
+                />
+                <StatDisplay 
+                  icon={<Brain size={28} weight="fill" />}
+                  label="Intelligenza"
+                  value={stats.intelligenza}
+                />
+                <StatDisplay 
+                  icon={<Chats size={28} weight="fill" />}
+                  label="Carisma"
+                  value={stats.carisma}
+                />
+                <StatDisplay 
+                  icon={<CurrencyDollar size={28} weight="fill" />}
+                  label="Soldi"
+                  value={stats.soldi}
+                  max={1000}
+                />
+                <StatDisplay 
+                  icon={<GraduationCap size={28} weight="fill" />}
+                  label="Media"
+                  value={currentMedia}
+                  max={10}
+                />
+                <StatDisplay 
+                  icon={<Battery size={28} weight="fill" />}
+                  label="Stanchezza"
+                  value={stats.stanchezza}
+                />
+              </div>
+            </section>
             <Card className="p-6 border-2 border-primary bg-card/50">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -1029,46 +1049,10 @@ function App() {
                 </div>
               </Card>
 
-              <Card className="p-6 border-2 border-primary bg-card">
-                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
-                  <Barbell size={24} weight="fill" />
-                  MIGLIORAMENTO FISICO
-                </h3>
-                <div className="space-y-3">
-                  <ActionButton
-                    icon={<Barbell size={48} />}
-                    label="Palestra"
-                    shortcut="Ctrl+1"
-                    onClick={handlePalestra}
-                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 20}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 20€'}
-                    ariaLabel="Vai in palestra per pompare muscoli. Costa 20 euro e aumenta la stanchezza. Tasto rapido: Ctrl+1"
-                  />
-                  <ActionButton
-                    icon={<Sun size={48} />}
-                    label="Lampada"
-                    shortcut="Ctrl+2"
-                    onClick={handleLampada}
-                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 30}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 30€'}
-                    ariaLabel="Vai alla lampada abbronzante per aumentare la coattaggine. Costa 30 euro. Tasto rapido: Ctrl+2"
-                  />
-                  <ActionButton
-                    icon={<Motorcycle size={48} />}
-                    label="Motorino"
-                    shortcut="Ctrl+4"
-                    onClick={handleMotorino}
-                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 50 || stats.stanchezza > 80}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
-                    ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
-                  />
-                </div>
-              </Card>
-
               <Card className="p-6 border-2 border-accent bg-card">
                 <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
                   <Heart size={24} weight="fill" />
-                  SVAGO & RIMORCHIO
+                  RIMORCHIO
                 </h3>
                 <div className="space-y-3">
                   <ActionButton
@@ -1081,78 +1065,51 @@ function App() {
                     variant="default"
                     ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi Figosità e Carisma; se accetta guadagni entrambi. Tasto rapido: Ctrl+9"
                   />
-                  <ActionButton
-                    icon={<MusicNotes size={48} />}
-                    label="Discoteca"
-                    shortcut="Ctrl+D"
-                    onClick={handleDisco}
-                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 60 || stats.stanchezza > 70}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 60 ? 'Servono almeno 60€' : 'Sei troppo stanco per ballare!'}
-                    variant="default"
-                    ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: Ctrl+D"
-                  />
-                  <ActionButton
-                    icon={<FilmSlate size={48} />}
-                    label="Cinema"
-                    shortcut="Ctrl+C"
-                    onClick={handleCinema}
-                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 40}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 40€'}
-                    variant="secondary"
-                    ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: Ctrl+C"
-                  />
+                </div>
+                <div className="mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
+                  <p>💡 Altri modi per socializzare: vai in <strong>Città</strong> per visitare discoteca, cinema, centro commerciale!</p>
                 </div>
               </Card>
 
               <Card className="p-6 border-2 border-secondary bg-card">
                 <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
-                  <Briefcase size={24} weight="fill" />
-                  LAVORO & DENARO
+                  <Motorcycle size={24} weight="fill" />
+                  MOTORINO
                 </h3>
                 <div className="space-y-3">
                   <ActionButton
-                    icon={<Briefcase size={48} />}
-                    label="Lavoro"
-                    shortcut="Ctrl+3"
-                    onClick={handleLavoro}
-                    disabled={phaseActionsRemaining <= 0 || stats.muscoli < 40 || stats.stanchezza > 80}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.muscoli < 40 ? 'Servono almeno 40 Muscoli' : 'Sei troppo stanco per lavorare!'}
-                    ariaLabel="Lavora come buttadifuori. Richiede 40 muscoli. Guadagni soldi e coattaggine. Tasto rapido: Ctrl+3"
+                    icon={<Motorcycle size={48} />}
+                    label="Trucca Motorino"
+                    shortcut="Ctrl+4"
+                    onClick={handleMotorino}
+                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 50 || stats.stanchezza > 80}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
+                    ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
                   />
                   <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-                    <p className="font-semibold mb-1">Requisiti:</p>
-                    <p>• Muscoli ≥ 40</p>
-                    <p>• Stanchezza {'<'} 80</p>
-                    <p className="mt-2 text-secondary font-semibold">Ricompensa: +80€, +5 Coattaggine</p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6 border-2 border-accent bg-card">
-                <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
-                  <ShoppingCart size={24} weight="fill" />
-                  SHOPPING
-                </h3>
-                <div className="space-y-3">
-                  <ActionButton
-                    icon={<ShoppingCart size={48} />}
-                    label="Shopping"
-                    shortcut="Ctrl+S"
-                    onClick={handleShoppingMall}
-                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 100}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 100€'}
-                    variant="default"
-                    ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: Ctrl+S"
-                  />
-                  <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-                    <p className="font-semibold mb-1">Vestiti nuovi:</p>
-                    <p>• +20 Figosità</p>
-                    <p>• +10 Coattaggine</p>
-                    <p className="mt-2 text-destructive font-semibold">Costo: 100€</p>
+                    <p className="font-semibold mb-1">Effetti:</p>
+                    <p>• +15 Coattaggine</p>
+                    <p>• +10 Figosità</p>
+                    <p className="mt-2 text-destructive font-semibold">Costo: 50€</p>
                   </div>
                 </div>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="city" className="space-y-6 mt-6">
+            <CityPanel
+              onDisco={handleDisco}
+              onCinema={handleCinema}
+              onShopping={handleShoppingMall}
+              onPalestra={handlePalestra}
+              onLampada={handleLampada}
+              onLavoro={handleLavoro}
+              actionsRemaining={phaseActionsRemaining}
+              soldi={stats.soldi}
+              muscoli={stats.muscoli}
+              stanchezza={stats.stanchezza}
+            />
           </TabsContent>
 
           <TabsContent value="exams" className="space-y-6 mt-6">

@@ -172,6 +172,14 @@ export interface ScheduledExam {
   announced: boolean
 }
 
+export type PlayerGender = 'maschio' | 'femmina'
+
+export interface PlayerProfile {
+  name: string
+  gender: PlayerGender
+  age: number
+}
+
 export interface GameState {
   stats: GameStats
   grades: SubjectGrades
@@ -179,6 +187,7 @@ export interface GameState {
   gameOver: boolean
   gameOverReason: string
   schoolType?: SchoolType
+  playerProfile?: PlayerProfile
   friends?: Friend[]
   relationships?: Relationship[]
   scheduledExams?: ScheduledExam[]
