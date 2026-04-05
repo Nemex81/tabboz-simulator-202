@@ -1,6 +1,7 @@
 import React from 'react'
 import { IdentificationCard, Star, Trophy, GraduationCap } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { GameStats, SchoolType, SchoolRecord } from '@/lib/types'
 import { getReputationLevel } from '@/lib/game-utils'
 
@@ -24,7 +25,31 @@ export function CharacterSheet({
   currentMedia,
 }: CharacterSheetProps) {
   return (
-    <div className="space-y-6 mt-6">
+    <Tabs defaultValue="profilo" className="w-full mt-6">
+      <TabsList className="grid w-full grid-cols-4 gap-1 bg-muted/50 p-1 h-auto mb-6">
+        <TabsTrigger value="profilo">
+          <IdentificationCard size={18} className="mr-1" weight="fill" aria-hidden="true" />
+          <span className="hidden sm:inline">Profilo</span>
+          <span className="sm:hidden">👤</span>
+        </TabsTrigger>
+        <TabsTrigger value="aspetto" disabled aria-label="Aspetto: non ancora disponibile">
+          <span className="hidden sm:inline">Aspetto</span>
+          <span className="sm:hidden">👕</span>
+          <span className="ml-1 text-xs opacity-50">🔜</span>
+        </TabsTrigger>
+        <TabsTrigger value="diario" disabled aria-label="Diario: non ancora disponibile">
+          <span className="hidden sm:inline">Diario</span>
+          <span className="sm:hidden">📓</span>
+          <span className="ml-1 text-xs opacity-50">🔜</span>
+        </TabsTrigger>
+        <TabsTrigger value="obiettivi" disabled aria-label="Obiettivi: non ancora disponibile">
+          <span className="hidden sm:inline">Obiettivi</span>
+          <span className="sm:hidden">🏆</span>
+          <span className="ml-1 text-xs opacity-50">🔜</span>
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="profilo">
+        <div className="space-y-6">
 
       {/* Sezione 1 — Intestazione */}
       <section aria-labelledby="cs-title">
@@ -59,6 +84,8 @@ export function CharacterSheet({
               ['Muscoli', stats.muscoli, 'text-secondary'],
               ['Carisma', stats.carisma, 'text-accent'],
               ['Stanchezza', stats.stanchezza, 'text-destructive'],
+              ['Stress', stats.stress ?? 0, 'text-destructive'],
+              ['Morale', stats.morale ?? 60, 'text-accent'],
               ['Reputazione', stats.reputazione, 'text-primary'],
               ['Soldi', stats.soldi, 'text-secondary'],
             ] as [string, number, string][]).map(([label, value, color]) => (
@@ -75,7 +102,7 @@ export function CharacterSheet({
                 </div>
                 <span
                   className={`text-sm font-bold w-16 text-right ${color}`}
-                  aria-label={`${label}: ${label === 'Soldi' ? `${value} euro` : `${value} su 100`}`}
+                  aria-label={`${label === 'Stanchezza' ? 'Stanchezza fisica' : label}: ${label === 'Soldi' ? `${value} euro` : `${value} su 100`}`}
                 >
                   {label === 'Soldi' ? `${value}€` : `${value} / 100`}
                 </span>
@@ -165,6 +192,8 @@ export function CharacterSheet({
         </Card>
       </section>
 
-    </div>
+        </div>
+      </TabsContent>
+    </Tabs>
   )
 }

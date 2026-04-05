@@ -193,3 +193,28 @@ export const getReputationEventModifier = (reputazione: number): {
       }
   }
 }
+
+export function getMentalStateModifiers(stress: number, morale: number): {
+  studyEfficiencyMultiplier: number
+  socialSuccessBonus: number
+  carismaBonus: number
+  isDiscoBlocked: boolean
+  crisiNervosa: boolean
+} {
+  const studyEfficiencyMultiplier =
+    stress > 80 ? 0.6 :
+    stress > 60 ? 0.8 :
+    1.0
+
+  const socialSuccessBonus =
+    morale > 80 ? 10 :
+    morale < 30 ? -15 :
+    0
+
+  const carismaBonus = morale > 80 ? 10 : 0
+
+  const isDiscoBlocked = morale < 20
+  const crisiNervosa = stress > 80 && morale < 30
+
+  return { studyEfficiencyMultiplier, socialSuccessBonus, carismaBonus, isDiscoBlocked, crisiNervosa }
+}

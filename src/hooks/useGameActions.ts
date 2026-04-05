@@ -5,7 +5,8 @@ import {
   clampStat,
   randomChance,
   calculateStudyGradeIncrease,
-  getReputationEventModifier
+  getReputationEventModifier,
+  getMentalStateModifiers
 } from '@/lib/game-utils'
 import {
   calculateRelationshipSuccess,
@@ -141,7 +142,8 @@ export function useGameActions({
       muscoli: clampStat(current.muscoli + 10),
       figosita: clampStat(current.figosita + 5),
       soldi: clampStat(current.soldi - 20, 0, 1000),
-      stanchezza: clampStat(current.stanchezza + 15)
+      stanchezza: clampStat(current.stanchezza + 15),
+      morale: clampStat(current.morale + 5)
     }))
     consumeAction()
     announce('Hai pompato FERRO! +10 Muscoli, +5 Figosità, -20 Soldi, +15 Stanchezza')
@@ -296,15 +298,18 @@ export function useGameActions({
     const g = gradesRef.current
     const hasFriendBonus = getFriendStudyBonus(friendsRef.current) > 0
     const gradeIncrease = calculateStudyGradeIncrease(s.intelligenza, hasFriendBonus)
+    const mentalState = getMentalStateModifiers(s.stress ?? 0, s.morale ?? 60)
+    const adjustedGradeIncrease = Math.max(0.05, gradeIncrease * mentalState.studyEfficiencyMultiplier)
     const intelligenzaGain = Number((0.01 + (s.intelligenza / 100) * 0.04).toFixed(2))
 
     setGrades((current) => ({
       ...current,
-      [selectedSubject]: clampStat(current[selectedSubject] + gradeIncrease, 0, 10)
+      [selectedSubject]: clampStat(current[selectedSubject] + adjustedGradeIncrease, 0, 10)
     }))
     setStats((current) => ({
       ...current,
       stanchezza: clampStat(current.stanchezza + 20),
+      stress: clampStat(current.stress + 15),
       coattaggine: clampStat(current.coattaggine - 5),
       intelligenza: clampStat(current.intelligenza + intelligenzaGain)
     }))
@@ -312,7 +317,8 @@ export function useGameActions({
     playSound.statIncrease()
 
     const bonusText = hasFriendBonus ? ' (BONUS AMICO INTELLIGENTE!)' : ''
-    announce(`Hai studiato ${getSubjectDisplayName(selectedSubject)}! +${gradeIncrease.toFixed(2)} al voto, +${intelligenzaGain} Intelligenza${bonusText}, +20 Stanchezza, -5 Coattaggine`)
+    const stressText = mentalState.studyEfficiencyMultiplier < 1 ? ' (STRESS ALTO: efficacia ridotta!)' : ''
+    announce(`Hai studiato ${getSubjectDisplayName(selectedSubject)}! +${adjustedGradeIncrease.toFixed(2)} al voto, +${intelligenzaGain} Intelligenza${bonusText}${stressText}, +20 Stanchezza, -5 Coattaggine`)
 
     const gt = gameTimeRef.current
     if (shouldTriggerSurpriseQuiz() && gt.schoolYear.isSchoolPeriod) {
@@ -454,7 +460,9 @@ export function useGameActions({
     playSound.buttonClick()
     setStats((current) => ({
       ...current,
-      stanchezza: clampStat(current.stanchezza - Math.round(current.stanchezza * recoveryPct))
+      stanchezza: clampStat(current.stanchezza - Math.round(current.stanchezza * recoveryPct)),
+      stress: clampStat(current.stress - 10),
+      morale: clampStat(current.morale + 3)
     }))
     consumeAction()
     announce(`Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`)
@@ -484,6 +492,11 @@ export function useGameActions({
       announce('Sei troppo DISTRUTTO per andare in disco! Riposa!')
       return
     }
+    if (getMentalStateModifiers(s.stress ?? 0, s.morale ?? 60).isDiscoBlocked) {
+      playSound.failure()
+      announce('Sei troppo giù di morale per andare in disco!')
+      return
+    }
     playSound.buttonClick()
     const reputationModifier = getReputationEventModifier(s.reputazione)
     const successChance = Math.min(85, Math.max(20,
@@ -501,7 +514,9 @@ export function useGameActions({
         coattaggine: clampStat(current.coattaggine + 15),
         carisma: clampStat(current.carisma + 10),
         soldi: clampStat(current.soldi - 60, 0, 1000),
-        stanchezza: clampStat(current.stanchezza + 25)
+        stanchezza: clampStat(current.stanchezza + 25),
+        stress: clampStat(current.stress - 20),
+        morale: clampStat(current.morale + 15)
       }))
       announce('Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, +10 Carisma, -60 Soldi, +25 Stanchezza')
     } else {
@@ -510,7 +525,9 @@ export function useGameActions({
         ...current,
         figosita: clampStat(current.figosita - 10),
         soldi: clampStat(current.soldi - 60, 0, 1000),
-        stanchezza: clampStat(current.stanchezza + 20)
+        stanchezza: clampStat(current.stanchezza + 20),
+        stress: clampStat(current.stress - 5),
+        morale: clampStat(current.morale - 10)
       }))
       announce('Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -60 Soldi, +20 Stanchezza')
     }
@@ -556,7 +573,9 @@ export function useGameActions({
         figosita: clampStat(current.figosita + 10),
         carisma: clampStat(current.carisma + 10),
         soldi: clampStat(current.soldi - 40, 0, 1000),
-        stanchezza: clampStat(current.stanchezza - 10)
+        stanchezza: clampStat(current.stanchezza - 10),
+        stress: clampStat(current.stress - 10),
+        morale: clampStat(current.morale + 10)
       }))
       announce('Film SPETTACOLARE! Serata fantastica! +10 Figosità, +10 Carisma, -40 Soldi, -10 Stanchezza')
     } else {
@@ -564,7 +583,9 @@ export function useGameActions({
       setStats((current) => ({
         ...current,
         soldi: clampStat(current.soldi - 40, 0, 1000),
-        stanchezza: clampStat(current.stanchezza - 15)
+        stanchezza: clampStat(current.stanchezza - 15),
+        stress: clampStat(current.stress - 10),
+        morale: clampStat(current.morale + 10)
       }))
       announce('Hai visto un bel film! Serata tranquilla. -40 Soldi, -15 Stanchezza')
     }
@@ -822,7 +843,9 @@ export function useGameActions({
       ...current,
       carisma: clampStat(current.carisma + 5),
       reputazione: clampStat(current.reputazione + 3),
-      stanchezza: clampStat(current.stanchezza + 5)
+      stanchezza: clampStat(current.stanchezza + 5),
+      stress: clampStat(current.stress - 5),
+      morale: clampStat(current.morale + 5)
     }))
     consumeAction()
     announce(isSchoolMorning
@@ -853,7 +876,9 @@ export function useGameActions({
       ...current,
       carisma: clampStat(current.carisma + 5),
       stanchezza: clampStat(current.stanchezza - 5),
-      reputazione: clampStat(current.reputazione + 2)
+      reputazione: clampStat(current.reputazione + 2),
+      stress: clampStat(current.stress - 15),
+      morale: clampStat(current.morale + 8)
     }))
     consumeAction()
     announce('Giro rilassante al parco! +5 Carisma, -5 Stanchezza, +2 Reputazione')

@@ -6,6 +6,8 @@ export interface GameStats {
   soldi: number
   media: number
   stanchezza: number
+  stress: number       // 0-100: stanchezza mentale
+  morale: number       // 0-100: stato emotivo
   figosita: number
   reputazione: number
   intelligenza: number
@@ -247,6 +249,8 @@ export const DEFAULT_GAME_STATE: GameState = {
     soldi: 100,
     media: 6,
     stanchezza: 0,
+    stress: 10,
+    morale: 60,
     figosita: 50,
     reputazione: 50,
     intelligenza: 10,
