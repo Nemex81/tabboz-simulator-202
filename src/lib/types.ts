@@ -2,35 +2,35 @@ import type { TraitId } from '@/lib/character-traits'
 
 export interface GameStats {
   muscoli: number
-  carisma: number
-  reputazione: number
-  intelligenza: number
-  soldi: number
-  figosita: number
-  coattaggine: number
+  figosita: numbe
   stanchezza: number
-  media: number
 }
-
-export interface ScheduledExam {
-  id: string
-  date: { day: number; month: number; year: number }
-  subject: string
+export interfac
+  date: { day: num
   difficulty: number
-  prepared: boolean
+}
+export type Sch
+e
+
+}
+export inter
+}
+export interface 
+  month: number
+}
+e
+
 }
 
-export type SchoolType = 'liceo' | 'tecnico' | 'artistico'
+export interface PhaseActions {
+  pomeriggio: number
+  notte: number
 
-export const SCHOOL_TYPE_NAMES: Record<SchoolType, string> = {
-  liceo: 'Liceo Scientifico',
-  tecnico: 'Istituto Tecnico',
-  artistico: 'Istituto Artistico'
-}
+ 
 
-export interface SubjectGrades {
-  [key: string]: number
-}
+  phaseActions: PhaseActions
+
+ 
 
 export interface GameDate {
   day: number
@@ -66,13 +66,13 @@ export interface SchoolRecord {
   assenze: number
   note: number
   condotta: number
-  sospensioni: number
-  consecutiveGoodDays: number
 }
+  consecutiveGoodDays: number
+
 
 export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   wentToSchoolToday: false,
-  assenze: 0,
+    fisica: 1
   note: 0,
   condotta: 8.0,
   sospensioni: 0,
@@ -80,27 +80,27 @@ export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
 }
 
 export interface Friend {
-  id: string
+    storia: 
   name: string
-  intelligenza: number
+  },
   carisma: number
-  muscoli: number
+    fisica: 0.8,
   relationship: number
-}
+ 
 
 export interface Relationship {
   id: string
-  name: string
+export functio
   type: 'ape' | 'dark' | 'metallara' | 'alternativa' | 'sportiva'
   compatibility: number
   met: boolean
-}
+ 
 
 export interface PlayerProfile {
   name: string
   gender: 'maschio' | 'femmina'
   traits: TraitId[]
-}
+ 
 
 export type ThemeVariant = 'default' | 'dark' | 'green'
 
@@ -108,33 +108,33 @@ export type ReputationLevel = 'scarso' | 'basso' | 'medio' | 'alto' | 'leggenda'
 
 export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
   liceo: {
-    matematica: 1.5,
+        inglese: 6,
     fisica: 1.5,
-    italiano: 1.2,
+        edFisica: 
     inglese: 1.0,
-    storia: 1.0,
+}
     scienze: 1.2,
     edFisica: 0.8
   },
-  tecnico: {
+    italiano
     matematica: 1.5,
-    fisica: 1.2,
+    scienze: 'Sc
     italiano: 1.0,
     inglese: 1.2,
     storia: 0.8,
     scienze: 1.5,
     edFisica: 0.8
-  },
+  ga
   artistico: {
-    matematica: 0.8,
+export const DEFAULT
     fisica: 0.8,
     italiano: 1.2,
     inglese: 1.0,
     storia: 1.5,
     scienze: 1.0,
-    edFisica: 1.2
+    carisma: 50,
   }
-}
+ 
 
 export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
   switch (schoolType) {
@@ -142,9 +142,9 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
       return {
         matematica: 6,
         fisica: 6,
-        italiano: 6,
+    age: 14,
         inglese: 6,
-        storia: 6,
+      isSchoolPeri
         scienze: 6,
         edFisica: 6
       }
@@ -154,21 +154,21 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
         fisica: 6,
         italiano: 6,
         inglese: 6,
-        storia: 6,
+
         scienze: 6,
         edFisica: 6
       }
     case 'artistico':
       return {
-        matematica: 6,
+
         fisica: 6,
         italiano: 6,
         inglese: 6,
         storia: 6,
         scienze: 6,
-        edFisica: 6
+
       }
-  }
+
 }
 
 export function getSubjectDisplayName(subject: string): string {
@@ -178,53 +178,53 @@ export function getSubjectDisplayName(subject: string): string {
     italiano: 'Italiano',
     inglese: 'Inglese',
     storia: 'Storia',
-    scienze: 'Scienze',
-    edFisica: 'Ed. Fisica'
-  }
-  return displayNames[subject] || subject
-}
 
-export interface GameState {
+    edFisica: 'Ed. Fisica'
+
+  return displayNames[subject] || subject
+
+
+
   stats: GameStats
-  grades: SubjectGrades
+
   gameTime: GameTime
-}
+
 
 export const DEFAULT_GAME_STATE: GameState = {
   stats: {
     muscoli: 50,
     coattaggine: 50,
-    reputazione: 50,
-    soldi: 100,
-    figosita: 50,
-    intelligenza: 50,
-    stanchezza: 0,
-    carisma: 50,
-    media: 6
-  },
-  grades: {
-    matematica: 6,
-    fisica: 6,
-    italiano: 6,
-    inglese: 6,
-    storia: 6,
-    scienze: 6,
-    edFisica: 6
-  } as SubjectGrades,
-  gameTime: {
-    currentDate: { day: 1, month: 9, year: 2026 },
-    currentPhase: 'mattina' as DayPhase,
-    age: 14,
-    schoolYear: {
-      currentYear: 1,
-      isSchoolPeriod: true,
-      daysUntilBreak: 30
-    },
-    phaseActions: {
-      mattina: 2,
-      pomeriggio: 3,
-      sera: 2,
-      notte: 1
-    }
-  } as GameTime
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
