@@ -1,19 +1,19 @@
 import { useState } from 'react'
 import { SchoolEvent } from '@/lib/school-events'
-export function useAppDialogs() {
+import { SchoolMorningEvent } from '@/lib/school-morning-events'
 
 export function useAppDialogs() {
   const [gameOver, setGameOver] = useState(false)
   const [gameOverReason, setGameOverReason] = useState('')
   const [showResetDialog, setShowResetDialog] = useState(false)
-  const [teacherActionType, setTeacherActionType] = useState<
-  const [showSchoolMorning, setShowSchoolMorning] = useState(fals
-  return {
-    setGameOver,
-    setGameOverReason,
-    setShowResetDialog,
-    setShowReportCard,
-    setReportCardPassed,
+  const [showReportCard, setShowReportCard] = useState(false)
+  const [reportCardPassed, setReportCardPassed] = useState(false)
+  const [gameWon, setGameWon] = useState(false)
+  const [schoolEvent, setSchoolEvent] = useState<SchoolEvent | null>(null)
+  const [showSchoolEvent, setShowSchoolEvent] = useState(false)
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+  const [showSubjectDialog, setShowSubjectDialog] = useState(false)
+  const [showTeacherDialog, setShowTeacherDialog] = useState(false)
   const [teacherActionType, setTeacherActionType] = useState<'corrompi' | 'minaccia'>('corrompi')
   const [schoolMorningEvents, setSchoolMorningEvents] = useState<SchoolMorningEvent[]>([])
   const [showSchoolMorning, setShowSchoolMorning] = useState(false)
@@ -30,11 +30,11 @@ export function useAppDialogs() {
     reportCardPassed,
     setReportCardPassed,
     gameWon,
-    setShowScho
+    setGameWon,
     schoolEvent,
-
+    setSchoolEvent,
     showSchoolEvent,
-
+    setShowSchoolEvent,
     showKeyboardHelp,
     setShowKeyboardHelp,
     showSubjectDialog,
@@ -48,4 +48,4 @@ export function useAppDialogs() {
     showSchoolMorning,
     setShowSchoolMorning,
   }
-
+}
