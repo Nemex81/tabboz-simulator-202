@@ -90,7 +90,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
             }
             break
         }
-
+      }
       
       if (e.altKey && !e.ctrlKey && !e.shiftKey) {
         e.preventDefault()
@@ -104,4 +104,4 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, showReportCard, schoolType, phaseActionsRemaining, handlePalestra, handleLampada, handleLavoro, handleMotorino, handleStudia, handleOpenCorrompiDialog, handleOpenMinacciaDialog, handleRiposa, handleProvarciConAtipa, handleDisco, handleCinema, handleShoppingMall, setShowResetDialog, advancePhaseOnly, setShowKeyboardHelp, announce])
-
+}
