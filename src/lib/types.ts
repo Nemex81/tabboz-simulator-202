@@ -67,6 +67,8 @@ export interface SchoolRecord {
   note: number
   sospensioni: number
   wentToSchoolToday: boolean
+  consecutiveGoodDays?: number          // tracker g.scolastici senza comportamento negativo
+  scheduledSchoolEvent?: { subject: string }  // preavviso evento Tier 2
 }
 
 export interface TecnicoGrades extends SubjectGrades {
@@ -112,6 +114,28 @@ export interface ArtisticoGrades extends SubjectGrades {
   anatomia: number
   grafica: number
   architettura: number
+}
+
+// Pesi per il calcolo della media pesata (Step 2)
+export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
+  tecnico: {
+    matematica: 1.5,
+    italiano: 1.5,
+    informatica: 1.3,
+    edFisica: 0.5,
+  },
+  agraria: {
+    matematica: 1.5,
+    italiano: 1.5,
+    agronomia: 1.3,
+    edFisica: 0.5,
+  },
+  artistico: {
+    matematica: 1.5,
+    italiano: 1.5,
+    disegno: 1.3,
+    edFisica: 0.5,
+  },
 }
 
 export interface GameDate {
@@ -299,7 +323,8 @@ export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   condotta: 8,
   note: 0,
   sospensioni: 0,
-  wentToSchoolToday: false
+  wentToSchoolToday: false,
+  consecutiveGoodDays: 0
 }
 
 export const DEFAULT_GAME_STATE: GameState = {

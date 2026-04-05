@@ -19,6 +19,8 @@ interface ReportCardDialogProps {
   schoolYear: number
   onContinue: () => void
   isLastYear?: boolean
+  condotta?: number
+  assenze?: number
 }
 
 export function ReportCardDialog({
@@ -28,7 +30,9 @@ export function ReportCardDialog({
   isPassed,
   schoolYear,
   onContinue,
-  isLastYear = false
+  isLastYear = false,
+  condotta,
+  assenze
 }: ReportCardDialogProps) {
   const getYearName = (year: number): string => {
     switch (year) {
@@ -95,6 +99,24 @@ export function ReportCardDialog({
               {media.toFixed(1)}
             </div>
           </div>
+          {(condotta !== undefined || assenze !== undefined) && (
+            <div className="mt-4 flex gap-4 text-sm">
+              {condotta !== undefined && (
+                <div className={`px-3 py-1 rounded font-bold ${
+                  condotta >= 7 ? 'bg-accent/30 text-accent' : condotta >= 6 ? 'bg-yellow-500/30 text-yellow-400' : 'bg-destructive/30 text-destructive'
+                }`}>
+                  Condotta: {condotta.toFixed(1)}/10
+                </div>
+              )}
+              {assenze !== undefined && (
+                <div className={`px-3 py-1 rounded font-bold ${
+                  assenze < 15 ? 'bg-accent/30 text-accent' : assenze < 25 ? 'bg-yellow-500/30 text-yellow-400' : 'bg-destructive/30 text-destructive'
+                }`}>
+                  Assenze: {assenze} giorni
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="text-center mb-4 space-y-2">

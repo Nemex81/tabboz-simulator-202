@@ -106,15 +106,27 @@ export function useGameTime({
           setSchoolRecord((prev) => ({
             ...prev,
             assenze: prev.assenze + 1,
-            condotta: clampStat(prev.condotta - 0.2, 0, 10)
+            condotta: clampStat(prev.condotta - 0.2, 0, 10),
+            consecutiveGoodDays: 0,
+            wentToSchoolToday: false
           }))
           announce('Non sei andato a scuola ieri! +1 Assenza, -0.2 Condotta')
+        } else if (schoolRecord.wentToSchoolToday && newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
+          const newCGD = (schoolRecord.consecutiveGoodDays ?? 0) + 1
+          const conductaBonus = newCGD % 5 === 0
+          setSchoolRecord((prev) => ({
+            ...prev,
+            consecutiveGoodDays: newCGD,
+            condotta: conductaBonus ? clampStat(prev.condotta + 0.3, 0, 10) : prev.condotta,
+            wentToSchoolToday: false
+          }))
+          if (conductaBonus) announce(`🌟 ${newCGD} giorni di comportamento esemplare! +0.3 Condotta`)
+        } else {
+          setSchoolRecord((prev) => ({
+            ...prev,
+            wentToSchoolToday: false
+          }))
         }
-
-        setSchoolRecord((prev) => ({
-          ...prev,
-          wentToSchoolToday: false
-        }))
 
         return newGt
       })

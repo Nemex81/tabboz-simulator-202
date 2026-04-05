@@ -1,4 +1,4 @@
-import { GameStats, ReputationLevel } from '@/lib/types'
+import { GameStats, ReputationLevel, SubjectGrades, SchoolType, SUBJECT_WEIGHTS } from '@/lib/types'
 
 export const clampStat = (value: number, min: number = 0, max: number = 100): number => {
   return Math.max(min, Math.min(max, value))
@@ -41,6 +41,31 @@ export const calculateMedia = (grades: { [key: string]: number }): number => {
   const sum = values.reduce((acc, val) => acc + val, 0)
   const average = sum / values.length
   return Number(average.toFixed(1))
+}
+
+// Media pesata per materia (Step 2): materie fondamentali contano di più
+export const calculateWeightedMedia = (grades: SubjectGrades, schoolType: SchoolType | null): number => {
+  if (!schoolType) return calculateMedia(grades)
+  const weights = SUBJECT_WEIGHTS[schoolType]
+  const entries = Object.entries(grades)
+  if (entries.length === 0) return 0
+  let totalWeight = 0
+  let weightedSum = 0
+  for (const [subject, grade] of entries) {
+    const weight = weights[subject] ?? 1.0
+    totalWeight += weight
+    weightedSum += grade * weight
+  }
+  return Number((weightedSum / totalWeight).toFixed(2))
+}
+
+// Restituisce le N materie con voto più basso (Step 2: selezione pesata negli eventi)
+export const getWorstSubjects = (grades: SubjectGrades, count: number = 3): string[] => {
+  const subjects = Object.keys(grades)
+  if (subjects.length === 0) return []
+  return [...subjects]
+    .sort((a, b) => (grades[a] ?? 10) - (grades[b] ?? 10))
+    .slice(0, Math.min(count, subjects.length))
 }
 
 export const randomChance = (percentage: number): boolean => {

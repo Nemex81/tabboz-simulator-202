@@ -44,6 +44,8 @@ export interface GameDialogsProps {
   reportCardPassed: boolean
   schoolYear: number
   handleReportCardContinue: () => void
+  condotta: number
+  assenze: number
   showSchoolEvent: boolean
   schoolEvent: SchoolEvent | null
   handleSchoolEventChoice: (choiceIndex: number) => void
@@ -97,6 +99,8 @@ export function GameDialogs(props: GameDialogsProps) {
     reportCardPassed,
     schoolYear,
     handleReportCardContinue,
+    condotta,
+    assenze,
     showSchoolEvent,
     schoolEvent,
     handleSchoolEventChoice,
@@ -277,9 +281,11 @@ export function GameDialogs(props: GameDialogsProps) {
             open={showReportCard}
             grades={grades}
             media={currentMedia}
-            passed={reportCardPassed}
+            isPassed={reportCardPassed}
             schoolYear={schoolYear}
             onContinue={handleReportCardContinue}
+            condotta={condotta}
+            assenze={assenze}
           />
         )}
 

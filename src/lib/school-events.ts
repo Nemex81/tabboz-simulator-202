@@ -6,6 +6,7 @@ export interface SchoolEvent {
   title: string
   description: string
   choices: EventChoice[]
+  tier?: 1 | 2 | 3   // 1=piccolo, 2=medio (con preavviso), 3=boss
 }
 
 export interface EventChoice {
@@ -107,6 +108,7 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
   const commonEvents = [
     {
       type: 'teacher' as const,
+      tier: 1 as const,
       title: 'INTERROGAZIONE A SORPRESA!',
       description: 'Il prof ti ha chiamato alla cattedra! Non hai studiato!',
       choices: [
@@ -120,9 +122,9 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
               }
             } else {
               return {
-                message: 'Hai fatto SCENA MUTA! -1 al voto, -10 Coattaggine',
+                message: 'Hai fatto SCENA MUTA! -1.5 al voto, -10 Coattaggine',
                 statChanges: { coattaggine: -10 },
-                gradeChanges: { subject: 'random', change: -1 }
+                gradeChanges: { subject: 'random', change: -1.5 }
               }
             }
           }
@@ -152,6 +154,7 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
     },
     {
       type: 'teacher' as const,
+      tier: 2 as const,
       title: 'COMPITO IN CLASSE!',
       description: 'Oggi c\'è il compito! Sei preparato?',
       choices: [
@@ -175,9 +178,9 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
               }
             } else {
               return {
-                message: 'SGAMATO! Il prof ti ha dato ZERO! -3 al voto, -20 Coattaggine, -1.5 Condotta, +1 Nota',
+                message: 'SGAMATO! Il prof ti ha dato ZERO! -2.5 al voto, -20 Coattaggine, -1.5 Condotta, +1 Nota',
                 statChanges: { coattaggine: -20 },
-                gradeChanges: { subject: 'random', change: -3 },
+                gradeChanges: { subject: 'random', change: -2.5 },
                 conductChange: -1.5,
                 noteChange: 1
               }
@@ -188,6 +191,7 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
     },
     {
       type: 'teacher' as const,
+      tier: 1 as const,
       title: 'IL PROF È ASSENTE!',
       description: 'Il prof non c\'è! Ora supplente!',
       choices: [

@@ -58,6 +58,8 @@ import {
 import { 
   clampStat, 
   calculateMedia, 
+  calculateWeightedMedia,
+  getWorstSubjects,
   randomChance, 
   checkGameOver,
   calculateReputationFromStats,
@@ -336,12 +338,45 @@ function App() {
     }))
     consumeAction()
     announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
-    
+
     if (schoolMorningEvents.length === 0) {
       const events = drawSchoolMorningEvents(6)
       setSchoolMorningEvents(events)
       setShowSchoolMorning(true)
     }
+  }
+
+  // Step 3: Marina — falsa assenza giustificata (+2 reali assenze, simula uscita ufficiale)
+  const handleMarina = () => {
+    if (phaseActionsRemaining <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    if (dayType !== 'feriale' || currentPhase !== 'mattina' || !gameTime.schoolYear.isSchoolPeriod) {
+      playSound.failure()
+      announce('Puoi marinare solo la mattina dei giorni feriali durante il periodo scolastico!')
+      return
+    }
+    if (schoolRecord.wentToSchoolToday) {
+      playSound.failure()
+      announce('Sei già andato a scuola oggi, non puoi marinare!')
+      return
+    }
+    playSound.buttonClick()
+    setSchoolRecord((current) => ({
+      ...current,
+      assenze: current.assenze + 2,
+      wentToSchoolToday: true,   // evita il +1 passivo di useGameTime
+      consecutiveGoodDays: 0
+    }))
+    setStats((current) => ({
+      ...current,
+      coattaggine: clampStat(current.coattaggine + 5),
+      stanchezza: clampStat(current.stanchezza - 5)
+    }))
+    consumeAction()
+    announce('Hai marinato la scuola! +2 Assenze, +5 Coattaggine. Goditela, coazzo!')
   }
 
   useEffect(() => {
@@ -350,6 +385,30 @@ function App() {
       htmlElement.setAttribute('data-theme', currentTheme)
     }
   }, [currentTheme])
+
+  // Step 3+4: soglie assenze e game over per condotta insufficiente
+  useEffect(() => {
+    if (!gameTime.schoolYear.isSchoolPeriod || gameOver) return
+    const a = schoolRecord.assenze
+    if (a === 15) announce('\u26a0\ufe0f ATTENZIONE: 15 assenze! La scuola ha mandato una lettera a casa!')
+    else if (a === 25) {
+      announce('\ud83d\udea8 GRAVE: 25 assenze! I tuoi genitori sono stati convocati!')
+      setSchoolRecord((prev) => ({ ...prev, condotta: clampStat(prev.condotta - 1, 0, 10) }))
+    } else if (a >= 35) {
+      playSound.gameOver()
+      setGameOver(true)
+      setGameOverReason(`BOCCIATO! Troppe assenze (${a} giorni)! Non sei stato ammesso allo scrutinio!`)
+    }
+  }, [schoolRecord.assenze]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!gameTime.schoolYear.isSchoolPeriod || gameOver) return
+    if (schoolRecord.condotta < 5 && schoolRecord.condotta > 0) {
+      playSound.gameOver()
+      setGameOver(true)
+      setGameOverReason(`SOSPESO! Condotta ${schoolRecord.condotta.toFixed(1)}/10 \u2014 sei stato espulso dalla scuola per comportamento insostenibile!`)
+    }
+  }, [schoolRecord.condotta]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSchoolSelection = (selected: SchoolType, profile: PlayerProfile, theme: ThemeVariant) => {
     playSound.success()
@@ -396,9 +455,9 @@ function App() {
 
   const handleSchoolEventChoice = (choiceIndex: number) => {
     if (!schoolEvent) return
-    
+
     const outcome: EventOutcome = schoolEvent.choices[choiceIndex].action()
-    
+
     if (outcome.statChanges) {
       setStats((current) => {
         const updated = { ...current }
@@ -413,60 +472,108 @@ function App() {
         return updated
       })
     }
-    
+
+    // Step 1: feedback delta | Step 2: selezione materia pesata (peggiori 3)
+    let deltaMsg = ''
     if (outcome.gradeChanges) {
-      const subjects = Object.keys(grades)
-      const targetSubject = outcome.gradeChanges.subject === 'random' 
-        ? subjects[Math.floor(Math.random() * subjects.length)]
+      const worstSubs = getWorstSubjects(grades, 3)
+      const targetSubject = outcome.gradeChanges.subject === 'random'
+        ? worstSubs[Math.floor(Math.random() * worstSubs.length)]
         : outcome.gradeChanges.subject
-      
+
+      const oldGrade = grades[targetSubject] ?? 0
+      const newGrade = clampStat(oldGrade + outcome.gradeChanges.change, 0, 10)
+      const newGrades = { ...grades, [targetSubject]: newGrade }
+      const oldMedia = calculateWeightedMedia(grades, schoolType)
+      const newMedia = calculateWeightedMedia(newGrades, schoolType)
+
+      deltaMsg = `📊 ${getSubjectDisplayName(targetSubject)}: ${oldGrade.toFixed(1)} → ${newGrade.toFixed(1)} | Media: ${oldMedia.toFixed(2)} → ${newMedia.toFixed(2)}`
+
       setGrades((current) => ({
         ...current,
-        [targetSubject]: clampStat(current[targetSubject] + outcome.gradeChanges!.change, 0, 10)
+        [targetSubject]: clampStat((current[targetSubject] ?? 0) + outcome.gradeChanges!.change, 0, 10)
       }))
     }
-    
-    if (outcome.conductChange || outcome.noteChange) {
+
+    if (outcome.conductChange !== undefined || outcome.noteChange !== undefined) {
+      const oldCondotta = schoolRecord.condotta
+      const newCondotta = outcome.conductChange !== undefined
+        ? clampStat(oldCondotta + outcome.conductChange, 0, 10)
+        : oldCondotta
+      if (outcome.conductChange !== undefined) {
+        const conductStr = ` | Condotta: ${oldCondotta.toFixed(1)} → ${newCondotta.toFixed(1)}`
+        deltaMsg = deltaMsg ? deltaMsg + conductStr : `📊${conductStr.trimStart()}`
+      }
       setSchoolRecord((current) => ({
         ...current,
-        condotta: outcome.conductChange ? clampStat(current.condotta + outcome.conductChange, 0, 10) : current.condotta,
-        note: outcome.noteChange ? current.note + outcome.noteChange : current.note
+        condotta: outcome.conductChange !== undefined ? clampStat(current.condotta + outcome.conductChange, 0, 10) : current.condotta,
+        note: outcome.noteChange !== undefined ? current.note + outcome.noteChange : current.note,
+        // Reset giorni consecutivi se comportamento negativo
+        consecutiveGoodDays: (outcome.conductChange !== undefined && outcome.conductChange < 0)
+          ? 0
+          : current.consecutiveGoodDays
       }))
     }
-    
+
     playSound.eventTrigger()
     announce(outcome.message)
+    if (deltaMsg) toast(deltaMsg)
     setShowSchoolEvent(false)
     setSchoolEvent(null)
   }
 
   const handleReportCardContinue = () => {
     setShowReportCard(false)
-    
+
     if (gameWon) {
       playSound.bigWin()
       setGameOver(true)
       setGameOverReason('HAI VINTO! Hai superato la MATURITÀ! Sei una LEGGENDA!')
       return
     }
-    
-    if (reportCardPassed) {
+
+    // Step 6: scrutinio integrato — media pesata + condotta + assenze
+    const weightedMedia = calculateWeightedMedia(grades, schoolType)
+    const condotta = schoolRecord.condotta
+    const assenze = schoolRecord.assenze
+
+    // Veto assenze >= 35
+    if (assenze >= 35) {
+      playSound.gameOver()
+      setGameOver(true)
+      setGameOverReason(`BOCCIATO! Troppe assenze (${assenze} giorni)! Non sei stato ammesso allo scrutinio!`)
+      return
+    }
+
+    // Soglia promozione modificata dalla condotta (Step 4)
+    let promotionThreshold = 6.0
+    if (condotta >= 9) promotionThreshold = 5.8
+    else if (condotta >= 7) promotionThreshold = 6.0
+    else if (condotta >= 6) promotionThreshold = 6.3
+    else {
+      playSound.gameOver()
+      setGameOver(true)
+      setGameOverReason(`BOCCIATO! Condotta insufficiente (${condotta.toFixed(1)}/10)! Il Consiglio di Classe non ti ha promosso!`)
+      return
+    }
+
+    const actuallyPassed = weightedMedia >= promotionThreshold
+
+    if (actuallyPassed) {
       const newYear = gameTime.schoolYear.currentYear + 1
-      
       setGameTime((current) => ({
         ...current,
         schoolYear: calculateNextSchoolYear(current.schoolYear),
         age: current.age + 1
       }))
-      
       setGrades(schoolType ? getDefaultGradesForSchoolType(schoolType) : DEFAULT_GAME_STATE.grades)
-      
+      setSchoolRecord(DEFAULT_SCHOOL_RECORD)  // reset annuale
       playSound.success()
       announce(`PROMOSSO! Ora sei in ${newYear}° superiore! I voti sono stati resettati.`)
     } else {
       playSound.gameOver()
       setGameOver(true)
-      setGameOverReason('BOCCIATO! Media sotto il 6! Devi ripetere l\'anno!')
+      setGameOverReason(`BOCCIATO! Media pesata ${weightedMedia.toFixed(2)} sotto la soglia ${promotionThreshold.toFixed(1)}! Devi ripetere l'anno!`)
     }
   }
 
@@ -503,7 +610,7 @@ function App() {
     return <SchoolSelection onSelectSchool={handleSchoolSelection} />
   }
 
-  const currentMedia = calculateMedia(grades)
+  const currentMedia = calculateWeightedMedia(grades, schoolType)
 
   const gameDialogsProps = {
     showMetallariEvent,
@@ -540,6 +647,8 @@ function App() {
     reportCardPassed,
     schoolYear: gameTime.schoolYear.currentYear,
     handleReportCardContinue,
+    condotta: schoolRecord.condotta,
+    assenze: schoolRecord.assenze,
     showSchoolEvent,
     schoolEvent,
     handleSchoolEventChoice,
@@ -848,6 +957,48 @@ function App() {
                     <p>• +2 Intelligenza</p>
                     <p>• +10 Stanchezza</p>
                     <p className="mt-2 text-primary font-semibold">📅 Disponibile: Mattina dei giorni feriali (periodo scolastico)</p>
+                  </div>
+                </Card>
+
+                {/* Step 3: Pulsante Marina */}
+                <Card className="p-3 border-2 border-destructive bg-card">
+                  <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
+                    <GraduationCap size={24} weight="fill" />
+                    MARINA LA SCUOLA
+                  </h3>
+                  <ActionButton
+                    icon={<GraduationCap size={48} />}
+                    label="Marina!"
+                    onClick={handleMarina}
+                    disabled={
+                      phaseActionsRemaining <= 0 ||
+                      dayType !== 'feriale' ||
+                      currentPhase !== 'mattina' ||
+                      !gameTime.schoolYear.isSchoolPeriod ||
+                      schoolRecord.wentToSchoolToday
+                    }
+                    blockedReason={
+                      schoolRecord.wentToSchoolToday
+                        ? 'Sei già andato a scuola oggi'
+                        : phaseActionsRemaining <= 0
+                          ? 'Nessuna azione per questa fascia oraria'
+                          : dayType !== 'feriale'
+                            ? 'Disponibile solo nei giorni feriali'
+                            : currentPhase !== 'mattina'
+                              ? 'Disponibile solo la mattina'
+                              : 'Non è periodo scolastico'
+                    }
+                    variant="destructive"
+                    ariaLabel="Marina la scuola. +2 Assenze, +5 Coattaggine."
+                    helpText="Fai finta di andare a scuola ma non ci vai. +2 Assenze, +5 Coattaggine, -5 Stanchezza. ATTENZIONE: aumenta le assenze!"
+                    announce={announce}
+                  />
+                  <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
+                    <p className="font-semibold mb-1">Effetti:</p>
+                    <p>• +2 Assenze (GRAVE!)</p>
+                    <p>• +5 Coattaggine</p>
+                    <p>• -5 Stanchezza</p>
+                    <p className="mt-2 text-destructive font-semibold">⚠️ Oltre 35 assenze = BOCCIATO automaticamente!</p>
                   </div>
                 </Card>
 
