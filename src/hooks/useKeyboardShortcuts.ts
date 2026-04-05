@@ -4,12 +4,12 @@ import { SchoolType } from '@/lib/types'
 interface UseKeyboardShortcutsParams {
   gameOver: boolean
   showResetDialog: boolean
-  schoolType: SchoolType | nu
-  handlePalestra: () => v
-  handleLavoro: () => void
-  handleStudia: () => void
-  handleOpenMinacciaDialo
-  handleProvarciConAtipa:
+  showMetallariEvent: boolean
+  showAtipaEvent: boolean
+  showPoliceEvent: boolean
+  showStreetRaceEvent: boolean
+  showBulliEvent: boolean
+  showReportCard: boolean
   schoolType: SchoolType | null
   phaseActionsRemaining: number
   handlePalestra: () => void
@@ -22,30 +22,30 @@ interface UseKeyboardShortcutsParams {
   handleRiposa: () => void
   handleProvarciConAtipa: () => void
   handleDisco: () => void
-    handleStudia,
-    handleOpenMinacciaDialog,
-    handleProvarciConAtipa,
-    handleCinema,
-    setShowResetDialog,
-    setShowKeyboardHelp,
- 
+  handleCinema: () => void
+  handleShoppingMall: () => void
+  setShowResetDialog: (show: boolean) => void
+  advancePhaseOnly: () => void
+  setShowKeyboardHelp: (show: boolean) => void
+  announce: (message: string) => void
+}
 
-      if (gameOver || showResetDialog || showMetallariEvent || showAtipaEv
-      if 
-      const k
-      if (e.ctrlKey 
-        switch(key) {
-          case '2':
-          case '4': 
-          case '6': hand
-          case '8':
-          case 'd':
-          case 
-          case 'n': 
-              advan
-            break
-      }
-      if (e.altKey 
+export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
+  const {
+    gameOver,
+    showResetDialog,
+    showMetallariEvent,
+    showAtipaEvent,
+    showPoliceEvent,
+    showStreetRaceEvent,
+    showBulliEvent,
+    showReportCard,
+    schoolType,
+    phaseActionsRemaining,
+    handlePalestra,
+    handleLampada,
+    handleLavoro,
+    handleMotorino,
     handleStudia,
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
