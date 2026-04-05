@@ -1,78 +1,54 @@
 import type { TraitId } from '@/lib/character-traits'
 
+export type SchoolType = 'liceo' | 'tecnico' | 'professionale' | 'artistico'
+
+export interface GameStats {
+  coattaggine: number
   muscoli: number
   media: number
-  muscoli: number
   soldi: number
-  media: number
   stanchezza: number
   figosita: number
   reputazione: number
   intelligenza: number
   carisma: number
+}
 
+export type SubjectGrades = Record<string, number>
 
+export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
+  liceo: {
     filosofia: 1.1,
-    inglese: 
-    edFisica: 0.
+    latino: 1.2,
+    inglese: 1.0,
+    edFisica: 0.7
+  },
   tecnico: {
     fisica: 1.3,
-
+    informatica: 1.4,
     scienze: 1.0,
-
-  },
-    matema
-    laboratorio: 1.5
-    economia: 1.
-    storia: 0.8,
-  },
-    arte: 1.7,
-    storia_arte:
-    matematica: 0
     edFisica: 0.7
+  },
+  professionale: {
+    matematica: 0.9,
+    laboratorio: 1.5,
+    economia: 1.1,
+    storia: 0.8,
+    edFisica: 0.7
+  },
+  artistico: {
+    arte: 1.7,
+    storia_arte: 1.3,
+    matematica: 0.8,
+    edFisica: 0.7
+  }
 }
-expo
-}
-export interface Gam
+
+export interface GameDate {
+  day: number
   month: number
+  year: number
 }
-export interface
-  isSchoolPeriod: boo
-  schoolEndDate: 
-}
-export interface 
-  actionsRemainin
-  sc
-  lastPaghettaDate
-  phaseActionsRemain
-
-  id: string
-  type: 'coatto' | '
-  lastInteraction?
-
-  id: string
-  attractiveness:
-  at
-
-  id: string
-  date: GameDate
-  prepared: boolean
-}
-export interface Sch
-  assenze: number
-  sospensioni: nu
-  c
-
-
-  note: 0,
-  wentToSchoolToday: false,
-}
-
-  gender: 'maschio' | 'femm
-}
-export type The
-export interfa
- 
 
 export interface SchoolYear {
   currentYear: number
@@ -80,7 +56,7 @@ export interface SchoolYear {
   schoolStartDate: GameDate
   schoolEndDate: GameDate
   reportCardDate: GameDate
- 
+}
 
 export interface GameTime {
   currentDate: GameDate
@@ -156,11 +132,11 @@ export interface GameState {
 
 export const DEFAULT_STATS: GameStats = {
   coattaggine: 50,
-
+  muscoli: 50,
+  media: 6,
   soldi: 50,
-
   stanchezza: 0,
-
+  figosita: 50,
   reputazione: 50,
   intelligenza: 10,
   carisma: 10
@@ -168,17 +144,17 @@ export const DEFAULT_STATS: GameStats = {
 
 export const DEFAULT_GAME_STATE: GameState = {
   stats: DEFAULT_STATS,
-
+  grades: {
     matematica: 6,
-
+    italiano: 6,
     storia: 6,
-
+    inglese: 6
   },
-
+  gameTime: {
     currentDate: { day: 15, month: 9, year: 2024 },
     actionsRemaining: 3,
     maxActionsPerDay: 3,
-
+    schoolYear: {
       currentYear: 1,
       isSchoolPeriod: true,
       schoolStartDate: { day: 15, month: 9, year: 2024 },
@@ -188,48 +164,45 @@ export const DEFAULT_GAME_STATE: GameState = {
     age: 14,
     extraActions: 0,
     phaseActionsRemaining: 2
-
+  },
   gameOver: false,
   gameOverReason: ''
 }
 
 export function getDefaultGradesForSchoolType(schoolType: SchoolType, baseGrade: number = 6): SubjectGrades {
-
+  const subjects: Record<SchoolType, string[]> = {
     liceo: ['matematica', 'fisica', 'italiano', 'storia', 'filosofia', 'latino', 'inglese', 'scienze', 'edFisica'],
     tecnico: ['matematica', 'fisica', 'italiano', 'storia', 'informatica', 'scienze', 'elettronica', 'inglese', 'edFisica'],
     professionale: ['matematica', 'italiano', 'laboratorio', 'tecnologia', 'economia', 'inglese', 'storia', 'edFisica'],
+    artistico: ['matematica', 'italiano', 'storia', 'inglese', 'arte', 'storia_arte', 'disegno', 'edFisica']
+  }
 
+  const grades: SubjectGrades = {}
+  subjects[schoolType].forEach(subject => {
+    grades[subject] = baseGrade
+  })
+  return grades
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export function getSubjectDisplayName(subject: string): string {
+  const displayNames: Record<string, string> = {
+    matematica: 'Matematica',
+    fisica: 'Fisica',
+    italiano: 'Italiano',
+    storia: 'Storia',
+    filosofia: 'Filosofia',
+    latino: 'Latino',
+    inglese: 'Inglese',
+    scienze: 'Scienze',
+    edFisica: 'Ed. Fisica',
+    informatica: 'Informatica',
+    elettronica: 'Elettronica',
+    laboratorio: 'Laboratorio',
+    tecnologia: 'Tecnologia',
+    economia: 'Economia',
+    arte: 'Arte',
+    storia_arte: 'Storia dell\'Arte',
+    disegno: 'Disegno'
+  }
+  return displayNames[subject] || subject
+}
