@@ -467,7 +467,7 @@ function App() {
 
         <section aria-labelledby="quick-stats">
           <h2 id="quick-stats" className="sr-only">Panoramica Statistiche</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="border border-border rounded-sm bg-card divide-y divide-border grid grid-cols-2 md:grid-cols-4">
             <StatDisplay 
               icon={<Lightning size={28} weight="fill" />}
               label="Coattaggine"
@@ -532,12 +532,16 @@ function App() {
             (currentPhase === 'mattina' && (dayType !== 'feriale' || !gameTime.schoolYear.isSchoolPeriod))
           const showDormi = currentPhase === 'sera' || currentPhase === 'notte'
           return (
-            <div className="mb-4 p-4 bg-muted/30 rounded-xl border border-border">
+            <div className="mb-4 p-4 bg-muted/30 rounded-sm border border-border">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                   Gestione Giornata
                 </span>
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                <span
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                   canAdvance
                     ? 'bg-primary/20 text-primary'
                     : 'bg-destructive/15 text-destructive'
@@ -577,7 +581,7 @@ function App() {
                   title={canAdvance ? `Avanza a: ${nextPhaseLabel}` : `Consuma prima le ${phaseActionsRemaining} azioni rimaste`}
                   className="flex items-center gap-1"
                 >
-                  ⏩ <span>Prossima fase</span>
+                  ▶ <span>Prossima fase</span>
                   <span className="ml-1 text-xs opacity-70">({nextPhaseLabel})</span>
                 </Button>
               </div>
@@ -586,42 +590,68 @@ function App() {
         })()}
         {/* ──────────────────────────────────────────────────────────────────── */}
 
-        <Tabs defaultValue="status" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-2 bg-muted/50 p-1 h-auto">
-            <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <ChartBar size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Profilo</span>
-              <span className="sm:hidden">Status</span>
+        <Tabs
+          defaultValue="status"
+          className="w-full"
+          onValueChange={(value) => {
+            const labels: Record<string, string> = {
+              status:    'Pannello Profilo aperto',
+              school:    'Pannello Scuola aperto. Voti scolastici e metodi alternativi.',
+              exams:     'Pannello Verifiche aperto. Gestione esami programmati.',
+              friends:   'Pannello Amici aperto. Gestione amicizie e fidanzata.',
+              social:    'Pannello Vita Sociale aperto. Azioni, lavoro e svago.',
+              dashboard: 'Dashboard statistiche aperta. Grafici andamento personaggio.',
+            }
+            announce(labels[value] ?? `Pannello ${value} aperto`)
+          }}
+        >
+          <TabsList className="flex w-full gap-0 bg-transparent border-b border-border rounded-none p-0 h-auto overflow-x-auto">
+            <TabsTrigger
+              value="status"
+              className="rounded-none rounded-t-sm border border-b-0 border-border data-[state=active]:bg-card data-[state=active]:border-primary data-[state=active]:text-primary data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground px-3 py-2 text-xs font-semibold"
+            >
+              <ChartBar size={14} className="mr-1" weight="fill" />
+              Profilo
             </TabsTrigger>
-            <TabsTrigger value="school" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-              <GraduationCap size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Scuola</span>
-              <span className="sm:hidden">Scuola</span>
+            <TabsTrigger
+              value="school"
+              className="rounded-none rounded-t-sm border border-b-0 border-border data-[state=active]:bg-card data-[state=active]:border-secondary data-[state=active]:text-secondary data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground px-3 py-2 text-xs font-semibold"
+            >
+              <GraduationCap size={14} className="mr-1" weight="fill" />
+              Scuola
             </TabsTrigger>
-            <TabsTrigger value="exams" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Brain size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Verifiche</span>
-              <span className="sm:hidden">Test</span>
+            <TabsTrigger
+              value="exams"
+              className="rounded-none rounded-t-sm border border-b-0 border-border data-[state=active]:bg-card data-[state=active]:border-primary data-[state=active]:text-primary data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground px-3 py-2 text-xs font-semibold"
+            >
+              <Brain size={14} className="mr-1" weight="fill" />
+              Verifiche
             </TabsTrigger>
-            <TabsTrigger value="friends" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-              <UserCircle size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Amici</span>
-              <span className="sm:hidden">Amici</span>
+            <TabsTrigger
+              value="friends"
+              className="rounded-none rounded-t-sm border border-b-0 border-border data-[state=active]:bg-card data-[state=active]:border-accent data-[state=active]:text-accent data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground px-3 py-2 text-xs font-semibold"
+            >
+              <UserCircle size={14} className="mr-1" weight="fill" />
+              Amici
             </TabsTrigger>
-            <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-              <Buildings size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Sociale</span>
-              <span className="sm:hidden">Vita</span>
+            <TabsTrigger
+              value="social"
+              className="rounded-none rounded-t-sm border border-b-0 border-border data-[state=active]:bg-card data-[state=active]:border-accent data-[state=active]:text-accent data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground px-3 py-2 text-xs font-semibold"
+            >
+              <Buildings size={14} className="mr-1" weight="fill" />
+              Sociale
             </TabsTrigger>
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <ChartBar size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Dashboard</span>
-              <span className="sm:hidden">📊</span>
+            <TabsTrigger
+              value="dashboard"
+              className="rounded-none rounded-t-sm border border-b-0 border-border data-[state=active]:bg-card data-[state=active]:border-primary data-[state=active]:text-primary data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground px-3 py-2 text-xs font-semibold"
+            >
+              <ChartBar size={14} className="mr-1" weight="fill" />
+              Dashboard
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="status" className="space-y-6 mt-6">
-            <Card className="p-6 border-2 border-primary bg-card/50">
+            <Card className="p-3 border-2 border-primary bg-card">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Crown size={48} weight="fill" className="text-primary" />
@@ -654,7 +684,7 @@ function App() {
               </div>
             </Card>
 
-            <Card className="p-6 border-2 border-accent bg-gradient-to-br from-accent/10 to-primary/10">
+            <Card className="p-4 border-2 border-accent">
               <div className="flex items-start gap-4">
                 <Trophy size={48} weight="fill" className="text-accent flex-shrink-0" />
                 <div className="flex-1">
@@ -712,7 +742,7 @@ function App() {
 
               <TabsContent value="attributi" className="space-y-4 mt-4">
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="p-6 border-2 border-primary bg-card">
+                  <Card className="p-3 border-2 border-primary bg-card">
                     <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
                       <User size={24} weight="fill" />
                       CARATTERISTICHE FISICHE
@@ -757,7 +787,7 @@ function App() {
                     </div>
                   </Card>
 
-                  <Card className="p-6 border-2 border-accent bg-card">
+                  <Card className="p-3 border-2 border-accent bg-card">
                     <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
                       <Brain size={24} weight="fill" />
                       CARATTERISTICHE MENTALI
@@ -805,7 +835,7 @@ function App() {
               </TabsContent>
 
               <TabsContent value="tratti" className="space-y-4 mt-4">
-                <Card className="p-6 border-2 border-purple-500 bg-card">
+                <Card className="p-3 border-2 border-purple-500 bg-card">
                   <h3 className="text-xl font-bold mb-4 text-purple-400 flex items-center gap-2">
                     🧬 TRATTI CARATTERIALI
                   </h3>
@@ -819,8 +849,13 @@ function App() {
                       </span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
+                    <div
                         className="h-full bg-purple-500 transition-all duration-300"
+                        role="progressbar"
+                        aria-valuenow={stats.psychStress ?? 0}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`Stress psicologico: ${stats.psychStress ?? 0} su 100${(stats.psychStress ?? 0) > 70 ? ' — livello elevato' : ''}`}
                         style={{ width: `${stats.psychStress ?? 0}%` }}
                       />
                     </div>
@@ -840,7 +875,7 @@ function App() {
                 </Card>
               </TabsContent>
               <TabsContent value="risorse" className="space-y-4 mt-4">
-                <Card className="p-6 border-2 border-secondary bg-card">
+                <Card className="p-3 border-2 border-secondary bg-card">
                   <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
                     <CurrencyDollar size={24} weight="fill" />
                     RISORSE
@@ -904,23 +939,32 @@ function App() {
                 />
               </Suspense>
             )}
-            <Card className="p-6 border-2 border-secondary bg-card">
-              <h3 className="text-2xl font-bold mb-6 text-secondary flex items-center gap-2">
+            <Card className="p-3 border-2 border-secondary bg-card">
+              <h3 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
                 <GraduationCap size={32} weight="fill" />
                 VOTI SCOLASTICI
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div
+                role="table"
+                aria-label="Voti scolastici"
+                className="divide-y divide-border"
+              >
                 {Object.entries(grades).map(([subject, grade]) => (
-                  <div key={subject} className="text-center p-4 rounded-lg bg-muted/30">
-                    <div className="text-xs text-muted-foreground uppercase font-semibold mb-2">
+                  <div
+                    key={subject}
+                    role="row"
+                    aria-label={`${getSubjectDisplayName(subject)}: ${grade.toFixed(1)} su 10${grade < 6 ? ' — INSUFFICIENTE' : ''}`}
+                    className="flex items-center gap-2 py-1.5 px-2"
+                  >
+                    <span className="text-xs text-muted-foreground flex-1">
                       {getSubjectDisplayName(subject)}
-                    </div>
-                    <div className={`text-3xl font-bold ${grade < 6 ? 'text-destructive' : 'text-secondary'}`}>
+                    </span>
+                    <span className={`text-sm font-bold w-8 text-right ${grade < 6 ? 'text-destructive' : 'text-secondary'}`}>
                       {grade.toFixed(1)}
-                    </div>
-                    <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full transition-all duration-300 ${grade < 6 ? 'bg-destructive' : 'bg-secondary'}`}
+                    </span>
+                    <div className="w-16 h-1.5 bg-muted rounded-sm overflow-hidden" aria-hidden="true">
+                      <div
+                        className={`h-full ${grade < 6 ? 'bg-destructive' : 'bg-secondary'}`}
                         style={{ width: `${(grade / 10) * 100}%` }}
                       />
                     </div>
@@ -942,7 +986,7 @@ function App() {
               </div>
             </Card>
 
-            <Card className="p-6 border-2 border-destructive bg-card">
+            <Card className="p-3 border-2 border-destructive bg-card">
               <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
                 <HandCoins size={24} weight="fill" />
                 METODI ALTERNATIVI
@@ -957,6 +1001,8 @@ function App() {
                   blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 100 ? 'Servono almeno 100€' : 'Non è periodo scolastico'}
                   variant="default"
                   ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
+                  helpText="Corrompi un professore con 100 euro. Aumenta i voti di 0.5 punti in una materia casuale. Richiede periodo scolastico."
+                  announce={announce}
                 />
                 <ActionButton
                   icon={<Fist size={48} />}
@@ -967,6 +1013,8 @@ function App() {
                   blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Non è periodo scolastico'}
                   variant="destructive"
                   ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
+                  helpText="Minaccia un professore. Rischio del 30% di essere espulso dal gioco! Se riesce, aumenta molto i voti e la coattaggine. Usare con cautela."
+                  announce={announce}
                 />
                 <hr className="border-border my-2" />
                 <ActionButton
@@ -977,6 +1025,8 @@ function App() {
                   blockedReason={phaseActionsRemaining > 0 ? 'Consuma prima tutte le azioni della fase' : undefined}
                   variant="outline"
                   ariaLabel="Salta alla prossima fascia oraria della giornata (disponibile solo a 0 azioni rimaste)"
+                  helpText="Salta alla prossima fascia oraria della giornata. Disponibile solo quando tutte le azioni della fase attuale sono state usate."
+                  announce={announce}
                 />
               </div>
               <div className="mt-4 pt-4 border-t border-border text-xs text-destructive">
@@ -993,7 +1043,7 @@ function App() {
 
           <TabsContent value="social" className="space-y-6 mt-6">
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="p-6 border-2 border-primary bg-card">
+              <Card className="p-3 border-2 border-primary bg-card">
                 <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
                   <Chats size={24} weight="fill" />
                   SOCIALIZZA GRATIS
@@ -1007,6 +1057,8 @@ function App() {
                     blockedReason="Nessuna azione per questa fascia oraria"
                     variant="secondary"
                     ariaLabel="Chiacchiera con qualcuno. Gratis. +5 Carisma, +3 Reputazione"
+                    helpText="Chiacchiera con qualcuno. Gratis. Aumenta il Carisma di 5 e la Reputazione di 3."
+                    announce={announce}
                   />
                   <ActionButton
                     icon={<Running size={48} />}
@@ -1016,6 +1068,8 @@ function App() {
                     blockedReason="Nessuna azione per questa fascia oraria"
                     variant="secondary"
                     ariaLabel="Giro rilassante al parco. Gratis. +5 Carisma, -5 Stanchezza, +2 Reputazione"
+                    helpText="Giro rilassante al parco. Gratis. Aumenta il Carisma di 5, riduce la Stanchezza di 5 e aumenta la Reputazione di 2."
+                    announce={announce}
                   />
                   <ActionButton
                     icon={<UserCircle size={48} />}
@@ -1025,11 +1079,13 @@ function App() {
                     blockedReason="Nessuna azione per questa fascia oraria"
                     variant="secondary"
                     ariaLabel="Telefona a un amico. Gratis. +3 Carisma (richiede almeno un amico)"
+                    helpText="Telefona a un amico. Gratis. Aumenta il Carisma di 3. Richiede almeno un amico sbloccato."
+                    announce={announce}
                   />
                 </div>
               </Card>
 
-              <Card className="p-6 border-2 border-primary bg-card">
+              <Card className="p-3 border-2 border-primary bg-card">
                 <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
                   <Barbell size={24} weight="fill" />
                   MIGLIORAMENTO FISICO
@@ -1043,6 +1099,8 @@ function App() {
                     disabled={phaseActionsRemaining <= 0 || stats.soldi < 20}
                     blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 20€'}
                     ariaLabel="Vai in palestra per pompare muscoli. Costa 20 euro e aumenta la stanchezza. Tasto rapido: Ctrl+1"
+                    helpText="Costa 20 euro, aumenta i muscoli di 5-10 punti e aumenta la stanchezza. Richiede almeno 20 euro e stanchezza sotto 80."
+                    announce={announce}
                   />
                   <ActionButton
                     icon={<Sun size={48} />}
@@ -1052,6 +1110,8 @@ function App() {
                     disabled={phaseActionsRemaining <= 0 || stats.soldi < 30}
                     blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 30€'}
                     ariaLabel="Vai alla lampada abbronzante per aumentare la coattaggine. Costa 30 euro. Tasto rapido: Ctrl+2"
+                    helpText="Costa 30 euro, aumenta la Coattaggine abbronzandoti. Richiede almeno 30 euro."
+                    announce={announce}
                   />
                   <ActionButton
                     icon={<Motorcycle size={48} />}
@@ -1061,11 +1121,13 @@ function App() {
                     disabled={phaseActionsRemaining <= 0 || stats.soldi < 50 || stats.stanchezza > 80}
                     blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
                     ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
+                    helpText="Costa 50 euro, aumenta molto la Coattaggine truccando il motorino. Richiede 50 euro e stanchezza sotto 80."
+                    announce={announce}
                   />
                 </div>
               </Card>
 
-              <Card className="p-6 border-2 border-accent bg-card">
+              <Card className="p-3 border-2 border-accent bg-card">
                 <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
                   <Heart size={24} weight="fill" />
                   SVAGO & RIMORCHIO
@@ -1079,7 +1141,9 @@ function App() {
                     disabled={phaseActionsRemaining <= 0}
                     blockedReason="Nessuna azione per questa fascia oraria"
                     variant="default"
-                    ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi Figosità e Carisma; se accetta guadagni entrambi. Tasto rapido: Ctrl+9"
+                    ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi Figosiità e Carisma; se accetta guadagni entrambi. Tasto rapido: Ctrl+9"
+                    helpText="Prova a rimorchiare. In caso di successo guadagni Figosiità e Carisma; in caso di rifiuto li perdi. Tasto rapido: Ctrl+9."
+                    announce={announce}
                   />
                   <ActionButton
                     icon={<MusicNotes size={48} />}
@@ -1090,6 +1154,8 @@ function App() {
                     blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 60 ? 'Servono almeno 60€' : 'Sei troppo stanco per ballare!'}
                     variant="default"
                     ariaLabel="Vai in discoteca per ballare e fare colpo. Costa 60 euro. Tasto rapido: Ctrl+D"
+                    helpText="Costa 60 euro, aumenta Figosiità e Carisma ballando. Richiede 60 euro e stanchezza sotto 70."
+                    announce={announce}
                   />
                   <ActionButton
                     icon={<FilmSlate size={48} />}
@@ -1100,11 +1166,13 @@ function App() {
                     blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 40€'}
                     variant="secondary"
                     ariaLabel="Vai al cinema per rilassarti e magari incontrare qualcuno. Costa 40 euro. Tasto rapido: Ctrl+C"
+                    helpText="Costa 40 euro, riduce la Stanchezza e aumenta il Carisma. Richiede almeno 40 euro."
+                    announce={announce}
                   />
                 </div>
               </Card>
 
-              <Card className="p-6 border-2 border-secondary bg-card">
+              <Card className="p-3 border-2 border-secondary bg-card">
                 <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
                   <Briefcase size={24} weight="fill" />
                   LAVORO & DENARO
@@ -1118,6 +1186,8 @@ function App() {
                     disabled={phaseActionsRemaining <= 0 || stats.muscoli < 40 || stats.stanchezza > 80}
                     blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.muscoli < 40 ? 'Servono almeno 40 Muscoli' : 'Sei troppo stanco per lavorare!'}
                     ariaLabel="Lavora come buttadifuori. Richiede 40 muscoli. Guadagni soldi e coattaggine. Tasto rapido: Ctrl+3"
+                    helpText="Lavora come buttadifuori. Guadagni 80 euro e 5 Coattaggine. Richiede 40 Muscoli e stanchezza sotto 80."
+                    announce={announce}
                   />
                   <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
                     <p className="font-semibold mb-1">Requisiti:</p>
@@ -1128,7 +1198,7 @@ function App() {
                 </div>
               </Card>
 
-              <Card className="p-6 border-2 border-accent bg-card">
+              <Card className="p-3 border-2 border-accent bg-card">
                 <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
                   <ShoppingCart size={24} weight="fill" />
                   SHOPPING
@@ -1143,6 +1213,8 @@ function App() {
                     blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 100€'}
                     variant="default"
                     ariaLabel="Fai shopping per comprare vestiti nuovi. Costa 100 euro. Tasto rapido: Ctrl+S"
+                    helpText="Compra nuovi vestiti. Costa 100 euro. Aumenta Figosiità di 20 e Coattaggine di 10."
+                    announce={announce}
                   />
                   <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
                     <p className="font-semibold mb-1">Vestiti nuovi:</p>
@@ -1164,7 +1236,7 @@ function App() {
                 stanchezza={stats.stanchezza}
               />
             </Suspense>
-            <Card className="p-6 border-2 border-accent bg-card/50">
+            <Card className="p-3 border-2 border-accent bg-card">
               <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
                 <Brain size={28} weight="fill" />
                 SISTEMA INTELLIGENZA
@@ -1202,7 +1274,7 @@ function App() {
                 actionsRemaining={phaseActionsRemaining}
               />
             </Suspense>
-            <Card className="p-6 border-2 border-accent bg-card/50">
+            <Card className="p-3 border-2 border-accent bg-card">
               <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
                 <Chats size={28} weight="fill" />
                 SISTEMA CARISMA
@@ -1225,12 +1297,12 @@ function App() {
       </div>
 
       <AlertDialog open={showMetallariEvent} onOpenChange={setShowMetallariEvent}>
-        <AlertDialogContent className="border-2 border-destructive">
+        <AlertDialogContent className="border-2 border-destructive" aria-describedby="event-description">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl text-destructive">
               ⚠️ EVENTO CASUALE ⚠️
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-lg">
+            <AlertDialogDescription id="event-description" className="text-lg">
               {currentEvent}
             </AlertDialogDescription>
           </AlertDialogHeader>
