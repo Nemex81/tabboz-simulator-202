@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar, Clock, GraduationCap, Cake, Trophy, Sun, Moon } from '@phosphor-icons/react'
+import { Calendar, Clock, GraduationCap, Cake, Trophy } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { GameTime, DayPhase, DayType } from '@/lib/types'
 import { formatDate, getSchoolYearName, getDaysUntilReportCard, DAY_PHASE_CONFIG } from '@/lib/time-utils'

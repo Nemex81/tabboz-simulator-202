@@ -1,3 +1,5 @@
+import type { TraitId } from '@/lib/character-traits'
+
 export interface GameStats {
   coattaggine: number
   muscoli: number
@@ -8,7 +10,7 @@ export interface GameStats {
   reputazione: number
   intelligenza: number
   carisma: number
-  psychStress?: number
+  psychStress: number
 }
 
 export type ReputationLevel = 
@@ -180,6 +182,7 @@ export interface GameState {
   friends?: Friend[]
   relationships?: Relationship[]
   scheduledExams?: ScheduledExam[]
+  traits?: TraitId[]   // C4: tratti caratteriali del personaggio (2-3 al massimo)
 }
 
 export const DEFAULT_STATS: GameStats = {
@@ -191,7 +194,8 @@ export const DEFAULT_STATS: GameStats = {
   figosita: 50,
   reputazione: 50,
   intelligenza: 10,
-  carisma: 10
+  carisma: 10,
+  psychStress: 0,
 }
 
 export const getDefaultGradesForSchoolType = (schoolType: SchoolType): SubjectGrades => {
