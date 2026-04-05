@@ -1,11 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Card } from '@/components/ui/card'
 import { SubjectGrades, getSubjectDisplayName } from '@/lib/types'
-import { HandCoins, Fist } from '@phosphor-icons/react'
+  onClose: () => void
 
-interface TeacherSelectionDialogProps {
-  open: boolean
+  soldi: number
+
   onClose: () => void
   grades: SubjectGrades
   onSelectTeacher: (subject: string) => void
@@ -14,13 +14,13 @@ interface TeacherSelectionDialogProps {
 }
 
 export function TeacherSelectionDialog({
-  open,
+    onS
   onClose,
-  grades,
+
   onSelectTeacher,
-  actionType,
+  const canCo
   soldi
-}: TeacherSelectionDialogProps) {
+    <Dialog open={open} onOpenCha
   const handleSelect = (subject: string) => {
     onSelectTeacher(subject)
     onClose()
@@ -28,40 +28,40 @@ export function TeacherSelectionDialog({
 
   const subjects = Object.keys(grades)
 
-  const canCorrompi = soldi >= 100
+                Scegli quale profe
 
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-primary">
-        <DialogHeader>
-          <DialogTitle className="text-2xl text-primary flex items-center gap-2">
-            {actionType === 'corrompi' ? (
-              <>
-                <HandCoins size={32} weight="fill" />
-                Scegli quale professore CORROMPERE
-              </>
-            ) : (
-              <>
-                <Fist size={32} weight="fill" />
-                Scegli quale professore MINACCIARE
-              </>
-            )}
-          </DialogTitle>
-          <DialogDescription>
-            {actionType === 'corrompi' 
-              ? 'Seleziona il professore da corrompere con 100€. Aumenterà il voto di 0.5 punti.'
-              : 'Seleziona il professore da minacciare. ATTENZIONE: 30% di rischio espulsione! Se riesce, +1.5 voto e +15 coattaggine.'
-            }
-          </DialogDescription>
-        </DialogHeader>
 
-        {actionType === 'corrompi' && !canCorrompi && (
-          <div className="p-4 bg-destructive/20 border border-destructive rounded-sm">
-            <p className="text-destructive font-bold">
-              ⚠️ Non hai abbastanza soldi! Servono 100€, ne hai {soldi}€.
-            </p>
-          </div>
-        )}
+          {subjects.map((subject) => {
+            const disabled = actionType === 'corrompi' && !canCorrompi
+            return (
+                key={subject}
+                  disabled 
+                
+                onClick={() => !disabled && handleSel
+                <div className="flex items-center 
+                 
+                 
+                
+                    className={`h-full ${current
+                  />
+                <
+              
+                  disabl
+                    e.stopPro
+                  }}
+                  {actionType === 'corrompi' ? (
+                      <HandCoins size={20} className="mr-2" />
+             
+                    <>
+                      M
+
+              </Card>
+          })}
+
+          <Button onClick={onClose} variant="outline" className="w-full">
+          </Butt
+      </DialogCo
+  )
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
           {subjects.map((subject) => {
