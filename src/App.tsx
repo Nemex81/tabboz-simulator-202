@@ -1077,7 +1077,7 @@ function App() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
+          </AlertDialogFooter>
       <AlertDialog open={showPoliceEvent} onOpenChange={setShowPoliceEvent}>
         <AlertDialogContent className="border-2 border-secondary">
           <AlertDialogHeader>
