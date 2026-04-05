@@ -154,6 +154,7 @@ function App() {
   const ariaLiveRef = useRef<HTMLDivElement>(null)
   // F6: stato locale per mutua esclusività Vai a Scuola / Marina (si resetta al cambio giorno)
   const [marinatoOggi, setMarinatoOggi] = useState(false)
+  const [morningChoicePending, setMorningChoicePending] = useState(false)
 
   const announce = useCallback((message: string) => {
     if (ariaLiveRef.current) {
@@ -232,6 +233,7 @@ function App() {
     schoolRecord,
     setSchoolRecord,
     gainExtraAction,
+    marinatoOggi,
   })
 
   // Destructure event engine results per compatibilità con JSX esistente
@@ -343,6 +345,7 @@ function App() {
       wentToSchoolToday: true
     }))
     consumeAction()
+    setMorningChoicePending(false)
     announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
 
     if (schoolMorningEvents.length === 0) {
@@ -362,6 +365,7 @@ function App() {
     setMarinatoOggi(true)
     setShowSchoolMorning(false)
     setSchoolMorningEvents([])
+    setMorningChoicePending(false)
     handleMarinaFromHook()
   }
 
@@ -383,6 +387,18 @@ function App() {
       setShowSchoolMorning(false)
     }
   }, [currentPhase])
+
+  useEffect(() => {
+    if (currentPhase === 'mattina' && dayType === 'feriale' && gameTime.schoolYear.isSchoolPeriod) {
+      if (!schoolRecord.wentToSchoolToday && !marinatoOggi) {
+        setMorningChoicePending(true)
+      } else {
+        setMorningChoicePending(false)
+      }
+    } else {
+      setMorningChoicePending(false)
+    }
+  }, [currentPhase, dayType, gameTime.schoolYear.isSchoolPeriod, schoolRecord.wentToSchoolToday, marinatoOggi])
 
   // F4: soglie assenze con conseguenze scalari
   useEffect(() => {
@@ -1235,8 +1251,8 @@ function App() {
                     label="Studia"
                     shortcut="Ctrl+5"
                     onClick={handleStudia}
-                    disabled={phaseActionsRemaining <= 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.stanchezza > 80 ? 'Sei troppo stanco per studiare!' : 'Non è periodo scolastico'}
+                    disabled={morningChoicePending || phaseActionsRemaining <= 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
+                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.stanchezza > 80 ? 'Sei troppo stanco per studiare!' : 'Non è periodo scolastico'}
                     variant="secondary"
                     ariaLabel="Studia per migliorare i voti. Aumenta l'intelligenza e i voti scolastici. Richiede periodo scolastico. Tasto rapido: Ctrl+5"
                     helpText="Studia per migliorare i voti. Aumenta l'intelligenza e i voti in una materia a scelta. L'incremento dipende dalla tua intelligenza. Richiede periodo scolastico."
@@ -1255,8 +1271,8 @@ function App() {
                     icon={<Chats size={48} />}
                     label="Chiacchiera"
                     onClick={handleChiacchiera}
-                    disabled={phaseActionsRemaining <= 0}
-                    blockedReason="Nessuna azione per questa fascia oraria"
+                    disabled={morningChoicePending || phaseActionsRemaining <= 0}
+                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : 'Nessuna azione per questa fascia oraria'}
                     variant="secondary"
                     ariaLabel="Chiacchiera con qualcuno. Gratis. +5 Carisma, +3 Reputazione"
                     helpText="Chiacchiera con qualcuno. Gratis. Aumenta il Carisma di 5 e la Reputazione di 3."
@@ -1266,8 +1282,8 @@ function App() {
                     icon={<Running size={48} />}
                     label="Giro al Parco"
                     onClick={handleParco}
-                    disabled={phaseActionsRemaining <= 0}
-                    blockedReason="Nessuna azione per questa fascia oraria"
+                    disabled={morningChoicePending || phaseActionsRemaining <= 0}
+                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : 'Nessuna azione per questa fascia oraria'}
                     variant="secondary"
                     ariaLabel="Giro rilassante al parco. Gratis. +5 Carisma, -5 Stanchezza, +2 Reputazione"
                     helpText="Giro rilassante al parco. Gratis. Aumenta il Carisma di 5, riduce la Stanchezza di 5 e aumenta la Reputazione di 2."
@@ -1277,8 +1293,8 @@ function App() {
                     icon={<UserCircle size={48} />}
                     label="Telefona"
                     onClick={handleTelefona}
-                    disabled={phaseActionsRemaining <= 0}
-                    blockedReason="Nessuna azione per questa fascia oraria"
+                    disabled={morningChoicePending || phaseActionsRemaining <= 0}
+                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : 'Nessuna azione per questa fascia oraria'}
                     variant="secondary"
                     ariaLabel="Telefona a un amico. Gratis. +3 Carisma (richiede almeno un amico)"
                     helpText="Telefona a un amico. Gratis. Aumenta il Carisma di 3. Richiede almeno un amico sbloccato."
@@ -1298,8 +1314,8 @@ function App() {
                     label="Atipa"
                     shortcut="Ctrl+9"
                     onClick={handleProvarciConAtipa}
-                    disabled={phaseActionsRemaining <= 0}
-                    blockedReason="Nessuna azione per questa fascia oraria"
+                    disabled={morningChoicePending || phaseActionsRemaining <= 0}
+                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : 'Nessuna azione per questa fascia oraria'}
                     variant="default"
                     ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi Figosiità e Carisma; se accetta guadagni entrambi. Tasto rapido: Ctrl+9"
                     helpText="Prova a rimorchiare. In caso di successo guadagni Figosiità e Carisma; in caso di rifiuto li perdi. Tasto rapido: Ctrl+9."
@@ -1322,8 +1338,8 @@ function App() {
                     label="Trucca Motorino"
                     shortcut="Ctrl+4"
                     onClick={handleMotorino}
-                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 50 || stats.stanchezza > 80}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
+                    disabled={morningChoicePending || phaseActionsRemaining <= 0 || stats.soldi < 50 || stats.stanchezza > 80}
+                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
                     ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
                   />
                   <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
@@ -1345,6 +1361,7 @@ function App() {
               onPalestra={handlePalestra}
               onLampada={handleLampada}
               onLavoro={handleLavoro}
+              morningChoicePending={morningChoicePending}
               actionsRemaining={phaseActionsRemaining}
               soldi={stats.soldi}
               muscoli={stats.muscoli}

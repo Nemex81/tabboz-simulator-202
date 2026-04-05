@@ -22,6 +22,7 @@ interface CityPanelProps {
   soldi: number
   muscoli: number
   stanchezza: number
+  morningChoicePending?: boolean
 }
 
 export function CityPanel({
@@ -34,7 +35,8 @@ export function CityPanel({
   actionsRemaining,
   soldi,
   muscoli,
-  stanchezza
+  stanchezza,
+  morningChoicePending = false
 }: CityPanelProps) {
   return (
     <div className="space-y-6">
@@ -57,9 +59,11 @@ export function CityPanel({
             label="Discoteca"
             shortcut="Ctrl+D"
             onClick={onDisco}
-            disabled={actionsRemaining <= 0 || soldi < 30}
+            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 30}
             blockedReason={
-              actionsRemaining <= 0
+              morningChoicePending
+                ? '🏫 Scegli prima se andare a scuola o marinare!'
+                : actionsRemaining <= 0
                 ? 'Nessuna azione per questa fascia oraria'
                 : 'Servono almeno 30€'
             }
@@ -71,9 +75,11 @@ export function CityPanel({
             label="Cinema"
             shortcut="Ctrl+C"
             onClick={onCinema}
-            disabled={actionsRemaining <= 0 || soldi < 15}
+            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 15}
             blockedReason={
-              actionsRemaining <= 0
+              morningChoicePending
+                ? '🏫 Scegli prima se andare a scuola o marinare!'
+                : actionsRemaining <= 0
                 ? 'Nessuna azione per questa fascia oraria'
                 : 'Servono almeno 15€'
             }
@@ -85,9 +91,11 @@ export function CityPanel({
             label="Centro Commerciale"
             shortcut="Ctrl+S"
             onClick={onShopping}
-            disabled={actionsRemaining <= 0 || soldi < 50}
+            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 50}
             blockedReason={
-              actionsRemaining <= 0
+              morningChoicePending
+                ? '🏫 Scegli prima se andare a scuola o marinare!'
+                : actionsRemaining <= 0
                 ? 'Nessuna azione per questa fascia oraria'
                 : 'Servono almeno 50€'
             }
@@ -108,9 +116,11 @@ export function CityPanel({
             label="Palestra"
             shortcut="Ctrl+1"
             onClick={onPalestra}
-            disabled={actionsRemaining <= 0 || soldi < 20 || stanchezza > 80}
+            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 20 || stanchezza > 80}
             blockedReason={
-              actionsRemaining <= 0
+              morningChoicePending
+                ? '🏫 Scegli prima se andare a scuola o marinare!'
+                : actionsRemaining <= 0
                 ? 'Nessuna azione per questa fascia oraria'
                 : soldi < 20
                 ? 'Servono almeno 20€'
@@ -124,9 +134,11 @@ export function CityPanel({
             label="Lampada"
             shortcut="Ctrl+2"
             onClick={onLampada}
-            disabled={actionsRemaining <= 0 || soldi < 25}
+            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 25}
             blockedReason={
-              actionsRemaining <= 0
+              morningChoicePending
+                ? '🏫 Scegli prima se andare a scuola o marinare!'
+                : actionsRemaining <= 0
                 ? 'Nessuna azione per questa fascia oraria'
                 : 'Servono almeno 25€'
             }
@@ -138,9 +150,11 @@ export function CityPanel({
             label="Lavoro"
             shortcut="Ctrl+3"
             onClick={onLavoro}
-            disabled={actionsRemaining <= 0 || muscoli < 40}
+            disabled={morningChoicePending || actionsRemaining <= 0 || muscoli < 40}
             blockedReason={
-              actionsRemaining <= 0
+              morningChoicePending
+                ? '🏫 Scegli prima se andare a scuola o marinare!'
+                : actionsRemaining <= 0
                 ? 'Nessuna azione per questa fascia oraria'
                 : 'Servono almeno 40 Muscoli per lavorare!'
             }

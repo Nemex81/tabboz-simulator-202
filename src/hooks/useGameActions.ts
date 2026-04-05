@@ -50,6 +50,7 @@ interface UseGameActionsParams {
   schoolRecord: SchoolRecord
   setSchoolRecord: (updater: ((prev: SchoolRecord) => SchoolRecord) | SchoolRecord) => void
   gainExtraAction: () => void
+  marinatoOggi: boolean
 }
 
 export function useGameActions({
@@ -81,6 +82,7 @@ export function useGameActions({
   schoolRecord,
   setSchoolRecord,
   gainExtraAction,
+  marinatoOggi,
 }: UseGameActionsParams) {
   // Refs per accesso stabile
   const statsRef = useRef(stats)
@@ -101,6 +103,8 @@ export function useGameActions({
   currentPhaseRef.current = currentPhase
   const dayTypeRef = useRef(dayType)
   dayTypeRef.current = dayType
+  const marinatoOggiRef = useRef(marinatoOggi)
+  marinatoOggiRef.current = marinatoOggi
   // B1-FIX-4: limita messaggi alla ragazza a 1 per fascia oraria
   const messaggioUsatoRef = useRef(false)
   const lastPhaseRef = useRef(currentPhase)
@@ -118,7 +122,9 @@ export function useGameActions({
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+      && gt.schoolYear.isSchoolPeriod
+      && !marinatoOggiRef.current) {
       playSound.failure()
       announce('Sei a scuola! Non puoi farlo adesso.')
       return
@@ -185,7 +191,9 @@ export function useGameActions({
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+      && gt.schoolYear.isSchoolPeriod
+      && !marinatoOggiRef.current) {
       playSound.failure()
       announce('Sei a scuola! Non puoi farlo adesso.')
       return
@@ -222,7 +230,9 @@ export function useGameActions({
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+      && gt.schoolYear.isSchoolPeriod
+      && !marinatoOggiRef.current) {
       playSound.failure()
       announce('Sei a scuola! Non puoi farlo adesso.')
       return
@@ -259,7 +269,9 @@ export function useGameActions({
       return
     }
     // Fix2: studia non disponibile durante le ore scolastiche del mattino
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+      && gt.schoolYear.isSchoolPeriod
+      && !marinatoOggiRef.current) {
       playSound.failure()
       announce('Sei a scuola! Non puoi studiare per conto tuo adesso.')
       return
@@ -421,7 +433,9 @@ export function useGameActions({
     }
     // A1: riposa non disponibile durante la mattina scolastica feriale
     const gt = gameTimeRef.current
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+      && gt.schoolYear.isSchoolPeriod
+      && !marinatoOggiRef.current) {
       playSound.failure()
       announce('Sei a scuola! Non puoi riposare adesso.')
       return
@@ -516,7 +530,9 @@ export function useGameActions({
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+      && gt.schoolYear.isSchoolPeriod
+      && !marinatoOggiRef.current) {
       playSound.failure()
       announce('Sei a scuola! Non puoi farlo adesso.')
       return
@@ -568,7 +584,9 @@ export function useGameActions({
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+      && gt.schoolYear.isSchoolPeriod
+      && !marinatoOggiRef.current) {
       playSound.failure()
       announce('Sei a scuola! Non puoi farlo adesso.')
       return
@@ -604,7 +622,9 @@ export function useGameActions({
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+      && gt.schoolYear.isSchoolPeriod
+      && !marinatoOggiRef.current) {
       playSound.failure()
       announce('Sei a scuola! Non puoi farlo adesso.')
       return
@@ -821,7 +841,9 @@ export function useGameActions({
       return
     }
     const gt = gameTimeRef.current
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod) {
+    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+      && gt.schoolYear.isSchoolPeriod
+      && !marinatoOggiRef.current) {
       playSound.failure()
       announce('Sei a scuola! Concentrati sulle lezioni.')
       return
