@@ -203,11 +203,6 @@ export function getSubjectDisplayName(subject: string): string {
   return displayNames[subject] || subject
 }
 
-export interface ThemeVariant {
-  id: string
-  name: string
-}
-
 export type ThemeVariant = 'default' | 'dark' | 'green'
 
 export const DEFAULT_GAME_STATE = {
