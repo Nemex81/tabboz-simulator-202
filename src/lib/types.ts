@@ -1,21 +1,21 @@
 import type { TraitId } from '@/lib/character-traits'
 
-export type SchoolType = 'liceo' | 'tecnico' | 'professionale' | 'artistico'
-export type ThemeVariant = 'default' | 'dark' | 'green'
 export type ExamDifficulty = 'facile' | 'normale' | 'difficile' | 'brutale'
-export type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle'
 
-export interface GameStats {
   coattaggine: number
-  muscoli: number
   soldi: number
-  media: number
-  stanchezza: number
-  figosita: number
+
   reputazione: number
-  intelligenza: number
   carisma: number
-}
+
+  [subject: str
+
+  day: number
+  year: number
+
+  currentYear: number
+  carisma: number
+ 
 
 export interface SubjectGrades {
   [subject: string]: number
@@ -30,102 +30,102 @@ export interface GameDate {
 export interface SchoolYear {
   currentYear: number
   isSchoolPeriod: boolean
-  schoolStartDate: GameDate
-  schoolEndDate: GameDate
-  reportCardDate: GameDate
-}
-
-export interface GameTime {
-  currentDate: GameDate
-  age: number
-  schoolYear: SchoolYear
-  actionsRemaining: number
-  maxActionsPerDay: number
-  currentPhase: 'mattina' | 'pomeriggio' | 'sera' | 'notte'
-  extraActions: number
-}
-
-export interface PlayerProfile {
   name: string
-  gender: 'maschio' | 'femmina'
-  traits: TraitId[]
-}
-
-export interface SchoolRecord {
-  condotta: number
-  assenze: number
-  note: number
-  sospensioni: number
-  wentToSchoolToday: boolean
-  consecutiveGoodDays: number
-}
-
-export interface Friend {
-  id: string
-  name: string
-  type: FriendType
   affinita: number
-  intelligenza: number
   lastInteraction?: number
-}
 
-export interface Relationship {
-  id: string
-  name: string
+
   attraction: number
-  relationshipType: 'crush' | 'dating' | 'ex'
-  lastInteraction?: number
-}
+  lastInteraction?: num
 
-export interface ScheduledExam {
   subject: string
-  daysUntil: number
   isPrepared: boolean
-  difficulty: ExamDifficulty
   announced: boolean
-}
 
-export type ReputationLevel = 'sfigato' | 'normale' | 'popolare' | 'leggenda'
 
-export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
-  liceo: {
-    matematica: 1.3,
-    italiano: 1.3,
-    latino: 1.2,
+ 
+
     filosofia: 1.1,
-    storia: 1.0,
-    inglese: 1.0,
-    edFisica: 0.7
+    inglese: 1
   },
-  tecnico: {
-    matematica: 1.4,
-    fisica: 1.3,
-    informatica: 1.3,
-    elettronica: 1.2,
-    italiano: 1.0,
-    inglese: 1.0,
+    matematica: 1.4
+ 
+
     edFisica: 0.7
-  },
   professionale: {
-    matematica: 0.9,
-    laboratorio: 1.5,
-    economia: 1.1,
-    tecnologia: 1.2,
-    italiano: 0.9,
+    laboratorio: 
+    tecnologia
     storia: 0.8,
-    edFisica: 0.7
   },
-  artistico: {
     arte: 1.7,
-    storia_arte: 1.3,
-    disegno: 1.2,
-    italiano: 1.0,
-    matematica: 0.8,
-    edFisica: 0.7
+ 
+
+  }
+
+  coattaggine:
+  soldi: 100,
+  stanchezza: 0,
+  reputazione: 50,
+  carisma: 10
+
+
+  note: 0,
+  wentToScho
+}
+export const DEFAULT
+  grades: {
+    matematica: 6,
+ 
+
+    currentDate: { day: 15, mont
+    schoolYear: {
+      isSchoolPerio
+      schoolEndDate: 
+    },
+    maxActionsPerDay
+ 
+
+
+
+  professionale: ['matematica', 'laboratorio', 'economia', 'tecnologia', 'it
+}
+export function getD
+  return subjects.
+    return acc
+}
+export function 
+    matematica: '
+    latino: 'Lati
+    
+    edFisica
+    informatica: 'In
+    laboratorio:
+    tecnologia: 'Tecn
+    storia_arte: 'Sto
   }
 }
 
-export const DEFAULT_STATS: GameStats = {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   coattaggine: 50,
   muscoli: 50,
   soldi: 100,
