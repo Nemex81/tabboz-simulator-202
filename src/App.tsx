@@ -429,6 +429,11 @@ function App() {
           case 'c': handleCinema(); break
           case 's': handleShoppingMall(); break
           case 'r': setShowResetDialog(true); break
+          case 'n': 
+            if (phaseActionsRemaining === 0) {
+              advancePhaseOnly()
+            }
+            break
         }
       }
       
@@ -558,7 +563,8 @@ function App() {
                   size="sm"
                   onClick={advancePhaseOnly}
                   disabled={!canAdvance}
-                  title={canAdvance ? `Avanza a: ${nextPhaseLabel}` : `Consuma prima le ${phaseActionsRemaining} azioni rimaste`}
+                  title={canAdvance ? `Avanza a: ${nextPhaseLabel} (Ctrl+N)` : `Consuma prima le ${phaseActionsRemaining} azioni rimaste`}
+                  aria-label={`Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni rimaste per questa fase: ${phaseActionsRemaining}. ${canAdvance ? 'Pulsante abilitato. Premi per avanzare.' : 'Pulsante disabilitato. Devi consumare tutte le azioni prima di avanzare.'} Scorciatoia da tastiera: Ctrl+N`}
                   className="flex items-center gap-1"
                 >
                   ▶ <span>Prossima fase</span>
@@ -598,8 +604,8 @@ function App() {
             </TabsTrigger>
             <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
               <Chats size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Sociale</span>
-              <span className="sm:hidden">Social</span>
+              <span className="hidden sm:inline">Attività</span>
+              <span className="sm:hidden">Attività</span>
             </TabsTrigger>
             <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <ChartBar size={20} className="mr-2" weight="fill" />
@@ -822,6 +828,27 @@ function App() {
 
           <TabsContent value="social" className="space-y-6 mt-6">
             <div className="grid md:grid-cols-2 gap-6">
+              <Card className="p-3 border-2 border-secondary bg-card">
+                <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
+                  <Brain size={24} weight="fill" />
+                  STUDIO E APPRENDIMENTO
+                </h3>
+                <div className="space-y-3">
+                  <ActionButton
+                    icon={<Brain size={48} />}
+                    label="Studia"
+                    shortcut="Ctrl+5"
+                    onClick={handleStudia}
+                    disabled={phaseActionsRemaining <= 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
+                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.stanchezza > 80 ? 'Sei troppo stanco per studiare!' : 'Non è periodo scolastico'}
+                    variant="secondary"
+                    ariaLabel="Studia per migliorare i voti. Aumenta l'intelligenza e i voti scolastici. Richiede periodo scolastico. Tasto rapido: Ctrl+5"
+                    helpText="Studia per migliorare i voti. Aumenta l'intelligenza e i voti in una materia a scelta. L'incremento dipende dalla tua intelligenza. Richiede periodo scolastico."
+                    announce={announce}
+                  />
+                </div>
+              </Card>
+
               <Card className="p-3 border-2 border-primary bg-card">
                 <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
                   <Chats size={24} weight="fill" />
