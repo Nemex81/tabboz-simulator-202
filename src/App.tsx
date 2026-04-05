@@ -814,6 +814,19 @@ function App() {
               </TabsList>
 
               <TabsContent value="grades" className="space-y-6 mt-6">
+                <Card className="p-3 border-2 border-primary bg-card">
+                  <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                    <GraduationCap size={24} weight="fill" />
+                    VAI A SCUOLA
+                  </h3>
+                  <ActionButton
+                    icon={<GraduationCap size={48} />}
+                    label="Vai a Scuola"
+                    onClick={handleVaiAScuola}
+                    disabled={
+                      phaseActionsRemaining <= 0 ||
+                      dayType !== 'feriale' ||
+                      currentPhase !== 'mattina' ||
                       !gameTime.schoolYear.isSchoolPeriod
                     }
                     blockedReason={
@@ -851,19 +864,15 @@ function App() {
                   </Suspense>
                 )}
 
-                {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && (
-                  <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
-                    <SchoolMorningPanel
-                      events={schoolMorningEvents}
-                      stats={stats}
-                      onStatChange={setStats}
-                      onGainExtraAction={gainExtraAction}
-                      onConsumeAction={consumeAction}
-                      announce={announce}
-                    />
-                  </Suspense>
-                )}
-
+                <Card className="p-6 border-2 border-secondary bg-card">
+                  <h3 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
+                    <GraduationCap size={32} weight="fill" />
+                    📊 PAGELLA
+                  </h3>
+                  <div role="table" aria-label="Tabella dei voti scolastici" className="space-y-1">
+                    {Object.entries(grades).map(([subject, grade]) => (
+                      <div
+                        key={subject}
                         role="row"
                         aria-label={`${getSubjectDisplayName(subject)}: ${grade.toFixed(1)} su 10${grade < 6 ? ' — INSUFFICIENTE' : ''}`}
                         className="flex items-center gap-2 py-1.5 px-2"
