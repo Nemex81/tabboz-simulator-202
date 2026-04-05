@@ -34,7 +34,7 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
       const profile: PlayerProfile = {
         name: playerName.trim(),
         gender: playerGender,
-        age: 14
+        traits: []
       }
       onSelectSchool(schoolType, profile, selectedTheme)
     }

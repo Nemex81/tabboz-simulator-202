@@ -36,7 +36,6 @@ export const StatsDashboard = React.memo(function StatsDashboard({
       { stat: 'Muscoli', value: stats.muscoli },
       { stat: 'Figosità', value: stats.figosita },
       { stat: 'Intelligenza', value: stats.intelligenza },
-      { stat: 'Carisma', value: stats.carisma },
       { stat: 'Reputazione', value: stats.reputazione },
     ],
     [
@@ -44,7 +43,6 @@ export const StatsDashboard = React.memo(function StatsDashboard({
       stats.muscoli,
       stats.figosita,
       stats.intelligenza,
-      stats.carisma,
       stats.reputazione,
     ]
   )

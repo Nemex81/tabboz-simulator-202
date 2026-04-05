@@ -53,7 +53,9 @@ export interface PlayerProfile {
   traits: TraitId[]
 }
 
-export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'agrario'
+export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'agrario' | 'agraria'
+
+export type PlayerGender = 'maschio' | 'femmina'
 
 export interface SubjectGrades {
   [subject: string]: number
@@ -202,6 +204,17 @@ export function getSubjectDisplayName(subject: string): string {
     arte: 'Arte'
   }
   return displayNames[subject] || subject
+}
+
+export function getSchoolTypeName(schoolType: SchoolType): string {
+  const schoolNames: Record<SchoolType, string> = {
+    liceo: 'Liceo Scientifico',
+    tecnico: 'Istituto Tecnico',
+    artistico: 'Liceo Artistico',
+    agrario: 'Istituto Agrario',
+    agraria: 'Istituto Agrario'
+  }
+  return schoolNames[schoolType] || schoolType
 }
 
 export const DEFAULT_GAME_STATE = {
