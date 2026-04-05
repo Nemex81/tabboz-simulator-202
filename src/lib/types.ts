@@ -1,10 +1,10 @@
 import type { TraitId } from '@/lib/character-traits'
 
-export type ExamDifficulty = 'facile' | 'normale' | 'difficile' | 'brutale'
-
 export type SchoolType = 'tecnico' | 'agraria' | 'artistico'
 
-export type ThemeVariant = 'default' | 'dark' | 'green'
+export type Gender = 'maschio' | 'femmina'
+
+export type RelationshipDifficulty = 'facile' | 'media'
 
 export type Gender = 'maschio' | 'femmina'
 
@@ -18,50 +18,50 @@ export type TimePhase = 'mattina' | 'pomeriggio' | 'sera' | 'notte'
 
 export type DayType = 'feriale' | 'weekend'
 
-export interface GameStats {
+}
   coattaggine: number
   muscoli: number
   soldi: number
-  media: number
+export interfac
   stanchezza: number
   figosita: number
   reputazione: number
-  intelligenza: number
+export interface Schoo
   carisma: number
-}
+ 
 
-export interface SubjectGrades {
-  [subject: string]: number
-}
+  type: FriendType
+  intelligenza?: number
+ 
 
-export interface GameDate {
-  day: number
-  month: number
-  year: number
-}
-
-export interface SchoolYear {
-  currentYear: number
-  isSchoolPeriod: boolean
-  schoolStartDate: GameDate
-  schoolEndDate: GameDate
-  reportCardDate: GameDate
-}
-
-export interface GameTime {
-  currentDate: GameDate
-  actionsRemaining: number
-  maxActionsPerDay: number
-  schoolYear: SchoolYear
-  age: number
-  lastPaghettaDate?: GameDate
-  currentPhase?: TimePhase
-  extraActions: number
-}
-
-export interface Friend {
   id: string
-  name: string
+  difficulty:
+  relationshipL
+  attraction: 
+}
+
+  daysUntil: number
+  isPrepared: boolean
+}
+export interface PlayerProf
+  gender: Gender
+}
+e
+
+  sospensioni: number
+  consecutiveGoodDays: 
+
+  tecnico: {
+    fisica: 1.4,
+    elettroni
+    inglese: 1.0,
+  },
+    matematica: 1.2,
+ 
+
+  },
+    arte: 1.
+    disegno: 1
   type: FriendType
   affinita: number
   intelligenza?: number
@@ -128,35 +128,35 @@ export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
     italiano: 1.1,
     matematica: 0.9,
     edFisica: 0.7
-  }
+exp
 }
 
 export const DEFAULT_STATS: GameStats = {
-  coattaggine: 50,
+    storia: 'Stori
   muscoli: 50,
-  soldi: 100,
+    fisica: '
   media: 6,
   stanchezza: 0,
   figosita: 50,
   reputazione: 50,
   intelligenza: 10,
-  carisma: 10
+    scienze: 
 }
 
 export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   condotta: 8.0,
   assenze: 0,
-  note: 0,
+
   sospensioni: 0,
-  wentToSchoolToday: false,
+
   consecutiveGoodDays: 0
-}
+
 
 export const DEFAULT_GAME_STATE = {
   stats: DEFAULT_STATS,
-  grades: {
+
     italiano: 6,
-    matematica: 6,
+
     storia: 6,
     inglese: 6,
     edFisica: 6
@@ -164,56 +164,56 @@ export const DEFAULT_GAME_STATE = {
   gameTime: {
     currentDate: { day: 15, month: 9, year: 2026 },
     age: 14,
-    schoolYear: {
+
       currentYear: 1,
       isSchoolPeriod: true,
       schoolStartDate: { day: 15, month: 9, year: 2026 },
       schoolEndDate: { day: 10, month: 6, year: 2027 },
-      reportCardDate: { day: 10, month: 6, year: 2027 }
-    },
-    actionsRemaining: 3,
-    maxActionsPerDay: 3,
-    currentPhase: 'mattina' as const,
-    extraActions: 0
-  } as GameTime,
-  gameOverReason: ''
-}
 
-export const SCHOOL_SUBJECTS: Record<SchoolType, string[]> = {
-  tecnico: ['matematica', 'fisica', 'informatica', 'elettronica', 'italiano', 'inglese', 'edFisica'],
-  agraria: ['matematica', 'scienze', 'agronomia', 'chimica', 'italiano', 'edFisica'],
-  artistico: ['arte', 'storia_arte', 'disegno', 'italiano', 'matematica', 'edFisica']
-}
 
-export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
-  const subjects = SCHOOL_SUBJECTS[schoolType]
-  return subjects.reduce((acc, subject) => {
-    acc[subject] = 6
-    return acc
-  }, {} as SubjectGrades)
-}
 
-export function getSubjectDisplayName(subject: string): string {
-  const displayNames: Record<string, string> = {
-    matematica: 'Matematica',
-    italiano: 'Italiano',
-    latino: 'Latino',
-    filosofia: 'Filosofia',
-    storia: 'Storia',
-    inglese: 'Inglese',
-    edFisica: 'Ed. Fisica',
-    fisica: 'Fisica',
-    informatica: 'Informatica',
-    elettronica: 'Elettronica',
-    laboratorio: 'Laboratorio',
-    economia: 'Economia',
-    tecnologia: 'Tecnologia',
-    arte: 'Arte',
-    storia_arte: 'Storia dell\'Arte',
-    disegno: 'Disegno',
-    scienze: 'Scienze',
-    agronomia: 'Agronomia',
-    chimica: 'Chimica'
-  }
-  return displayNames[subject] || subject
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
