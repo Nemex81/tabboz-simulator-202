@@ -1,77 +1,41 @@
 import type { TraitId } from '@/lib/character-traits'
 
-export type RelationshipPreference = 'muscoli' | 'figosita' | 'intelligenza'
-
 export type ExamDifficulty = 'facile' | 'media' | 'difficile'
 
-export type FriendType = 'secchione' | 'sportivo' | 'artista' | 'normale'
-
 export interface GameStats {
-  coattaggine: number
-  muscoli: number
-  soldi: number
+
   stanchezza: number
-  figosita: number
-  reputazione: number
-  intelligenza: number
+
   carisma: number
-  media: number
 }
-
-export interface Friend {
-  id: string
+export interface 
   name: string
-  type: FriendType
-  relationshipLevel: number
-  isActive: boolean
+  relationshipLevel:
 }
-
-export interface Relationship {
-  id: string
+export interface Rela
   name: string
-  difficulty: 'facile' | 'media' | 'difficile'
-  preference: RelationshipPreference
-  relationshipLevel: number
-  attraction?: number
-  isActive: boolean
+  preference: Rel
+  attraction?: 
 }
 
-export interface ScheduledExam {
-  id: string
   subject: string
-  day: number
-  month: number
-  difficulty: ExamDifficulty
-  daysUntil: number
-  preparationLevel: number
+  month: num
+  daysUntil: n
+}
+export interface PlayerProf
+  gender: 'maschio'
 }
 
-export interface PlayerProfile {
-  name: string
-  gender: 'maschio' | 'femmina'
-  traits: TraitId[]
-}
-
-export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'agrario'
-
-export function getSchoolTypeName(schoolType: SchoolType): string {
-  const names: Record<SchoolType, string> = {
-    liceo: 'Liceo',
-    tecnico: 'Istituto Tecnico',
-    artistico: 'Liceo Artistico',
-    agrario: 'Istituto Agrario'
+export function getSchoolTypeNa
+    liceo: '
+    artistico:
   }
-  return names[schoolType]
 }
-
-export interface SubjectGrades {
-  [subject: string]: number
+export interface SubjectGra
 }
+export interface Sc
+} currentYear: number
 
-export interface SchoolYear {
-  currentYear: number
-  isSchoolPeriod: boolean
-  daysUntilBreak?: number
   schoolStartDate: GameDate
   schoolEndDate: GameDate
   reportCardDate: GameDate
@@ -81,57 +45,93 @@ export interface GameDate {
   day: number
   month: number
   year: number
-}
+
 
 export type DayPhase = 'mattina' | 'pomeriggio' | 'sera' | 'notte'
 export type DayType = 'feriale' | 'sabato' | 'domenica' | 'festivo'
 
-export interface DayPhaseConfig {
-  label: string
+}rt interface DayPhaseConfig {
+l: string
   timeRange: string
-  maxActions: number
-  energyCost: number
-  nightRecovery: number
-}
 
+}
 export interface GameTime {
-  currentDate: GameDate
-  schoolYear: SchoolYear
-  age: number
+  schoolYear: Schoo
   currentPhase?: DayPhase
-  actionsRemaining: number
   maxActionsPerDay?: number
-  phaseActions?: {
     mattina: number
-    pomeriggio: number
-    sera: number
-    notte: number
+   
   }
-  lastPaghettaDate?: GameDate
-  extraActions?: number
 }
 
-export interface GameTimeV2 extends GameTime {
   currentPhase: DayPhase
-  dayType: DayType
-  phaseActionsRemaining: number
+  phaseActionsRemaining: nu
 }
 
-export interface SchoolRecord {
   assenze: number
-  note: number
   sospensioni: number
-  condotta: number
-  consecutiveGoodDays: number
-  wentToSchoolToday: boolean
+  consecutiveGoodDays: nu
+}
+export const DEFAULT_SCHOOL
+  note: 0,
+  condotta: 8.0,
+ 
+
+  liceo: {
+    fisica: 1
+    storia: 1.0
+    scienze: 1
+ 
+
+    elettronica: 1.2,
+    inglese: 1.0,
+
+  artistico: {
+    arte: 1.3,
+    inglese: 1.0,
+    matematica: 0.8,
+  },
+    pratica: 1.4,
+ 
+
+    edFisica: 0.6
+}
+export function getDefau
+    case 'lic
+        matematica: 6,
+        italiano: 6,
+        inglese: 6,
+        edFisica: 
+    case 'tecnico':
+        pratica: 6,
+        elettron
+        inglese: 
+   
+    case 'artistico':
+        disegno: 6,
+ 
+
+        edFisica: 6
+    case 'agrario':
+        pratica: 6
+        italiano: 6,
+}       matematica: 6,
+
+        edFisica: 6
+      }
+  }
 }
 
-export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
-  assenze: 0,
-  note: 0,
-  sospensioni: 0,
-  condotta: 8.0,
-  consecutiveGoodDays: 0,
+  consecutiveGoodDays: number
+  const displayNames: Record<string, string> = {
+}atematica',
+ica: 'Fisica',
+    italiano: 'Italiano',
+    storia: 'Storia',
+    inglese: 'Inglese',
+    scienze: 'Scienze',
+    edFisica: 'Ed. Fisica',
+    pratica: 'Pratica',
   wentToSchoolToday: false
 }
 
@@ -170,57 +170,23 @@ export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
     matematica: 1.0,
     inglese: 0.8,
     storia: 0.8,
-    edFisica: 0.6
-  }
-}
+    edFisica: 0.6{ day: 15, month: 9, year: 2026 },
+  }Date: { day: 10, month: 6, year: 2027 },
+}: { day: 10, month: 6, year: 2027 }
 
 export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
   switch (schoolType) {
     case 'liceo':
-      return {
+      return {,
         matematica: 6,
         fisica: 6,
         italiano: 6,
-        storia: 6,
-        inglese: 6,
+        storia: 6,ay: 3,
+        inglese: 6,e: undefined,
         scienze: 6,
         edFisica: 6
       }
-    case 'tecnico':
-      return {
-        pratica: 6,
-        matematica: 6,
-        elettronica: 6,
-        italiano: 6,
-        inglese: 6,
-        fisica: 6,
-        edFisica: 6
-      }
-    case 'artistico':
-      return {
-        disegno: 6,
-        arte: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        matematica: 6,
-        edFisica: 6
-      }
-    case 'agrario':
-      return {
-        pratica: 6,
-        scienze: 6,
-        italiano: 6,
-        matematica: 6,
-        inglese: 6,
-        storia: 6,
-        edFisica: 6
-      }
-  }
-}
-
-export function getSubjectDisplayName(subject: string): string {
-  const displayNames: Record<string, string> = {
+    case 'tecnico':      return {        pratica: 6,        matematica: 6,        elettronica: 6,        italiano: 6,        inglese: 6,        fisica: 6,        edFisica: 6      }    case 'artistico':      return {        disegno: 6,        arte: 6,        italiano: 6,        inglese: 6,        storia: 6,        matematica: 6,        edFisica: 6      }    case 'agrario':      return {        pratica: 6,        scienze: 6,        italiano: 6,        matematica: 6,        inglese: 6,        storia: 6,        edFisica: 6      }  }}export function getSubjectDisplayName(subject: string): string {  const displayNames: Record<string, string> = {
     matematica: 'Matematica',
     fisica: 'Fisica',
     italiano: 'Italiano',
@@ -266,10 +232,7 @@ export const DEFAULT_GAME_STATE = {
     schoolYear: {
       currentYear: 1,
       isSchoolPeriod: true,
-      daysUntilBreak: 180,
-      schoolStartDate: { day: 15, month: 9, year: 2026 },
-      schoolEndDate: { day: 10, month: 6, year: 2027 },
-      reportCardDate: { day: 10, month: 6, year: 2027 }
+      daysUntilBreak: 180
     },
     age: 14,
     phaseActions: {
@@ -277,9 +240,6 @@ export const DEFAULT_GAME_STATE = {
       pomeriggio: 3,
       sera: 2,
       notte: 1
-    },
-    maxActionsPerDay: 3,
-    lastPaghettaDate: undefined,
-    extraActions: 0
+    }
   } as GameTime
 }
