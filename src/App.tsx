@@ -72,6 +72,7 @@ import { useGameStats } from '@/hooks/useGameStats'
 import { useGameTime } from '@/hooks/useGameTime'
 import { useEventEngine } from '@/hooks/useEventEngine'
 import { useGameActions } from '@/hooks/useGameActions'
+import { useAppDialogs } from '@/hooks/useAppDialogs'
 import { Ragazza, generateRandomGirlfriend, performGirlfriendAction, shouldGirlfriendBreakup } from '@/lib/girlfriend-system'
 import { 
   validateStats, 
@@ -142,20 +143,36 @@ function App() {
   const setRelationships = setRawRelationships
   const setGirlfriend = setRawGirlfriend
 
-  const [gameOver, setGameOver] = useState(false)
-  const [gameOverReason, setGameOverReason] = useState('')
-  const [showResetDialog, setShowResetDialog] = useState(false)
-  const [showReportCard, setShowReportCard] = useState(false)
-  const [reportCardPassed, setReportCardPassed] = useState(false)
-  const [gameWon, setGameWon] = useState(false)
-  const [schoolEvent, setSchoolEvent] = useState<SchoolEvent | null>(null)
-  const [showSchoolEvent, setShowSchoolEvent] = useState(false)
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
-  const [showSubjectDialog, setShowSubjectDialog] = useState(false)
-  const [showTeacherDialog, setShowTeacherDialog] = useState(false)
-  const [teacherActionType, setTeacherActionType] = useState<'corrompi' | 'minaccia'>('corrompi')
-  const [schoolMorningEvents, setSchoolMorningEvents] = useState<SchoolMorningEvent[]>([])
-  const [showSchoolMorning, setShowSchoolMorning] = useState(false)
+  const {
+    gameOver,
+    setGameOver,
+    gameOverReason,
+    setGameOverReason,
+    showResetDialog,
+    setShowResetDialog,
+    showReportCard,
+    setShowReportCard,
+    reportCardPassed,
+    setReportCardPassed,
+    gameWon,
+    setGameWon,
+    schoolEvent,
+    setSchoolEvent,
+    showSchoolEvent,
+    setShowSchoolEvent,
+    showKeyboardHelp,
+    setShowKeyboardHelp,
+    showSubjectDialog,
+    setShowSubjectDialog,
+    showTeacherDialog,
+    setShowTeacherDialog,
+    teacherActionType,
+    setTeacherActionType,
+    schoolMorningEvents,
+    setSchoolMorningEvents,
+    showSchoolMorning,
+    setShowSchoolMorning,
+  } = useAppDialogs()
 
   const ariaLiveRef = useRef<HTMLDivElement>(null)
 
