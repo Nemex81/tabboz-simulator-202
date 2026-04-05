@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { Shield, ShieldWarning, HandCoins, Fist, Flag } from '@phosphor-icons/react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { SubjectGrades, SchoolEvent } from '@/lib/types'
+import { SubjectGrades } from '@/lib/types'
+import type { SchoolEvent } from '@/lib/school-events'
 
 const ReportCardDialog = lazy(() => import('@/components/ReportCardDialog').then(m => ({ default: m.ReportCardDialog })))
 const KeyboardShortcutsDialog = lazy(() => import('@/components/KeyboardShortcutsDialog').then(m => ({ default: m.KeyboardShortcutsDialog })))

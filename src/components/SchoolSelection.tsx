@@ -226,13 +226,13 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
           </Card>
 
           <Card className="p-6 border-2 border-accent bg-card hover:bg-accent/10 transition-all cursor-pointer group"
-            onClick={() => handleSchoolSelect('agrario')}>
+            onClick={() => handleSchoolSelect('agraria')}>
             <div className="text-center space-y-4">
               <div className="flex justify-center">
                 <Tractor size={80} weight="fill" className="text-accent group-hover:scale-110 transition-transform" />
               </div>
               <h3 className="text-2xl font-bold text-accent">
-                {getSchoolTypeName('agrario')}
+                {getSchoolTypeName('agraria')}
               </h3>
               <p className="text-sm text-muted-foreground">
                 Agronomia, Zootecnia, Botanica, Ecologia e gestione aziendale agricola

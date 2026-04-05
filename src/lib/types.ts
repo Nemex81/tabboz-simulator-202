@@ -45,6 +45,16 @@ export interface SchoolYear {
 
 export type DayPhase = 'mattina' | 'pomeriggio' | 'sera' | 'notte'
 
+export type DayType = 'feriale' | 'sabato' | 'domenica' | 'festivo'
+
+export interface DayPhaseConfig {
+  label: string
+  timeRange: string
+  maxActions: number
+  energyCost: number
+  nightRecovery: number
+}
+
 export interface PhaseActions {
   mattina: number
   pomeriggio: number
@@ -64,9 +74,25 @@ export interface GameTime {
   phaseActions: PhaseActions
 }
 
+export interface GameTimeV2 extends GameTime {
+  dayType: DayType
+  phaseActionsRemaining: number
+}
+
 export type ThemeVariant = 'default' | 'dark' | 'green'
 
 export type ReputationLevel = 'sfigato' | 'normale' | 'popolare' | 'leggenda'
+
+export type RelationshipTier =
+  | 'sconosciuto'
+  | 'conoscente'
+  | 'amico'
+  | 'amico_stretto'
+  | 'migliore_amico'
+  | 'trombamica'
+  | 'fidanzata'
+
+export type SocialBondType = 'amicizia' | 'romantico'
 
 export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
   liceo: {
@@ -169,6 +195,45 @@ export function getSubjectDisplayName(subject: string): string {
   return displayNames[subject] || subject
 }
 
+export function getSchoolTypeName(schoolType: SchoolType): string {
+  const names: Record<SchoolType, string> = {
+    liceo: 'Liceo',
+    tecnico: 'Istituto Tecnico',
+    agraria: 'Istituto Agrario',
+    artistico: 'Istituto Artistico'
+  }
+  return names[schoolType] || schoolType
+}
+
+export const getRelationshipTier = (
+  affinita: number,
+  bondType: SocialBondType = 'amicizia'
+): RelationshipTier => {
+  if (affinita <= 0) return 'sconosciuto'
+  if (bondType === 'romantico') {
+    if (affinita >= 80) return 'fidanzata'
+    if (affinita >= 70) return 'trombamica'
+    return 'conoscente'
+  }
+  if (affinita >= 90) return 'migliore_amico'
+  if (affinita >= 60) return 'amico_stretto'
+  if (affinita >= 30) return 'amico'
+  return 'conoscente'
+}
+
+export const getRelationshipTierLabel = (tier: RelationshipTier): string => {
+  const labels: Record<RelationshipTier, string> = {
+    sconosciuto:    '\u{1F494} Sconosciuto',
+    conoscente:     '\u{1F610} Conoscente',
+    amico:          '\u{1F60A} Amico',
+    amico_stretto:  '\u{1F60E} Amico Stretto',
+    migliore_amico: '\u{1F451} Migliore Amico',
+    trombamica:     '\u{1F48B} Trombamica',
+    fidanzata:      '\u2764\uFE0F Fidanzata',
+  }
+  return labels[tier]
+}
+
 export interface GameState {
   stats: GameStats
   grades: SubjectGrades
@@ -227,6 +292,8 @@ export interface Friend {
   affinita: number
   intelligenza?: number
   unlocked: boolean
+  tier?: RelationshipTier
+  bondType?: SocialBondType
 }
 
 export interface Relationship {
