@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { HandCoins, Fist, CheckCircle, Warning, XCircle } from '@phosphor-icons/react'
-import {
+  Dialog
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+} from '@/compon
+import { Card } from
+
+  open: boolea
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -14,54 +14,54 @@ import { SubjectGrades, getSubjectDisplayName } from '@/lib/types'
 interface TeacherSelectionDialogProps {
   open: boolean
   onClose: () => void
-  grades: SubjectGrades
-  onSelectTeacher: (subject: string) => void
-  actionType: 'corrompi' | 'minaccia'
-  soldi: number
-}
-
-export function TeacherSelectionDialog({
-  open,
-  onClose,
-  grades,
-  onSelectTeacher,
-  actionType,
-  soldi
-}: TeacherSelectionDialogProps) {
-  const [selectedSubject, setSelectedSubject] = useState<string | null>(null)
-  const firstButtonRef = useRef<HTMLButtonElement>(null)
   
-  useEffect(() => {
     if (open && firstButtonRef.current) {
-      firstButtonRef.current.focus()
     }
-  }, [open])
   
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
-        onClose()
-      }
+ 
+
     }
-    
-    const handleEnter = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && selectedSubject && open) {
-        handleConfirm()
-      }
+    con
+        ha
     }
+    window.addEven
     
-    window.addEventListener('keydown', handleEscape)
-    window.addEventListener('keydown', handleEnter)
-    
-    return () => {
-      window.removeEventListener('keydown', handleEscape)
-      window.removeEventListener('keydown', handleEnter)
+      w
     }
-  }, [open, selectedSubject])
   
-  const handleConfirm = () => {
     if (selectedSubject) {
-      onSelectTeacher(selectedSubject)
+  
+  }
+  const getGradeIndicator = (grade: numbe
+    if (grade < 7) return { icon: <W
+  }
+  const subj
+  
+    <Dialog open={o
+        className={`max-w-4xl max-h-[80vh] overf
+        role="dialog"
+        <DialogHe
+       
+     
+    
+              <>
+                SCEGLI QUALE PROFESSORE MINACCIARE
+            )}
+       
+     
+    
+                    ⚠️ NON HAI ABBASTANZA SOLDI! Ser
+                )}
+    
+                <p
+                  ⚠️ ATTENZIONE: 30% di probabilità di ES
+              </div>
+     
+        
+  
+            const isSelected = 
+            
+              <button
       setSelectedSubject(null)
     }
   }
@@ -115,93 +115,93 @@ export function TeacherSelectionDialog({
               </div>
             )}
           </DialogDescription>
-        </DialogHeader>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
-          {subjects.map(([subject, grade], index) => {
-            const indicator = getGradeIndicator(grade)
-            const isSelected = selectedSubject === subject
-            const disabled = actionType === 'corrompi' && !canAfford
-            
-            return (
-              <button
-                key={subject}
-                ref={index === 0 ? firstButtonRef : null}
-                onClick={() => !disabled && setSelectedSubject(subject)}
-                disabled={disabled}
-                className={`
-                  p-4 rounded-lg border-2 transition-all
-                  ${disabled ? 'opacity-40 cursor-not-allowed' : ''}
-                  ${isSelected 
-                    ? actionType === 'corrompi' 
-                      ? 'border-primary bg-primary/20 scale-105' 
-                      : 'border-destructive bg-destructive/20 scale-105'
-                    : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
-                  }
-                  focus:outline-none focus:ring-4 focus:ring-primary/50
-                `}
-                aria-label={`${getSubjectDisplayName(subject)}, voto attuale ${grade.toFixed(1)}, ${indicator.label}`}
-                aria-pressed={isSelected}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-muted-foreground uppercase">
-                    {getSubjectDisplayName(subject)}
-                  </span>
-                  {indicator.icon}
-                </div>
-                <div className={`text-3xl font-bold ${indicator.color}`}>
-                  {grade.toFixed(1)}
-                </div>
-                <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full transition-all ${
-                      grade < 6 ? 'bg-destructive' : grade < 7 ? 'bg-accent' : 'bg-primary'
-                    }`}
-                    style={{ width: `${(grade / 10) * 100}%` }}
-                  />
-                </div>
-                {isSelected && (
-                  <div className={`mt-2 text-xs font-bold ${actionType === 'corrompi' ? 'text-primary' : 'text-destructive'}`}>
-                    ✓ SELEZIONATA
-                  </div>
-                )}
-              </button>
-            )
-          })}
-        </div>
-        
-        <div className="flex gap-3 mt-6">
-          <Button
-            onClick={onClose}
-            variant="outline"
-            className="flex-1 border-2"
-          >
-            Annulla (Esc)
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={!selectedSubject || (actionType === 'corrompi' && !canAfford)}
-            variant={actionType === 'corrompi' ? 'default' : 'destructive'}
-            className={`flex-1 border-2 disabled:opacity-40 ${
-              actionType === 'corrompi' 
-                ? 'bg-primary text-primary-foreground border-primary' 
-                : 'bg-destructive text-destructive-foreground border-destructive'
-            }`}
-          >
-            {actionType === 'corrompi' ? (
-              <>
-                <HandCoins size={24} className="mr-2" weight="fill" />
-                Corrompi (-100€)
-              </>
-            ) : (
-              <>
-                <Fist size={24} className="mr-2" weight="fill" />
-                Minaccia! (30% rischio)
-              </>
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
