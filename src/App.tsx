@@ -152,6 +152,8 @@ function App() {
   } = useAppDialogs()
 
   const ariaLiveRef = useRef<HTMLDivElement>(null)
+  // F6: stato locale per mutua esclusività Vai a Scuola / Marina (si resetta al cambio giorno)
+  const [marinatoOggi, setMarinatoOggi] = useState(false)
 
   const announce = useCallback((message: string) => {
     if (ariaLiveRef.current) {
@@ -346,7 +348,7 @@ function App() {
     }
   }
 
-  // Step 3: Marina — falsa assenza giustificata (+2 reali assenze, simula uscita ufficiale)
+  // F1: Marina — il giocatore non va a scuola. wentToSchoolToday resta false (il passivo +1 scatterà a fine fase)
   const handleMarina = () => {
     if (phaseActionsRemaining <= 0) {
       playSound.failure()
@@ -358,25 +360,26 @@ function App() {
       announce('Puoi marinare solo la mattina dei giorni feriali durante il periodo scolastico!')
       return
     }
-    if (schoolRecord.wentToSchoolToday) {
+    if (schoolRecord.wentToSchoolToday || marinatoOggi) {
       playSound.failure()
-      announce('Sei già andato a scuola oggi, non puoi marinare!')
+      announce('Hai già scelto per questa mattina!')
       return
     }
     playSound.buttonClick()
+    setMarinatoOggi(true)
     setSchoolRecord((current) => ({
       ...current,
-      assenze: current.assenze + 2,
-      wentToSchoolToday: true,   // evita il +1 passivo di useGameTime
+      assenze: current.assenze + 1,
       consecutiveGoodDays: 0
+      // wentToSchoolToday rimane false → il passivo (+1) scatterà a fine fase
     }))
     setStats((current) => ({
       ...current,
-      coattaggine: clampStat(current.coattaggine + 5),
-      stanchezza: clampStat(current.stanchezza - 5)
+      coattaggine: clampStat(current.coattaggine + 5)
     }))
+    gainExtraAction()
     consumeAction()
-    announce('Hai marinato la scuola! +2 Assenze, +5 Coattaggine. Goditela, coazzo!')
+    announce("Hai MARINATO la scuola! +1 Assenza, guadagni un'azione extra. Goditi la libertà... per ora.")
   }
 
   useEffect(() => {
@@ -386,14 +389,27 @@ function App() {
     }
   }, [currentTheme])
 
-  // Step 3+4: soglie assenze e game over per condotta insufficiente
+  // F6: reset marinatoOggi al cambio di giorno
+  useEffect(() => {
+    setMarinatoOggi(false)
+  }, [gameTime.currentDate.day, gameTime.currentDate.month, gameTime.currentDate.year])
+
+  // F4: soglie assenze con conseguenze scalari
   useEffect(() => {
     if (!gameTime.schoolYear.isSchoolPeriod || gameOver) return
     const a = schoolRecord.assenze
-    if (a === 15) announce('\u26a0\ufe0f ATTENZIONE: 15 assenze! La scuola ha mandato una lettera a casa!')
-    else if (a === 25) {
-      announce('\ud83d\udea8 GRAVE: 25 assenze! I tuoi genitori sono stati convocati!')
-      setSchoolRecord((prev) => ({ ...prev, condotta: clampStat(prev.condotta - 1, 0, 10) }))
+    if (a === 15) {
+      announce('📬 I tuoi genitori hanno ricevuto una LETTERA dalla scuola per le assenze! -50 Soldi (punizione)')
+      setStats((s) => ({ ...s, soldi: clampStat(s.soldi - 50, 0, 1000) }))
+      playSound.moneySpent()
+    } else if (a === 25) {
+      announce('⚠️ ATTENZIONE: 25 assenze! Rischi di NON essere ammesso allo scrutinio!')
+      playSound.eventTrigger()
+      const parentEvent = getParentEventByMedia(calculateMedia(grades), stats)
+      if (parentEvent) {
+        setSchoolEvent(parentEvent)
+        setShowSchoolEvent(true)
+      }
     } else if (a >= 35) {
       playSound.gameOver()
       setGameOver(true)
@@ -401,12 +417,17 @@ function App() {
     }
   }, [schoolRecord.assenze]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // F5: condotta — warning < 5, game over < 1
   useEffect(() => {
     if (!gameTime.schoolYear.isSchoolPeriod || gameOver) return
-    if (schoolRecord.condotta < 5 && schoolRecord.condotta > 0) {
+    const c = schoolRecord.condotta
+    if (c < 1 && c >= 0) {
       playSound.gameOver()
       setGameOver(true)
-      setGameOverReason(`SOSPESO! Condotta ${schoolRecord.condotta.toFixed(1)}/10 \u2014 sei stato espulso dalla scuola per comportamento insostenibile!`)
+      setGameOverReason(`ESPULSO! Condotta ${c.toFixed(1)}/10 — comportamento insostenibile. Game Over!`)
+    } else if (c < 5 && c >= 1) {
+      announce(`🚨 Condotta CRITICA (${c.toFixed(1)}/10)! Ancora una nota e verrai ESPULSO dalla scuola!`)
+      playSound.eventTrigger()
     }
   }, [schoolRecord.condotta]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -936,16 +957,19 @@ function App() {
                       phaseActionsRemaining <= 0 ||
                       dayType !== 'feriale' ||
                       currentPhase !== 'mattina' ||
-                      !gameTime.schoolYear.isSchoolPeriod
+                      !gameTime.schoolYear.isSchoolPeriod ||
+                      marinatoOggi
                     }
                     blockedReason={
-                      phaseActionsRemaining <= 0 
-                        ? 'Nessuna azione per questa fascia oraria' 
-                        : dayType !== 'feriale' 
-                          ? 'Disponibile solo nei giorni feriali' 
-                          : currentPhase !== 'mattina'
-                            ? 'Disponibile solo la mattina'
-                            : 'Non è periodo scolastico'
+                      marinatoOggi
+                        ? 'Hai già marinato stamattina'
+                        : phaseActionsRemaining <= 0 
+                          ? 'Nessuna azione per questa fascia oraria' 
+                          : dayType !== 'feriale' 
+                            ? 'Disponibile solo nei giorni feriali' 
+                            : currentPhase !== 'mattina'
+                              ? 'Disponibile solo la mattina'
+                              : 'Non è periodo scolastico'
                     }
                     variant="default"
                     ariaLabel="Vai a scuola durante la mattina dei giorni feriali. +2 Intelligenza, +10 Stanchezza."
@@ -960,7 +984,8 @@ function App() {
                   </div>
                 </Card>
 
-                {/* Step 3: Pulsante Marina */}
+                {/* F6: Pulsante Marina — nascosto se già andato a scuola o già marinato */}
+                {!schoolRecord.wentToSchoolToday && !marinatoOggi && (
                 <Card className="p-3 border-2 border-destructive bg-card">
                   <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
                     <GraduationCap size={24} weight="fill" />
@@ -974,33 +999,31 @@ function App() {
                       phaseActionsRemaining <= 0 ||
                       dayType !== 'feriale' ||
                       currentPhase !== 'mattina' ||
-                      !gameTime.schoolYear.isSchoolPeriod ||
-                      schoolRecord.wentToSchoolToday
+                      !gameTime.schoolYear.isSchoolPeriod
                     }
                     blockedReason={
-                      schoolRecord.wentToSchoolToday
-                        ? 'Sei già andato a scuola oggi'
-                        : phaseActionsRemaining <= 0
-                          ? 'Nessuna azione per questa fascia oraria'
-                          : dayType !== 'feriale'
-                            ? 'Disponibile solo nei giorni feriali'
-                            : currentPhase !== 'mattina'
-                              ? 'Disponibile solo la mattina'
-                              : 'Non è periodo scolastico'
+                      phaseActionsRemaining <= 0
+                        ? 'Nessuna azione per questa fascia oraria'
+                        : dayType !== 'feriale'
+                          ? 'Disponibile solo nei giorni feriali'
+                          : currentPhase !== 'mattina'
+                            ? 'Disponibile solo la mattina'
+                            : 'Non è periodo scolastico'
                     }
                     variant="destructive"
-                    ariaLabel="Marina la scuola. +2 Assenze, +5 Coattaggine."
-                    helpText="Fai finta di andare a scuola ma non ci vai. +2 Assenze, +5 Coattaggine, -5 Stanchezza. ATTENZIONE: aumenta le assenze!"
+                    ariaLabel="Marina la scuola. +1 Assenza esplicita (+1 passiva a fine giornata), +5 Coattaggine, azione extra."
+                    helpText="Non vai a scuola. +1 Assenza (più +1 passivo a fine giornata = +2 totali), +5 Coattaggine, guadagni 1 azione extra. ATTENZIONE: oltre 35 assenze = BOCCIATO!"
                     announce={announce}
                   />
                   <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
                     <p className="font-semibold mb-1">Effetti:</p>
-                    <p>• +2 Assenze (GRAVE!)</p>
+                    <p>• +1 Assenza ora (+1 passiva a fine giornata = 2 totali)</p>
                     <p>• +5 Coattaggine</p>
-                    <p>• -5 Stanchezza</p>
+                    <p>• +1 Azione extra (compensazione libertà)</p>
                     <p className="mt-2 text-destructive font-semibold">⚠️ Oltre 35 assenze = BOCCIATO automaticamente!</p>
                   </div>
                 </Card>
+                )}
 
                 {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && (
                   <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>

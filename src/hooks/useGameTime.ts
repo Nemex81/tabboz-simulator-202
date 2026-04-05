@@ -180,7 +180,7 @@ export function useGameTime({
         }
       }
 
-      if (Math.random() < 0.15 && newGameTime.schoolYear.isSchoolPeriod && st) {
+      if (Math.random() < 0.15 && newGameTime.schoolYear.isSchoolPeriod && st && schoolRecord.wentToSchoolToday) {
         const teacherEvent = getTeacherEvent(st)
         setSchoolEvent(teacherEvent)
         setShowSchoolEvent(true)
@@ -238,6 +238,8 @@ export function useGameTime({
 
       return newGameTime
     })
+    // F3: reset flag presenza giornaliera (per handleDormi che salta le fasi)
+    setSchoolRecord((prev) => ({ ...prev, wentToSchoolToday: false }))
     playSound.success()
     announce('Nuovo giorno! Azioni ripristinate.')
   }, [
