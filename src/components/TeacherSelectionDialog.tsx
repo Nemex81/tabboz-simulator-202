@@ -1,11 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { HandCoins, Fist } from '@phosphor-icons/react'
 import { SubjectGrades, getSubjectDisplayName } from '@/lib/types'
-  onClose: () => void
 
-  soldi: number
-
+interface TeacherSelectionDialogProps {
+  open: boolean
   onClose: () => void
   grades: SubjectGrades
   onSelectTeacher: (subject: string) => void
@@ -14,13 +14,15 @@ import { SubjectGrades, getSubjectDisplayName } from '@/lib/types'
 }
 
 export function TeacherSelectionDialog({
-    onS
+  open,
   onClose,
-
+  grades,
   onSelectTeacher,
-  const canCo
+  actionType,
   soldi
-    <Dialog open={open} onOpenCha
+}: TeacherSelectionDialogProps) {
+  const canCorrompi = soldi >= 100
+
   const handleSelect = (subject: string) => {
     onSelectTeacher(subject)
     onClose()
@@ -28,40 +30,19 @@ export function TeacherSelectionDialog({
 
   const subjects = Object.keys(grades)
 
-                Scegli quale profe
-
-
-          {subjects.map((subject) => {
-            const disabled = actionType === 'corrompi' && !canCorrompi
-            return (
-                key={subject}
-                  disabled 
-                
-                onClick={() => !disabled && handleSel
-                <div className="flex items-center 
-                 
-                 
-                
-                    className={`h-full ${current
-                  />
-                <
-              
-                  disabl
-                    e.stopPro
-                  }}
-                  {actionType === 'corrompi' ? (
-                      <HandCoins size={20} className="mr-2" />
-             
-                    <>
-                      M
-
-              </Card>
-          })}
-
-          <Button onClick={onClose} variant="outline" className="w-full">
-          </Butt
-      </DialogCo
-  )
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">
+            {actionType === 'corrompi' ? '💰 Scegli quale professore corrompere' : '👊 Scegli quale professore minacciare'}
+          </DialogTitle>
+          <DialogDescription>
+            {actionType === 'corrompi' 
+              ? 'Serve una mazzetta da 100€ per materia. Il voto aumenta di 0.5 punti.'
+              : 'Minaccia un professore. 30% di rischio espulsione! +1.5 al voto se funziona.'}
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
           {subjects.map((subject) => {
