@@ -4,55 +4,43 @@ import {
   Fist,
   Shield,
   ShieldWarning,
-  Heart,
-  HandCoins,
-  Flag,
 } from '@phosphor-icons/react'
 import {
   AlertDialog,
-  AlertDialogAction,
+  AlertDialogAction,ct'
   AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog'
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { SubjectGrades, SchoolEvent } from '@/lib/types'
-
 const ReportCardDialog = lazy(() => import('@/components/ReportCardDialog').then(m => ({ default: m.ReportCardDialog })))
 const SchoolEventDialog = lazy(() => import('@/components/SchoolEventDialog').then(m => ({ default: m.SchoolEventDialog })))
 const KeyboardShortcutsDialog = lazy(() => import('@/components/KeyboardShortcutsDialog').then(m => ({ default: m.KeyboardShortcutsDialog })))
 const SubjectSelectionDialog = lazy(() => import('@/components/SubjectSelectionDialog').then(m => ({ default: m.SubjectSelectionDialog })))
-const TeacherSelectionDialog = lazy(() => import('@/components/TeacherSelectionDialog').then(m => ({ default: m.TeacherSelectionDialog })))
-
+const SchoolEventDialog = lazy(() => import('@/components/SchoolEventDialog').then(m => ({ default: m.SchoolEventDialog })))
+const KeyboardShortcutsDialog = lazy(() => import('@/components/KeyboardShortcutsDialog').then(m => ({ default: m.KeyboardShortcutsDialog })))
 export interface GameDialogsProps {
   showMetallariEvent: boolean
-  setShowMetallariEvent: (value: boolean) => void
+nt: (value: boolean) => void
   currentEvent: string
   handleMetallariScappa: () => void
   handleMetallariCombatti: () => void
   showAtipaEvent: boolean
   setShowAtipaEvent: (value: boolean) => void
   atipaSuccessChance: number
+  showAtipaEvent: boolean
+  setShowAtipaEvent: (value: boolean) => void
+  atipaSuccessChance: number
   handleAtipaRinuncia: () => void
-  handleAtipaProva: () => void
+  showReportCard: boolean
   showPoliceEvent: boolean
-  setShowPoliceEvent: (value: boolean) => void
-  handlePoliceScappa: () => void
-  handlePoliceCollabora: () => void
   showStreetRaceEvent: boolean
   setShowStreetRaceEvent: (value: boolean) => void
   raceWinChance: number
   handleStreetRaceRifiuta: () => void
   handleStreetRaceAccetta: () => void
   showBulliEvent: boolean
-  setShowBulliEvent: (value: boolean) => void
-  handleBulliCedi: () => void
-  handleBulliResisti: () => void
-  gameOver: boolean
-  gameOverReason: string
-  handleReset: () => void
   showResetDialog: boolean
   setShowResetDialog: (value: boolean) => void
   showReportCard: boolean
@@ -71,30 +59,30 @@ export interface GameDialogsProps {
   setShowSubjectDialog: (value: boolean) => void
   handleStudySubject: (subject: string) => void
   stanchezza: number
-  showTeacherDialog: boolean
-  setShowTeacherDialog: (value: boolean) => void
-  handleTeacherSelection: (subject: string) => void
-  teacherActionType: 'corrompi' | 'minaccia'
-  soldi: number
-}
+  teacherActionType,
+}: GameDialogsProps) {
+    <>
+        <AlertDialogContent
+            <AlertDialogTitle className="text-2
+            </AlertDialogTit
+              {currentEvent}
+          </AlertDialogHeader>
+            <AlertDi
+              Scappa (-10 Co
+            <AlertDialogAction onClick={handleMe
+              Combatti (Serve Muscoli &gt; 60)
+          </AlertDialogFooter>
+      </AlertDi
+ 
 
-export function GameDialogs({
-  showMetallariEvent,
-  setShowMetallariEvent,
-  currentEvent,
-  handleMetallariScappa,
-  handleMetallariCombatti,
-  showAtipaEvent,
-  setShowAtipaEvent,
-  atipaSuccessChance,
-  handleAtipaRinuncia,
-  handleAtipaProva,
-  showPoliceEvent,
-  setShowPoliceEvent,
-  handlePoliceScappa,
-  handlePoliceCollabora,
-  showStreetRaceEvent,
-  setShowStreetRaceEvent,
+              <Heart size={32
+            </AlertDi
+              <p>{curren
+               
+              <p classNa
+              </p>
+          </Alert
+            <AlertDi
   raceWinChance,
   handleStreetRaceRifiuta,
   handleStreetRaceAccetta,
