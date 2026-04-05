@@ -54,6 +54,16 @@ export interface PlayerProfile {
 
 export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'agrario'
 
+export function getSchoolTypeName(schoolType: SchoolType): string {
+  const names: Record<SchoolType, string> = {
+    liceo: 'Liceo',
+    tecnico: 'Istituto Tecnico',
+    artistico: 'Liceo Artistico',
+    agrario: 'Istituto Agrario'
+  }
+  return names[schoolType]
+}
+
 export interface SubjectGrades {
   [subject: string]: number
 }

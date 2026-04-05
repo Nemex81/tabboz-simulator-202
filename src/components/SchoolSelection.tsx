@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { SchoolType, getSchoolTypeName, PlayerGender, PlayerProfile, ThemeVariant } from '@/lib/types'
+import { SchoolType, getSchoolTypeName, PlayerProfile, ThemeVariant } from '@/lib/types'
 import { GraduationCap, Tractor, PaintBrush, User, GenderMale, GenderFemale, Palette, Moon, Sun, Plant } from '@phosphor-icons/react'
 
 interface SchoolSelectionProps {
@@ -13,7 +13,7 @@ interface SchoolSelectionProps {
 export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
   const [step, setStep] = useState<'profile' | 'school'>('profile')
   const [playerName, setPlayerName] = useState('')
-  const [playerGender, setPlayerGender] = useState<PlayerGender | null>(null)
+  const [playerGender, setPlayerGender] = useState<'maschio' | 'femmina' | null>(null)
   const [selectedTheme, setSelectedTheme] = useState<ThemeVariant>('default')
 
   useEffect(() => {
@@ -226,13 +226,13 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
           </Card>
 
           <Card className="p-6 border-2 border-accent bg-card hover:bg-accent/10 transition-all cursor-pointer group"
-            onClick={() => handleSchoolSelect('agraria')}>
+            onClick={() => handleSchoolSelect('agrario')}>
             <div className="text-center space-y-4">
               <div className="flex justify-center">
                 <Tractor size={80} weight="fill" className="text-accent group-hover:scale-110 transition-transform" />
               </div>
               <h3 className="text-2xl font-bold text-accent">
-                {getSchoolTypeName('agraria')}
+                {getSchoolTypeName('agrario')}
               </h3>
               <p className="text-sm text-muted-foreground">
                 Agronomia, Zootecnia, Botanica, Ecologia e gestione aziendale agricola
