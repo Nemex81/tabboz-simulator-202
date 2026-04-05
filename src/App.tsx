@@ -703,151 +703,181 @@ function App() {
               </div>
             </Card>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="p-6 border-2 border-primary bg-card">
-                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
-                  <User size={24} weight="fill" />
-                  CARATTERISTICHE FISICHE
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                        <Lightning size={20} weight="fill" className="text-primary" />
-                        Coattaggine
-                      </span>
-                      <span className="text-2xl font-bold text-primary">{stats.coattaggine}</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-primary transition-all duration-300" style={{ width: `${stats.coattaggine}%` }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                        <Barbell size={20} weight="fill" className="text-secondary" />
-                        Muscoli
-                      </span>
-                      <span className="text-2xl font-bold text-secondary">{stats.muscoli}</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-secondary transition-all duration-300" style={{ width: `${stats.muscoli}%` }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                        <Sparkle size={20} weight="fill" className="text-accent" />
-                        Figosità
-                      </span>
-                      <span className="text-2xl font-bold text-accent">{stats.figosita}</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-accent transition-all duration-300" style={{ width: `${stats.figosita}%` }} />
-                    </div>
-                  </div>
-                </div>
-              </Card>
+            <Tabs defaultValue="attributi" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 bg-muted/50">
+                <TabsTrigger value="attributi">⚡ Attributi</TabsTrigger>
+                <TabsTrigger value="tratti">🧬 Tratti</TabsTrigger>
+                <TabsTrigger value="risorse">💰 Risorse</TabsTrigger>
+              </TabsList>
 
-              <Card className="p-6 border-2 border-accent bg-card">
-                <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
-                  <Brain size={24} weight="fill" />
-                  CARATTERISTICHE MENTALI
-                </h3>
-                <div className="space-y-4">
-                  <div>
+              <TabsContent value="attributi" className="space-y-4 mt-4">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="p-6 border-2 border-primary bg-card">
+                    <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                      <User size={24} weight="fill" />
+                      CARATTERISTICHE FISICHE
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                            <Lightning size={20} weight="fill" className="text-primary" />
+                            Coattaggine
+                          </span>
+                          <span className="text-2xl font-bold text-primary">{stats.coattaggine}</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-primary transition-all duration-300" style={{ width: `${stats.coattaggine}%` }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                            <Barbell size={20} weight="fill" className="text-secondary" />
+                            Muscoli
+                          </span>
+                          <span className="text-2xl font-bold text-secondary">{stats.muscoli}</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-secondary transition-all duration-300" style={{ width: `${stats.muscoli}%` }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                            <Sparkle size={20} weight="fill" className="text-accent" />
+                            Figosità
+                          </span>
+                          <span className="text-2xl font-bold text-accent">{stats.figosita}</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-accent transition-all duration-300" style={{ width: `${stats.figosita}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 border-2 border-accent bg-card">
+                    <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+                      <Brain size={24} weight="fill" />
+                      CARATTERISTICHE MENTALI
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                            <Brain size={20} weight="fill" className="text-primary" />
+                            Intelligenza
+                          </span>
+                          <span className="text-2xl font-bold text-primary">{stats.intelligenza}</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-primary transition-all duration-300" style={{ width: `${stats.intelligenza}%` }} />
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Boost studio: +{calculateStudyGradeIncrease(stats.intelligenza).toFixed(1)} per azione
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                            <Chats size={20} weight="fill" className="text-accent" />
+                            Carisma
+                          </span>
+                          <span className="text-2xl font-bold text-accent">{stats.carisma}</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-accent transition-all duration-300" style={{ width: `${stats.carisma}%` }} />
+                        </div>
+                        {stats.carisma > 70 && (
+                          <div className="text-xs text-accent mt-1 font-bold">
+                            ✨ PARLANTINA ATTIVA! 20% di evitare guai!
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-4 p-3 bg-muted/30 rounded">
+                        <p><strong>Intelligenza:</strong> Moltiplica i voti quando studi</p>
+                        <p className="mt-1"><strong>Carisma:</strong> Migliora le interazioni sociali</p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="tratti" className="space-y-4 mt-4">
+                <Card className="p-6 border-2 border-purple-500 bg-card">
+                  <h3 className="text-xl font-bold mb-4 text-purple-400 flex items-center gap-2">
+                    🧬 TRATTI CARATTERIALI
+                  </h3>
+                  <div className="mb-6">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                        <Brain size={20} weight="fill" className="text-primary" />
-                        Intelligenza
+                        🧠 Stress Psicologico
                       </span>
-                      <span className="text-2xl font-bold text-primary">{stats.intelligenza}</span>
+                      <span className="text-2xl font-bold text-purple-400">
+                        {stats.psychStress ?? 0}
+                      </span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-primary transition-all duration-300" style={{ width: `${stats.intelligenza}%` }} />
+                      <div
+                        className="h-full bg-purple-500 transition-all duration-300"
+                        style={{ width: `${stats.psychStress ?? 0}%` }}
+                      />
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Boost studio: +{calculateStudyGradeIncrease(stats.intelligenza).toFixed(1)} per azione
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                        <Chats size={20} weight="fill" className="text-accent" />
-                        Carisma
-                      </span>
-                      <span className="text-2xl font-bold text-accent">{stats.carisma}</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-accent transition-all duration-300" style={{ width: `${stats.carisma}%` }} />
-                    </div>
-                    {stats.carisma > 70 && (
-                      <div className="text-xs text-accent mt-1 font-bold">
-                        ✨ PARLANTINA ATTIVA! 20% di evitare guai!
+                    {(stats.psychStress ?? 0) > 70 && (
+                      <div className="text-xs text-purple-400 mt-1 font-bold animate-pulse">
+                        ⚠️ Stress elevato! Riposa o socializza.
                       </div>
                     )}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-4 p-3 bg-muted/30 rounded">
-                    <p><strong>Intelligenza:</strong> Moltiplica i voti quando studi</p>
-                    <p className="mt-1"><strong>Carisma:</strong> Migliora le interazioni sociali</p>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground font-semibold uppercase">Tratti attivi:</p>
+                    <div className="p-4 bg-muted/30 rounded text-sm text-muted-foreground italic">
+                      Nessun tratto assegnato. I tratti si sbloccheranno nella prossima
+                      sessione di gioco dopo l'aggiornamento C4.
+                    </div>
                   </div>
-                </div>
-              </Card>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="p-6 border-2 border-secondary bg-card">
-                <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
-                  <CurrencyDollar size={24} weight="fill" />
-                  RISORSE
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                        <CurrencyDollar size={20} weight="fill" className="text-accent" />
-                        Soldi
-                      </span>
-                      <span className="text-2xl font-bold text-accent">{stats.soldi}€</span>
+                </Card>
+              </TabsContent>
+              <TabsContent value="risorse" className="space-y-4 mt-4">
+                <Card className="p-6 border-2 border-secondary bg-card">
+                  <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
+                    <CurrencyDollar size={24} weight="fill" />
+                    RISORSE
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                          <CurrencyDollar size={20} weight="fill" className="text-accent" />
+                          Soldi
+                        </span>
+                        <span className="text-2xl font-bold text-accent">{stats.soldi}€</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-accent transition-all duration-300" style={{ width: `${(stats.soldi / 1000) * 100}%` }} />
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">Max: 1000€</div>
                     </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-accent transition-all duration-300" style={{ width: `${(stats.soldi / 1000) * 100}%` }} />
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
+                          <Battery size={20} weight="fill" className={stats.stanchezza > 80 ? 'text-destructive' : 'text-muted-foreground'} />
+                          Stanchezza
+                        </span>
+                        <span className={`text-2xl font-bold ${stats.stanchezza > 80 ? 'text-destructive' : 'text-foreground'}`}>{stats.stanchezza}</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className={`h-full transition-all duration-300 ${stats.stanchezza > 80 ? 'bg-destructive' : 'bg-muted-foreground'}`} style={{ width: `${stats.stanchezza}%` }} />
+                      </div>
+                      {stats.stanchezza > 80 && (
+                        <div className="text-xs text-destructive mt-1 font-bold">Troppo stanco! Devi riposare!</div>
+                      )}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">Max: 1000€</div>
                   </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                        <Battery size={20} weight="fill" className={stats.stanchezza > 80 ? 'text-destructive' : 'text-muted-foreground'} />
-                        Stanchezza
-                      </span>
-                      <span className={`text-2xl font-bold ${stats.stanchezza > 80 ? 'text-destructive' : 'text-foreground'}`}>{stats.stanchezza}</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${stats.stanchezza > 80 ? 'bg-destructive' : 'bg-muted-foreground'}`} style={{ width: `${stats.stanchezza}%` }} />
-                    </div>
-                    {stats.stanchezza > 80 && (
-                      <div className="text-xs text-destructive mt-1 font-bold">Troppo stanco! Devi riposare!</div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                        <GraduationCap size={20} weight="fill" className={currentMedia < 6 ? 'text-destructive' : 'text-secondary'} />
-                        Media Scolastica
-                      </span>
-                      <span className={`text-2xl font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-secondary'}`}>{currentMedia.toFixed(1)}</span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${currentMedia < 6 ? 'bg-destructive' : 'bg-secondary'}`} style={{ width: `${(currentMedia / 10) * 100}%` }} />
-                    </div>
-                    {currentMedia < 4 && (
-                      <div className="text-xs text-destructive mt-1 font-bold animate-pulse">BOCCIATO!</div>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            </div>
+                </Card>
+              </TabsContent>
+            </Tabs>
 
             <div className="text-center">
               <Button
@@ -912,86 +942,47 @@ function App() {
               </div>
             </Card>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="p-6 border-2 border-primary bg-card">
-                <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
-                  <Brain size={24} weight="fill" />
-                  STUDIO & RIPOSO
-                </h3>
-                <div className="space-y-3">
-                  <ActionButton
-                    icon={<Brain size={48} />}
-                    label="Studia"
-                    shortcut="Ctrl+5"
-                    onClick={handleStudia}
-                    disabled={phaseActionsRemaining <= 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.stanchezza > 80 ? 'Sei troppo stanco per studiare!' : 'Non è periodo scolastico'}
-                    variant="secondary"
-                    ariaLabel="Studia per aumentare i voti. Costa stanchezza, riduce coattaggine. Tasto rapido: Ctrl+5"
-                  />
-                  <ActionButton
-                    icon={<Battery size={48} />}
-                    label="Riposa"
-                    shortcut="Ctrl+8"
-                    onClick={handleRiposa}
-                    disabled={phaseActionsRemaining <= 0 || (dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod)}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Sei a scuola!'}
-                    variant="secondary"
-                    ariaLabel="Riposa per ridurre la stanchezza del 25-35%. Disponibile solo al pomeriggio. Tasto rapido: Ctrl+8"
-                  />
-                  <ActionButton
-                    icon={<Sparkle size={48} />}
-                    label="Dormi"
-                    onClick={handleDormi}
-                    disabled={currentPhase !== 'sera' && currentPhase !== 'notte'}
-                    blockedReason="Puoi dormire solo la sera o di notte!"
-                    variant="secondary"
-                    ariaLabel="Vai a dormire la sera (recupero totale) o di notte (recupero 80%) e passa al giorno successivo"
-                  />
-                  <ActionButton
-                    icon={<Clock size={48} />}
-                    label={`Avanza Fascia (${currentPhase ?? 'mattina'})`}
-                    onClick={advancePhaseOnly}
-                    disabled={phaseActionsRemaining > 0}
-                    blockedReason={phaseActionsRemaining > 0 ? 'Consuma prima tutte le azioni della fase' : undefined}
-                    variant="outline"
-                    ariaLabel="Salta alla prossima fascia oraria della giornata (disponibile solo a 0 azioni rimaste)"
-                  />
-                </div>
-              </Card>
-
-              <Card className="p-6 border-2 border-destructive bg-card">
-                <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
-                  <HandCoins size={24} weight="fill" />
-                  METODI ALTERNATIVI
-                </h3>
-                <div className="space-y-3">
-                  <ActionButton
-                    icon={<HandCoins size={48} />}
-                    label="Corrompi"
-                    shortcut="Ctrl+6"
-                    onClick={handleCorrompi}
-                    disabled={phaseActionsRemaining <= 0 || stats.soldi < 100 || !gameTime.schoolYear.isSchoolPeriod}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 100 ? 'Servono almeno 100€' : 'Non è periodo scolastico'}
-                    variant="default"
-                    ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
-                  />
-                  <ActionButton
-                    icon={<Fist size={48} />}
-                    label="Minaccia"
-                    shortcut="Ctrl+7"
-                    onClick={handleMinaccia}
-                    disabled={phaseActionsRemaining <= 0 || !gameTime.schoolYear.isSchoolPeriod}
-                    blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Non è periodo scolastico'}
-                    variant="destructive"
-                    ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
-                  />
-                </div>
-                <div className="mt-4 pt-4 border-t border-border text-xs text-destructive">
-                  <p className="font-bold">⚠️ ATTENZIONE: Metodi rischiosi! L'opzione Minaccia ha 30% di probabilità di ESPULSIONE!</p>
-                </div>
-              </Card>
-            </div>
+            <Card className="p-6 border-2 border-destructive bg-card">
+              <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
+                <HandCoins size={24} weight="fill" />
+                METODI ALTERNATIVI
+              </h3>
+              <div className="space-y-3">
+                <ActionButton
+                  icon={<HandCoins size={48} />}
+                  label="Corrompi"
+                  shortcut="Ctrl+6"
+                  onClick={handleCorrompi}
+                  disabled={phaseActionsRemaining <= 0 || stats.soldi < 100 || !gameTime.schoolYear.isSchoolPeriod}
+                  blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 100 ? 'Servono almeno 100€' : 'Non è periodo scolastico'}
+                  variant="default"
+                  ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
+                />
+                <ActionButton
+                  icon={<Fist size={48} />}
+                  label="Minaccia"
+                  shortcut="Ctrl+7"
+                  onClick={handleMinaccia}
+                  disabled={phaseActionsRemaining <= 0 || !gameTime.schoolYear.isSchoolPeriod}
+                  blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Non è periodo scolastico'}
+                  variant="destructive"
+                  ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
+                />
+                <hr className="border-border my-2" />
+                <ActionButton
+                  icon={<Clock size={48} />}
+                  label={`Avanza Fascia (${currentPhase ?? 'mattina'})`}
+                  onClick={advancePhaseOnly}
+                  disabled={phaseActionsRemaining > 0}
+                  blockedReason={phaseActionsRemaining > 0 ? 'Consuma prima tutte le azioni della fase' : undefined}
+                  variant="outline"
+                  ariaLabel="Salta alla prossima fascia oraria della giornata (disponibile solo a 0 azioni rimaste)"
+                />
+              </div>
+              <div className="mt-4 pt-4 border-t border-border text-xs text-destructive">
+                <p className="font-bold">⚠️ ATTENZIONE: Metodi rischiosi! L'opzione Minaccia ha 30% di probabilità di ESPULSIONE!</p>
+              </div>
+            </Card>
           </TabsContent>
 
           <TabsContent value="dashboard" className="space-y-6 mt-6">

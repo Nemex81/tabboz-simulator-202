@@ -8,6 +8,7 @@ export interface GameStats {
   reputazione: number
   intelligenza: number
   carisma: number
+  psychStress?: number
 }
 
 export type ReputationLevel = 
