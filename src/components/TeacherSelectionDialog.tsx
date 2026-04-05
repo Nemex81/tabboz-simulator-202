@@ -1,93 +1,49 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { HandCoins, Fist } from '@phosphor-icons/react'
-import { SubjectGrades, getSubjectDisplayName } from '@/lib/types'
-
+import { Button } from '@/components/ui/but
+import { SubjectGrades, getSubjectDisplayName }
 interface TeacherSelectionDialogProps {
-  open: boolean
   onClose: () => void
-  grades: SubjectGrades
-  onSelectTeacher: (subject: string) => void
-  actionType: 'corrompi' | 'minaccia'
+
   soldi: number
-}
 
-export function TeacherSelectionDialog({
   open,
-  onClose,
   grades,
-  onSelectTeacher,
   actionType,
-  soldi
 }: TeacherSelectionDialogProps) {
-  const canCorrompi = soldi >= 100
 
-  const handleSelect = (subject: string) => {
-    onSelectTeacher(subject)
-    onClose()
-  }
+ 
 
   const subjects = Object.keys(grades)
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {actionType === 'corrompi' ? '💰 Scegli quale professore corrompere' : '👊 Scegli quale professore minacciare'}
-          </DialogTitle>
-          <DialogDescription>
-            {actionType === 'corrompi' 
-              ? 'Serve una mazzetta da 100€ per materia. Il voto aumenta di 0.5 punti.'
-              : 'Minaccia un professore. 30% di rischio espulsione! +1.5 al voto se funziona.'}
-          </DialogDescription>
+  retur
+      <Dia
+         
+          </Dialog
+            {
+       
         </DialogHeader>
+        <div className="grid grid-
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-          {subjects.map((subject) => {
-            const currentGrade = grades[subject]
-            const disabled = actionType === 'corrompi' && !canCorrompi
             
-            return (
               <Card
-                key={subject}
-                className={`p-4 border-2 transition-all ${
-                  disabled 
-                    ? 'opacity-50 cursor-not-allowed border-muted' 
-                    : 'hover:border-primary hover:bg-primary/5 cursor-pointer border-border'
-                }`}
-                onClick={() => !disabled && handleSelect(subject)}
+             
+   
+
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-lg">{getSubjectDisplayName(subject)}</span>
-                  <span className={`text-xl font-bold ${currentGrade < 6 ? 'text-destructive' : 'text-secondary'}`}>
-                    {currentGrade.toFixed(1)}
-                  </span>
+
+          
                 </div>
-                <div className="w-full h-2 bg-muted rounded-sm overflow-hidden mb-3">
                   <div
-                    className={`h-full ${currentGrade < 6 ? 'bg-destructive' : 'bg-secondary'}`}
-                    style={{ width: `${(currentGrade / 10) * 100}%` }}
-                  />
+                    st
                 </div>
-                <Button
                   variant={actionType === 'corrompi' ? 'default' : 'destructive'}
-                  size="sm"
-                  className="w-full"
-                  disabled={disabled}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (!disabled) handleSelect(subject)
-                  }}
+                  classN
+                  onClick={(e
+                    if (!disabled) hand
                 >
-                  {actionType === 'corrompi' ? (
                     <>
-                      <HandCoins size={20} className="mr-2" />
-                      Corrompi (100€)
-                    </>
+                      Corrompi
                   ) : (
-                    <>
+
                       <Fist size={20} className="mr-2" />
                       Minaccia!
                     </>
