@@ -1,29 +1,10 @@
 import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { 
-  Lightning, 
-  Barbell, 
-  CurrencyDollar, 
   GraduationCap, 
-  Battery,
-  Sun,
-  Briefcase,
   Motorcycle,
   Brain,
-  HandCoins,
-  Fist,
-  Running,
   Heart,
-  Sparkle,
-  Clock,
-  SirenLight,
-  Flag,
-  ShieldWarning,
-  MusicNotes,
-  FilmSlate,
-  ShoppingCart,
-  Crown,
-  ChartBar,
   User,
   Buildings,
   Trophy,
@@ -36,12 +17,7 @@ import { StatDisplay } from '@/components/StatDisplay'
 import { ActionButton } from '@/components/ActionButton'
 import { TimeDisplay } from '@/components/TimeDisplay'
 import { ThemeSelector } from '@/components/ThemeSelector'
-// Dialog poco frequenti caricati in lazy per ridurre il bundle iniziale
-const ReportCardDialog = lazy(() => import('@/components/ReportCardDialog').then(m => ({ default: m.ReportCardDialog })))
-const SchoolEventDialog = lazy(() => import('@/components/SchoolEventDialog').then(m => ({ default: m.SchoolEventDialog })))
-const KeyboardShortcutsDialog = lazy(() => import('@/components/KeyboardShortcutsDialog').then(m => ({ default: m.KeyboardShortcutsDialog })))
-const SubjectSelectionDialog = lazy(() => import('@/components/SubjectSelectionDialog').then(m => ({ default: m.SubjectSelectionDialog })))
-const TeacherSelectionDialog = lazy(() => import('@/components/TeacherSelectionDialog').then(m => ({ default: m.TeacherSelectionDialog })))
+import { GameDialogs } from '@/components/GameDialogs'
 // Pannelli social caricati in lazy (tab non visibile all'avvio)
 const FriendsPanel = lazy(() => import('@/components/FriendsPanel').then(m => ({ default: m.FriendsPanel })))
 const EnhancedFriendsPanel = lazy(() => import('@/components/EnhancedFriendsPanel').then(m => ({ default: m.EnhancedFriendsPanel })))
@@ -57,16 +33,6 @@ import { CityPanel } from '@/components/CityPanel'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant } from '@/lib/types'
 import { useGameStats } from '@/hooks/useGameStats'
 import { useGameTime } from '@/hooks/useGameTime'
@@ -517,6 +483,58 @@ function App() {
   }
 
   const currentMedia = calculateMedia(grades)
+
+  const gameDialogsProps = {
+    showMetallariEvent,
+    setShowMetallariEvent,
+    currentEvent,
+    handleMetallariScappa,
+    handleMetallariCombatti,
+    showAtipaEvent,
+    setShowAtipaEvent,
+    atipaSuccessChance,
+    handleAtipaRinuncia,
+    handleAtipaProva,
+    showPoliceEvent,
+    setShowPoliceEvent,
+    handlePoliceScappa,
+    handlePoliceCollabora,
+    showStreetRaceEvent,
+    setShowStreetRaceEvent,
+    raceWinChance,
+    handleStreetRaceRifiuta,
+    handleStreetRaceAccetta,
+    showBulliEvent,
+    setShowBulliEvent,
+    handleBulliCedi,
+    handleBulliResisti,
+    gameOver,
+    gameOverReason,
+    handleReset,
+    showResetDialog,
+    setShowResetDialog,
+    showReportCard,
+    grades,
+    currentMedia,
+    reportCardPassed,
+    schoolYear: gameTime.schoolYear.currentYear,
+    handleReportCardContinue,
+    showSchoolEvent,
+    schoolEvent,
+    handleSchoolEventChoice,
+    setShowSchoolEvent,
+    showKeyboardHelp,
+    setShowKeyboardHelp,
+    showSubjectDialog,
+    setShowSubjectDialog,
+    handleStudySubject,
+    stanchezza: stats.stanchezza,
+    showTeacherDialog,
+    setShowTeacherDialog,
+    handleTeacherSelection,
+    teacherActionType,
+    soldi: stats.soldi,
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground p-4 md:p-8">
@@ -1116,212 +1134,7 @@ function App() {
         </Tabs>
       </div>
 
-      <AlertDialog open={showMetallariEvent} onOpenChange={setShowMetallariEvent}>
-        <AlertDialogContent className="border-2 border-destructive" aria-describedby="event-description">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-destructive">
-              ⚠️ EVENTO CASUALE ⚠️
-            </AlertDialogTitle>
-            <AlertDialogDescription id="event-description" className="text-lg">
-              {currentEvent}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleMetallariScappa} className="border-2">
-              <Running size={24} className="mr-2" />
-              Scappa (-10 Coattaggine)
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleMetallariCombatti} className="bg-destructive border-2">
-              <Fist size={24} className="mr-2" />
-              Combatti (Serve Muscoli &gt; 60)
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={showAtipaEvent} onOpenChange={setShowAtipaEvent}>
-        <AlertDialogContent className="border-2 border-accent">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-accent flex items-center gap-2">
-              <Heart size={32} weight="fill" className="text-accent" />
-              RIMORCHIO TIME!
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-lg space-y-2">
-              <p>{currentEvent}</p>
-              <p className="text-primary font-bold">
-                Probabilità di successo: {atipaSuccessChance}%
-              </p>
-              <p className="text-sm text-muted-foreground">
-                (Basato su Figosità, Coattaggine, Muscoli e Soldi)
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleAtipaRinuncia} className="border-2">
-              <Running size={24} className="mr-2" />
-              Lascia stare (-5 Coattaggine)
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleAtipaProva} className="bg-accent border-2">
-              <Heart size={24} weight="fill" className="mr-2" />
-              PROVA! (Gratis)
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={showPoliceEvent} onOpenChange={setShowPoliceEvent}>
-        <AlertDialogContent className="border-2 border-secondary">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-secondary flex items-center gap-2">
-              <SirenLight size={32} weight="fill" className="text-secondary animate-pulse" />
-              CONTROLLO POLIZIA!
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-lg">
-              {currentEvent}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handlePoliceScappa} className="border-2 border-destructive">
-              <Running size={24} className="mr-2" />
-              Scappa! (Serve Coattaggine &gt; 70)
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handlePoliceCollabora} className="bg-secondary border-2">
-              <HandCoins size={24} className="mr-2" />
-              Dai Mazzetta (50€)
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={showStreetRaceEvent} onOpenChange={setShowStreetRaceEvent}>
-        <AlertDialogContent className="border-2 border-primary">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-primary flex items-center gap-2">
-              <Flag size={32} weight="fill" className="text-primary" />
-              GARA DI MOTORINI!
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-lg space-y-2">
-              <p>{currentEvent}</p>
-              <p className="text-primary font-bold">
-                Probabilità di vincita: {raceWinChance}%
-              </p>
-              <p className="text-sm text-muted-foreground">
-                (Basato su Coattaggine, Figosità e Muscoli)
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleStreetRaceRifiuta} className="border-2">
-              <Running size={24} className="mr-2" />
-              Rifiuta (-15 Coattaggine)
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleStreetRaceAccetta} className="bg-primary border-2">
-              <Flag size={24} weight="fill" className="mr-2" />
-              ACCETTA LA SFIDA!
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={showBulliEvent} onOpenChange={setShowBulliEvent}>
-        <AlertDialogContent className="border-2 border-destructive">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl text-destructive flex items-center gap-2">
-              <ShieldWarning size={32} weight="fill" className="text-destructive" />
-              INCONTRO CON I BULLI!
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-lg">
-              {currentEvent}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleBulliCedi} className="border-2">
-              <HandCoins size={24} className="mr-2" />
-              Cedi (-20 Soldi, -15 Coattaggine)
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleBulliResisti} className="bg-destructive border-2">
-              <Fist size={24} className="mr-2" />
-              Resisti! (Serve Muscoli &gt; 50)
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={gameOver} onOpenChange={() => {}}>
-        <AlertDialogContent className="border-2 border-destructive">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl text-destructive text-center">
-              GAME OVER!
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xl text-center font-bold py-4">
-              {gameOverReason}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={handleReset} className="w-full">
-              Ricomincia da Capo
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Perderai TUTTA la progressione e ricomincerai da capo. Sicuro di voler resettare?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleReset} className="bg-destructive">
-              Sì, Resetta Tutto
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Suspense fallback={null}>
-        <ReportCardDialog
-          open={showReportCard}
-          grades={grades}
-          media={currentMedia}
-          isPassed={reportCardPassed}
-          schoolYear={gameTime.schoolYear.currentYear}
-          onContinue={handleReportCardContinue}
-          isLastYear={gameTime.schoolYear.currentYear === 5 && reportCardPassed}
-        />
-
-        <SchoolEventDialog
-          open={showSchoolEvent}
-          event={schoolEvent}
-          onChoice={handleSchoolEventChoice}
-          onClose={() => setShowSchoolEvent(false)}
-        />
-
-        <KeyboardShortcutsDialog
-          open={showKeyboardHelp}
-          onOpenChange={setShowKeyboardHelp}
-        />
-
-        <SubjectSelectionDialog
-          open={showSubjectDialog}
-          onClose={() => setShowSubjectDialog(false)}
-          grades={grades}
-          onSelectSubject={handleStudySubject}
-          stanchezza={stats.stanchezza}
-        />
-
-        <TeacherSelectionDialog
-          open={showTeacherDialog}
-          onClose={() => setShowTeacherDialog(false)}
-          grades={grades}
-          onSelectTeacher={handleTeacherSelection}
-          actionType={teacherActionType}
-          soldi={stats.soldi}
-        />
-      </Suspense>
+      <GameDialogs {...gameDialogsProps} />
     </main>
   )
 }
