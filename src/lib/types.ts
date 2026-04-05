@@ -2,19 +2,17 @@ import type { TraitId } from '@/lib/character-traits'
 
 export interface GameStats {
   figosita: number
-  carisma: numb
+  carisma: number
   muscoli: number
   soldi: number
   coattaggine: number
   stanchezza: number
-  soldi: number
   intelligenza: number
   reputazione: number
- 
+}
 
 export type ReputationLevel = 
   | 'Sfigato Totale' 
-export type P
   | 'Sconosciuto'
   | 'Conosciuto'
   | 'Popolare'
@@ -26,83 +24,47 @@ export type PlayerGender = 'maschio' | 'femmina'
 
 export type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
 
-  bondType?: SocialBondType
-  | 'conoscente'
-export interfa
-  | 'amico_stretto'
-}
-export const SUB
+export type SocialBondType = 'conoscente' | 'amico' | 'amico_stretto'
 
+export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
+  tecnico: {
+    matematica: 1.5,
+    fisica: 1.4,
     informatica: 1.4,
-
+    elettronica: 1.3,
+    meccanica: 1.2,
     italiano: 1.0,
-    storia: 
+    storia: 0.8,
+    inglese: 0.9,
+    edFisica: 0.5,
   },
-    matematica: 1.
-    agronomia: 1.3,
-    zootecnia: 1.1,
- 
-
-  },
-    matemati
-    storiaArte
-    pittura: 1.2,
-    anatomia: 1.1,
-    architettura: 1
- 
-
-export interface GameDate {
-  month: number
-}
-
-  isSchoolPeriod: boolean
-  schoolEndDate: 
-  schoolType?: Sch
-
-  currentDate: GameDa
-  maxActionsPerDay: number
-  schoolYear: SchoolYear
- 
-
-
-
-  label: string
-  maxActions: nu
-
-  currentPhase: DayPh
-  phaseActionsRem
-
-  allowedPhases: D
-  requiresSchoolP
-  blockedWhenExh
-
-
-  id: string
-  difficulty: ExamDi
-  announced: boole
-    agronomia: 1.3,
-    chimica: 1.2,
-    zootecnia: 1.1,
-    ecologia: 1.0,
-    botanica: 1.0,
+  agraria: {
+    matematica: 1.3,
+    agronomia: 1.4,
+    chimica: 1.3,
+    zootecnia: 1.2,
+    ecologia: 1.1,
+    botanica: 1.1,
+    italiano: 1.0,
     storia: 0.8,
     inglese: 0.9,
     edFisica: 0.5,
   },
   artistico: {
-    matematica: 1.5,
-    italiano: 1.5,
-    storiaArte: 1.4,
-    disegno: 1.3,
-    pittura: 1.2,
+    matematica: 1.0,
+    italiano: 1.3,
+    storiaArte: 1.5,
+    disegno: 1.4,
+    pittura: 1.3,
     scultura: 1.2,
     anatomia: 1.1,
-    grafica: 1.0,
+    grafica: 1.1,
     architettura: 1.0,
-    storia: 0.8,
+    storia: 0.9,
+    inglese: 0.8,
     edFisica: 0.5,
   }
- 
+}
 
 export interface GameDate {
   day: number
@@ -166,17 +128,52 @@ export interface ScheduledExam {
 export type ThemeVariant = 'default' | 'dark' | 'green'
 
 export interface PlayerProfile {
-    italiano: 
+  name: string
   gender: PlayerGender
-    edFisica:
+  traits?: TraitId[]
 }
 
 export interface GamePreferences {
   theme: ThemeVariant
 }
 
+export type SubjectGrades = Record<string, number>
+
+export interface SchoolRecord {
+  assenze: number
+  condotta: number
+  note: number
+  sospensioni: number
+  wentToSchoolToday: boolean
+  consecutiveGoodDays: number
+}
+
+export interface Friend {
+  id: string
+  name: string
+  type: FriendType
+  affinity: number
+  intelligence: number
+  charisma: number
+  strength: number
+  bondType: SocialBondType
+  metAt?: string
+  lastInteraction?: GameDate
+}
+
+export interface Relationship {
+  id: string
+  name: string
+  attractiveness: number
+  intelligence: number
+  affinity: number
+  preferredType: 'coatto' | 'secchione' | 'sportivo' | 'carismatico'
+  metAt?: string
+  lastInteraction?: GameDate
+}
+
 export interface GameState {
-    grafica: 'Graf
+  stats: GameStats
   grades: SubjectGrades
   gameTime: GameTime
   gameOver: boolean
@@ -186,21 +183,19 @@ export interface GameState {
   friends?: Friend[]
   relationships?: Relationship[]
   scheduledExams?: ScheduledExam[]
-
   schoolRecord?: SchoolRecord
-
+}
 
 export const DEFAULT_STATS: GameStats = {
-  coattaggine: 50,
-
-  media: 6,
-
   figosita: 50,
-
-  intelligenza: 10,
-
   carisma: 10,
-
+  muscoli: 10,
+  soldi: 100,
+  coattaggine: 50,
+  stanchezza: 0,
+  intelligenza: 10,
+  reputazione: 10,
+}
 
 export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   assenze: 0,
@@ -209,65 +204,64 @@ export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   sospensioni: 0,
   wentToSchoolToday: false,
   consecutiveGoodDays: 0,
+}
 
+export const DEFAULT_GAME_STATE: GameState = {
+  stats: DEFAULT_STATS,
+  grades: {},
+  gameTime: {
+    currentDate: { day: 15, month: 9, year: 2024 },
+    actionsRemaining: 8,
+    maxActionsPerDay: 8,
+    age: 14,
+    schoolYear: {
+      currentYear: 1,
+      isSchoolPeriod: true,
+      schoolStartDate: { day: 15, month: 9, year: 2024 },
+      schoolEndDate: { day: 10, month: 6, year: 2025 },
+      reportCardDate: { day: 10, month: 6, year: 2025 },
+    },
+  },
+  gameOver: false,
+  gameOverReason: '',
+  schoolRecord: DEFAULT_SCHOOL_RECORD,
+}
 
+export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
+  const weights = SUBJECT_WEIGHTS[schoolType]
+  const grades: SubjectGrades = {}
+  
+  for (const subject of Object.keys(weights)) {
+    grades[subject] = 6.0
+  }
+  
+  return grades
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export function getSubjectDisplayName(subject: string): string {
+  const displayNames: Record<string, string> = {
+    matematica: 'Matematica',
+    fisica: 'Fisica',
+    informatica: 'Informatica',
+    elettronica: 'Elettronica',
+    meccanica: 'Meccanica',
+    italiano: 'Italiano',
+    storia: 'Storia',
+    inglese: 'Inglese',
+    edFisica: 'Ed. Fisica',
+    agronomia: 'Agronomia',
+    chimica: 'Chimica',
+    zootecnia: 'Zootecnia',
+    ecologia: 'Ecologia',
+    botanica: 'Botanica',
+    storiaArte: 'Storia dell\'Arte',
+    disegno: 'Disegno',
+    pittura: 'Pittura',
+    scultura: 'Scultura',
+    anatomia: 'Anatomia',
+    grafica: 'Grafica',
+    architettura: 'Architettura',
+  }
+  
+  return displayNames[subject] || subject
+}
