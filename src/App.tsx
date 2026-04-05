@@ -813,6 +813,22 @@ function App() {
         })()}
         {/* ──────────────────────────────────────────────────────────────────── */}
 
+        {morningChoicePending && (
+          <div
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            className="mb-4 p-4 bg-destructive/20 border-2 border-destructive rounded-lg text-center animate-pulse"
+          >
+            <p className="text-destructive font-bold text-lg">
+              🏫 È mattina! Prima devi scegliere: vai a scuola o la marini?
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Vai al tab <strong>Scuola → Voti</strong> e fai la tua scelta per sbloccare tutte le altre attività.
+            </p>
+          </div>
+        )}
+
         <Tabs defaultValue="school" className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-muted/50 p-1 h-auto">
             <TabsTrigger value="school" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
