@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { SchoolType } from '@/lib/types'
 
-interface UseKeyboardShortcutsParams {
-  gameOver: boolean
-  showResetDialog: boolean
+  showMetallariEvent: boolean
+  showPoliceEvent: 
+  showBulliEvent: boolean
   showMetallariEvent: boolean
   showAtipaEvent: boolean
   showPoliceEvent: boolean
@@ -14,38 +14,38 @@ interface UseKeyboardShortcutsParams {
   phaseActionsRemaining: number
   handlePalestra: () => void
   handleLampada: () => void
-  handleLavoro: () => void
+  handleCinema: () => void
   handleMotorino: () => void
-  handleStudia: () => void
+  advancePhaseOnly: () => 
   handleOpenCorrompiDialog: () => void
   handleOpenMinacciaDialog: () => void
   handleRiposa: () => void
   handleProvarciConAtipa: () => void
   handleDisco: () => void
-  handleCinema: () => void
-  handleShoppingMall: () => void
-  setShowResetDialog: (show: boolean) => void
-  advancePhaseOnly: () => void
-  setShowKeyboardHelp: (show: boolean) => void
-  announce: (message: string) => void
-}
+    handleStudia,
+    handleOpenMinacciaDialog,
+    handleProvarciConAtipa,
+    handleCinema,
+    setShowResetDialog,
+    setShowKeyboardHelp,
+ 
 
-export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
-  const {
-    gameOver,
-    showResetDialog,
-    showMetallariEvent,
-    showAtipaEvent,
-    showPoliceEvent,
-    showStreetRaceEvent,
-    showBulliEvent,
-    showReportCard,
-    schoolType,
-    phaseActionsRemaining,
-    handlePalestra,
-    handleLampada,
-    handleLavoro,
-    handleMotorino,
+      if (!e.ctrlKey && !e.altKey) return
+      if 
+      const k
+      if (e.altKey &
+        setShowKeyboard
+        return
+
+
+
+        announce('H
+      }
+      switch (key) {
+          handlePal
+        case '2':
+          break
+          handleLav
     handleStudia,
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
@@ -73,65 +73,65 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
         setShowKeyboardHelp(true)
         announce('Aiuto scorciatoie da tastiera aperto')
         return
-      }
 
-      if (!e.ctrlKey) return
 
-      e.preventDefault()
 
-      if (phaseActionsRemaining <= 0 && key !== 'r' && key !== 'n') {
-        announce('Hai esaurito le azioni per questa fascia oraria!')
-        return
-      }
 
-      switch (key) {
-        case '1':
-          handlePalestra()
-          break
-        case '2':
-          handleLampada()
-          break
-        case '3':
-          handleLavoro()
-          break
-        case '4':
-          handleMotorino()
-          break
-        case '5':
-          handleStudia()
-          break
-        case '6':
-          handleOpenCorrompiDialog()
-          break
-        case '7':
-          handleOpenMinacciaDialog()
-          break
-        case '8':
-          handleRiposa()
-          break
-        case '9':
-          handleProvarciConAtipa()
-          break
-        case 'd':
-          handleDisco()
-          break
-        case 'c':
-          handleCinema()
-          break
-        case 's':
-          handleShoppingMall()
-          break
-        case 'n':
-          advancePhaseOnly()
-          break
-        case 'r':
-          setShowResetDialog(true)
-          announce('Aperto dialogo reset gioco')
-          break
-      }
-    }
 
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, showReportCard, schoolType, phaseActionsRemaining, handlePalestra, handleLampada, handleLavoro, handleMotorino, handleStudia, handleOpenCorrompiDialog, handleOpenMinacciaDialog, handleRiposa, handleProvarciConAtipa, handleDisco, handleCinema, handleShoppingMall, setShowResetDialog, advancePhaseOnly, setShowKeyboardHelp, announce])
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
