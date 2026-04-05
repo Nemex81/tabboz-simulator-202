@@ -15,7 +15,8 @@ import {
   HandCoins,
   Fist,
   Running,
-  ShieldWarning
+  ShieldWarning,
+  IdentificationCard
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
@@ -35,6 +36,7 @@ const StatsDashboard = lazy(() => import('@/components/StatsDashboard').then(m =
 const SchoolMorningPanel = lazy(() => import('@/components/SchoolMorningPanel').then(m => ({ default: m.SchoolMorningPanel })))
 import { SchoolSelection } from '@/components/SchoolSelection'
 import { CityPanel } from '@/components/CityPanel'
+import { CharacterSheet } from '@/components/CharacterSheet'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -830,7 +832,7 @@ function App() {
         )}
 
         <Tabs defaultValue="school" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-muted/50 p-1 h-auto">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-muted/50 p-1 h-auto">
             <TabsTrigger value="school" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               <GraduationCap size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Scuola</span>
@@ -840,6 +842,11 @@ function App() {
               <Buildings size={20} className="mr-2" weight="fill" />
               <span className="hidden sm:inline">Città</span>
               <span className="sm:hidden">Roma</span>
+            </TabsTrigger>
+            <TabsTrigger value="character" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+              <IdentificationCard size={20} className="mr-2" weight="fill" />
+              <span className="hidden sm:inline">Personaggio</span>
+              <span className="sm:hidden">👤</span>
             </TabsTrigger>
             <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
               <Chats size={20} className="mr-2" weight="fill" />
@@ -1252,6 +1259,10 @@ function App() {
                 </Suspense>
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          <TabsContent value="character">
+            <CharacterSheet />
           </TabsContent>
 
           <TabsContent value="social" className="space-y-6 mt-6">
