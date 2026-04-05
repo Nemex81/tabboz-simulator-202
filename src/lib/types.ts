@@ -1,18 +1,16 @@
 import type { TraitId } from '@/lib/character-traits'
 
 export interface GameStats {
-
-export interface GameStats {
   muscoli: number
   coattaggine: number
   reputazione: number
-  carisma: numb
-}
-export interface F
-  relationshipLevel: n
   carisma: number
-
- 
+  soldi: number
+  figosita: number
+  intelligenza: number
+  stanchezza: number
+  media: number
+}
 
 export interface Friend {
   name: string
@@ -30,26 +28,20 @@ export interface Relationship {
 export type RelationshipPreference = 'muscoli' | 'intelligenza' | 'figosita' | 'coattaggine' | 'carisma'
 
 export interface ScheduledExam {
-export type Schoo
-export function get
-    liceo: 'Liceo Scientific
-    artistico: 'Ist
- 
-
-export interface SubjectGrades {
-}
-export interface SchoolYear {
-  isSchoolPeriod: bo
+  subject: string
+  daysUntil: number
+  difficulty: number
+  preparationLevel: number
 }
 
-  assenze: number
+export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'agrario'
 
-  consecutiveGoodDays: number
-
-  wentToSchoolToday: false,
-  note: 0,
-  sospensioni: 0,
-}
+export function getSchoolTypeName(schoolType: SchoolType): string {
+  const names: Record<SchoolType, string> = {
+    liceo: 'Liceo Scientifico',
+    tecnico: 'Istituto Tecnico',
+    artistico: 'Istituto Artistico',
+    agrario: 'Istituto Agrario'
   }
   return names[schoolType]
 }
@@ -167,6 +159,12 @@ export interface GameTime {
 
 export type ThemeVariant = 'default' | 'dark' | 'green'
 
+export interface PlayerProfile {
+  name: string
+  gender: 'maschio' | 'femmina'
+  traits: TraitId[]
+}
+
 export interface GameState {
   stats: GameStats
   grades: SubjectGrades
@@ -177,40 +175,6 @@ export const DEFAULT_GAME_STATE: GameState = {
   stats: {
     muscoli: 50,
     coattaggine: 50,
-    reputazione: 50,
-    soldi: 100,
-    figosita: 50,
-    intelligenza: 50,
-    stanchezza: 0,
-    carisma: 50,
-    media: 6
-  },
-  grades: {
-    matematica: 6,
-    fisica: 6,
-    italiano: 6,
-    inglese: 6,
-    storia: 6,
-    scienze: 6,
-    edFisica: 6,
-  } as SubjectGrades,
-  gameTime: {
-    currentDate: { day: 1, month: 9, year: 2026 },
-    currentPhase: 'mattina' as DayPhase,
-    age: 14,
-    schoolYear: {
-      currentYear: 1,
-      isSchoolPeriod: true,
-      daysUntilBreak: 30
-    },
-    phaseActions: {
-      mattina: 2,
-      pomeriggio: 3,
-      sera: 2,
-      notte: 1
-    }
-  } as GameTime
-}
     reputazione: 50,
     soldi: 100,
     figosita: 50,
