@@ -296,7 +296,7 @@ export const DEFAULT_GAME_TIME: GameTime = {
 
 export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   assenze: 0,
-  condotta: 10,
+  condotta: 8,
   note: 0,
   sospensioni: 0,
   wentToSchoolToday: false

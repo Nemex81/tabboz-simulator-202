@@ -814,19 +814,6 @@ function App() {
               </TabsList>
 
               <TabsContent value="grades" className="space-y-6 mt-6">
-                {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && (
-                  <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
-                    <SchoolMorningPanel
-                      events={schoolMorningEvents}
-                      stats={stats}
-                      onStatChange={setStats}
-                      onGainExtraAction={gainExtraAction}
-                      onConsumeAction={consumeAction}
-                      announce={announce}
-                    />
-                  </Suspense>
-                )}
-
                 <Card className="p-4 border-2 border-primary bg-card">
                   <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
                     <GraduationCap size={28} weight="fill" />
@@ -863,6 +850,19 @@ function App() {
                     <p className="mt-2 text-primary font-semibold">📅 Disponibile: Mattina dei giorni feriali (periodo scolastico)</p>
                   </div>
                 </Card>
+
+                {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && (
+                  <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
+                    <SchoolMorningPanel
+                      events={schoolMorningEvents}
+                      stats={stats}
+                      onStatChange={setStats}
+                      onGainExtraAction={gainExtraAction}
+                      onConsumeAction={consumeAction}
+                      announce={announce}
+                    />
+                  </Suspense>
+                )}
 
                 <Card className="p-3 border-2 border-secondary bg-card">
                   <h3 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
