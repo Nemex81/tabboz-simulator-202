@@ -55,36 +55,87 @@ export const validateGrades = (grades: Partial<SubjectGrades> | null | undefined
 export const validateGameTime = (gameTime: Partial<GameTime> | null | undefined): GameTime => {
   if (!gameTime || typeof gameTime !== 'object') {
     return {
-      currentDate: { day: 15, month: 9, year: 2024 },
+      currentDate: { day: 15, month: 9, year: 2026 },
       actionsRemaining: 3,
       maxActionsPerDay: 3,
       schoolYear: {
         currentYear: 1,
         isSchoolPeriod: true,
-        schoolStartDate: { day: 15, month: 9, year: 2024 },
-        schoolEndDate: { day: 10, month: 6, year: 2025 },
-        reportCardDate: { day: 10, month: 6, year: 2025 }
+        daysUntilBreak: 180,
+        schoolStartDate: { day: 15, month: 9, year: 2026 },
+        schoolEndDate: { day: 10, month: 6, year: 2027 },
+        reportCardDate: { day: 10, month: 6, year: 2027 }
       },
       age: 14,
       lastPaghettaDate: undefined,
-      extraActions: 0
+      extraActions: 0,
+      currentPhase: 'mattina',
+      phaseActions: {
+        mattina: 3,
+        pomeriggio: 3,
+        sera: 2,
+        notte: 1
+      }
     }
   }
 
+  const currentDate = gameTime.currentDate && 
+    typeof gameTime.currentDate === 'object' &&
+    typeof gameTime.currentDate.year === 'number' &&
+    typeof gameTime.currentDate.month === 'number' &&
+    typeof gameTime.currentDate.day === 'number'
+    ? gameTime.currentDate
+    : { day: 15, month: 9, year: 2026 }
+
+  const schoolYear = gameTime.schoolYear && typeof gameTime.schoolYear === 'object'
+    ? {
+        currentYear: gameTime.schoolYear.currentYear ?? 1,
+        isSchoolPeriod: gameTime.schoolYear.isSchoolPeriod ?? true,
+        daysUntilBreak: gameTime.schoolYear.daysUntilBreak ?? 180,
+        schoolStartDate: gameTime.schoolYear.schoolStartDate && 
+          typeof gameTime.schoolYear.schoolStartDate === 'object' &&
+          typeof gameTime.schoolYear.schoolStartDate.year === 'number'
+          ? gameTime.schoolYear.schoolStartDate
+          : { day: 15, month: 9, year: currentDate.year },
+        schoolEndDate: gameTime.schoolYear.schoolEndDate &&
+          typeof gameTime.schoolYear.schoolEndDate === 'object' &&
+          typeof gameTime.schoolYear.schoolEndDate.year === 'number'
+          ? gameTime.schoolYear.schoolEndDate
+          : { day: 10, month: 6, year: currentDate.year + 1 },
+        reportCardDate: gameTime.schoolYear.reportCardDate &&
+          typeof gameTime.schoolYear.reportCardDate === 'object' &&
+          typeof gameTime.schoolYear.reportCardDate.year === 'number'
+          ? gameTime.schoolYear.reportCardDate
+          : { day: 10, month: 6, year: currentDate.year + 1 }
+      }
+    : {
+        currentYear: 1,
+        isSchoolPeriod: true,
+        daysUntilBreak: 180,
+        schoolStartDate: { day: 15, month: 9, year: 2026 },
+        schoolEndDate: { day: 10, month: 6, year: 2027 },
+        reportCardDate: { day: 10, month: 6, year: 2027 }
+      }
+
   return {
-    currentDate: gameTime.currentDate ?? { day: 15, month: 9, year: 2024 },
+    currentDate,
     actionsRemaining: Math.max(0, Math.min(gameTime.actionsRemaining ?? 3, gameTime.maxActionsPerDay ?? 3)),
     maxActionsPerDay: gameTime.maxActionsPerDay ?? 3,
-    schoolYear: gameTime.schoolYear ?? {
-      currentYear: 1,
-      isSchoolPeriod: true,
-      schoolStartDate: { day: 15, month: 9, year: 2024 },
-      schoolEndDate: { day: 10, month: 6, year: 2025 },
-      reportCardDate: { day: 10, month: 6, year: 2025 }
-    },
+    schoolYear,
     age: Math.max(14, Math.min(gameTime.age ?? 14, 25)),
-    lastPaghettaDate: gameTime.lastPaghettaDate,
-    extraActions: Math.max(0, gameTime.extraActions ?? 0)
+    lastPaghettaDate: gameTime.lastPaghettaDate && 
+      typeof gameTime.lastPaghettaDate === 'object' &&
+      typeof gameTime.lastPaghettaDate.year === 'number'
+      ? gameTime.lastPaghettaDate
+      : undefined,
+    extraActions: Math.max(0, gameTime.extraActions ?? 0),
+    currentPhase: gameTime.currentPhase ?? 'mattina',
+    phaseActions: gameTime.phaseActions ?? {
+      mattina: 3,
+      pomeriggio: 3,
+      sera: 2,
+      notte: 1
+    }
   }
 }
 

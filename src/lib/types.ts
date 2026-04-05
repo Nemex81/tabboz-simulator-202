@@ -71,7 +71,10 @@ export interface SubjectGrades {
 export interface SchoolYear {
   currentYear: number
   isSchoolPeriod: boolean
-  daysUntilBreak: number
+  daysUntilBreak?: number
+  schoolStartDate: GameDate
+  schoolEndDate: GameDate
+  reportCardDate: GameDate
 }
 
 export interface GameDate {
@@ -80,18 +83,38 @@ export interface GameDate {
   year: number
 }
 
+export type DayPhase = 'mattina' | 'pomeriggio' | 'sera' | 'notte'
+export type DayType = 'feriale' | 'sabato' | 'domenica' | 'festivo'
+
+export interface DayPhaseConfig {
+  label: string
+  timeRange: string
+  maxActions: number
+  energyCost: number
+  nightRecovery: number
+}
+
 export interface GameTime {
   currentDate: GameDate
   schoolYear: SchoolYear
   age: number
-  currentPhase: 'mattina' | 'pomeriggio' | 'sera' | 'notte'
+  currentPhase?: DayPhase
   actionsRemaining: number
-  phaseActions: {
+  maxActionsPerDay?: number
+  phaseActions?: {
     mattina: number
     pomeriggio: number
     sera: number
     notte: number
   }
+  lastPaghettaDate?: GameDate
+  extraActions?: number
+}
+
+export interface GameTimeV2 extends GameTime {
+  currentPhase: DayPhase
+  dayType: DayType
+  phaseActionsRemaining: number
 }
 
 export interface SchoolRecord {
@@ -243,7 +266,10 @@ export const DEFAULT_GAME_STATE = {
     schoolYear: {
       currentYear: 1,
       isSchoolPeriod: true,
-      daysUntilBreak: 180
+      daysUntilBreak: 180,
+      schoolStartDate: { day: 15, month: 9, year: 2026 },
+      schoolEndDate: { day: 10, month: 6, year: 2027 },
+      reportCardDate: { day: 10, month: 6, year: 2027 }
     },
     age: 14,
     phaseActions: {
@@ -251,6 +277,9 @@ export const DEFAULT_GAME_STATE = {
       pomeriggio: 3,
       sera: 2,
       notte: 1
-    }
+    },
+    maxActionsPerDay: 3,
+    lastPaghettaDate: undefined,
+    extraActions: 0
   } as GameTime
 }

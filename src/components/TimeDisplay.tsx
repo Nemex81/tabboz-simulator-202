@@ -50,7 +50,7 @@ export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPh
       )}
 
       {/* Countdown pagella */}
-      {gameTime.schoolYear.isSchoolPeriod && (
+      {gameTime.schoolYear.isSchoolPeriod && gameTime.schoolYear.reportCardDate && (
         <>
           <span className="text-border">|</span>
           <span className="text-xs text-muted-foreground">

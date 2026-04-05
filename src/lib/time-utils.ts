@@ -53,24 +53,37 @@ export const isDateBefore = (date1: GameDate, date2: GameDate): boolean => {
 }
 
 export const isSchoolPeriod = (date: GameDate, schoolYear: SchoolYear): boolean => {
+  if (!schoolYear.schoolStartDate || !schoolYear.schoolStartDate.year ||
+      !schoolYear.schoolEndDate || !schoolYear.schoolEndDate.year) {
+    return true
+  }
+  
   return (
     isDateAfterOrEqual(date, schoolYear.schoolStartDate) &&
     isDateBefore(date, schoolYear.schoolEndDate)
   )
 }
 
-export const shouldShowReportCard = (date: GameDate, reportCardDate: GameDate): boolean => {
+export const shouldShowReportCard = (date: GameDate, reportCardDate: GameDate | undefined): boolean => {
+  if (!reportCardDate || !reportCardDate.year) {
+    return false
+  }
   return compareDates(date, reportCardDate) === 0
 }
 
 export const calculateNextSchoolYear = (currentSchoolYear: SchoolYear): SchoolYear => {
   const nextYear = currentSchoolYear.currentYear + 1
-  const startYear = currentSchoolYear.schoolStartDate.year + 1
-  const endYear = currentSchoolYear.schoolEndDate.year + 1
+  
+  const currentStartYear = currentSchoolYear.schoolStartDate?.year ?? 2026
+  const currentEndYear = currentSchoolYear.schoolEndDate?.year ?? 2027
+  
+  const startYear = currentStartYear + 1
+  const endYear = currentEndYear + 1
 
   return {
     currentYear: nextYear,
     isSchoolPeriod: true,
+    daysUntilBreak: 180,
     schoolStartDate: { day: 15, month: 9, year: startYear },
     schoolEndDate: { day: 10, month: 6, year: endYear },
     reportCardDate: { day: 10, month: 6, year: endYear }
@@ -94,7 +107,7 @@ export const advanceGameTime = (gameTime: GameTime): GameTime => {
   return {
     ...gameTime,
     currentDate: newDate,
-    actionsRemaining: gameTime.maxActionsPerDay,
+    actionsRemaining: gameTime.maxActionsPerDay ?? 3,
     schoolYear: newSchoolYear,
     age: newAge
   }
@@ -111,7 +124,11 @@ export const getSchoolYearName = (year: number): string => {
   }
 }
 
-export const getDaysUntilReportCard = (currentDate: GameDate, reportCardDate: GameDate): number => {
+export const getDaysUntilReportCard = (currentDate: GameDate, reportCardDate: GameDate | undefined): number => {
+  if (!reportCardDate || !reportCardDate.year) {
+    return 0
+  }
+  
   let count = 0
   let tempDate = { ...currentDate }
   
@@ -136,12 +153,14 @@ export const isSaturday = (date: GameDate): boolean => {
 }
 
 export const shouldReceivePaghetta = (currentDate: GameDate, lastPaghettaDate: GameDate | undefined): boolean => {
-  if (!lastPaghettaDate) return isSaturday(currentDate)
+  if (!isSaturday(currentDate)) return false
+  
+  if (!lastPaghettaDate || !lastPaghettaDate.year) return true
   
   const currentWeek = getWeekNumber(currentDate)
   const lastWeek = getWeekNumber(lastPaghettaDate)
   
-  return isSaturday(currentDate) && currentWeek !== lastWeek
+  return currentWeek !== lastWeek
 }
 
 // ─── Fasce Orarie (Fase B) ──────────────────────────────────────────────────
