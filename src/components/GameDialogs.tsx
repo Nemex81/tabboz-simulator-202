@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-  Runnin
+import {
   Running,
   Fist,
   Shield,
