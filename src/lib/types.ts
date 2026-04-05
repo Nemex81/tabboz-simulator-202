@@ -2,10 +2,7 @@ import type { TraitId } from '@/lib/character-traits'
 
 export type RelationshipPreference = 'muscoli' | 'figosita' | 'intelligenza'
 
-  | 'Sfigato'
-
-  | 'Leggenda'
-export type Frien
+export type ReputationLevel = 
   | 'Sfigato'
   | 'Normale'
   | 'Abbastanza Figo' 
@@ -26,21 +23,21 @@ export interface GameStats {
   stanchezza: number
   figosita: number
   reputazione: number
-  id: string
+  intelligenza: number
   carisma: number
 }
 
-  isActive: boolean
+export interface Friend {
   id: string
   name: string
   type: FriendType
-  difficulty: Exam
   intelligenza: number
   unlocked: boolean
+  isActive: boolean
 }
 
 export interface Relationship {
-}
+  id: string
   name: string
   difficulty: 'facile' | 'media' | 'difficile'
   preference: RelationshipPreference
@@ -50,11 +47,11 @@ export interface Relationship {
 }
 
 export interface ScheduledExam {
-  sospension
+  id: string
   subject: string
   difficulty: ExamDifficulty
   daysUntil: number
-  day: number
+  preparationLevel: number
 }
 
 export interface PlayerProfile {
@@ -63,220 +60,193 @@ export interface PlayerProfile {
   traits: TraitId[]
 }
 
+export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'agrario'
+
+export interface SubjectGrades {
+  [subject: string]: number
+}
+
+export interface SchoolYear {
+  currentYear: number
+  isSchoolPeriod: boolean
+  daysUntilBreak: number
+}
+
+export interface GameDate {
+  day: number
+  month: number
+  year: number
+}
+
+export interface GameTime {
+  currentDate: GameDate
+  schoolYear: SchoolYear
+  age: number
+  actionsRemaining: number
+  currentPhase: 'mattina' | 'pomeriggio' | 'sera' | 'notte'
+  phaseActions: {
+    mattina: number
+    pomeriggio: number
+    sera: number
+    notte: number
+  }
+}
+
+export interface SchoolRecord {
+  assenze: number
+  note: number
+  sospensioni: number
+  condotta: number
+  consecutiveGoodDays: number
+  wentToSchoolToday: boolean
+}
+
+export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
+  assenze: 0,
+  note: 0,
+  sospensioni: 0,
+  condotta: 8.0,
+  consecutiveGoodDays: 0,
+  wentToSchoolToday: false
+}
+
+export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
+  liceo: {
     matematica: 1.5,
     fisica: 1.3,
-    italiano: 1.0
-    storia: 0.
+    italiano: 1.2,
+    storia: 1.0,
+    inglese: 1.0,
+    scienze: 1.0,
+    edFisica: 0.5
   },
+  tecnico: {
     pratica: 1.5,
-    matematica: 1.0,
- 
-
+    matematica: 1.3,
+    elettronica: 1.2,
+    italiano: 1.0,
+    inglese: 1.0,
+    storia: 0.8,
+    edFisica: 0.5
+  },
+  artistico: {
     disegno: 1.5,
     arte: 1.3,
-    inglese: 
-    edFisi
-  agraria: {
+    inglese: 1.0,
+    italiano: 1.0,
+    storia: 1.0,
+    matematica: 0.8,
+    edFisica: 0.5
+  },
+  agrario: {
     pratica: 1.4,
     matematica: 1.0,
- 
+    scienze: 1.2,
+    italiano: 1.0,
+    inglese: 0.8,
+    storia: 0.8,
+    edFisica: 0.6
+  }
+}
 
-export const DEFAULT_GAME_S
-    coattaggi
+export const DEFAULT_GAME_STATE = {
+  stats: {
+    coattaggine: 0,
+    muscoli: 50,
     soldi: 100,
-    stanchezza
- 
-
+    stanchezza: 0,
+    figosita: 50,
+    reputazione: 50,
+    intelligenza: 50,
+    carisma: 50,
+    media: 6
+  } as GameStats,
   grades: {
     italiano: 6,
+    matematica: 6,
+    inglese: 6,
+    storia: 6,
+    scienze: 6,
     edFisica: 6
+  } as SubjectGrades,
   gameTime: {
+    currentDate: { day: 1, month: 9, year: 2026 },
     actionsRemaining: 3,
+    currentPhase: 'mattina' as const,
     schoolYear: {
- 
-
+      currentYear: 1,
+      isSchoolPeriod: true,
+      daysUntilBreak: 180
     },
     age: 14,
     phaseActions: {
+      mattina: 3,
       pomeriggio: 2,
+      sera: 2,
       notte: 1
-  } as GameTi
+    }
+  } as GameTime
+}
 
+export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
   const baseGrade = 6
+  switch (schoolType) {
     case 'liceo':
-        matematica
-        inglese: ba
-        storia: baseGr
-        fisica: 
-      }
-   
- 
-
+      return {
+        matematica: baseGrade,
+        fisica: baseGrade,
+        italiano: baseGrade,
         inglese: baseGrade,
+        storia: baseGrade,
+        scienze: baseGrade,
         edFisica: baseGrade
- 
-
+      }
+    case 'tecnico':
+      return {
+        pratica: baseGrade,
+        matematica: baseGrade,
+        elettronica: baseGrade,
+        italiano: baseGrade,
         inglese: baseGrade,
-        st
+        storia: baseGrade,
+        edFisica: baseGrade
       }
+    case 'artistico':
       return {
-        storia_ar
-        italiano: b
-        matemati
+        disegno: baseGrade,
+        arte: baseGrade,
+        inglese: baseGrade,
+        italiano: baseGrade,
+        storia: baseGrade,
+        matematica: baseGrade,
+        edFisica: baseGrade
       }
+    case 'agrario':
       return {
-        pratica: 
-    
-        edFi
+        pratica: baseGrade,
+        matematica: baseGrade,
+        scienze: baseGrade,
+        italiano: baseGrade,
+        inglese: baseGrade,
+        storia: baseGrade,
+        edFisica: baseGrade
+      }
   }
+}
 
-  const displayN
-    italiano: 'Italia
-    inglese: 'Ingl
-    scienze: 'Sci
-    edFisica: 'E
-    elettronica: 
-    
+export function getSubjectDisplayName(subject: string): string {
+  const displayNames: Record<string, string> = {
+    italiano: 'Italiano',
+    matematica: 'Matematica',
+    inglese: 'Inglese',
+    storia: 'Storia',
+    scienze: 'Scienze',
+    fisica: 'Fisica',
+    edFisica: 'Ed. Fisica',
+    pratica: 'Pratica',
+    elettronica: 'Elettronica',
+    disegno: 'Disegno',
     arte: 'Arte'
-  return displayN
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  }
+  return displayNames[subject] || subject
+}
