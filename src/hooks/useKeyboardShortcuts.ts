@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { SchoolType } from '@/lib/types'
 
-  showMetallariEvent: boolean
-  showPoliceEvent: 
-  showBulliEvent: boolean
+interface UseKeyboardShortcutsParams {
+  gameOver: boolean
+  showResetDialog: boolean
   showMetallariEvent: boolean
   showAtipaEvent: boolean
   showPoliceEvent: boolean
@@ -14,38 +14,38 @@ import { SchoolType } from '@/lib/types'
   phaseActionsRemaining: number
   handlePalestra: () => void
   handleLampada: () => void
-  handleCinema: () => void
+  handleLavoro: () => void
   handleMotorino: () => void
-  advancePhaseOnly: () => 
+  handleStudia: () => void
   handleOpenCorrompiDialog: () => void
   handleOpenMinacciaDialog: () => void
   handleRiposa: () => void
   handleProvarciConAtipa: () => void
   handleDisco: () => void
-    handleStudia,
-    handleOpenMinacciaDialog,
-    handleProvarciConAtipa,
-    handleCinema,
-    setShowResetDialog,
-    setShowKeyboardHelp,
- 
+  handleCinema: () => void
+  handleShoppingMall: () => void
+  setShowResetDialog: (show: boolean) => void
+  advancePhaseOnly: () => void
+  setShowKeyboardHelp: (show: boolean) => void
+  announce: (message: string) => void
+}
 
-      if (!e.ctrlKey && !e.altKey) return
-      if 
-      const k
-      if (e.altKey &
-        setShowKeyboard
-        return
-
-
-
-        announce('H
-      }
-      switch (key) {
-          handlePal
-        case '2':
-          break
-          handleLav
+export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
+  const {
+    gameOver,
+    showResetDialog,
+    showMetallariEvent,
+    showAtipaEvent,
+    showPoliceEvent,
+    showStreetRaceEvent,
+    showBulliEvent,
+    showReportCard,
+    schoolType,
+    phaseActionsRemaining,
+    handlePalestra,
+    handleLampada,
+    handleLavoro,
+    handleMotorino,
     handleStudia,
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
@@ -73,65 +73,103 @@ import { SchoolType } from '@/lib/types'
         setShowKeyboardHelp(true)
         announce('Aiuto scorciatoie da tastiera aperto')
         return
+      }
 
+      if (!e.ctrlKey) return
 
+      switch (key) {
+        case '1':
+          e.preventDefault()
+          handlePalestra()
+          break
+        case '2':
+          e.preventDefault()
+          handleLampada()
+          break
+        case '3':
+          e.preventDefault()
+          handleLavoro()
+          break
+        case '4':
+          e.preventDefault()
+          handleMotorino()
+          break
+        case '5':
+          e.preventDefault()
+          handleStudia()
+          break
+        case '6':
+          e.preventDefault()
+          handleOpenCorrompiDialog()
+          break
+        case '7':
+          e.preventDefault()
+          handleOpenMinacciaDialog()
+          break
+        case '8':
+          e.preventDefault()
+          handleRiposa()
+          break
+        case '9':
+          e.preventDefault()
+          handleProvarciConAtipa()
+          break
+        case 'd':
+          e.preventDefault()
+          handleDisco()
+          break
+        case 'c':
+          e.preventDefault()
+          handleCinema()
+          break
+        case 's':
+          e.preventDefault()
+          handleShoppingMall()
+          break
+        case 'r':
+          e.preventDefault()
+          setShowResetDialog(true)
+          announce('Dialogo di reset aperto')
+          break
+        case 'n':
+          e.preventDefault()
+          if (phaseActionsRemaining === 0) {
+            advancePhaseOnly()
+          } else {
+            announce(`Devi consumare prima le ${phaseActionsRemaining} azioni rimaste!`)
+          }
+          break
+      }
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [
+    gameOver,
+    showResetDialog,
+    showMetallariEvent,
+    showAtipaEvent,
+    showPoliceEvent,
+    showStreetRaceEvent,
+    showBulliEvent,
+    showReportCard,
+    schoolType,
+    phaseActionsRemaining,
+    handlePalestra,
+    handleLampada,
+    handleLavoro,
+    handleMotorino,
+    handleStudia,
+    handleOpenCorrompiDialog,
+    handleOpenMinacciaDialog,
+    handleRiposa,
+    handleProvarciConAtipa,
+    handleDisco,
+    handleCinema,
+    handleShoppingMall,
+    setShowResetDialog,
+    advancePhaseOnly,
+    setShowKeyboardHelp,
+    announce
+  ])
+}
