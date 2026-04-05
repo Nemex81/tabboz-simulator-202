@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
@@ -10,9 +10,11 @@ interface ActionButtonProps {
   shortcut?: string
   onClick: () => void
   disabled?: boolean
-  variant?: 'default' | 'destructive' | 'secondary'
+  variant?: 'default' | 'destructive' | 'secondary' | 'outline'
   ariaLabel?: string
   blockedReason?: string
+  helpText?: string
+  announce?: (msg: string) => void
 }
 
 export const ActionButton = React.memo(function ActionButton({ 
@@ -23,8 +25,23 @@ export const ActionButton = React.memo(function ActionButton({
   disabled = false, 
   variant = 'default',
   ariaLabel,
-  blockedReason
+  blockedReason,
+  helpText,
+  announce,
 }: ActionButtonProps) {
+  const helpTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleFocus = () => {
+    if (helpText && announce) {
+      helpTimer.current = setTimeout(() => {
+        announce(helpText)
+      }, 1500)
+    }
+  }
+
+  const handleBlur = () => {
+    if (helpTimer.current) clearTimeout(helpTimer.current)
+  }
   const buttonContent = (
     <motion.div
       whileHover={{ scale: disabled ? 1 : 1.05 }}
@@ -35,6 +52,8 @@ export const ActionButton = React.memo(function ActionButton({
         onClick={onClick}
         disabled={disabled}
         variant={variant}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         className={cn(
           "relative flex flex-col items-center justify-center gap-2 h-auto py-4 px-6",
           "border-2 transition-all duration-100",
