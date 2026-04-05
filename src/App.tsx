@@ -279,7 +279,6 @@ function App() {
     handleParco,
     handleTelefona,
     handleMarina: handleMarinaFromHook,
-    handleAssenzaGiustificata,
   } = actions
 
   const handleRiposa = () => actions.handleRiposa()
@@ -364,19 +363,6 @@ function App() {
     setShowSchoolMorning(false)
     setSchoolMorningEvents([])
     handleMarinaFromHook()
-  }
-
-  // BUG 1: wrapper Assenza Giustificata con mutual exclusivity + reset panel
-  const handleAssenzaGiustificataWrapper = () => {
-    if (schoolRecord.wentToSchoolToday || marinatoOggi) {
-      playSound.failure()
-      announce('Hai già scelto per questa mattina!')
-      return
-    }
-    setMarinatoOggi(true)
-    setShowSchoolMorning(false)
-    setSchoolMorningEvents([])
-    handleAssenzaGiustificata()
   }
 
   useEffect(() => {
@@ -1018,60 +1004,16 @@ function App() {
                             : 'Non è periodo scolastico'
                     }
                     variant="destructive"
-                    ariaLabel="Marina la scuola. +1 Assenza, +5 Coattaggine, 1 azione extra. ATTENZIONE: oltre 35 assenze = BOCCIATO!"
-                    helpText="Non vai a scuola. Guadagni 1 azione extra ma accumuli 1 Assenza e perdi reputazione scolastica. Oltre 35 assenze sei bocciato automaticamente!"
+                    ariaLabel="Marina la scuola. +1 Assenza conta per le soglie bocciatura, +5 Coattaggine, 1 azione extra."
+                    helpText="Non vai a scuola. Guadagni 1 azione extra ma accumuli 1 Assenza che conta verso le soglie 15/25/35. Oltre 35 assenze sei bocciato automaticamente!"
                     announce={announce}
                   />
                   <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
                     <p className="font-semibold mb-1">Effetti:</p>
-                    <p>• +1 Assenza (registrata subito, nessun doppio conteggio)</p>
+                    <p>• +1 Assenza (conta verso le soglie 15 / 25 / 35)</p>
                     <p>• +5 Coattaggine</p>
-                    <p>• +1 Azione extra (compensazione libertà)</p>
-                    <p className="mt-2 text-destructive font-semibold">⚠️ Oltre 35 assenze = BOCCIATO automaticamente!</p>
-                  </div>
-                </Card>
-                )}
-
-                {/* STEP 3: Pulsante Assenza Giustificata — nascosto se già andato a scuola o già marinato */}
-                {!schoolRecord.wentToSchoolToday && !marinatoOggi && (
-                <Card className="p-3 border-2 border-yellow-500 bg-card">
-                  <h3 className="text-xl font-bold mb-4 text-yellow-600 flex items-center gap-2">
-                    <GraduationCap size={24} weight="fill" />
-                    ASSENZA GIUSTIFICATA
-                  </h3>
-                  <ActionButton
-                    icon={<GraduationCap size={48} />}
-                    label="Giustifica Assenza"
-                    onClick={handleAssenzaGiustificataWrapper}
-                    disabled={
-                      phaseActionsRemaining <= 0 ||
-                      dayType !== 'feriale' ||
-                      currentPhase !== 'mattina' ||
-                      !gameTime.schoolYear.isSchoolPeriod ||
-                      stats.soldi < 50
-                    }
-                    blockedReason={
-                      phaseActionsRemaining <= 0
-                        ? 'Nessuna azione per questa fascia oraria'
-                        : dayType !== 'feriale'
-                          ? 'Disponibile solo nei giorni feriali'
-                          : currentPhase !== 'mattina'
-                            ? 'Disponibile solo la mattina'
-                            : stats.soldi < 50
-                              ? 'Servono 50 Soldi per la visita medica'
-                              : 'Non è periodo scolastico'
-                    }
-                    variant="outline"
-                    ariaLabel="Giustifica assenza con visita medica. -50 Soldi, nessuna penalità condotta."
-                    helpText="Vai dal medico per giustificare l'assenza. -50 Soldi, +1 Assenza Giustificata. NON penalizza la condotta. Guadagni 1 azione extra."
-                    announce={announce}
-                  />
-                  <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-                    <p className="font-semibold mb-1">Effetti:</p>
-                    <p>• -50 Soldi (visita medica)</p>
-                    <p>• +1 Assenza Giustificata (non conta per le soglie!</p>
-                    <p>• Nessuna penalità sulla condotta</p>
                     <p>• +1 Azione extra</p>
+                    <p className="mt-2 text-destructive font-semibold">⚠️ Oltre 35 assenze = BOCCIATO automaticamente!</p>
                   </div>
                 </Card>
                 )}
@@ -1147,15 +1089,6 @@ function App() {
                             {schoolRecord.assenze}
                           </span>
                         </div>
-                      </div>
-                      <div>
-                        <span className="text-sm text-muted-foreground">Giustificate:</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold text-yellow-600">
-                            {schoolRecord.assenzeGiustificate ?? 0}
-                          </span>
-                        </div>
-                        <span className="text-xs text-muted-foreground">Non contano per le soglie bocciatura</span>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">Note:</span>

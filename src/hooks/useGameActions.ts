@@ -879,45 +879,20 @@ export function useGameActions({
       announce('Puoi marinare solo la mattina di un giorno scolastico!')
       return
     }
-    setSchoolRecord((prev) => ({
-      ...prev,
-      assenze: prev.assenze + 1,
-      consecutiveGoodDays: 0,      wentToSchoolToday: true,    }))
-    gainExtraAction()
-    consumeAction()
-    playSound.buttonClick()
-    announce("Hai MARINATO la scuola! +1 Assenza, guadagni un'azione extra. Goditi la libertà... per ora.")
-  }, [setSchoolRecord, gainExtraAction, consumeAction, announce])
-
-  const handleAssenzaGiustificata = useCallback(() => {
-    const gt = gameTimeRef.current
-    if (phaseActionsRemainingRef.current <= 0) {
-      playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
-      return
-    }
-    if (!(dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod)) {
-      playSound.failure()
-      announce("Puoi giustificare l'assenza solo la mattina di un giorno scolastico!")
-      return
-    }
-    if (statsRef.current.soldi < 50) {
-      playSound.failure()
-      announce('Non hai abbastanza soldi per la visita medica! (−50 Soldi necessari)')
-      return
-    }
     setStats((current) => ({
       ...current,
-      soldi: clampStat(current.soldi - 50, 0, 1000),
+      coattaggine: clampStat(current.coattaggine + 5),
     }))
     setSchoolRecord((prev) => ({
       ...prev,
-      assenzeGiustificate: prev.assenzeGiustificate + 1,      consecutiveGoodDays: 0,
-      wentToSchoolToday: true,    }))
+      assenze: prev.assenze + 1,
+      consecutiveGoodDays: 0,
+      wentToSchoolToday: true,
+    }))
     gainExtraAction()
     consumeAction()
     playSound.buttonClick()
-    announce('Assenza GIUSTIFICATA! +1 Assenza giustificata, -50 Soldi. Nessuna penalità sulla condotta.')
+    announce("Hai MARINATO la scuola! +1 Assenza, +5 Coattaggine, guadagni un'azione extra. Goditi la libertà... per ora.")
   }, [setStats, setSchoolRecord, gainExtraAction, consumeAction, announce])
 
   return {
@@ -944,6 +919,5 @@ export function useGameActions({
     handleParco,
     handleTelefona,
     handleMarina,
-    handleAssenzaGiustificata,
   }
 }
