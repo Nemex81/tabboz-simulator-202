@@ -49,6 +49,7 @@ interface UseGameActionsParams {
   phaseActionsRemaining: number
   schoolRecord: SchoolRecord
   setSchoolRecord: (updater: ((prev: SchoolRecord) => SchoolRecord) | SchoolRecord) => void
+  gainExtraAction: () => void
 }
 
 export function useGameActions({
@@ -79,6 +80,7 @@ export function useGameActions({
   phaseActionsRemaining,
   schoolRecord,
   setSchoolRecord,
+  gainExtraAction,
 }: UseGameActionsParams) {
   // Refs per accesso stabile
   const statsRef = useRef(stats)
@@ -865,6 +867,29 @@ export function useGameActions({
     )
   }, [setStats, consumeAction, announce])
 
+  const handleMarina = useCallback(() => {
+    const gt = gameTimeRef.current
+    if (phaseActionsRemainingRef.current <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    if (!(dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod)) {
+      playSound.failure()
+      announce('Puoi marinare solo la mattina di un giorno scolastico!')
+      return
+    }
+    setSchoolRecord((prev) => ({
+      ...prev,
+      assenze: prev.assenze + 1,
+      consecutiveGoodDays: 0,
+    }))
+    gainExtraAction()
+    consumeAction()
+    playSound.buttonClick()
+    announce("Hai MARINATO la scuola! +1 Assenza, guadagni un'azione extra. Goditi la libertà... per ora.")
+  }, [setSchoolRecord, gainExtraAction, consumeAction, announce])
+
   return {
     handlePalestra,
     handleLampada,
@@ -888,5 +913,6 @@ export function useGameActions({
     handleChiacchiera,
     handleParco,
     handleTelefona,
+    handleMarina,
   }
 }

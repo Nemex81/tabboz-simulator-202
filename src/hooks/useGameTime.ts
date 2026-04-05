@@ -34,6 +34,8 @@ interface UseGameTimeParams {
   announce: (msg: string) => void
   setSchoolRecord: (updater: ((prev: SchoolRecord) => SchoolRecord) | SchoolRecord) => void
   schoolRecord: SchoolRecord
+  setGameOver: (v: boolean) => void
+  setGameOverReason: (v: string) => void
 }
 
 export function useGameTime({
@@ -50,7 +52,9 @@ export function useGameTime({
   setShowSchoolMorning,
   announce,
   setSchoolRecord,
-  schoolRecord
+  schoolRecord,
+  setGameOver,
+  setGameOverReason,
 }: UseGameTimeParams) {
   const [rawGameTime, setRawGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
   const [rawScheduledExams, setRawScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
@@ -111,6 +115,20 @@ export function useGameTime({
             wentToSchoolToday: false
           }))
           announce('Non sei andato a scuola ieri! +1 Assenza, -0.2 Condotta')
+          // F4: soglie assenze
+          const newAssenze = schoolRecord.assenze + 1
+          if (newAssenze >= 35) {
+            setGameOver(true)
+            setGameOverReason('Troppe assenze! Non sei stato AMMESSO allo scrutinio. Bocciato per assenze!')
+            playSound.gameOver()
+          } else if (newAssenze === 25) {
+            announce('⚠️ ATTENZIONE: 25 assenze! Rischi di non essere ammesso allo scrutinio!')
+            playSound.eventTrigger()
+          } else if (newAssenze === 15) {
+            announce('💬 I tuoi genitori hanno ricevuto una LETTERA dalla scuola! -50 Soldi (punizione)')
+            setStats((s) => ({ ...s, soldi: clampStat(s.soldi - 50, 0, 1000) }))
+            playSound.moneySpent()
+          }
         } else if (schoolRecord.wentToSchoolToday && newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
           const newCGD = (schoolRecord.consecutiveGoodDays ?? 0) + 1
           const conductaBonus = newCGD % 5 === 0
@@ -137,8 +155,18 @@ export function useGameTime({
     }
     playSound.buttonClick()
     announce(`Fascia oraria: ${nextPhase.charAt(0).toUpperCase() + nextPhase.slice(1)}`)
+    // F5: check condotta dopo ogni avanzamento fase
+    if (schoolRecord.condotta < 5 && schoolRecord.condotta > 0) {
+      announce('🚨 Condotta CRITICA! Ancora qualche nota e vieni ESPULSO!')
+      playSound.eventTrigger()
+    }
+    if (schoolRecord.condotta <= 0) {
+      setGameOver(true)
+      setGameOverReason('Sei stato ESPULSO dalla scuola per condotta pessima! Game Over.')
+      playSound.gameOver()
+    }
   }, [currentPhase, dayType, setStats, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining,
-      setSchoolMorningEvents, setShowSchoolMorning, announce, schoolRecord, setSchoolRecord])
+      setSchoolMorningEvents, setShowSchoolMorning, announce, schoolRecord, setSchoolRecord, setGameOver, setGameOverReason])
 
   const advanceToNextDay = useCallback(() => {
     setRawGameTime((current) => {

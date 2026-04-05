@@ -183,7 +183,9 @@ function App() {
     setShowSchoolMorning,
     announce,
     setSchoolRecord,
-    schoolRecord
+    schoolRecord,
+    setGameOver,
+    setGameOverReason,
   })
 
   const events = useEventEngine({
@@ -229,6 +231,7 @@ function App() {
     phaseActionsRemaining,
     schoolRecord,
     setSchoolRecord,
+    gainExtraAction,
   })
 
   // Destructure event engine results per compatibilità con JSX esistente
@@ -275,6 +278,7 @@ function App() {
     handleChiacchiera,
     handleParco,
     handleTelefona,
+    handleMarina: handleMarinaFromHook,
   } = actions
 
   const handleRiposa = () => actions.handleRiposa()
@@ -348,38 +352,15 @@ function App() {
     }
   }
 
-  // F1: Marina — il giocatore non va a scuola. wentToSchoolToday resta false (il passivo +1 scatterà a fine fase)
+  // F6: handleMarina dal hook — wrapper che imposta marinatoOggi per la mutua esclusività UI
   const handleMarina = () => {
-    if (phaseActionsRemaining <= 0) {
-      playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
-      return
-    }
-    if (dayType !== 'feriale' || currentPhase !== 'mattina' || !gameTime.schoolYear.isSchoolPeriod) {
-      playSound.failure()
-      announce('Puoi marinare solo la mattina dei giorni feriali durante il periodo scolastico!')
-      return
-    }
     if (schoolRecord.wentToSchoolToday || marinatoOggi) {
       playSound.failure()
       announce('Hai già scelto per questa mattina!')
       return
     }
-    playSound.buttonClick()
     setMarinatoOggi(true)
-    setSchoolRecord((current) => ({
-      ...current,
-      assenze: current.assenze + 1,
-      consecutiveGoodDays: 0
-      // wentToSchoolToday rimane false → il passivo (+1) scatterà a fine fase
-    }))
-    setStats((current) => ({
-      ...current,
-      coattaggine: clampStat(current.coattaggine + 5)
-    }))
-    gainExtraAction()
-    consumeAction()
-    announce("Hai MARINATO la scuola! +1 Assenza, guadagni un'azione extra. Goditi la libertà... per ora.")
+    handleMarinaFromHook()
   }
 
   useEffect(() => {
