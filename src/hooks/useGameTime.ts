@@ -107,6 +107,7 @@ export function useGameTime({
         setPhaseActionsRemaining(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
 
         if (!schoolRecord.wentToSchoolToday && newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
+          announce('📋 Non sei andato a scuola ieri! La giornata è contata come assenza.')
           setSchoolRecord((prev) => ({
             ...prev,
             assenze: prev.assenze + 1,
@@ -114,7 +115,6 @@ export function useGameTime({
             consecutiveGoodDays: 0,
             wentToSchoolToday: false
           }))
-          announce('Non sei andato a scuola ieri! +1 Assenza, -0.2 Condotta')
           // F4: soglie assenze
           const newAssenze = schoolRecord.assenze + 1
           if (newAssenze >= 35) {

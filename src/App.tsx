@@ -361,7 +361,22 @@ function App() {
       return
     }
     setMarinatoOggi(true)
+    setShowSchoolMorning(false)
+    setSchoolMorningEvents([])
     handleMarinaFromHook()
+  }
+
+  // BUG 1: wrapper Assenza Giustificata con mutual exclusivity + reset panel
+  const handleAssenzaGiustificataWrapper = () => {
+    if (schoolRecord.wentToSchoolToday || marinatoOggi) {
+      playSound.failure()
+      announce('Hai già scelto per questa mattina!')
+      return
+    }
+    setMarinatoOggi(true)
+    setShowSchoolMorning(false)
+    setSchoolMorningEvents([])
+    handleAssenzaGiustificata()
   }
 
   useEffect(() => {
@@ -375,6 +390,13 @@ function App() {
   useEffect(() => {
     setMarinatoOggi(false)
   }, [gameTime.currentDate.day, gameTime.currentDate.month, gameTime.currentDate.year])
+
+  // BUG 2: nascondi SchoolMorningPanel quando si esce dalla mattina
+  useEffect(() => {
+    if (currentPhase !== 'mattina') {
+      setShowSchoolMorning(false)
+    }
+  }, [currentPhase])
 
   // F4: soglie assenze con conseguenze scalari
   useEffect(() => {
@@ -926,6 +948,9 @@ function App() {
               </TabsList>
 
               <TabsContent value="grades" className="space-y-6 mt-6">
+                {/* BUG 2: wrapper comune — i 3 pulsanti scuola visibili solo mattina feriale scolastica */}
+                {currentPhase === 'mattina' && dayType === 'feriale' && gameTime.schoolYear.isSchoolPeriod && (
+                <>
                 <Card className="p-3 border-2 border-primary bg-card">
                   <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
                     <GraduationCap size={24} weight="fill" />
@@ -1017,7 +1042,7 @@ function App() {
                   <ActionButton
                     icon={<GraduationCap size={48} />}
                     label="Giustifica Assenza"
-                    onClick={handleAssenzaGiustificata}
+                    onClick={handleAssenzaGiustificataWrapper}
                     disabled={
                       phaseActionsRemaining <= 0 ||
                       dayType !== 'feriale' ||
@@ -1050,8 +1075,10 @@ function App() {
                   </div>
                 </Card>
                 )}
+                </>
+                )}
 
-                {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && (
+                {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && schoolRecord.wentToSchoolToday && (
                   <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
                     <SchoolMorningPanel
                       events={schoolMorningEvents}
