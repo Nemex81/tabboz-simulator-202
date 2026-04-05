@@ -1,8 +1,9 @@
 # Piano di Integrazione — Sistema Scolastico Gameplay
 
-> **Data:** Aprile 2026  
-> **Stato:** In pianificazione  
-> **Obiettivo:** Rendere voti, assenze e condotta meccaniche attive e impattanti nel gameplay, garantendo tensione narrativa sostenuta e divertimento.
+> **Data:** 5 Aprile 2026  
+> **Stato:** Validato — Pronto per implementazione  
+> **Obiettivo:** Rendere voti, assenze e condotta meccaniche attive e impattanti nel gameplay, garantendo tensione narrativa sostenuta e divertimento.  
+> **Revisione:** v2 — Corretto dopo validazione contro codebase reale.
 
 ---
 
@@ -27,6 +28,22 @@ Il giocatore ha sempre la libertà di scegliere se andare a scuola o marinare.
 
 Nessun evento scolastico (interrogazioni, compiti, ecc.) può scattare se il giocatore non ha premuto "Vai a Scuola".
 
+### Nota tecnica — Due flussi di eventi scolastici nel codebase
+
+Il codice ha **due sistemi distinti** di eventi scolastici:
+
+1. **SchoolMorningEvents** (`src/lib/school-morning-events.ts` → `drawSchoolMorningEvents`)  
+   Triggerati da `handleVaiAScuola` in `App.tsx`. Rappresentano la mattinata scolastica (interrogazioni, compiti, vita di classe). Scattano **solo se il giocatore preme "Vai a Scuola"**.
+
+2. **TeacherEvents** (`src/lib/school-events.ts` → `getTeacherEvent`)  
+   Triggerati in `useGameTime.ts` → `advanceToNextDay` con 15% di probabilità. Sono eventi indipendenti (prof assente, progetto, ecc.).
+
+Il piano deve operare su **entrambi i flussi**, non solo su uno.
+
+### Nota tecnica — useEventEngine NON gestisce eventi scolastici
+
+`useEventEngine.ts` gestisce **solo eventi cittadini** (metallari, polizia, gare motorini, bulli, rimorchio). Gli eventi scolastici passano da `useGameTime.ts` e `App.tsx`. Nessuno step di questo piano deve toccare `useEventEngine.ts`.
+
 ---
 
 ## Step 1 — Feedback Visivo Delta (Priorità Massima)
@@ -39,7 +56,7 @@ Nessun evento scolastico (interrogazioni, compiti, ecc.) può scattare se il gio
 📉 Matematica: 5 → 3 | Media: 6.4 → 6.1 | Condotta: 8 → 7
 ```
 
-**File coinvolti:** `App.tsx` → `handleSchoolEventChoice`  
+**File coinvolti:** `App.tsx` → `handleSchoolEventChoice` (eventi teacher), `App.tsx` → `handleVaiAScuola` (eventi morning)  
 **Dipendenze:** Nessuna — implementabile subito.
 
 ---
@@ -76,7 +93,7 @@ const worstSubjects = subjects
 const targetSubject = worstSubjects[Math.floor(Math.random() * worstSubjects.length)]
 ```
 
-**File coinvolti:** `src/lib/game-utils.ts` (nuova funzione `calculateWeightedMedia`), `App.tsx` (`handleSchoolEventChoice`)  
+**File coinvolti:** `src/lib/game-utils.ts` (nuova funzione `calculateWeightedMedia`), `src/lib/types.ts` (mappa pesi per scuola), `App.tsx` (`handleSchoolEventChoice`), `src/lib/school-events.ts` (selezione materia pesata)  
 **Dipendenze:** Step 1 consigliato prima.
 
 ---
@@ -95,15 +112,17 @@ const targetSubject = worstSubjects[Math.floor(Math.random() * worstSubjects.len
 
 ### Tipi di assenza
 
-- **Marina volontariamente** (pulsante dedicato): `assenze += 2`
-- **Assente giustificato** (malattia, evento speciale): `assenze += 1`
-- **Presente a scuola**: `assenze` invariato
+- **Marina volontariamente** (pulsante dedicato): `assenze += 2` — il giocatore sceglie attivamente di non andare a scuola.
+- **Non presentato** (passiva, nessun pulsante premuto): `assenze += 1` — il giocatore semplicemente non ha premuto "Vai a Scuola". **Già implementato** in `useGameTime.ts` (`advancePhaseOnly`). Da mantenere.
+- **Presente a scuola**: `assenze` invariato.
 
-### Valvola di sfogo
+> **Nota tecnica:** La meccanica passiva (`assenze += 1`, `condotta -= 0.2`) esiste già nel codice. Lo Step 3 aggiunge il pulsante "Marina" esplicito che dà `assenze += 2` e azioni extra, rendendo la scelta attiva e consapevole. Le due meccaniche coesistono.
 
-Certificato medico falso (evento raro, costa soldi): annulla 2 assenze ma rischio punizione se scoperto.
+### Valvola di sfogo (Step futuro)
 
-**File coinvolti:** `useGameActions.ts` (logica marina), `App.tsx` (controllo soglie), `school-events.ts` (evento speciale rischio non ammissione)  
+Certificato medico falso: annulla 2 assenze ma rischio punizione se scoperto. **Non incluso in questo step** — richiede design evento dedicato, da implementare dopo Step 5 (Tier eventi).
+
+**File coinvolti:** `src/hooks/useGameActions.ts` (nuovo `handleMarina`), `src/hooks/useGameTime.ts` (assenze passive già presenti, aggiunta check soglie), `App.tsx` (pulsante marina, controllo soglie, Game Over), `src/lib/school-events.ts` (evento speciale "rischio non ammissione")  
 **Dipendenze:** Step 2 consigliato prima.
 
 ---
@@ -131,11 +150,26 @@ Certificato medico falso (evento raro, costa soldi): annulla 2 assenze ma rischi
 - Marina troppo spesso (>10 assenze): `-0.3` al mese
 
 **Migliora:**
-- Comportarsi bene per 5 giorni consecutivi: `+0.3`
+- Comportarsi bene per 5 giorni consecutivi: `+0.3` (richiede nuovo campo `consecutiveGoodDays: number` in `SchoolRecord`)
 - Evento "chiedi scusa al prof" (costa 30 soldi): `+1.0`
 - Fine quadrimestre con buona media: `+0.5`
 
-**File coinvolti:** `school-events.ts` (già usa `conductChange`), `App.tsx` (logica scrutinio), `ReportCardDialog.tsx` (mostrare condotta nella pagella)  
+### Modifica a SchoolRecord
+
+Aggiungere a `SchoolRecord` in `types.ts`:
+```ts
+consecutiveGoodDays: number  // tracker per bonus condotta (5 gg → +0.3)
+```
+Default: `0`. Reset a `0` quando il giocatore riceve una nota, una sospensione o marina.
+
+### Reset annuale SchoolRecord
+
+**Bug attuale:** `handleReportCardContinue` in `App.tsx` resetta i voti a 6 ma **NON resetta** assenze, note, sospensioni e condotta. Aggiungere reset:
+```ts
+setSchoolRecord({ ...DEFAULT_SCHOOL_RECORD })
+```
+
+**File coinvolti:** `src/lib/types.ts` (campo `consecutiveGoodDays`), `school-events.ts` (già usa `conductChange`), `App.tsx` (logica scrutinio + reset annuale), `ReportCardDialog.tsx` (mostrare condotta nella pagella), `src/hooks/useGameTime.ts` (incremento `consecutiveGoodDays` in `advancePhaseOnly`)  
 **Dipendenze:** Step 1 per feedback visivo.
 
 ---
@@ -155,6 +189,15 @@ Gli eventi scolastici si dividono in tre livelli di intensità per creare ritmo 
 - Il giorno prima appare toast: *"⚠️ Domani compito di Matematica! Studia stasera."*
 - Se il giocatore studia la sera prima → bonus +20% probabilità di successo
 
+#### Meccanica preavviso — implementazione tecnica
+
+Il preavviso usa il sistema `scheduledExams` già esistente in `useGameTime.ts`:
+1. Aggiungere campo opzionale `scheduledSchoolEvent?: { type: string, subject: string, date: GameDate }` in `SchoolRecord`.
+2. In `advanceToNextDay`, con probabilità ~25% a settimana, schedulare un evento Tier 2 per il giorno dopo.
+3. Quando viene schedulato, lanciare `announce('⚠️ Domani compito di [Materia]!')`.
+4. Il giorno successivo, in `handleVaiAScuola`, verificare se esiste un evento schedulato e attivarlo.
+5. Se il giocatore marina, l'evento schedulato viene perso (assenza al compito → voto 2).
+
 ### Tier 3 — Boss (rari, 1-2 per quadrimestre)
 - Scrutinio intermedio, colloquio genitori urgente, pagella di metà anno
 - Effetto calcolato sulla media accumulata
@@ -173,7 +216,7 @@ I nuovi delta calibrati:
 | Interrogazione bene | +1 | +1.0 (invariato) |
 | Progetto specifico ottimo | +2 | +2.0 (invariato) |
 
-**File coinvolti:** `school-events.ts` (aggiornamento delta e aggiunta tier), `useEventEngine.ts` (logica trigger per tier)  
+**File coinvolti:** `src/lib/school-events.ts` (aggiornamento delta, aggiunta campo `tier` agli eventi, nuovi eventi Tier 2/3), `src/hooks/useGameTime.ts` (logica trigger tier, scheduling preavviso — **NON useEventEngine.ts**), `src/lib/types.ts` (campo `scheduledSchoolEvent` in `SchoolRecord`), `App.tsx` (handleVaiAScuola check evento schedulato)  
 **Dipendenze:** Step 1 e Step 2.
 
 ---
@@ -201,7 +244,7 @@ Se promosso con 1-3 materie sotto 6 → estate con **debito formativo**:
 - Se superato: promosso regolare
 - Se non superato: **Game Over** a settembre
 
-**File coinvolti:** `App.tsx` (logica `handleReportCardContinue`), `ReportCardDialog.tsx` (UI pagella estesa), `school-events.ts` (evento debito formativo)  
+**File coinvolti:** `App.tsx` (logica `handleReportCardContinue`, reset `SchoolRecord` a fine anno), `ReportCardDialog.tsx` (UI pagella estesa: media pesata, condotta, assenze, debiti), `src/lib/school-events.ts` (evento debito formativo), `GameDialogs.tsx` (passaggio nuove props a `ReportCardDialog`)  
 **Dipendenze:** Tutti gli step precedenti.
 
 ---
@@ -218,12 +261,32 @@ Ogni step è testabile indipendentemente prima di procedere al successivo.
 
 ## File Coinvolti — Mappa Riepilogativa
 
-| File | Step coinvolti |
-|---|---|
-| `src/lib/types.ts` | 2 (pesi), 3 (assenze), 4 (condotta) |
-| `src/lib/game-utils.ts` | 2 (calculateWeightedMedia) |
-| `src/lib/school-events.ts` | 5 (tier eventi), 6 (debiti) |
-| `src/hooks/useGameActions.ts` | 3 (marina → assenze) |
-| `src/hooks/useEventEngine.ts` | 5 (trigger tier) |
-| `src/components/App.tsx` | 1, 3, 4, 6 |
-| `src/components/ReportCardDialog.tsx` | 4 (mostra condotta), 6 (pagella estesa) |
+| File | Step coinvolti | Note |
+|---|---|---|
+| `src/lib/types.ts` | 2, 3, 4, 5 | Pesi materie, `consecutiveGoodDays`, `scheduledSchoolEvent` |
+| `src/lib/game-utils.ts` | 2 | `calculateWeightedMedia` (nuova) |
+| `src/lib/school-events.ts` | 2, 5, 6 | Selezione materia pesata, tier eventi, debiti formativi |
+| `src/lib/school-morning-events.ts` | 1, 5 | Feedback delta, possibile integrazione tier |
+| `src/hooks/useGameActions.ts` | 3 | Nuovo `handleMarina` |
+| `src/hooks/useGameTime.ts` | 3, 4, 5 | Check soglie assenze, `consecutiveGoodDays`, scheduling preavviso |
+| `src/App.tsx` | 1, 3, 4, 6 | Toast delta, pulsante marina, scrutinio, reset SchoolRecord |
+| `src/components/ReportCardDialog.tsx` | 4, 6 | Mostra condotta/assenze, pagella estesa, debiti |
+| `src/components/GameDialogs.tsx` | 6 | Passaggio nuove props a ReportCardDialog |
+
+> **`src/hooks/useEventEngine.ts`** — **NON coinvolto.** Gestisce solo eventi cittadini (metallari, polizia, gare, bulli).
+
+---
+
+## Problemi risolti in questa revisione (v2)
+
+| # | Problema originale | Correzione |
+|---|---|---|
+| P1 | `useEventEngine.ts` indicato come coinvolto (errato) | Rimosso — eventi scolastici passano da `useGameTime.ts` e `App.tsx` |
+| P2 | Due flussi eventi scolastici ignorati | Documentati: SchoolMorningEvents + TeacherEvents |
+| P3 | File mapping Step 3 incompleto | Aggiunto `useGameTime.ts` (assenze passive) |
+| P4 | Ambiguità assenze passive vs attive | Chiarito: coesistono (+1 passivo, +2 marina esplicita) |
+| P5 | Preavviso Tier 2 senza meccanica tecnica | Aggiunta specifica implementazione via `scheduledSchoolEvent` |
+| P6 | SchoolRecord non resettato a fine anno | Aggiunto reset in Step 4 e Step 6 |
+| P7 | Tracker giorni consecutivi mancante | Aggiunto campo `consecutiveGoodDays` in SchoolRecord |
+| P8 | Certificato medico falso senza dettagli | Spostato a step futuro post-Step 5 |
+| P9 | Tabella file riepilogativa incompleta | Aggiornata con tutti i file reali coinvolti |
