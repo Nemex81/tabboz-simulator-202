@@ -4,12 +4,12 @@ import { SchoolType } from '@/lib/types'
 interface UseKeyboardShortcutsParams {
   gameOver: boolean
   showResetDialog: boolean
-  showMetallariEvent: boolean
-  showAtipaEvent: boolean
-  showPoliceEvent: boolean
-  showStreetRaceEvent: boolean
-  showBulliEvent: boolean
-  showReportCard: boolean
+  schoolType: SchoolType | nu
+  handlePalestra: () => v
+  handleLavoro: () => void
+  handleStudia: () => void
+  handleOpenMinacciaDialo
+  handleProvarciConAtipa:
   schoolType: SchoolType | null
   phaseActionsRemaining: number
   handlePalestra: () => void
@@ -22,30 +22,30 @@ interface UseKeyboardShortcutsParams {
   handleRiposa: () => void
   handleProvarciConAtipa: () => void
   handleDisco: () => void
-  handleCinema: () => void
-  handleShoppingMall: () => void
-  setShowResetDialog: (show: boolean) => void
-  advancePhaseOnly: () => void
-  setShowKeyboardHelp: (show: boolean) => void
-  announce: (message: string) => void
-}
+    handleStudia,
+    handleOpenMinacciaDialog,
+    handleProvarciConAtipa,
+    handleCinema,
+    setShowResetDialog,
+    setShowKeyboardHelp,
+ 
 
-export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
-  const {
-    gameOver,
-    showResetDialog,
-    showMetallariEvent,
-    showAtipaEvent,
-    showPoliceEvent,
-    showStreetRaceEvent,
-    showBulliEvent,
-    showReportCard,
-    schoolType,
-    phaseActionsRemaining,
-    handlePalestra,
-    handleLampada,
-    handleLavoro,
-    handleMotorino,
+      if (gameOver || showResetDialog || showMetallariEvent || showAtipaEv
+      if 
+      const k
+      if (e.ctrlKey 
+        switch(key) {
+          case '2':
+          case '4': 
+          case '6': hand
+          case '8':
+          case 'd':
+          case 
+          case 'n': 
+              advan
+            break
+      }
+      if (e.altKey 
     handleStudia,
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
@@ -90,7 +90,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
             }
             break
         }
-      }
+
       
       if (e.altKey && !e.ctrlKey && !e.shiftKey) {
         e.preventDefault()
@@ -104,4 +104,4 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [gameOver, showResetDialog, showMetallariEvent, showAtipaEvent, showPoliceEvent, showStreetRaceEvent, showBulliEvent, showReportCard, schoolType, phaseActionsRemaining, handlePalestra, handleLampada, handleLavoro, handleMotorino, handleStudia, handleOpenCorrompiDialog, handleOpenMinacciaDialog, handleRiposa, handleProvarciConAtipa, handleDisco, handleCinema, handleShoppingMall, setShowResetDialog, advancePhaseOnly, setShowKeyboardHelp, announce])
-}
+
