@@ -13,7 +13,7 @@ import {
   PHASE_SEQUENCE,
 } from '@/lib/time-utils'
 import { generateScheduledExam, calculateExamGrade, getDifficultyText, getDifficultyAnnouncement } from '@/lib/exam-system'
-import { getParentEventByMedia, getTeacherEvent } from '@/lib/school-events'
+import { getParentEventByMedia, getConductEvent, getScaledTeacherEvent } from '@/lib/school-events'
 import { calculateMedia, clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 import { SchoolEvent } from '@/lib/school-events'
@@ -165,8 +165,17 @@ export function useGameTime({
       setGameOverReason('Sei stato ESPULSO dalla scuola per condotta pessima! Game Over.')
       playSound.gameOver()
     }
+    // STEP 4: eventi condotta — 25% di probabilit\u00e0 se condotta < 6
+    if (gameTime.schoolYear.isSchoolPeriod) {
+      const conductEvent = getConductEvent(schoolRecord.condotta, schoolRecord.note)
+      if (conductEvent && Math.random() < 0.25) {
+        setSchoolEvent(conductEvent)
+        setShowSchoolEvent(true)
+      }
+    }
   }, [currentPhase, dayType, setStats, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining,
-      setSchoolMorningEvents, setShowSchoolMorning, announce, schoolRecord, setSchoolRecord, setGameOver, setGameOverReason])
+      setSchoolMorningEvents, setShowSchoolMorning, announce, schoolRecord, setSchoolRecord, setGameOver, setGameOverReason,
+      setSchoolEvent, setShowSchoolEvent, gameTime])
 
   const advanceToNextDay = useCallback(() => {
     setRawGameTime((current) => {
@@ -209,7 +218,8 @@ export function useGameTime({
       }
 
       if (Math.random() < 0.15 && newGameTime.schoolYear.isSchoolPeriod && st && schoolRecord.wentToSchoolToday) {
-        const teacherEvent = getTeacherEvent(st)
+        const media = calculateMedia(gradesRef.current)
+        const teacherEvent = getScaledTeacherEvent(st, media, schoolRecord.condotta)
         setSchoolEvent(teacherEvent)
         setShowSchoolEvent(true)
       }

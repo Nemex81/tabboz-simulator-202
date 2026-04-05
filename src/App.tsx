@@ -279,6 +279,7 @@ function App() {
     handleParco,
     handleTelefona,
     handleMarina: handleMarinaFromHook,
+    handleAssenzaGiustificata,
   } = actions
 
   const handleRiposa = () => actions.handleRiposa()
@@ -1006,6 +1007,50 @@ function App() {
                 </Card>
                 )}
 
+                {/* STEP 3: Pulsante Assenza Giustificata — nascosto se già andato a scuola o già marinato */}
+                {!schoolRecord.wentToSchoolToday && !marinatoOggi && (
+                <Card className="p-3 border-2 border-yellow-500 bg-card">
+                  <h3 className="text-xl font-bold mb-4 text-yellow-600 flex items-center gap-2">
+                    <GraduationCap size={24} weight="fill" />
+                    ASSENZA GIUSTIFICATA
+                  </h3>
+                  <ActionButton
+                    icon={<GraduationCap size={48} />}
+                    label="Giustifica Assenza"
+                    onClick={handleAssenzaGiustificata}
+                    disabled={
+                      phaseActionsRemaining <= 0 ||
+                      dayType !== 'feriale' ||
+                      currentPhase !== 'mattina' ||
+                      !gameTime.schoolYear.isSchoolPeriod ||
+                      stats.soldi < 50
+                    }
+                    blockedReason={
+                      phaseActionsRemaining <= 0
+                        ? 'Nessuna azione per questa fascia oraria'
+                        : dayType !== 'feriale'
+                          ? 'Disponibile solo nei giorni feriali'
+                          : currentPhase !== 'mattina'
+                            ? 'Disponibile solo la mattina'
+                            : stats.soldi < 50
+                              ? 'Servono 50 Soldi per la visita medica'
+                              : 'Non è periodo scolastico'
+                    }
+                    variant="outline"
+                    ariaLabel="Giustifica assenza con visita medica. -50 Soldi, nessuna penalità condotta."
+                    helpText="Vai dal medico per giustificare l'assenza. -50 Soldi, +1 Assenza Giustificata. NON penalizza la condotta. Guadagni 1 azione extra."
+                    announce={announce}
+                  />
+                  <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
+                    <p className="font-semibold mb-1">Effetti:</p>
+                    <p>• -50 Soldi (visita medica)</p>
+                    <p>• +1 Assenza Giustificata (non conta per le soglie!</p>
+                    <p>• Nessuna penalità sulla condotta</p>
+                    <p>• +1 Azione extra</p>
+                  </div>
+                </Card>
+                )}
+
                 {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && (
                   <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
                     <SchoolMorningPanel
@@ -1073,6 +1118,14 @@ function App() {
                         <div className="flex items-center gap-2">
                           <span className={`text-2xl font-bold ${schoolRecord.assenze > 20 ? 'text-destructive' : 'text-foreground'}`}>
                             {schoolRecord.assenze}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm text-muted-foreground">Giustificate:</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold text-yellow-600">
+                            {schoolRecord.assenzeGiustificate ?? 0}
                           </span>
                         </div>
                       </div>

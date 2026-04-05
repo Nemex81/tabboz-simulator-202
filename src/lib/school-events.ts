@@ -397,6 +397,368 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
   return allEvents[Math.floor(Math.random() * allEvents.length)]
 }
 
+// ─── Eventi Condotta (STEP 4) ─────────────────────────────────────────────────
+
+export const getConductEvent = (condotta: number, note: number = 0): SchoolEvent | null => {
+  // Condizione più specifica prima: rischio sospensione
+  if (condotta < 4 && note >= 5) {
+    return {
+      type: 'teacher' as const,
+      title: 'RISCHIO SOSPENSIONE!',
+      description: `Condotta ${condotta.toFixed(1)} e già ${note} note sul registro! Il consiglio di classe ha discusso il tuo caso...`,
+      choices: [
+        {
+          label: 'Ti scusi pubblicamente',
+          action: () => ({
+            message: 'Ti sei scusato davanti a tutta la classe. I prof apprezzano il gesto. +0.3 Condotta',
+            conductChange: 0.3,
+          }),
+        },
+        {
+          label: 'Ti sospendono',
+          action: () => ({
+            message: 'SOSPESO per 2 giorni! Perdi tempo prezioso e i tuoi pagheranno tutto. -70 Soldi, +1 Sospensione',
+            statChanges: { soldi: -70 },
+            noteChange: 0,
+          }),
+        },
+      ],
+    }
+  }
+
+  // Convocazione genitori: condotta critica
+  if (condotta < 4) {
+    return {
+      type: 'teacher' as const,
+      title: 'CONVOCAZIONE GENITORI!',
+      description: `La tua condotta è crollata a ${condotta.toFixed(1)}! La scuola ha convocato i tuoi genitori d'urgenza...`,
+      choices: [
+        {
+          label: 'Prometti di migliorare',
+          action: () => ({
+            message: 'Hai promesso solennemente di migliorare. I tuoi ci credono... per ora. +0.5 Condotta, -30 Soldi',
+            statChanges: { soldi: -30 },
+            conductChange: 0.5,
+          }),
+        },
+        {
+          label: 'Fai lo strafottente',
+          action: () => ({
+            message: 'Hai fatto lo STRAFOTTENTE davanti ai tuoi! Figuraccia cosmica. -0.5 Condotta, -50 Soldi, +10 Coattaggine',
+            statChanges: { soldi: -50, coattaggine: 10 },
+            conductChange: -0.5,
+          }),
+        },
+      ],
+    }
+  }
+
+  // Nota sul registro: condotta bassa ma non critica
+  if (condotta >= 4 && condotta < 6) {
+    return {
+      type: 'teacher' as const,
+      title: 'NOTA SUL REGISTRO!',
+      description: `Il prof ha messo una nota per il tuo comportamento. Condotta attuale: ${condotta.toFixed(1)}`,
+      choices: [
+        {
+          label: 'Accetti la nota',
+          action: () => ({
+            message: 'Hai accettato la nota in silenzio. Almeno non hai peggiorato... -0.3 Condotta',
+            conductChange: -0.3,
+          }),
+        },
+        {
+          label: 'Protesti con il prof',
+          action: () => ({
+            message: 'Hai protestato animatamente! Il prof ne ha messa un\'altra! -0.6 Condotta, +5 Coattaggine',
+            statChanges: { coattaggine: 5 },
+            conductChange: -0.6,
+          }),
+        },
+      ],
+    }
+  }
+
+  return null
+}
+
+// ─── Tier Eventi Scolastici Scalati (STEP 5) ──────────────────────────────────
+
+export const getScaledTeacherEvent = (schoolType: SchoolType, media: number, condotta: number): SchoolEvent => {
+  // Tier POSITIVO — media >= 8
+  if (media >= 8) {
+    const positiveEvents: SchoolEvent[] = [
+      {
+        type: 'teacher' as const,
+        tier: 1 as const,
+        title: 'LODE DEL PROFESSORE!',
+        description: `Media ${media.toFixed(1)}! Il prof ti elogia davanti a tutta la classe! Sei il punto di riferimento!`,
+        choices: [
+          {
+            label: 'Ringrazia con umiltà',
+            action: () => ({
+              message: 'Ti sei comportato da vero studente modello. +0.3 al voto, +0.2 Condotta',
+              gradeChanges: { subject: 'random', change: 0.3 },
+              conductChange: 0.2,
+            }),
+          },
+          {
+            label: 'Fai il modesto',
+            action: () => ({
+              message: 'La tua umiltà conquista tutti! +0.5 al voto, +0.2 Condotta, +5 Figosità',
+              statChanges: { figosita: 5 },
+              gradeChanges: { subject: 'random', change: 0.5 },
+              conductChange: 0.2,
+            }),
+          },
+        ],
+      },
+      {
+        type: 'teacher' as const,
+        tier: 1 as const,
+        title: 'COMPITO MODELLO!',
+        description: `Il tuo compito è stato scelto come ESEMPIO per tutta la classe! Media: ${media.toFixed(1)}`,
+        choices: [
+          {
+            label: 'Sei orgoglioso',
+            action: () => ({
+              message: 'Il prof legge il tuo compito ad alta voce! +0.5 al voto, +0.2 Condotta, +10 Figosità',
+              statChanges: { figosita: 10 },
+              gradeChanges: { subject: 'random', change: 0.5 },
+              conductChange: 0.2,
+            }),
+          },
+          {
+            label: 'Minimizzi',
+            action: () => ({
+              message: 'Il prof apprezza la tua modestia! +0.3 al voto, +0.2 Condotta',
+              gradeChanges: { subject: 'random', change: 0.3 },
+              conductChange: 0.2,
+            }),
+          },
+        ],
+      },
+      {
+        type: 'teacher' as const,
+        tier: 2 as const,
+        title: 'ELOGIO PUBBLICO!',
+        description: `Il preside ti ha citato nell'assemblea come studente modello! Media: ${media.toFixed(1)}`,
+        choices: [
+          {
+            label: 'Accetti il riconoscimento',
+            action: () => ({
+              message: 'Tutti ti applaudono in assemblea! +0.5 al voto random, +0.2 Condotta, +15 Figosità',
+              statChanges: { figosita: 15 },
+              gradeChanges: { subject: 'random', change: 0.5 },
+              conductChange: 0.2,
+            }),
+          },
+          {
+            label: 'Ti imbarazzi davanti a tutti',
+            action: () => ({
+              message: 'Sei diventato rosso ma i compagni ti supportano! +0.3 al voto, +0.2 Condotta',
+              gradeChanges: { subject: 'random', change: 0.3 },
+              conductChange: 0.2,
+            }),
+          },
+        ],
+      },
+    ]
+    return positiveEvents[Math.floor(Math.random() * positiveEvents.length)]
+  }
+
+  // Tier NEUTRO — media >= 6 e < 8
+  if (media >= 6) {
+    const neutralEvents: SchoolEvent[] = [
+      {
+        type: 'teacher' as const,
+        tier: 1 as const,
+        title: 'INTERROGAZIONE STANDARD!',
+        description: `Il prof ti interroga. Media: ${media.toFixed(1)}. Sei abbastanza preparato?`,
+        choices: [
+          {
+            label: 'Rispondi con sicurezza',
+            action: () => {
+              if (randomChance(55)) {
+                return {
+                  message: 'Risposta decente! Il prof annuisce. +0.2 al voto',
+                  gradeChanges: { subject: 'random', change: 0.2 },
+                }
+              } else {
+                return {
+                  message: 'Risposta incompleta. Il prof è deluso. -0.2 al voto',
+                  gradeChanges: { subject: 'random', change: -0.2 },
+                }
+              }
+            },
+          },
+          {
+            label: 'Chiedi di parlare dopo',
+            action: () => ({
+              message: 'Ti rimanda al pomeriggio. Nessuna variazione significativa. ±0 voto',
+              gradeChanges: { subject: 'random', change: 0 },
+            }),
+          },
+        ],
+      },
+      {
+        type: 'teacher' as const,
+        tier: 1 as const,
+        title: 'TEST A SORPRESA!',
+        description: `Quiz lampo a risposta multipla! La tua media è ${media.toFixed(1)} — ce la fai?`,
+        choices: [
+          {
+            label: 'Prova a ricordare gli appunti',
+            action: () => {
+              if (randomChance(60)) {
+                return {
+                  message: 'Hai risposto abbastanza bene! +0.3 al voto',
+                  gradeChanges: { subject: 'random', change: 0.3 },
+                }
+              } else {
+                return {
+                  message: 'Hai sbagliato metà risposte. -0.2 al voto',
+                  gradeChanges: { subject: 'random', change: -0.2 },
+                }
+              }
+            },
+          },
+          {
+            label: 'Copia dal compagno',
+            action: () => {
+              if (randomChance(40)) {
+                return {
+                  message: 'Copiato senza farsi vedere! +0.3 al voto, +5 Coattaggine, -0.2 Condotta',
+                  statChanges: { coattaggine: 5 },
+                  gradeChanges: { subject: 'random', change: 0.3 },
+                  conductChange: -0.2,
+                }
+              } else {
+                return {
+                  message: 'SGAMATO! -0.5 al voto, -0.5 Condotta, +1 Nota',
+                  gradeChanges: { subject: 'random', change: -0.5 },
+                  conductChange: -0.5,
+                  noteChange: 1,
+                }
+              }
+            },
+          },
+        ],
+      },
+      {
+        type: 'teacher' as const,
+        tier: 1 as const,
+        title: 'DISCUSSIONE IN CLASSE!',
+        description: `Il prof apre un dibattito. Media: ${media.toFixed(1)}. Vuoi partecipare?`,
+        choices: [
+          {
+            label: 'Intervieni con una buona idea',
+            action: () => ({
+              message: 'Contributo apprezzato! +0.2 al voto, +0.2 Condotta',
+              gradeChanges: { subject: 'random', change: 0.2 },
+              conductChange: 0.2,
+            }),
+          },
+          {
+            label: 'Resta in silenzio',
+            action: () => ({
+              message: 'Nessuna variazione. Il prof non ti nota oggi.',
+              gradeChanges: { subject: 'random', change: 0 },
+            }),
+          },
+        ],
+      },
+    ]
+    return neutralEvents[Math.floor(Math.random() * neutralEvents.length)]
+  }
+
+  // Tier NEGATIVO — media < 6
+  const negativeEvents: SchoolEvent[] = [
+    {
+      type: 'teacher' as const,
+      tier: 2 as const,
+      title: 'RECUPERO OBBLIGATORIO!',
+      description: `Media ${media.toFixed(1)}! Il prof ti manda al recupero pomeridiano obbligatorio. Devi andarci!`,
+      choices: [
+        {
+          label: 'Vai al recupero',
+          action: () => ({
+            message: 'Hai fatto il recupero per bene. -0.3 al voto (oggi) ma salvi la situazione. +20 Stanchezza',
+            statChanges: { stanchezza: 20 },
+            gradeChanges: { subject: 'random', change: -0.3 },
+          }),
+        },
+        {
+          label: 'Salta il recupero',
+          action: () => ({
+            message: 'Il prof ti ha sgamato! -0.5 al voto, -0.5 Condotta, +1 Nota',
+            gradeChanges: { subject: 'random', change: -0.5 },
+            conductChange: -0.5,
+            noteChange: 1,
+          }),
+        },
+      ],
+    },
+    {
+      type: 'teacher' as const,
+      tier: 2 as const,
+      title: 'CONVOCAZIONE URGENTE!',
+      description: `Media ${media.toFixed(1)}! Il coordinatore ti convoca. La situazione è seria!`,
+      choices: [
+        {
+          label: 'Prometti di studiare di più',
+          action: () => ({
+            message: 'Ti impegni davanti al coordinatore. -0.3 al voto, +0.2 Condotta (buona impressione)',
+            gradeChanges: { subject: 'random', change: -0.3 },
+            conductChange: 0.2,
+          }),
+        },
+        {
+          label: 'Dai la colpa ai prof',
+          action: () => ({
+            message: 'Il coordinatore non ci crede! -0.5 al voto, -0.5 Condotta, +10 Coattaggine',
+            statChanges: { coattaggine: 10 },
+            gradeChanges: { subject: 'random', change: -0.5 },
+            conductChange: -0.5,
+          }),
+        },
+      ],
+    },
+    {
+      type: 'teacher' as const,
+      tier: 1 as const,
+      title: 'NOTA DI CLASSE!',
+      description: `Comportamento inaccettabile! Media ${media.toFixed(1)} e il prof perde la pazienza!`,
+      choices: [
+        {
+          label: 'Accetti la nota',
+          action: () => ({
+            message: 'Prendi la nota in silenzio. -0.3 al voto, -0.2 Condotta, +1 Nota',
+            gradeChanges: { subject: 'random', change: -0.3 },
+            conductChange: -0.2,
+            noteChange: 1,
+          }),
+        },
+        {
+          label: 'Protesti con veemenza',
+          action: () => ({
+            message: 'Altra nota! Sei fuori di testa! -0.5 al voto, -0.5 Condotta, +2 Note, +10 Coattaggine',
+            statChanges: { coattaggine: 10 },
+            gradeChanges: { subject: 'random', change: -0.5 },
+            conductChange: -0.5,
+            noteChange: 2,
+          }),
+        },
+      ],
+    },
+  ]
+
+  // Seleziona evento negativo con leggera variazione condotta se bassa
+  const _ = condotta // usato per possibili estensioni future
+  void _
+  return negativeEvents[Math.floor(Math.random() * negativeEvents.length)]
+}
+
 // ─── Vincoli Evento ───────────────────────────────────────────────────────────
 
 export const SCHOOL_EVENT_CONSTRAINTS: Record<string, EventConstraint> = {

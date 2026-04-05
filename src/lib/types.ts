@@ -63,6 +63,7 @@ export interface SubjectGrades {
 
 export interface SchoolRecord {
   assenze: number
+  assenzeGiustificate: number
   condotta: number
   note: number
   sospensioni: number
@@ -320,6 +321,7 @@ export const DEFAULT_GAME_TIME: GameTime = {
 
 export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   assenze: 0,
+  assenzeGiustificate: 0,
   condotta: 8,
   note: 0,
   sospensioni: 0,

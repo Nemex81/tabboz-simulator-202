@@ -890,6 +890,37 @@ export function useGameActions({
     announce("Hai MARINATO la scuola! +1 Assenza, guadagni un'azione extra. Goditi la libertà... per ora.")
   }, [setSchoolRecord, gainExtraAction, consumeAction, announce])
 
+  const handleAssenzaGiustificata = useCallback(() => {
+    const gt = gameTimeRef.current
+    if (phaseActionsRemainingRef.current <= 0) {
+      playSound.failure()
+      announce('Hai esaurito le azioni per questa fascia oraria!')
+      return
+    }
+    if (!(dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod)) {
+      playSound.failure()
+      announce("Puoi giustificare l'assenza solo la mattina di un giorno scolastico!")
+      return
+    }
+    if (statsRef.current.soldi < 50) {
+      playSound.failure()
+      announce('Non hai abbastanza soldi per la visita medica! (−50 Soldi necessari)')
+      return
+    }
+    setStats((current) => ({
+      ...current,
+      soldi: clampStat(current.soldi - 50, 0, 1000),
+    }))
+    setSchoolRecord((prev) => ({
+      ...prev,
+      assenzeGiustificate: prev.assenzeGiustificate + 1,
+    }))
+    gainExtraAction()
+    consumeAction()
+    playSound.buttonClick()
+    announce('Assenza GIUSTIFICATA! +1 Assenza giustificata, -50 Soldi. Nessuna penalità sulla condotta.')
+  }, [setStats, setSchoolRecord, gainExtraAction, consumeAction, announce])
+
   return {
     handlePalestra,
     handleLampada,
@@ -914,5 +945,6 @@ export function useGameActions({
     handleParco,
     handleTelefona,
     handleMarina,
+    handleAssenzaGiustificata,
   }
 }
