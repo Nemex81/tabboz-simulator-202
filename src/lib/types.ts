@@ -2,17 +2,17 @@ import type { TraitId } from '@/lib/character-traits'
 
 export type ExamDifficulty = 'facile' | 'media' | 'difficile'
 
+export interface GameStats {
+  muscoli: number
+  coattaggine: number
+  reputazione: number
+  soldi: number
   stanchezza: number
   figosita: number
-  intelligenza: n
-}
-export interface Fri
-  relationshipLev
+  intelligenza: number
   carisma: number
-
-  name: string
-  attraction?: n
-
+  media: number
+}
 
 export interface Friend {
   name: string
@@ -30,13 +30,11 @@ export interface Relationship {
 export type RelationshipPreference = 'muscoli' | 'intelligenza' | 'figosita' | 'coattaggine' | 'carisma'
 
 export interface ScheduledExam {
-export function g
-  month: number
-    tecnico: 
+  subject: string
   daysUntil: number
   difficulty: ExamDifficulty
   prepared: boolean
-
+}
 
 export interface PlayerProfile {
   name: string
@@ -48,7 +46,7 @@ export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'agrario'
 
 export function getSchoolTypeName(schoolType: SchoolType): string {
   const names: Record<SchoolType, string> = {
-    inglese: 1.0,
+    liceo: 'Liceo Scientifico',
     tecnico: 'Istituto Tecnico',
     artistico: 'Istituto Artistico',
     agrario: 'Istituto Agrario'
@@ -56,76 +54,15 @@ export function getSchoolTypeName(schoolType: SchoolType): string {
   return names[schoolType]
 }
 
-  },
+export interface SubjectGrades {
   [subject: string]: number
- 
+}
 
 export interface SchoolYear {
   currentYear: number
-
-  wentToSchoolToday: boo
-  note: number
- 
-
-export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
-  assenze:
-  condotta: 8.0,
-  consecutiveGoo
-
-  switch (school
-      return {
-        fisica: 6
-        storia: 6
-    
-      }
-      return {
-        pratica: 6
-        italiano:
-        storia: 6,
-      }
-      return {
-        arte: 6,
-    
-        edFisi
-    case 'agrario
-        pratic
-        matematica
-        storia: 
-        edFisica:
-  }
-
-  const disp
-    fisica: 'Fisi
-    storia: 'Stor
-    scienze: 'Scienz
-    pratica: 'Prat
-    disegno: 'Di
-  }
+  isSchoolPeriod: boolean
+  daysUntilBreak: number
 }
-exp
-e
-
-    soldi: 100,
-    figosita:
-    intelligenz
-    media: 6
- 
-
-    inglese: 6,
-
-  } as SubjectGrades,
-    currentDate: { day:
-    currentPhase: 'mattina
-      currentYear: 1,
-      daysUntilBreak: 30
-    },
-    phaseActions:
-      pomeriggio: 3
-      notte: 1
-  } as GameTime
-
-
-
 
 export interface SchoolRecord {
   wentToSchoolToday: boolean
@@ -145,106 +82,132 @@ export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   consecutiveGoodDays: 0
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
+  switch (schoolType) {
+    case 'liceo':
+      return {
+        matematica: 6,
+        fisica: 6,
+        italiano: 6,
+        inglese: 6,
+        storia: 6,
+        scienze: 6,
+        edFisica: 6,
+      }
+    case 'tecnico':
+      return {
+        matematica: 6,
+        fisica: 6,
+        italiano: 6,
+        inglese: 6,
+        storia: 6,
+        informatica: 6,
+        edFisica: 6,
+      }
+    case 'artistico':
+      return {
+        arte: 6,
+        disegno: 6,
+        italiano: 6,
+        inglese: 6,
+        storia: 6,
+        edFisica: 6,
+      }
+    case 'agrario':
+      return {
+        pratica: 6,
+        scienze: 6,
+        matematica: 6,
+        italiano: 6,
+        storia: 6,
+        edFisica: 6,
+      }
+  }
+}
+
+export function getSubjectDisplayName(subject: string): string {
+  const displayNames: Record<string, string> = {
+    matematica: 'Matematica',
+    fisica: 'Fisica',
+    italiano: 'Italiano',
+    inglese: 'Inglese',
+    storia: 'Storia',
+    scienze: 'Scienze',
+    pratica: 'Pratica',
+    disegno: 'Disegno',
+    arte: 'Arte',
+    informatica: 'Informatica',
+    edFisica: 'Ed. Fisica'
+  }
+  return displayNames[subject] || subject
+}
+
+export interface GameDate {
+  day: number
+  month: number
+  year: number
+}
+
+export interface PhaseActions {
+  mattina: number
+  pomeriggio: number
+  sera: number
+  notte: number
+}
+
+export type DayPhase = 'mattina' | 'pomeriggio' | 'sera' | 'notte'
+
+export interface GameTime {
+  currentDate: GameDate
+  currentPhase: DayPhase
+  age: number
+  schoolYear: SchoolYear
+  phaseActions: PhaseActions
+}
+
+export type ThemeVariant = 'default' | 'dark' | 'green'
+
+export interface GameState {
+  stats: GameStats
+  grades: SubjectGrades
+  gameTime: GameTime
+}
+
+export const DEFAULT_GAME_STATE: GameState = {
+  stats: {
+    muscoli: 50,
+    coattaggine: 50,
+    reputazione: 50,
+    soldi: 100,
+    figosita: 50,
+    intelligenza: 50,
+    stanchezza: 0,
+    carisma: 50,
+    media: 6
+  },
+  grades: {
+    matematica: 6,
+    fisica: 6,
+    italiano: 6,
+    inglese: 6,
+    storia: 6,
+    scienze: 6,
+    edFisica: 6,
+  } as SubjectGrades,
+  gameTime: {
+    currentDate: { day: 1, month: 9, year: 2026 },
+    currentPhase: 'mattina' as DayPhase,
+    age: 14,
+    schoolYear: {
+      currentYear: 1,
+      isSchoolPeriod: true,
+      daysUntilBreak: 30
+    },
+    phaseActions: {
+      mattina: 2,
+      pomeriggio: 3,
+      sera: 2,
+      notte: 1
+    }
+  } as GameTime
+}
