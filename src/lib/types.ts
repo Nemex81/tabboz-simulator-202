@@ -174,10 +174,16 @@ export interface ScheduledExam {
 
 export type PlayerGender = 'maschio' | 'femmina'
 
+export type ThemeVariant = 'default' | 'dark' | 'green'
+
 export interface PlayerProfile {
   name: string
   gender: PlayerGender
   age: number
+}
+
+export interface GamePreferences {
+  theme: ThemeVariant
 }
 
 export interface GameState {

@@ -3,17 +3,18 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { SchoolType, getSchoolTypeName, PlayerGender, PlayerProfile } from '@/lib/types'
-import { GraduationCap, Tractor, PaintBrush, User, GenderMale, GenderFemale } from '@phosphor-icons/react'
+import { SchoolType, getSchoolTypeName, PlayerGender, PlayerProfile, ThemeVariant } from '@/lib/types'
+import { GraduationCap, Tractor, PaintBrush, User, GenderMale, GenderFemale, Palette, Moon, Sun, Plant } from '@phosphor-icons/react'
 
 interface SchoolSelectionProps {
-  onSelectSchool: (schoolType: SchoolType, profile: PlayerProfile) => void
+  onSelectSchool: (schoolType: SchoolType, profile: PlayerProfile, theme: ThemeVariant) => void
 }
 
 export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
   const [step, setStep] = useState<'profile' | 'school'>('profile')
   const [playerName, setPlayerName] = useState('')
   const [playerGender, setPlayerGender] = useState<PlayerGender | null>(null)
+  const [selectedTheme, setSelectedTheme] = useState<ThemeVariant>('default')
 
   const handleProfileComplete = () => {
     if (playerName.trim() && playerGender) {
@@ -28,7 +29,7 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
         gender: playerGender,
         age: 14
       }
-      onSelectSchool(schoolType, profile)
+      onSelectSchool(schoolType, profile, selectedTheme)
     }
   }
 
@@ -99,6 +100,51 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
                     Femmina
                   </Button>
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-lg font-bold text-primary flex items-center gap-2">
+                  <Palette size={24} weight="fill" />
+                  Scegli il tema visivo
+                </Label>
+                <div className="grid grid-cols-3 gap-3">
+                  <Button
+                    variant={selectedTheme === 'default' ? 'default' : 'outline'}
+                    size="lg"
+                    onClick={() => setSelectedTheme('default')}
+                    className={`h-20 flex-col text-sm ${selectedTheme === 'default' ? 'bg-primary border-2 border-primary' : 'border-2'}`}
+                    aria-label="Tema Default: Neon blu e teal"
+                  >
+                    <Sun size={28} weight="fill" className="mb-1" />
+                    Default
+                    <span className="text-xs opacity-70">Neon Blu</span>
+                  </Button>
+                  <Button
+                    variant={selectedTheme === 'dark' ? 'default' : 'outline'}
+                    size="lg"
+                    onClick={() => setSelectedTheme('dark')}
+                    className={`h-20 flex-col text-sm ${selectedTheme === 'dark' ? 'bg-primary border-2 border-primary' : 'border-2'}`}
+                    aria-label="Tema Dark: Nero profondo con accenti viola"
+                  >
+                    <Moon size={28} weight="fill" className="mb-1" />
+                    Dark
+                    <span className="text-xs opacity-70">Nero Viola</span>
+                  </Button>
+                  <Button
+                    variant={selectedTheme === 'green' ? 'default' : 'outline'}
+                    size="lg"
+                    onClick={() => setSelectedTheme('green')}
+                    className={`h-20 flex-col text-sm ${selectedTheme === 'green' ? 'bg-primary border-2 border-primary' : 'border-2'}`}
+                    aria-label="Tema Green: Ispirato alla ganja con verdi e marroni"
+                  >
+                    <Plant size={28} weight="fill" className="mb-1" />
+                    Green
+                    <span className="text-xs opacity-70">Ganja Style</span>
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  💡 Potrai cambiare il tema in seguito dal Pannello di Controllo
+                </p>
               </div>
 
               <div className="pt-4">

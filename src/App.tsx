@@ -35,6 +35,7 @@ import { toast } from 'sonner'
 import { StatDisplay } from '@/components/StatDisplay'
 import { ActionButton } from '@/components/ActionButton'
 import { TimeDisplay } from '@/components/TimeDisplay'
+import { ThemeSelector } from '@/components/ThemeSelector'
 // Dialog poco frequenti caricati in lazy per ridurre il bundle iniziale
 const ReportCardDialog = lazy(() => import('@/components/ReportCardDialog').then(m => ({ default: m.ReportCardDialog })))
 const SchoolEventDialog = lazy(() => import('@/components/SchoolEventDialog').then(m => ({ default: m.SchoolEventDialog })))
@@ -65,7 +66,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam, PlayerProfile } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant } from '@/lib/types'
 import { useGameStats } from '@/hooks/useGameStats'
 import { useGameTime } from '@/hooks/useGameTime'
 import { useEventEngine } from '@/hooks/useEventEngine'
@@ -124,6 +125,7 @@ function App() {
   const [rawFriends, setRawFriends] = useKV<Friend[]>('tabboz-friends', [])
   const [rawRelationships, setRawRelationships] = useKV<Relationship[]>('tabboz-relationships', [])
   const [rawGirlfriend, setRawGirlfriend] = useKV<Ragazza | null>('tabboz-girlfriend', null)
+  const [currentTheme, setCurrentTheme] = useKV<ThemeVariant>('tabboz-theme', 'default')
 
   const schoolType = validateSchoolType(rawSchoolType)
   const playerProfile = rawPlayerProfile
@@ -289,12 +291,22 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleSchoolSelection = (selected: SchoolType, profile: PlayerProfile) => {
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', currentTheme)
+  }, [currentTheme])
+
+  const handleSchoolSelection = (selected: SchoolType, profile: PlayerProfile, theme: ThemeVariant) => {
     playSound.success()
     setSchoolType(selected)
     setPlayerProfile(profile)
+    setCurrentTheme(theme)
     setGrades(getDefaultGradesForSchoolType(selected))
     announce(`Ciao ${profile.name}! Hai scelto: ${selected.toUpperCase()}! Buona fortuna!`)
+  }
+
+  const handleThemeChange = (theme: ThemeVariant) => {
+    setCurrentTheme(theme)
+    announce(`Tema cambiato: ${theme === 'default' ? 'Default Neon Blu' : theme === 'dark' ? 'Dark Nero Viola' : 'Green Ganja Style'}`)
   }
 
   const handleReset = () => {
@@ -591,8 +603,8 @@ function App() {
             </TabsTrigger>
             <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <ChartBar size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Profilo</span>
-              <span className="sm:hidden">Io</span>
+              <span className="hidden sm:inline">Controllo</span>
+              <span className="sm:hidden">⚙️</span>
             </TabsTrigger>
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Trophy size={20} className="mr-2" weight="fill" />
@@ -602,325 +614,94 @@ function App() {
           </TabsList>
 
           <TabsContent value="status" className="space-y-6 mt-6">
-            <section aria-labelledby="player-stats">
-              <h2 id="player-stats" className="sr-only">Le Mie Statistiche</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
-                <StatDisplay 
-                  icon={<Lightning size={28} weight="fill" />}
-                  label="Coattaggine"
-                  value={stats.coattaggine}
-                />
-                <StatDisplay 
-                  icon={<Barbell size={28} weight="fill" />}
-                  label="Muscoli"
-                  value={stats.muscoli}
-                />
-                <StatDisplay 
-                  icon={<Sparkle size={28} weight="fill" />}
-                  label="Figosità"
-                  value={stats.figosita}
-                />
-                <StatDisplay 
-                  icon={<Brain size={28} weight="fill" />}
-                  label="Intelligenza"
-                  value={stats.intelligenza}
-                />
-                <StatDisplay 
-                  icon={<Chats size={28} weight="fill" />}
-                  label="Carisma"
-                  value={stats.carisma}
-                />
-                <StatDisplay 
-                  icon={<CurrencyDollar size={28} weight="fill" />}
-                  label="Soldi"
-                  value={stats.soldi}
-                  max={1000}
-                />
-                <StatDisplay 
-                  icon={<GraduationCap size={28} weight="fill" />}
-                  label="Media"
-                  value={currentMedia}
-                  max={10}
-                />
-                <StatDisplay 
-                  icon={<Battery size={28} weight="fill" />}
-                  label="Stanchezza"
-                  value={stats.stanchezza}
-                />
-              </div>
-            </section>
-            <Card className="p-6 border-2 border-primary bg-card/50">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <Crown size={48} weight="fill" className="text-primary" />
-                  <div>
-                    <div className="text-sm text-muted-foreground uppercase font-semibold">
-                      REPUTAZIONE
-                    </div>
-                    <div className="text-3xl font-bold text-primary neon-text-glow">
-                      {getReputationLevel(stats.reputazione)}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-5xl font-black text-primary">
-                    {Math.round(stats.reputazione)}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    / 100
-                  </div>
-                </div>
-              </div>
-              <div className="h-3 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 neon-glow"
-                  style={{ width: `${stats.reputazione}%` }}
-                />
-              </div>
-              <div className="mt-4 pt-4 border-t border-border text-sm text-muted-foreground">
-                <p>La tua reputazione nel quartiere influenza gli eventi casuali e come ti vedono gli altri.</p>
-              </div>
-            </Card>
-
-            <Card className="p-4 border-2 border-accent">
-              <div className="flex items-start gap-4">
-                <Trophy size={48} weight="fill" className="text-accent flex-shrink-0" />
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-accent mb-2">🎯 OBIETTIVO DEL GIOCO</h3>
-                  <p className="text-foreground mb-3">
-                    Completa tutti e 5 gli anni di scuola superiore e supera la MATURITÀ per vincere!
-                  </p>
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 1 ? 'bg-accent' : 'bg-muted'}`} />
-                      <span className={gameTime.schoolYear.currentYear === 1 ? 'text-accent font-bold' : ''}>
-                        1° Superiore (14 anni)
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 2 ? 'bg-accent' : 'bg-muted'}`} />
-                      <span className={gameTime.schoolYear.currentYear === 2 ? 'text-accent font-bold' : ''}>
-                        2° Superiore (15 anni)
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 3 ? 'bg-accent' : 'bg-muted'}`} />
-                      <span className={gameTime.schoolYear.currentYear === 3 ? 'text-accent font-bold' : ''}>
-                        3° Superiore (16 anni)
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 4 ? 'bg-accent' : 'bg-muted'}`} />
-                      <span className={gameTime.schoolYear.currentYear === 4 ? 'text-accent font-bold' : ''}>
-                        4° Superiore (17 anni)
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 5 ? 'bg-accent' : 'bg-muted'}`} />
-                      <span className={gameTime.schoolYear.currentYear === 5 ? 'text-accent font-bold' : ''}>
-                        5° Superiore - MATURITÀ (18 anni)
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-xs text-muted-foreground">
-                      ⚠️ <strong>Attenzione:</strong> Se la tua media scende sotto il 6 alla pagella, sarai BOCCIATO e il gioco finirà!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            <Tabs defaultValue="attributi" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-muted/50">
-                <TabsTrigger value="attributi">⚡ Attributi</TabsTrigger>
-                <TabsTrigger value="tratti">🧬 Tratti</TabsTrigger>
-                <TabsTrigger value="risorse">💰 Risorse</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="attributi" className="space-y-4 mt-4">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="p-3 border-2 border-primary bg-card">
-                    <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
-                      <User size={24} weight="fill" />
-                      CARATTERISTICHE FISICHE
-                    </h3>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                            <Lightning size={20} weight="fill" className="text-primary" />
-                            Coattaggine
-                          </span>
-                          <span className="text-2xl font-bold text-primary">{stats.coattaggine}</span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-primary transition-all duration-300" style={{ width: `${stats.coattaggine}%` }} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                            <Barbell size={20} weight="fill" className="text-secondary" />
-                            Muscoli
-                          </span>
-                          <span className="text-2xl font-bold text-secondary">{stats.muscoli}</span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-secondary transition-all duration-300" style={{ width: `${stats.muscoli}%` }} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                            <Sparkle size={20} weight="fill" className="text-accent" />
-                            Figosità
-                          </span>
-                          <span className="text-2xl font-bold text-accent">{stats.figosita}</span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-accent transition-all duration-300" style={{ width: `${stats.figosita}%` }} />
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <Card className="p-3 border-2 border-accent bg-card">
-                    <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
-                      <Brain size={24} weight="fill" />
-                      CARATTERISTICHE MENTALI
-                    </h3>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                            <Brain size={20} weight="fill" className="text-primary" />
-                            Intelligenza
-                          </span>
-                          <span className="text-2xl font-bold text-primary">{stats.intelligenza}</span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-primary transition-all duration-300" style={{ width: `${stats.intelligenza}%` }} />
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Boost studio: +{calculateStudyGradeIncrease(stats.intelligenza).toFixed(1)} per azione
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                            <Chats size={20} weight="fill" className="text-accent" />
-                            Carisma
-                          </span>
-                          <span className="text-2xl font-bold text-accent">{stats.carisma}</span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-accent transition-all duration-300" style={{ width: `${stats.carisma}%` }} />
-                        </div>
-                        {stats.carisma > 70 && (
-                          <div className="text-xs text-accent mt-1 font-bold">
-                            ✨ PARLANTINA ATTIVA! 20% di evitare guai!
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-4 p-3 bg-muted/30 rounded">
-                        <p><strong>Intelligenza:</strong> Moltiplica i voti quando studi</p>
-                        <p className="mt-1"><strong>Carisma:</strong> Migliora le interazioni sociali</p>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="tratti" className="space-y-4 mt-4">
-                <Card className="p-3 border-2 border-purple-500 bg-card">
-                  <h3 className="text-xl font-bold mb-4 text-purple-400 flex items-center gap-2">
-                    🧬 TRATTI CARATTERIALI
-                  </h3>
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                        🧠 Stress Psicologico
-                      </span>
-                      <span className="text-2xl font-bold text-purple-400">
-                        {stats.psychStress ?? 0}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                        className="h-full bg-purple-500 transition-all duration-300"
-                        role="progressbar"
-                        aria-valuenow={stats.psychStress ?? 0}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-label={`Stress psicologico: ${stats.psychStress ?? 0} su 100${(stats.psychStress ?? 0) > 70 ? ' — livello elevato' : ''}`}
-                        style={{ width: `${stats.psychStress ?? 0}%` }}
-                      />
-                    </div>
-                    {(stats.psychStress ?? 0) > 70 && (
-                      <div className="text-xs text-purple-400 mt-1 font-bold animate-pulse">
-                        ⚠️ Stress elevato! Riposa o socializza.
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground font-semibold uppercase">Tratti attivi:</p>
-                    <div className="p-4 bg-muted/30 rounded text-sm text-muted-foreground italic">
-                      Nessun tratto assegnato. I tratti si sbloccheranno nella prossima
-                      sessione di gioco dopo l'aggiornamento C4.
-                    </div>
-                  </div>
-                </Card>
-              </TabsContent>
-              <TabsContent value="risorse" className="space-y-4 mt-4">
-                <Card className="p-3 border-2 border-secondary bg-card">
-                  <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
-                    <CurrencyDollar size={24} weight="fill" />
-                    RISORSE
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                          <CurrencyDollar size={20} weight="fill" className="text-accent" />
-                          Soldi
-                        </span>
-                        <span className="text-2xl font-bold text-accent">{stats.soldi}€</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-accent transition-all duration-300" style={{ width: `${(stats.soldi / 1000) * 100}%` }} />
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">Max: 1000€</div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-muted-foreground uppercase font-semibold flex items-center gap-2">
-                          <Battery size={20} weight="fill" className={stats.stanchezza > 80 ? 'text-destructive' : 'text-muted-foreground'} />
-                          Stanchezza
-                        </span>
-                        <span className={`text-2xl font-bold ${stats.stanchezza > 80 ? 'text-destructive' : 'text-foreground'}`}>{stats.stanchezza}</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className={`h-full transition-all duration-300 ${stats.stanchezza > 80 ? 'bg-destructive' : 'bg-muted-foreground'}`} style={{ width: `${stats.stanchezza}%` }} />
-                      </div>
-                      {stats.stanchezza > 80 && (
-                        <div className="text-xs text-destructive mt-1 font-bold">Troppo stanco! Devi riposare!</div>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              </TabsContent>
-            </Tabs>
-
-            <div className="text-center">
-              <Button
-                onClick={() => setShowResetDialog(true)}
-                variant="outline"
-                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-              >
-                Reset Gioco (Ctrl+R)
-              </Button>
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-primary mb-2">⚙️ PANNELLO DI CONTROLLO</h2>
+              <p className="text-muted-foreground">Gestisci le impostazioni del gioco</p>
             </div>
+
+            <ThemeSelector currentTheme={currentTheme} onThemeChange={handleThemeChange} />
+
+            <Card className="p-6 border-2 border-accent bg-card">
+              <h3 className="text-2xl font-bold mb-4 text-accent flex items-center gap-2">
+                <Trophy size={32} weight="fill" />
+                🎯 OBIETTIVO DEL GIOCO
+              </h3>
+              <p className="text-foreground mb-3">
+                Completa tutti e 5 gli anni di scuola superiore e supera la MATURITÀ per vincere!
+              </p>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 1 ? 'bg-accent' : 'bg-muted'}`} />
+                  <span className={gameTime.schoolYear.currentYear === 1 ? 'text-accent font-bold' : ''}>
+                    1° Superiore (14 anni)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 2 ? 'bg-accent' : 'bg-muted'}`} />
+                  <span className={gameTime.schoolYear.currentYear === 2 ? 'text-accent font-bold' : ''}>
+                    2° Superiore (15 anni)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 3 ? 'bg-accent' : 'bg-muted'}`} />
+                  <span className={gameTime.schoolYear.currentYear === 3 ? 'text-accent font-bold' : ''}>
+                    3° Superiore (16 anni)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 4 ? 'bg-accent' : 'bg-muted'}`} />
+                  <span className={gameTime.schoolYear.currentYear === 4 ? 'text-accent font-bold' : ''}>
+                    4° Superiore (17 anni)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${gameTime.schoolYear.currentYear >= 5 ? 'bg-accent' : 'bg-muted'}`} />
+                  <span className={gameTime.schoolYear.currentYear === 5 ? 'text-accent font-bold' : ''}>
+                    5° Superiore - MATURITÀ (18 anni)
+                  </span>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  ⚠️ <strong>Attenzione:</strong> Se la tua media scende sotto il 6 alla pagella, sarai BOCCIATO e il gioco finirà!
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-6 border-2 border-destructive bg-card">
+              <h3 className="text-2xl font-bold mb-4 text-destructive flex items-center gap-2">
+                <ShieldWarning size={32} weight="fill" />
+                GESTIONE GIOCO
+              </h3>
+              <div className="space-y-4">
+                <div className="p-4 bg-muted/30 rounded-lg">
+                  <h4 className="font-bold text-lg mb-2">📊 Stato Salvataggio</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Il gioco salva automaticamente ogni tua azione. I tuoi progressi sono sempre al sicuro!
+                  </p>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p>✓ Anno scolastico: <strong className="text-primary">{gameTime.schoolYear.currentYear}°</strong></p>
+                    <p>✓ Giocatore: <strong className="text-primary">{playerProfile?.name}</strong></p>
+                    <p>✓ Indirizzo: <strong className="text-primary">{schoolType?.toUpperCase()}</strong></p>
+                    <p>✓ Età: <strong className="text-primary">{gameTime.age} anni</strong></p>
+                  </div>
+                </div>
+
+                <div className="text-center pt-4">
+                  <Button
+                    onClick={() => setShowResetDialog(true)}
+                    variant="outline"
+                    size="lg"
+                    className="border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground w-full md:w-auto"
+                  >
+                    🔄 Reset Gioco Completo (Ctrl+R)
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Attenzione: questa azione cancellerà TUTTA la tua progressione!
+                  </p>
+                </div>
+              </div>
+            </Card>
           </TabsContent>
 
           <TabsContent value="school" className="space-y-6 mt-6">
