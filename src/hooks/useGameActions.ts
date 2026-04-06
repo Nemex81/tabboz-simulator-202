@@ -51,6 +51,14 @@ interface UseGameActionsParams {
   schoolRecord: SchoolRecord
   setSchoolRecord: (updater: ((prev: SchoolRecord) => SchoolRecord) | SchoolRecord) => void
   gainExtraAction: () => void
+  addLogEntry: (
+    type: import('@/lib/types').LogEntryType,
+    title: string,
+    description: string,
+    result: import('@/lib/types').GameLogEntry['result'],
+    date: import('@/lib/types').GameDate,
+    phase: import('@/lib/types').DayPhase
+  ) => void
   marinatoOggi: boolean
 }
 
@@ -83,6 +91,7 @@ export function useGameActions({
   schoolRecord,
   setSchoolRecord,
   gainExtraAction,
+  addLogEntry,
   marinatoOggi,
 }: UseGameActionsParams) {
   // Refs per accesso stabile
@@ -147,10 +156,11 @@ export function useGameActions({
     }))
     consumeAction()
     announce('Hai pompato FERRO! +10 Muscoli, +5 Figosità, -20 Soldi, +15 Stanchezza')
+    addLogEntry('action_neutral', 'Sessione in palestra', 'Hai pompato FERRO! +10 Muscoli, +5 Figosità, -20 Soldi, +15 Stanchezza', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('in palestra')
     checkForNewRelationship()
     triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship])
+  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, addLogEntry])
 
   const handleLampada = useCallback(() => {
     const gt = gameTimeRef.current
@@ -181,8 +191,9 @@ export function useGameActions({
     }))
     consumeAction()
     announce('Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -30 Soldi')
+    addLogEntry('action_neutral', 'Lampada abbronzante', 'Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -30 Soldi', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent])
+  }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
 
   const handleLavoro = useCallback(() => {
     const gt = gameTimeRef.current
@@ -220,8 +231,9 @@ export function useGameActions({
     }))
     consumeAction()
     announce('Hai lavorato come BUTTADIFUORI! +80 Soldi, +5 Coattaggine, +20 Stanchezza')
+    addLogEntry('action_neutral', 'Lavoro come buttafuori', 'Hai lavorato come BUTTADIFUORI! +80 Soldi, +5 Coattaggine, +20 Stanchezza', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent])
+  }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
 
   const handleMotorino = useCallback(() => {
     const gt = gameTimeRef.current
@@ -259,8 +271,9 @@ export function useGameActions({
     }))
     consumeAction()
     announce('Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -50 Soldi')
+    addLogEntry('action_neutral', 'Motorino truccato', 'Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -50 Soldi', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent])
+  }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
 
   const handleStudia = useCallback(() => {
     const gt = gameTimeRef.current
@@ -318,7 +331,11 @@ export function useGameActions({
 
     const bonusText = hasFriendBonus ? ' (BONUS AMICO INTELLIGENTE!)' : ''
     const stressText = mentalState.studyEfficiencyMultiplier < 1 ? ' (STRESS ALTO: efficacia ridotta!)' : ''
-    announce(`Hai studiato ${getSubjectDisplayName(selectedSubject)}! +${adjustedGradeIncrease.toFixed(2)} al voto, +${intelligenzaGain} Intelligenza${bonusText}${stressText}, +20 Stanchezza, -5 Coattaggine`)
+    const studyMsg = `Hai studiato ${getSubjectDisplayName(selectedSubject)}! +${adjustedGradeIncrease.toFixed(2)} al voto, +${intelligenzaGain} Intelligenza${bonusText}${stressText}, +20 Stanchezza, -5 Coattaggine`
+    announce(studyMsg)
+    const studyLogTitle = stressText !== '' ? `Studiato ${getSubjectDisplayName(selectedSubject)} — stress alto` : `Studiato ${getSubjectDisplayName(selectedSubject)}`
+    const studyLogResult: 'positive' | 'negative' | 'neutral' = stressText !== '' ? 'neutral' : 'positive'
+    addLogEntry('school', studyLogTitle, studyMsg, studyLogResult, gameTimeRef.current.currentDate, currentPhaseRef.current)
 
     const gt = gameTimeRef.current
     if (shouldTriggerSurpriseQuiz() && gt.schoolYear.isSchoolPeriod) {
@@ -332,7 +349,7 @@ export function useGameActions({
       playSound.eventTrigger()
       announce(`${quizResult.message} in ${getSubjectDisplayName(surpriseSubject)}!`)
     }
-  }, [setGrades, setStats, consumeAction, announce, setShowSubjectDialog])
+  }, [setGrades, setStats, consumeAction, announce, setShowSubjectDialog, addLogEntry])
 
   const handleCorrompi = useCallback(() => {
     const s = statsRef.current
@@ -370,7 +387,8 @@ export function useGameActions({
     consumeAction()
     playSound.success()
     announce(`MAZZETTA al prof di ${getSubjectDisplayName(subject)}! +0.5 al voto, -100 Soldi. EZPZ!`)
-  }, [setGrades, setStats, consumeAction, announce])
+    addLogEntry('school', `Mazzetta al prof di ${getSubjectDisplayName(subject)}`, `MAZZETTA al prof di ${getSubjectDisplayName(subject)}! +0.5 al voto, -100 Soldi. EZPZ!`, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
+  }, [setGrades, setStats, consumeAction, announce, addLogEntry])
 
   const handleMinaccia = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
@@ -400,6 +418,7 @@ export function useGameActions({
         condotta: clampStat(current.condotta - 2, 0, 10)
       }))
       announce(`SOSPESO per 3 giorni! +1 Sospensione, -2 Condotta. Hai esagerato!`)
+      addLogEntry('school', 'Sospeso!', 'SOSPESO per 3 giorni! +1 Sospensione, -2 Condotta. Hai esagerato!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
       consumeAction()
       return
     } else if (roll < 30) {
@@ -410,6 +429,7 @@ export function useGameActions({
         condotta: clampStat(current.condotta - 0.5, 0, 10)
       }))
       announce(`Ti hanno dato una NOTA disciplinare! +1 Nota, -0.5 Condotta.`)
+      addLogEntry('school', 'Nota disciplinare', 'Ti hanno dato una NOTA disciplinare! +1 Nota, -0.5 Condotta.', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
       consumeAction()
       return
     }
@@ -429,7 +449,8 @@ export function useGameActions({
     }))
     consumeAction()
     announce(`Hai MINACCIATO il prof di ${getSubjectDisplayName(subject)}! +1.5 al voto, +15 Coattaggine, -0.3 Condotta. Rischiosa ma ha funzionato!`)
-  }, [setGrades, setStats, setGameOver, setGameOverReason, consumeAction, announce, setSchoolRecord])
+    addLogEntry('school', `Minacciato il prof di ${getSubjectDisplayName(subject)}`, `Hai MINACCIATO il prof di ${getSubjectDisplayName(subject)}! +1.5 al voto, +15 Coattaggine, -0.3 Condotta. Rischiosa ma ha funzionato!`, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
+  }, [setGrades, setStats, setGameOver, setGameOverReason, consumeAction, announce, setSchoolRecord, addLogEntry])
 
   const handleRiposa = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
@@ -466,7 +487,8 @@ export function useGameActions({
     }))
     consumeAction()
     announce(`Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`)
-  }, [setStats, consumeAction, announce])
+    addLogEntry('action_neutral', 'Riposo pomeridiano', `Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
+  }, [setStats, consumeAction, announce, addLogEntry])
 
   const handleDisco = useCallback(() => {
     const gt = gameTimeRef.current
@@ -495,6 +517,7 @@ export function useGameActions({
     if (getMentalStateModifiers(s.stress ?? 0, s.morale ?? 60).isDiscoBlocked) {
       playSound.failure()
       announce('Sei troppo giù di morale per andare in disco!')
+      addLogEntry('action_failure', 'Troppo giù per il disco', 'Sei troppo giù di morale per andare in disco!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
       return
     }
     playSound.buttonClick()
@@ -519,6 +542,7 @@ export function useGameActions({
         morale: clampStat(current.morale + 15)
       }))
       announce('Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, +10 Carisma, -60 Soldi, +25 Stanchezza')
+      addLogEntry('action_success', 'Serata epica in disco', 'Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, +10 Carisma, -60 Soldi, +25 Stanchezza', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {
       playSound.failure()
       setStats((current) => ({
@@ -530,13 +554,14 @@ export function useGameActions({
         morale: clampStat(current.morale - 10)
       }))
       announce('Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -60 Soldi, +20 Stanchezza')
+      addLogEntry('action_failure', 'Serata scarsa in disco', 'Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -60 Soldi, +20 Stanchezza', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
     consumeAction()
     checkForNewFriend('in discoteca')
     checkForNewRelationship()
     checkForNewGirlfriend()
     triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend])
+  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
 
   const handleCinema = useCallback(() => {
     const gt = gameTimeRef.current
@@ -578,6 +603,7 @@ export function useGameActions({
         morale: clampStat(current.morale + 10)
       }))
       announce('Film SPETTACOLARE! Serata fantastica! +10 Figosità, +10 Carisma, -40 Soldi, -10 Stanchezza')
+      addLogEntry('action_success', 'Film spettacolare', 'Film SPETTACOLARE! Serata fantastica! +10 Figosità, +10 Carisma, -40 Soldi, -10 Stanchezza', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {
       playSound.failure()
       setStats((current) => ({
@@ -588,13 +614,14 @@ export function useGameActions({
         morale: clampStat(current.morale + 10)
       }))
       announce('Hai visto un bel film! Serata tranquilla. -40 Soldi, -15 Stanchezza')
+      addLogEntry('action_neutral', 'Serata al cinema', 'Hai visto un bel film! Serata tranquilla. -40 Soldi, -15 Stanchezza', 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
     consumeAction()
     checkForNewFriend('al cinema')
     checkForNewRelationship()
     checkForNewGirlfriend()
     triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend])
+  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
 
   const handleShoppingMall = useCallback(() => {
     const gt = gameTimeRef.current
@@ -679,6 +706,7 @@ export function useGameActions({
       setGirlfriend(newGirlfriend)
       consumeAction()
       announce(`${relationship.name} ha detto SÌ! Siete INSIEME! +30 Figosità, +15 Carisma`)
+      addLogEntry('social', `${relationship.name} ha detto sì!`, `${relationship.name} ha detto SÌ! Siete INSIEME! +30 Figosità, +15 Carisma`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {
       playSound.bigLoss()
       setStats((current) => ({
@@ -689,8 +717,9 @@ export function useGameActions({
       }))
       consumeAction()
       announce(`${relationship.name} ti ha dato il PALO! RIFIUTATO! -20 Figosità, -10 Carisma, -40 Soldi`)
+      addLogEntry('social', `Palo da ${relationship.name}`, `${relationship.name} ti ha dato il PALO! RIFIUTATO! -20 Figosità, -10 Carisma, -40 Soldi`, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
-  }, [relationships, setRelationships, setStats, setGirlfriend, consumeAction, announce])
+  }, [relationships, setRelationships, setStats, setGirlfriend, consumeAction, announce, addLogEntry])
 
   const handlePrepareExam = useCallback((examSubject: string) => {
     const gt = gameTimeRef.current
@@ -813,12 +842,18 @@ export function useGameActions({
       playSound.success()
     }
     announce(result.message)
+    const gfLogResult: 'positive' | 'negative' | 'neutral' = result.statChanges
+      ? (Object.values(result.statChanges).reduce((a, b) => a + b, 0) > 0 ? 'positive'
+         : Object.values(result.statChanges).reduce((a, b) => a + b, 0) < 0 ? 'negative'
+         : 'neutral')
+      : 'neutral'
+    addLogEntry('social', `${action} con ${gf.nome}`, result.message, gfLogResult, gameTimeRef.current.currentDate, currentPhaseRef.current)
     if (shouldGirlfriendBreakup(result.updatedGirlfriend)) {
       playSound.gameOver()
       announce(`${gf.nome} ti ha lasciato! La relazione è finita...`)
       setGirlfriend(null)
     }
-  }, [setGirlfriend, setStats, setGrades, consumeAction, announce])
+  }, [setGirlfriend, setStats, setGrades, consumeAction, announce, addLogEntry])
 
   const handleGirlfriendBreakup = useCallback(() => {
     const gf = girlfriendRef.current
@@ -847,14 +882,15 @@ export function useGameActions({
       stress: clampStat(current.stress - 5),
       morale: clampStat(current.morale + 5)
     }))
-    consumeAction()
-    announce(isSchoolMorning
+    const chiacchieraMsg = isSchoolMorning
       ? 'Chiacchieri con un compagno tra una lezione e l\'altra! +5 Carisma, +3 Reputazione'
       : 'Hai chiacchierato con qualcuno! +5 Carisma, +3 Reputazione'
-    )
+    consumeAction()
+    announce(chiacchieraMsg)
+    addLogEntry('social', 'Chiacchierata con qualcuno', chiacchieraMsg, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('in giro per il paese')
     checkForNewRelationship()
-  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship])
+  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, addLogEntry])
 
   // B1-FIX-5 applicato
   const handleParco = useCallback(() => {
@@ -882,10 +918,11 @@ export function useGameActions({
     }))
     consumeAction()
     announce('Giro rilassante al parco! +5 Carisma, -5 Stanchezza, +2 Reputazione')
+    addLogEntry('action_neutral', 'Giro al parco', 'Giro rilassante al parco! +5 Carisma, -5 Stanchezza, +2 Reputazione', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('al parco')
     checkForNewRelationship()
     checkForNewGirlfriend()
-  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend])
+  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
 
   // B1-FIX-5 applicato
   const handleTelefona = useCallback(() => {
@@ -940,7 +977,8 @@ export function useGameActions({
     consumeAction()
     playSound.buttonClick()
     announce("Hai MARINATO la scuola! +1 Assenza, +5 Coattaggine, guadagni un'azione extra. Goditi la libertà... per ora.")
-  }, [setStats, setSchoolRecord, gainExtraAction, consumeAction, announce])
+    addLogEntry('school', 'Marinato la scuola', "Hai MARINATO la scuola! +1 Assenza, +5 Coattaggine, guadagni un'azione extra. Goditi la libertà... per ora.", 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
+  }, [setStats, setSchoolRecord, gainExtraAction, consumeAction, announce, addLogEntry])
 
   return {
     handlePalestra,

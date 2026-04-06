@@ -1,9 +1,10 @@
 import React from 'react'
-import { IdentificationCard, Star, Trophy, GraduationCap } from '@phosphor-icons/react'
+import { IdentificationCard, Star, Trophy, GraduationCap, BookOpen } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats, SchoolType, SchoolRecord } from '@/lib/types'
+import { GameStats, SchoolType, SchoolRecord, GameLogEntry } from '@/lib/types'
 import { getReputationLevel } from '@/lib/game-utils'
+import { DiaryPanel } from '@/components/DiaryPanel'
 
 interface CharacterSheetProps {
   playerProfile: { name: string; gender: 'maschio' | 'femmina' } | null
@@ -13,6 +14,7 @@ interface CharacterSheetProps {
   age: number
   schoolRecord: SchoolRecord
   currentMedia: number
+  gameLog: GameLogEntry[]
 }
 
 export function CharacterSheet({
@@ -23,6 +25,7 @@ export function CharacterSheet({
   age,
   schoolRecord,
   currentMedia,
+  gameLog,
 }: CharacterSheetProps) {
   return (
     <Tabs defaultValue="profilo" className="w-full mt-6">
@@ -37,10 +40,10 @@ export function CharacterSheet({
           <span className="sm:hidden">👕</span>
           <span className="ml-1 text-xs opacity-50">🔜</span>
         </TabsTrigger>
-        <TabsTrigger value="diario" disabled aria-label="Diario: non ancora disponibile">
+        <TabsTrigger value="diario" aria-label="Diario degli eventi">
+          <BookOpen size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Diario</span>
           <span className="sm:hidden">📓</span>
-          <span className="ml-1 text-xs opacity-50">🔜</span>
         </TabsTrigger>
         <TabsTrigger value="obiettivi" disabled aria-label="Obiettivi: non ancora disponibile">
           <span className="hidden sm:inline">Obiettivi</span>
@@ -150,6 +153,7 @@ export function CharacterSheet({
             <GraduationCap size={24} weight="fill" aria-hidden="true" />
             STORICO SCOLASTICO
           </h3>
+
           <dl
             role="table"
             aria-label="Dati disciplinari anno corrente"
@@ -192,6 +196,23 @@ export function CharacterSheet({
         </Card>
       </section>
 
+      {/* Sezione 5 — Anteprima Diario */}
+      <section aria-labelledby="cs-diary-preview-title">
+        <Card className="p-4 border-2 border-muted bg-card">
+          <h3 id="cs-diary-preview-title" className="text-lg font-bold text-muted-foreground mb-3 flex items-center gap-2">
+            <BookOpen size={20} weight="fill" aria-hidden="true" />
+            ULTIMI EVENTI
+          </h3>
+          <DiaryPanel gameLog={gameLog} previewOnly={true} />
+        </Card>
+      </section>
+
+        </div>
+      </TabsContent>
+
+      <TabsContent value="diario">
+        <div className="mt-2">
+          <DiaryPanel gameLog={gameLog} previewOnly={false} />
         </div>
       </TabsContent>
     </Tabs>

@@ -332,3 +332,28 @@ export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   wentToSchoolToday: false,
   consecutiveGoodDays: 0
 }
+
+export type LogEntryType =
+  | 'action_success'   // azione del giocatore riuscita
+  | 'action_failure'   // azione del giocatore fallita
+  | 'action_neutral'   // azione del giocatore neutra (es. studia)
+  | 'event_positive'   // evento automatico positivo
+  | 'event_negative'   // evento automatico negativo
+  | 'event_neutral'    // evento automatico neutro
+  | 'school'           // evento scolastico (voto, nota, sospensione)
+  | 'social'           // evento sociale (amico, ragazza)
+  | 'system'           // evento di sistema (fine anno, game over, nuovo anno)
+
+export type DayPhaseLabel = 'Mattina' | 'Pomeriggio' | 'Sera' | 'Notte'
+
+export interface GameLogEntry {
+  id: string
+  type: LogEntryType
+  phase: DayPhaseLabel
+  date: GameDate
+  title: string
+  description: string
+  result: 'positive' | 'negative' | 'neutral'
+}
+
+export const MAX_LOG_ENTRIES = 200
