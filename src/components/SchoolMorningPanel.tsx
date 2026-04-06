@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { GameStats } from '@/lib/types'
+import { GameStats, Friend } from '@/lib/types'
 import { SchoolMorningEvent, SchoolMorningChoice } from '@/lib/school-morning-events'
 import { clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
@@ -18,6 +18,7 @@ interface SchoolMorningPanelProps {
   onGainExtraAction: () => void
   onConsumeAction: () => void
   announce: (msg: string) => void
+  onNewFriend?: (f: Friend) => void
   addLogEntry: (
     type: import('@/lib/types').LogEntryType,
     title: string,
@@ -100,6 +101,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
   onGainExtraAction,
   onConsumeAction,
   announce,
+  onNewFriend,
   addLogEntry,
   currentDate,
 }: SchoolMorningPanelProps) {
@@ -134,6 +136,9 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
 
       playSound.buttonClick()
       announce(result.message)
+      if (result.newFriend && onNewFriend) {
+        onNewFriend(result.newFriend)
+      }
       const deltaSum = Object.entries(result.delta)
         .filter(([k]) => k !== 'soldi')
         .reduce((acc, [, v]) => acc + (v ?? 0), 0)
@@ -149,7 +154,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
       )
       setResolvedIds((prev) => new Set([...prev, event.id]))
     },
-    [resolvedIds, stats, onStatChange, onGainExtraAction, onConsumeAction, announce, addLogEntry, currentDate]
+    [resolvedIds, stats, onStatChange, onGainExtraAction, onConsumeAction, announce, onNewFriend, addLogEntry, currentDate]
   )
 
   return (

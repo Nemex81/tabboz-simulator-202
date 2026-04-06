@@ -30,7 +30,7 @@ export const generateRandomEnhancedFriend = (): Friend => {
     affinita: 50,
     unlocked: true,
     intelligenza,
-    originType: 'extrascolastico' as const,
+    originType: 'compagno_classe' as const,
   }
 }
 

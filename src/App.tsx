@@ -1147,6 +1147,7 @@ function App() {
                       onGainExtraAction={gainExtraAction}
                       onConsumeAction={consumeAction}
                       announce={announce}
+                      onNewFriend={(f) => setFriends((current) => [...current, f])}
                       addLogEntry={addLogEntry}
                       currentDate={gameTime.currentDate}
                     />

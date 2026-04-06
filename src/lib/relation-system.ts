@@ -661,3 +661,16 @@ function _describeRelEffects(effects: RelationEffects): string {
   }
   return parts.join(', ') || '(nessun effetto)'
 }
+
+/**
+ * Calcola la probabilità effettiva di generare un nuovo amico.
+ * Nessuna penalità fino a 6 amici. Da 7 in su: -5% per ogni amico aggiuntivo.
+ * Restituisce sempre un valore >= 0.
+ */
+export function getFriendGenChance(
+  baseProbability: number,
+  currentFriendsCount: number
+): number {
+  const penalty = Math.max(0, currentFriendsCount - 6) * 5
+  return Math.max(0, baseProbability - penalty)
+}

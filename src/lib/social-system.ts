@@ -12,7 +12,7 @@ export const GIRL_NAMES = [
   'Melissa', 'Cristina', 'Nicole', 'Daniela', 'Federica', 'Valentina'
 ]
 
-export const generateRandomFriend = (): Friend => {
+export const generateRandomFriend = (location?: string): Friend => {
   const name = FRIEND_NAMES[Math.floor(Math.random() * FRIEND_NAMES.length)]
   const friendTypes: FriendType[] = ['coatto', 'secchione', 'sportivo', 'ribelle']
   const type = friendTypes[Math.floor(Math.random() * friendTypes.length)]
@@ -24,6 +24,12 @@ export const generateRandomFriend = (): Friend => {
     intelligenza = Math.floor(Math.random() * 30) + 20
   }
 
+  const originType = location && ['classe', 'corridoio'].includes(location)
+    ? 'compagno_classe' as const
+    : location === 'quartiere'
+    ? 'compagno_istituto' as const
+    : 'extrascolastico' as const
+
   return {
     id: `friend_${Date.now()}_${Math.random()}`,
     name,
@@ -31,7 +37,7 @@ export const generateRandomFriend = (): Friend => {
     affinita: 50,
     intelligenza,
     unlocked: true,
-    originType: 'extrascolastico' as const,
+    originType,
   }
 }
 

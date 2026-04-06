@@ -1,7 +1,8 @@
 // src/lib/school-morning-events.ts
 // Pool di eventi randomizzati per la mattina scolastica.
 
-import { GameStats } from '@/lib/types'
+import { GameStats, Friend } from '@/lib/types'
+import { generateSchoolFriend } from './enhanced-friend-system'
 
 export type SchoolMorningCategory = 'didattica' | 'sociale' | 'istituto'
 
@@ -16,7 +17,7 @@ export interface SchoolMorningEvent {
 
 export interface SchoolMorningChoice {
   label: string
-  outcome: (stats: GameStats) => { delta: Partial<GameStats>; message: string }
+  outcome: (stats: GameStats) => { delta: Partial<GameStats>; message: string; newFriend?: Friend }
   grantsExtraAction?: boolean   // true → +1 extraAction al giocatore
 }
 
@@ -169,7 +170,7 @@ export const SCHOOL_MORNING_EVENTS: SchoolMorningEvent[] = [
         outcome: (s) => {
           const success = Math.random() < (s.carisma / 100)
           return success
-            ? { delta: { carisma: 8, reputazione: 5 }, message: 'Bella chiacchierata! Potrebbe diventare un amico. +8 Carisma, +5 Reputazione' }
+            ? { delta: { carisma: 8, reputazione: 5 }, message: 'Bella chiacchierata! Nuovo amico aggiunto alla rubrica! +8 Carisma, +5 Reputazione', newFriend: generateSchoolFriend('compagno_classe') }
             : { delta: { stanchezza: 5 }, message: 'Conversazione un po\' imbarazzante. Ci riproverai.' }
         },
         grantsExtraAction: false,

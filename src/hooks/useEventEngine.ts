@@ -7,7 +7,8 @@ import {
   getReputationEventModifier,
   canAvoidNegativeEventWithCharisma
 } from '@/lib/game-utils'
-import { generateRandomFriend, checkNewFriendEvent, generateRandomRelationship } from '@/lib/social-system'
+import { generateRandomFriend, generateRandomRelationship } from '@/lib/social-system'
+import { getFriendGenChance, LOCATION_PROB_BONUS } from '@/lib/relation-system'
 import { playSound } from '@/lib/sound-effects'
 
 interface UseEventEngineParams {
@@ -83,8 +84,12 @@ export function useEventEngine({
   currentPhaseRef.current = currentPhase
 
   const checkForNewFriend = useCallback((location: string) => {
-    if (checkNewFriendEvent(statsRef.current.carisma, location) && friendsRef.current.length < 4) {
-      const newFriend = generateRandomFriend()
+    const carismaBonus = Math.floor(statsRef.current.carisma / 10)
+    const locationBonus = LOCATION_PROB_BONUS[location] ?? 0
+    const rawChance = 15 + carismaBonus + locationBonus
+    const adjustedChance = getFriendGenChance(rawChance, friendsRef.current.length)
+    if (Math.random() * 100 < adjustedChance) {
+      const newFriend = generateRandomFriend(location)
       setFriends((current) => [...current, newFriend])
       playSound.success()
       announce(`Hai conosciuto ${newFriend.name} ${location}! Nuovo amico aggiunto alla RUBRICA! (${newFriend.type.toUpperCase()})`)
