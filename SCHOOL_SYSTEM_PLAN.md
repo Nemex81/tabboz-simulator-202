@@ -1,8 +1,8 @@
 # Piano Tecnico Implementativo — Sistema Materie Scolastiche Dinamico
 
-> **Versione**: 1.1 — _revisione post-validazione_  
+> **Versione**: 1.2 — _revisione post-validazione v2 (N1-N8 corretti)_  
 > **Data**: 2026-04-06  
-> **Stato**: ✅ Validato con correzioni — pronto per implementazione  
+> **Stato**: ✅ Rivalidato — pronto per implementazione  
 > **Ambientazione**: Roma, sistema scolastico italiano reale
 
 ---
@@ -20,6 +20,14 @@
 | V7 | `DEFAULT_GAME_STATE.grades` (7 materie fisse) diventa obsoleto senza strategia | 🟡 Moderato | Aggiunto in Fase 1 — aggiornamento `DEFAULT_GAME_STATE` |
 | V8 | Tab "Scuola/Voti" di `CharacterSheet` non esiste | 🟡 Moderato | Aggiunto come nuovo tab in Fase 3 |
 | V9 | `getSchoolTypeName` non aggiornato per `conservatorio` e `alberghiero` | 🟡 Moderato | Aggiunto in Fase 0 |
+| N1 | `gradesHistory` non gestito nel KV store di `App.tsx` — mancavano dichiarazione `useKV`, reset in `handleReset`, passaggio a `CharacterSheet` | 🔴 Critico | Aggiunto in Fase 5 |
+| N2 | La generazione degli esami avviene in `useGameTime.ts` (riga ~299, `Object.keys(gradesRef.current)`), non in `ExamsPanel` — il piano modificava il punto sbagliato | 🔴 Critico | Fase 5 aggiornata: modifica spostata in `useGameTime.ts` |
+| N3 | `useGameTime.ts` non era elencato nei file coinvolti | 🟡 Moderato | Aggiunto a File Coinvolti |
+| N4 | `handleReset` in `App.tsx` non resettava `gradesHistory` | 🟡 Moderato | Aggiunto in Fase 5 |
+| N5 | `calculateWeightedMedia` ha consumer multipli — va verificata la stabilità dell'interfaccia pre/post migrazione | 🟢 Basso | Nota aggiunta in Fase 2 |
+| N6 | `SUBJECT_WEIGHTS` ha più consumer — la deprecazione deve avvenire dopo migrazione di tutti i consumer | 🟡 Moderato | Ordine migrazione esplicitato in Fase 2 |
+| N7 | `data-validation.ts` appariva sia in Fase 0 (`validateSchoolType`) che in Fase 3 (`validateGrades`) senza distinzione — ambiguità nella numerazione | 🟢 Basso | Fase 3 rietichettata con scope esplicito |
+| N8 | `SubjectGrades` è già `Record<string, number>` — la retrocompatibilità KV è garantita senza migrazione; non evidenziato nel piano | 🟢 Basso | Aggiunto in Considerazioni Tecniche |
 
 ---
 
@@ -42,8 +50,9 @@ circa 10-14 materie attive per anno, che si evolvono nel tempo.
 | `src/lib/subjects.ts` | **Nuovo file** — costanti dati |
 | `src/lib/game-utils.ts` | Modifica funzioni di calcolo |
 | `src/lib/data-validation.ts` | Modifica validatore |
+| `src/hooks/useGameTime.ts` | Modifica — sorgente materie per `generateScheduledExam` |
 | `src/components/SchoolSelection.tsx` | Modifica UI — aggiunte 3 scuole |
-| `src/components/ExamsPanel.tsx` | Modifica — lista materie dinamica |
+| `src/components/ExamsPanel.tsx` | Nessuna modifica logica — solo presentazione |
 | `src/components/CharacterSheet.tsx` | Modifica — nuovo tab Scuola/Voti |
 | `src/components/GradeProgressPanel.tsx` | **Nuovo componente** |
 
@@ -454,19 +463,26 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 - [ ] Aggiornare `calculateWeightedMedia` per usare `getGradeWeight()` da `subjects.ts` invece di `SUBJECT_WEIGHTS` — nuovo import: `import { getGradeWeight, getActiveSubjectsForYear } from '@/lib/subjects'`
 - [ ] Rimuovere import `SUBJECT_WEIGHTS` da `game-utils.ts` dopo l'aggiornamento
 
+> ⚠️ **N5/N6 — Ordine migrazione consumer**: prima di rimuovere `SUBJECT_WEIGHTS` da `types.ts` verificare che tutti i consumer abbiano migrato. Consumer diretti attivi: solo `calculateWeightedMedia` in `game-utils.ts`. `App.tsx` e `CharacterSheet.tsx` chiamano `calculateWeightedMedia` ma non importano `SUBJECT_WEIGHTS` direttamente — la loro interfaccia non cambia.
+
 **Verifica Fase 2**
 - [ ] `calculateWeightedMedia` produce lo stesso risultato di prima per `tecnico`, `agraria`, `artistico` con le materie esistenti (test con valori noti)
+- [ ] Nessun import diretto di `SUBJECT_WEIGHTS` rimasto fuori da `types.ts`
 - [ ] `tsc --noEmit` senza errori
 
 ---
 
-### Fase 3 — `src/lib/data-validation.ts`
+### Fase 3 — `src/lib/data-validation.ts` — funzione `validateGrades`
 
-- [ ] Aggiornare `validateGrades` — quando `schoolType` è fornito, usare `getDefaultGradesForSchoolType(schoolType)` come baseline per le chiavi attese (invece di una lista hardcoded)
+> `validateSchoolType` è già stato aggiornato in Fase 0. Questa fase copre **solo** `validateGrades` (N7).
+
+- [ ] Aggiornare `validateGrades` — quando `schoolType` è fornito, usare `getDefaultGradesForSchoolType(schoolType)` come baseline per le chiavi attese, invece della lista hardcoded a 4 materie (`matematica`, `italiano`, `storia`, `edFisica`)
 
 **Verifica Fase 3**
 - [ ] `tsc --noEmit` senza errori
 - [ ] `validateGrades(null, 'liceoScientifico')` restituisce i voti default del liceo scientifico year=1
+- [ ] `validateGrades(null, 'alberghiero')` restituisce le materie alberghiero year=1
+- [ ] `validateGrades(null, 'conservatorio')` restituisce le materie conservatorio year=1
 
 ---
 
@@ -479,8 +495,8 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 - [ ] Aggiornare la griglia da `md:grid-cols-3` a `md:grid-cols-3 lg:grid-cols-3` con 2 righe (o `grid-cols-2 md:grid-cols-3`) per 6 card
 
 **`src/components/ExamsPanel.tsx`**
-- [ ] Aggiungere prop `schoolType: SchoolType` e `schoolYear: number` al component
-- [ ] Sostituire la lista statica di soggetti con `getActiveSubjectsForYear(schoolType, schoolYear).map(s => s.key)` per `generateScheduledExam`
+- [ ] Nessuna modifica alla logica interna — `ExamsPanel` è un componente di sola presentazione che riceve `exams: ScheduledExam[]` già generati a monte (N2)
+- [ ] _(La sorgente dei soggetti per la generazione esami è in `useGameTime.ts` — aggiornata in Fase 5)_
 
 **`src/components/CharacterSheet.tsx`**
 - [ ] Aggiungere tab **"Scuola"** (`value="scuola"`) alla `TabsList` (aggiornare `grid-cols-5` → `grid-cols-6`)
@@ -502,16 +518,42 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 
 ---
 
-### Fase 5 — Integrazione in `App.tsx`
+### Fase 5 — `src/hooks/useGameTime.ts` + `src/App.tsx`
 
-- [ ] Aggiornare `handleSchoolSelection` per inizializzare `gradesHistory: {}` nel KV
-- [ ] Passare `schoolYear` a `ExamsPanel` come prop
-- [ ] Aggiungere `gradesHistory` allo stato KV: `useKV<Record<number, SubjectGrades>>('tabboz-grades-history', {})`
-- [ ] Passare `GradeProgressPanel` o il tab Scuola dove necessario nella UI principale
-- [ ] Al completamento dell'anno scolastico (logica esistente in `useGameTime`): chiamare `archiveYearGrades` e aggiornare `gradesHistory`
+> ⚠️ **N2/N3**: La generazione degli esami è in `useGameTime.ts` riga ~299:
+> ```ts
+> const subjects = Object.keys(gradesRef.current)
+> const newExam = generateScheduledExam(subjects)
+> ```
+> Questa riga usa tutte le chiavi del KV grades (comprese materie di anni passati). Va sostituita con `getActiveSubjectsForYear`.
+
+**File: `src/hooks/useGameTime.ts`**
+- [ ] Aggiungere import `getActiveSubjectsForYear` da `@/lib/subjects`
+- [ ] Sostituire `Object.keys(gradesRef.current)` con:
+  ```ts
+  getActiveSubjectsForYear(schoolType, gameTimeRef.current.schoolYear.currentYear)
+    .filter(s => s.countsForGPA)
+    .map(s => s.key)
+  ```
+  _(N.B.: `schoolType` è già un parametro del hook; `gameTimeRef.current` è già disponibile)_
+- [ ] Al completamento anno scolastico (nella callback esistente che chiama `calculateNextSchoolYear`): richiamare `archiveYearGrades(gradesRef.current, schoolType, currentYear)` e propagare i due risultati (`archived`, `next`) tramite callback verso `App.tsx`
+
+**File: `src/App.tsx`**
+- [ ] Aggiungere KV store cronologia voti (N1):
+  ```ts
+  const [rawGradesHistory, setRawGradesHistory] = useKV<Record<number, SubjectGrades>>('tabboz-grades-history', {})
+  ```
+- [ ] In `handleSchoolSelection`: aggiungere `setRawGradesHistory({})` per azzerare la cronologia al primo avvio
+- [ ] In `handleReset` (N4): aggiungere `setRawGradesHistory({})` accanto agli altri reset di stato
+- [ ] Passare `gradesHistory={rawGradesHistory}` a `CharacterSheet` come prop
+- [ ] Collegare la callback di `archiveYearGrades` a `setRawGradesHistory(prev => ({ ...prev, [archivedYear]: archived }))` e `setGrades(next)`
+- [ ] Rimuovere `Passare schoolYear a ExamsPanel` — non necessario (ExamsPanel è solo presentazione)
 
 **Verifica Fase 5**
-- [ ] Nuovo gioco con `liceoScientifico`: anno 1 ha le materie corrette, anno 3 ha `fisicaAvanzata` al posto di `fisica`
+- [ ] Nuovo gioco con `liceoScientifico`: anno 1 → materie corrette; passaggio ad anno 3 → `fisicaAvanzata` al posto di `fisica`
+- [ ] `generateScheduledExam` non propone mai materie fuori dall'anno corrente
+- [ ] `handleReset` azzera `gradesHistory` nel KV store
+- [ ] `CharacterSheet` riceve e mostra `gradesHistory` nel tab Scuola
 - [ ] `tsc --noEmit` senza errori sull'intero workspace
 - [ ] Nessuna regressione nei test esistenti (se presenti)
 
@@ -547,8 +589,15 @@ Il campo `weightBySchoolType` ha sempre precedenza sul `weight` base.
 
 ### `isCommon` — nota
 Il campo `isCommon: boolean` in `SubjectDefinition` è descrittivo (utile per filtri futuri
-e per la UI)  ma non viene usato nella logica di `getActiveSubjectsForYear`, che
+e per la UI) ma non viene usato nella logica di `getActiveSubjectsForYear`, che
 separa i dati strutturalmente in `COMMON_SUBJECTS` e `SPECIFIC_SUBJECTS`.
+
+### Retrocompatibilità `SubjectGrades` (N8)
+`SubjectGrades` è già definita come `Record<string, number>` (indice stringa generico).
+Non è necessaria alcuna migrazione del KV store `'tabboz-grades'`: le nuove chiavi
+(materie dinamiche) vengono scritte con il normale `setGrades(...)` senza breaking
+change. I voti con chiavi non rilevanti per l'anno corrente restano nel KV ma vengono
+semplicemente ignorati — non visualizzati, non inclusi nel calcolo della media.
 
 ---
 
