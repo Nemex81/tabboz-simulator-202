@@ -19,7 +19,7 @@ import {
   shouldTriggerSurpriseQuiz,
   prepareForExam
 } from '@/lib/exam-system'
-import { getSubjectDisplayName, getDifficultyText } from '@/lib/types'
+import { getSubjectDisplayName } from '@/lib/types'
 import { playSound } from '@/lib/sound-effects'
 
 interface UseGameActionsParams {

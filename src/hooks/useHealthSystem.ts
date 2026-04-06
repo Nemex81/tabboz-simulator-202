@@ -16,26 +16,26 @@ import { clampStat } from '@/lib/game-utils'
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
-/** Aggiunge `days` giorni a una GameDate (incrementa dayOfMonth; gestisce overflow semplificato 30 giorni/mese). */
+/** Aggiunge `days` giorni a una GameDate (overflow semplificato 30 giorni/mese). */
 function addDaysToDate(date: GameDate, days: number): GameDate {
-  let { dayOfMonth, month, year } = date
-  dayOfMonth += days
-  while (dayOfMonth > 30) {
-    dayOfMonth -= 30
+  let { day, month, year } = date
+  day += days
+  while (day > 30) {
+    day -= 30
     month++
     if (month > 12) {
       month = 1
       year++
     }
   }
-  return { ...date, dayOfMonth, month, year }
+  return { ...date, day, month, year }
 }
 
 /** Restituisce true se `current` è uguale o successivo a `target`. */
 function isDateReached(current: GameDate, target: GameDate): boolean {
   if (current.year !== target.year) return current.year > target.year
   if (current.month !== target.month) return current.month > target.month
-  return current.dayOfMonth >= target.dayOfMonth
+  return current.day >= target.day
 }
 
 // ── Ciclo mestruale — durata ciclo 28 gg, sintomi per 5 gg ───────────────────
@@ -69,9 +69,7 @@ export function useHealthSystem({
 
   const statsRef = useRef(stats)
   statsRef.current = stats
-  const healthRecordRef = useRef(healthRecord)
-  healthRecordRef.current = healthRecord
-
+  const healthRecordRef = useRef<HealthRecord | undefined>(healthRecord)
   // ── applyCondition ────────────────────────────────────────────
   const applyCondition = useCallback(
     (id: HealthConditionId, currentDate: GameDate, currentPhase: DayPhase) => {
@@ -82,7 +80,7 @@ export function useHealthSystem({
       if (template.genderRestricted && playerGender !== template.genderRestricted) return
 
       // Guard: condizione già attiva
-      if (healthRecordRef.current.conditions.some((c) => c.id === id)) return
+      if ((healthRecordRef.current ?? DEFAULT_HEALTH_RECORD).conditions.some((c) => c.id === id)) return
 
       // Calcola e applica debuff one-shot (non cumulative)
       const appliedModifiers: Partial<Record<keyof GameStats, number>> = {}
@@ -109,8 +107,8 @@ export function useHealthSystem({
       }
 
       setHealthRecord((prev) => ({
-        ...prev,
-        conditions: [...prev.conditions, newCondition],
+        ...(prev ?? DEFAULT_HEALTH_RECORD),
+        conditions: [...(prev ?? DEFAULT_HEALTH_RECORD).conditions, newCondition],
       }))
 
       addLogEntry(
@@ -129,7 +127,7 @@ export function useHealthSystem({
   const removeCondition = useCallback(
     (id: HealthConditionId, currentDate: GameDate, currentPhase: DayPhase) => {
       const template = HEALTH_CONDITIONS[id]
-      const condition = healthRecordRef.current.conditions.find((c) => c.id === id)
+      const condition = (healthRecordRef.current ?? DEFAULT_HEALTH_RECORD).conditions.find((c) => c.id === id)
       if (!condition || !template) return
 
       // Ripristina debuff one-shot (solo condizioni non cumulative)
@@ -150,8 +148,8 @@ export function useHealthSystem({
       }
 
       setHealthRecord((prev) => ({
-        ...prev,
-        conditions: prev.conditions.filter((c) => c.id !== id),
+        ...(prev ?? DEFAULT_HEALTH_RECORD),
+        conditions: (prev ?? DEFAULT_HEALTH_RECORD).conditions.filter((c) => c.id !== id),
       }))
 
       addLogEntry(
@@ -170,7 +168,7 @@ export function useHealthSystem({
   // Chiamato una volta al giorno da advanceToNextDay
   const tickConditions = useCallback(
     (currentDate: GameDate) => {
-      const currentConditions = healthRecordRef.current.conditions
+      const currentConditions = (healthRecordRef.current ?? DEFAULT_HEALTH_RECORD).conditions
       if (currentConditions.length === 0) return
 
       const toRemove: HealthConditionId[] = []
@@ -219,7 +217,7 @@ export function useHealthSystem({
       })
 
       // FIX1: setter puro — nessun side-effect al suo interno
-      setHealthRecord((prev) => ({ ...prev, conditions: updatedConditions }))
+      setHealthRecord((prev) => ({ ...(prev ?? DEFAULT_HEALTH_RECORD), conditions: updatedConditions }))
 
       // Rimuovi condizioni scadute fuori dal setter per evitare nesting
       for (const id of toRemove) {
@@ -228,7 +226,7 @@ export function useHealthSystem({
 
       // ── STEP 9E: Ciclo mestruale (solo femmina) ─────────────────
       if (playerGender === 'femmina') {
-        const rec = healthRecordRef.current
+        const rec = healthRecordRef.current ?? DEFAULT_HEALTH_RECORD
         const hasCiclo = rec.conditions.some((c) => c.id === 'ciclo_mestruale')
 
         if (!hasCiclo) {
@@ -236,7 +234,7 @@ export function useHealthSystem({
           if (!nextCycle) {
             // Prima esecuzione: programma il primo ciclo tra 14 giorni
             setHealthRecord((prev) => ({
-              ...prev,
+              ...(prev ?? DEFAULT_HEALTH_RECORD),
               nextCycleDate: addDaysToDate(currentDate, CICLO_INTERVAL_DAYS / 2),
             }))
           } else if (isDateReached(currentDate, nextCycle)) {
@@ -244,7 +242,7 @@ export function useHealthSystem({
             applyCondition('ciclo_mestruale', currentDate, 'mattina')
             // Programma il prossimo tra 28 giorni
             setHealthRecord((prev) => ({
-              ...prev,
+              ...(prev ?? DEFAULT_HEALTH_RECORD),
               nextCycleDate: addDaysToDate(currentDate, CICLO_INTERVAL_DAYS),
             }))
           }
@@ -270,7 +268,7 @@ export function useHealthSystem({
   const checkAutoConditions = useCallback(
     (currentDate: GameDate, currentPhase: DayPhase) => {
       const s = statsRef.current
-      const activeIds = new Set(healthRecordRef.current.conditions.map((c) => c.id))
+      const activeIds = new Set((healthRecordRef.current ?? DEFAULT_HEALTH_RECORD).conditions.map((c) => c.id))
 
       for (const template of Object.values(HEALTH_CONDITIONS)) {
         if (!template.autoOnset) continue
@@ -291,7 +289,7 @@ export function useHealthSystem({
 
   // ── canAttendSchool ───────────────────────────────────────────
   const canAttendSchool = useCallback((): boolean => {
-    return !healthRecordRef.current.conditions.some((c) => {
+    return !(healthRecordRef.current ?? DEFAULT_HEALTH_RECORD).conditions.some((c) => {
       const template = HEALTH_CONDITIONS[c.id]
       return template?.forcesAbsence === true
     })

@@ -1,5 +1,5 @@
 import React from 'react'
-import { User, Users, Barbell, Brain, Lightning, Fist, HandCoins, XCircle, Crown } from '@phosphor-icons/react'
+import { User, Users, Barbell, Brain, Lightning, HandFist, HandCoins, XCircle, Crown } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -41,7 +41,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
       case 'coatto':
         return <Lightning size={24} weight="fill" />
       case 'ribelle':
-        return <Fist size={24} weight="fill" />
+        return <HandFist size={24} weight="fill" />
       default:
         return <User size={24} weight="fill" />
     }

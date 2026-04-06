@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { GameTime, SubjectGrades, GameStats, SchoolType, ScheduledExam, DayPhase, DayType, SchoolRecord } from '@/lib/types'
-import { DEFAULT_GAME_STATE, getDefaultGradesForSchoolType, getSubjectDisplayName } from '@/lib/types'
+import { DEFAULT_GAME_STATE, DEFAULT_SCHOOL_RECORD, getDefaultGradesForSchoolType, getSubjectDisplayName } from '@/lib/types'
 import { validateGameTime, validateScheduledExams } from '@/lib/data-validation'
 import {
   advanceGameTime,
@@ -97,12 +97,12 @@ export function useGameTime({
 
   const consumeAction = useCallback(() => {
     // Solo phaseActionsRemaining viene decrementata (Fix5)
-    setPhaseActionsRemaining((n) => Math.max(0, n - 1))
+    setPhaseActionsRemaining((n) => Math.max(0, (n ?? 0) - 1))
   }, [setPhaseActionsRemaining])
 
   /** Avanza alla fase successiva; se torna a 'mattina' avanza anche il giorno. */
   const advancePhaseOnly = useCallback(() => {
-    const currentIdx = PHASE_SEQUENCE.indexOf(currentPhase)
+    const currentIdx = PHASE_SEQUENCE.indexOf(currentPhase ?? 'mattina')
     const nextIdx = (currentIdx + 1) % PHASE_SEQUENCE.length
     const nextPhase = PHASE_SEQUENCE[nextIdx]
 
@@ -114,15 +114,15 @@ export function useGameTime({
       nextPhase === 'mattina'
 
     if (nextPhase === 'mattina') {
-      const nightRecovery = DAY_PHASE_CONFIG[dayType]['notte'].nightRecovery
+      const nightRecovery = DAY_PHASE_CONFIG[(dayType ?? 'feriale')]['notte'].nightRecovery
       if (nightRecovery !== 0) {
         setStats((current) => ({
-          ...current,
-          stanchezza: clampStat(current.stanchezza + nightRecovery)
+          ...current!,
+          stanchezza: clampStat(current!.stanchezza + nightRecovery)
         }))
       }
       setRawGameTime((current) => {
-        const newGt = advanceGameTime(current)
+        const newGt = advanceGameTime(current!)
         const newDayType = getDayType(newGt.currentDate)
         setDayType(newDayType)
         setCurrentPhase('mattina')
@@ -130,10 +130,10 @@ export function useGameTime({
 
         if (!schoolRecord.wentToSchoolToday && newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
           announce('📋 Non sei andato a scuola ieri! La giornata è contata come assenza.')
-          setSchoolRecord((prev) => ({
-            ...prev,
-            assenze: prev.assenze + 1,
-            condotta: clampStat(prev.condotta - 0.2, 0, 10),
+          setSchoolRecord((prev): SchoolRecord => ({
+            ...(prev ?? DEFAULT_SCHOOL_RECORD),
+            assenze: (prev ?? DEFAULT_SCHOOL_RECORD).assenze + 1,
+            condotta: clampStat((prev ?? DEFAULT_SCHOOL_RECORD).condotta - 0.2, 0, 10),
             consecutiveGoodDays: 0,
             wentToSchoolToday: false
           }))
@@ -148,30 +148,30 @@ export function useGameTime({
             playSound.eventTrigger()
           } else if (newAssenze === 15) {
             announce('💬 I tuoi genitori hanno ricevuto una LETTERA dalla scuola! -50 Soldi (punizione)')
-            setStats((s) => ({ ...s, soldi: clampStat(s.soldi - 50, 0, 1000) }))
+            setStats((s) => ({ ...(s!), soldi: clampStat(s!.soldi - 50, 0, 1000) }))
             playSound.moneySpent()
           }
         } else if (schoolRecord.wentToSchoolToday && newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
           const newCGD = (schoolRecord.consecutiveGoodDays ?? 0) + 1
           const conductaBonus = newCGD % 5 === 0
-          setSchoolRecord((prev) => ({
-            ...prev,
-            consecutiveGoodDays: newCGD,
-            condotta: conductaBonus ? clampStat(prev.condotta + 0.3, 0, 10) : prev.condotta,
-            wentToSchoolToday: false
-          }))
+          setSchoolRecord((prev): SchoolRecord => ({
+        ...(prev ?? DEFAULT_SCHOOL_RECORD),
+        consecutiveGoodDays: newCGD,
+        condotta: conductaBonus ? clampStat((prev ?? DEFAULT_SCHOOL_RECORD).condotta + 0.3, 0, 10) : (prev ?? DEFAULT_SCHOOL_RECORD).condotta,
+        wentToSchoolToday: false
+      }))
           if (conductaBonus) announce(`🌟 ${newCGD} giorni di comportamento esemplare! +0.3 Condotta`)
         } else {
-          setSchoolRecord((prev) => ({
-            ...prev,
-            wentToSchoolToday: false
-          }))
+          setSchoolRecord((prev): SchoolRecord => ({
+          ...(prev ?? DEFAULT_SCHOOL_RECORD),
+          wentToSchoolToday: false
+        }))
         }
 
         return newGt
       })
     } else {
-      const cfg = DAY_PHASE_CONFIG[dayType][nextPhase]
+      const cfg = DAY_PHASE_CONFIG[(dayType ?? 'feriale')][nextPhase]
       setCurrentPhase(nextPhase)
       setPhaseActionsRemaining(cfg.maxActions)
     }
@@ -208,7 +208,8 @@ export function useGameTime({
 
   const advanceToNextDay = useCallback(() => {
     setRawGameTime((current) => {
-      const newGameTime = advanceGameTime(current)
+      const cur = current ?? DEFAULT_GAME_STATE.gameTime
+      const newGameTime = advanceGameTime(cur)
 
       // Reset fasce orarie al nuovo giorno
       const newDayType = getDayType(newGameTime.currentDate)
@@ -219,10 +220,10 @@ export function useGameTime({
       const currentMedia = calculateMedia(gradesRef.current)
       const st = schoolTypeRef.current
 
-      if (shouldReceivePaghetta(newGameTime.currentDate, current.lastPaghettaDate)) {
+      if (shouldReceivePaghetta(newGameTime.currentDate, cur.lastPaghettaDate)) {
         if (currentMedia >= 7) {
           const paghetta = 50
-          setStats((s) => ({ ...s, soldi: clampStat(s.soldi + paghetta, 0, 1000) }))
+          setStats((s) => ({ ...(s!), soldi: clampStat(s!.soldi + paghetta, 0, 1000) }))
           playSound.moneyEarned()
           announce(`SABATO! I tuoi ti hanno dato la PAGHETTA! +${paghetta}€ (media ≥ 7)`)
           addLogEntry('system', 'Paghetta ricevuta!', `SABATO! I tuoi ti hanno dato la PAGHETTA! +${paghetta}€ (media ≥ 7)`, 'positive', newGameTime.currentDate, 'mattina')
@@ -257,9 +258,9 @@ export function useGameTime({
       setRawScheduledExams((currentExams) => {
         const g = gradesRef.current
         const s = statsRef.current
-        const updatedExams = currentExams
+        const updatedExams = (currentExams ?? [])
           .map((exam) => {
-            const newDaysUntil = exam.daysUntil - 1
+            const newDaysUntil = (exam.daysUntil ?? 0) - 1
 
             if (newDaysUntil === 3 && !exam.announced) {
               const announcementText = getDifficultyAnnouncement(
@@ -280,7 +281,7 @@ export function useGameTime({
                 currentMedia,
                 exam.difficulty
               )
-              setRawGameTime((gt) => gt) // no-op to flush; grade set separately
+              setRawGameTime((gt) => gt!) // no-op to flush; grade set separately
               // setGrades must be called from outside — return exam data via side effect
               const diffText = getDifficultyText(exam.difficulty)
               const resultText = exam.isPrepared
@@ -291,7 +292,7 @@ export function useGameTime({
             }
             return { ...exam, daysUntil: newDaysUntil }
           })
-          .filter((e): e is ScheduledExam => e !== null)
+          .filter((e) => e !== null) as ScheduledExam[]
 
         if (newGameTime.schoolYear.isSchoolPeriod && updatedExams.length < 3 && Math.random() < 0.3 && st) {
           const subjects = Object.keys(gradesRef.current)
@@ -312,10 +313,10 @@ export function useGameTime({
     if (!schoolRecord.wentToSchoolToday && currentDayType === 'feriale' && currentGt.schoolYear.isSchoolPeriod) {
       announce('📋 Sei andato a dormire senza andare a scuola! +1 Assenza, -0.2 Condotta.')
       addLogEntry('school', 'Assenza non giustificata', '📋 Sei andato a dormire senza andare a scuola! +1 Assenza, -0.2 Condotta.', 'negative', currentGt.currentDate, 'notte')
-      setSchoolRecord((prev) => ({
-        ...prev,
-        assenze: prev.assenze + 1,
-        condotta: clampStat(prev.condotta - 0.2, 0, 10),
+      setSchoolRecord((prev): SchoolRecord => ({
+        ...(prev ?? DEFAULT_SCHOOL_RECORD),
+        assenze: (prev ?? DEFAULT_SCHOOL_RECORD).assenze + 1,
+        condotta: clampStat((prev ?? DEFAULT_SCHOOL_RECORD).condotta - 0.2, 0, 10),
         consecutiveGoodDays: 0,
       }))
       const newAssenze = schoolRecord.assenze + 1
@@ -328,15 +329,15 @@ export function useGameTime({
         playSound.eventTrigger()
       } else if (newAssenze === 15) {
         announce('📬 I tuoi genitori hanno ricevuto una LETTERA dalla scuola! -50 Soldi (punizione)')
-        setStats((s) => ({ ...s, soldi: clampStat(s.soldi - 50, 0, 1000) }))
+          setStats((s) => ({ ...(s!), soldi: clampStat(s!.soldi - 50, 0, 1000) }))
         playSound.moneySpent()
       }
     }
     // F3: reset flag presenza giornaliera (per handleDormi che salta le fasi)
-    setSchoolRecord((prev) => ({ ...prev, wentToSchoolToday: false }))
+    setSchoolRecord((prev): SchoolRecord => ({ ...(prev ?? DEFAULT_SCHOOL_RECORD), wentToSchoolToday: false }))
     // STEP 9C: tick condizioni di salute per il nuovo giorno
     // ⚠️ rawGameTime è il valore pre-mutazione nello scope (corretto per l'invariante)
-    const nextDate = advanceGameTime(rawGameTime).currentDate
+    const nextDate = advanceGameTime(validateGameTime(rawGameTime)).currentDate
     tickConditions(nextDate)
     playSound.success()
     announce('Nuovo giorno! Azioni ripristinate.')
@@ -363,7 +364,7 @@ export function useGameTime({
   ])
 
   const gainExtraAction = useCallback(() => {
-    setPhaseActionsRemaining((n) => n + 1)
+    setPhaseActionsRemaining((n) => (n ?? 0) + 1)
     announce('Hai guadagnato un\'AZIONE EXTRA! Usala saggiamente.')
   }, [setPhaseActionsRemaining, announce])
 
@@ -378,8 +379,8 @@ export function useGameTime({
     playSound.buttonClick()
     const isNight = phase === 'notte'
     setStats((current) => {
-      const recovery = isNight ? Math.round(current.stanchezza * 0.80) : current.stanchezza
-      return { ...current, stanchezza: clampStat(current.stanchezza - recovery) }
+      const recovery = isNight ? Math.round(current!.stanchezza * 0.80) : current!.stanchezza
+      return { ...current!, stanchezza: clampStat(current!.stanchezza - recovery) }
     })
     const msg = isNight
       ? 'Sei crollato di notte! Riposo parziale (80%). Ci si vede domani!'
@@ -392,7 +393,7 @@ export function useGameTime({
       msg,
       dormiResult,
       gameTimeRef.current.currentDate,
-      currentPhaseRef.current
+      currentPhaseRef.current ?? 'sera'
     )
     playSound.success()
     advanceToNextDay()

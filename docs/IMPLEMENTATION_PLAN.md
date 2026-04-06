@@ -510,3 +510,40 @@ src/App.tsx                   ← delega logica ai hook, aggiunge stato fasce
 ---
 
 *Fine documento — aggiornare con ogni modifica significativa all'architettura.*
+
+---
+
+## STEP 10 — Fix TypeScript Totale (Completato)
+
+**Data**: completato in sessione multipla (Fase C → STEP 10)  
+**Stato**: ✅ `tsc --noEmit` → **0 errori**
+
+### Errori risolti (127 → 0)
+
+| Categoria | File | Fix Applicato |
+|---|---|---|
+| Blocco A | `types.ts` | Aggiunto `ExamDifficulty`, `FriendType` (`+generico`), `EventConstraint` (`+blockedWhenExhausted`), `PlayerProfile.traits` |
+| Blocco B | `game-utils.ts` | `getReputationLevel` → `{label, description}`; `getReputationEventModifier` aggiunto `default` |
+| Blocco C | `data-validation.ts` | Aggiunto `stress/morale/salute` ai return; `daysUntil ?? 0` |
+| Blocco D | `useHealthSystem.ts` | `dayOfMonth` → `day`; `healthRecordRef.current ?? DEFAULT_HEALTH_RECORD` |
+| Blocco E | `HealthRecordPanel.tsx` | `durationDays` null check; `dayOfMonth` → `day` |
+| Blocco F | 6 file componenti | `HandFist`, `PersonSimpleRun`, `TrendUp` (icon rename) |
+| Blocco G | `GameDialogs.tsx` | `onClose` → `onOpenChange`; `onSelectSubject` → `onSelectTeacher`; `grades` prop aggiunto |
+| Blocco H | `exam-system.ts`, `enhanced-friend-system.ts` | `default: return ''` in switch |
+| Blocco I | `school-events.ts` | Aggiunto key `liceo` a `specificEvents` |
+| Blocco J | `ExamsPanel.tsx` | `daysUntil ?? 2` |
+| Blocco K | `useGameStats.ts` | `useKV` undefined; `getReputationLevel` → `.label` |
+| Blocco L | `useGameTime.ts` | 15 errori: `dayType`, `currentPhase`, `advanceGameTime`, `setSchoolRecord`, `DEFAULT_SCHOOL_RECORD` |
+| Blocco M | `App.tsx` | Hook props, callbacks, JSX props, `phaseActionsLeft` alias, `currentTheme ?? 'default'` |
+
+### Alias `phaseActionsLeft`
+
+In `App.tsx` è stato aggiunto:
+```typescript
+const phaseActionsLeft = phaseActionsRemaining ?? 0
+```
+Usato in tutti i `disabled={}` e `blockedReason={}` JSX per evitare TS18048 su `number | undefined`.
+
+### Documento Test
+Vedere [docs/TESTING_STEP10.md](./TESTING_STEP10.md) per la checklist di test manuale completa.
+

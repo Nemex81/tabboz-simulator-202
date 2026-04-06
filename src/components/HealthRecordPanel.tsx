@@ -75,12 +75,12 @@ export function HealthRecordPanel({ healthRecord, gameLog }: HealthRecordPanelPr
                       <div
                         className="h-full bg-primary rounded-full transition-all"
                         style={{
-                          width: `${Math.min(100, ((cond.daysElapsed + 1) / template.durationDays) * 100)}%`,
+                          width: `${template.durationDays != null ? Math.min(100, ((cond.daysElapsed + 1) / template.durationDays) * 100) : 0}%`,
                         }}
                       />
                     </div>
                     <span className="text-xs text-muted-foreground tabular-nums">
-                      {cond.daysElapsed + 1}/{template.durationDays}gg
+                      {cond.daysElapsed + 1}/{template.durationDays ?? '∞'}gg
                     </span>
                   </div>
                   {template.forcesAbsence && (
@@ -121,7 +121,7 @@ export function HealthRecordPanel({ healthRecord, gameLog }: HealthRecordPanelPr
                     {entry.title}
                   </span>
                   <span className="text-xs text-muted-foreground shrink-0">
-                    {entry.date ? `${entry.date.dayOfMonth}/${entry.date.month}` : ''}
+                    {entry.date ? `${entry.date.day}/${entry.date.month}` : ''}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">{entry.description}</p>

@@ -40,7 +40,7 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
             className={`p-4 rounded-lg border-2 ${
               exam.isPrepared 
                 ? 'bg-accent/10 border-accent' 
-                : exam.daysUntil <= 1 
+                : (exam.daysUntil ?? 2) <= 1 
                 ? 'bg-destructive/10 border-destructive animate-pulse' 
                 : 'bg-muted/30 border-border'
             }`}
@@ -50,7 +50,7 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
                 <div className="flex items-center gap-2 mb-2">
                   {exam.isPrepared ? (
                     <CheckCircle size={24} weight="fill" className="text-accent" />
-                  ) : exam.daysUntil <= 1 ? (
+                  ) : exam.daysUntil != null && exam.daysUntil <= 1 ? (
                     <Warning size={24} weight="fill" className="text-destructive" />
                   ) : (
                     <CalendarCheck size={24} weight="fill" className="text-primary" />
@@ -59,10 +59,10 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
                     {getSubjectDisplayName(exam.subject)}
                   </span>
                   <Badge 
-                    variant={exam.daysUntil <= 1 ? 'destructive' : 'default'}
+                    variant={(exam.daysUntil ?? 0) <= 1 ? 'destructive' : 'default'}
                     className="ml-2"
                   >
-                    {exam.daysUntil === 0 ? 'DOMANI!' : `Tra ${exam.daysUntil} giorni`}
+                    {exam.daysUntil === 0 ? 'DOMANI!' : `Tra ${exam.daysUntil ?? '?'} giorni`}
                   </Badge>
                   <Badge 
                     variant="outline"

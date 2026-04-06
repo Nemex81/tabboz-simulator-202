@@ -42,6 +42,8 @@ export const getDifficultyText = (difficulty: ExamDifficulty): string => {
       return 'DIFFICILE'
     case 'brutale':
       return 'BRUTALE'
+    default:
+      return ''
   }
 }
 
@@ -55,6 +57,8 @@ export const getDifficultyAnnouncement = (subject: string, difficulty: ExamDiffi
       return `Il prof di ${subject} ha fatto vedere la verifica a un collega e quello ha pianto. Preparati bene.`
     case 'brutale':
       return `Si vocifera che l'ultima volta che il prof di ${subject} ha fatto questa verifica, metà classe è stata bocciata. STUDIA ORA.`
+    default:
+      return ''
   }
 }
 

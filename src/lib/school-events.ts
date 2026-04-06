@@ -390,6 +390,30 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
           }
         ]
       }
+    ],
+    liceo: [
+      {
+        type: 'schoolSpecific',
+        title: 'VERSIONE DI LATINO!',
+        description: 'Il prof ha distribuito una versione di Cesare. Due pagine.',
+        choices: [
+          {
+            label: 'La traduci seria',
+            action: () => ({
+              message: 'Buona traduzione! +2 Latino, +5 Intelligenza',
+              statChanges: { intelligenza: 5 },
+              gradeChanges: { subject: 'latino', change: 2 }
+            })
+          },
+          {
+            label: 'Copi dal vicino',
+            action: () => ({
+              message: 'Il vicino non sapeva neanche lui! -1 Latino',
+              gradeChanges: { subject: 'latino', change: -1 }
+            })
+          }
+        ]
+      }
     ]
   }
 

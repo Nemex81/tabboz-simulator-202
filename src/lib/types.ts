@@ -15,13 +15,15 @@ export interface GameStats {
   salute: number
 }
 
+export type ExamDifficulty = 'facile' | 'normale' | 'difficile' | 'brutale'
+
 export interface ScheduledExam {
   id?: string
   subject: string
   date?: { day: number; month: number; year: number }
   daysUntil?: number
   isPrepared: boolean
-  difficulty: 'facile' | 'normale' | 'difficile' | 'brutale'
+  difficulty: ExamDifficulty
   announced?: boolean
 }
 
@@ -311,10 +313,21 @@ export interface Relationship {
   isActive: boolean
 }
 
+export type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
+
+export interface EventConstraint {
+  allowedPhases?: DayPhase[]
+  allowedDayTypes?: DayType[]
+  requiresSchoolPeriod?: boolean
+  minSchoolYear?: number
+  blockedWhenExhausted?: boolean
+}
+
 export interface PlayerProfile {
   name: string
   gender: 'maschio' | 'femmina'
-  selectedTraits: TraitId[]
+  selectedTraits?: TraitId[]
+  traits?: string[]
 }
 
 export interface SchoolRecord {

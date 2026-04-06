@@ -193,3 +193,77 @@ Tutte le correzioni prioritarie sono state implementate con successo. Il sistema
 ---
 
 **Il gioco è pronto per il rilascio pubblico! 🎮🚀**
+
+---
+
+## STEP 10 — Azzeramento Errori TypeScript
+
+**Data completamento**: sessione multipla (continuazione da STEP 9)
+**Risultato**: ✅ `tsc --noEmit` → **0 errori** (da 127 errori iniziali)
+
+### Correzioni applicate
+
+#### types.ts
+- Aggiunto tipo `ExamDifficulty = 'facile' | 'normale' | 'difficile' | 'brutale'`
+- Aggiunto tipo `FriendType` (con `'generico'` aggiunto in STEP 10)
+- Aggiunta interfaccia `EventConstraint` (con `blockedWhenExhausted?` aggiunto in STEP 10)
+- `PlayerProfile.selectedTraits` reso opzionale, aggiunto `traits?: string[]`
+
+#### game-utils.ts
+- `getReputationLevel` restituisce `{ label: string; description: string }` invece di enum
+- `getReputationEventModifier`: aggiunto `default: return {...}` allo switch
+
+#### data-validation.ts
+- Aggiunto `stress: 0, morale: 60, salute: 100` ai return degli oggetti validati
+- `exam.daysUntil` → `exam.daysUntil ?? 0` nel filter
+
+#### useHealthSystem.ts
+- `addDaysToDate` / `isDateReached`: `dayOfMonth` → `day`
+- `healthRecordRef.current` → `(healthRecordRef.current ?? DEFAULT_HEALTH_RECORD)` ovunque
+
+#### HealthRecordPanel.tsx
+- `template.durationDays` — aggiunto null check
+- `entry.date.dayOfMonth` → `entry.date.day`
+
+#### Icone (6 file)
+- `Fist` → `HandFist` in App.tsx, EnhancedFriendsPanel, GameDialogs, FriendsPanel, TeacherSelectionDialog
+- `Running` → `PersonSimpleRun` in App.tsx
+- `TrendingUp` → `TrendUp` in StatsDashboard
+
+#### GameDialogs.tsx
+- `onClose` → `onOpenChange={(open) => { if (!open) set... }}`
+- `onSelectSubject` → `onSelectTeacher`
+- Aggiunto `grades={grades}` a `<TeacherSelectionDialog>`
+
+#### exam-system.ts, enhanced-friend-system.ts
+- Aggiunto `default: return ''` ai switch senza fallthrough
+
+#### school-events.ts
+- Aggiunto key `liceo` a `specificEvents`
+
+#### ExamsPanel.tsx
+- `exam.daysUntil <= 1` → `(exam.daysUntil ?? 2) <= 1`
+
+#### useGameStats.ts
+- `setRawStats((current) => ({...current!,...}))` — non-null assertion
+- `getReputationLevel(...).label` — uso proprietà `.label`
+
+#### useGameTime.ts (15 errori)
+- Import `DEFAULT_SCHOOL_RECORD` da `@/lib/types`
+- `consumeAction`: `(n ?? 0) - 1`
+- `advancePhaseOnly`: `currentPhase ?? 'mattina'`, `dayType ?? 'feriale'`
+- Tutti `setStats`, `setSchoolRecord`, `setRawGameTime`, `setRawScheduledExams` — fallback `?? default`
+- `exam.daysUntil` → `(exam.daysUntil ?? 0) - 1`
+- `currentPhaseRef.current ?? 'sera'` in handleDormi
+
+#### App.tsx (60+ errori)
+- Props hook calls: `girlfriend ?? null`, `phaseActionsRemaining ?? 0`, `currentPhase ?? 'mattina'`, `dayType ?? 'feriale'`
+- Alias `const phaseActionsLeft = phaseActionsRemaining ?? 0` — usato in tutti i `disabled={}` JSX
+- `setStats`, `setSchoolRecord`, `setGameTime`, `setGrades` callbacks — fallback `?? default`
+- `<ThemeSelector currentTheme={currentTheme ?? 'default'}>`
+- `htmlElement.setAttribute('data-theme', currentTheme ?? 'default')`
+- Tutti i componenti figli: `actionsRemaining={phaseActionsRemaining ?? 0}`, `playerProfile={playerProfile ?? null}`, `healthRecord={healthRecord ?? DEFAULT_HEALTH_RECORD}`
+
+### Test consigliati
+Vedere [docs/TESTING_STEP10.md](./TESTING_STEP10.md) per checklist manuale completa (15 aree di test, 60+ casi).
+

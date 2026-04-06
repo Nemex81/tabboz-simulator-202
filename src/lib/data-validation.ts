@@ -12,7 +12,10 @@ export const validateStats = (stats: Partial<GameStats> | null | undefined): Gam
       figosita: 50,
       reputazione: 50,
       intelligenza: 10,
-      carisma: 10
+      carisma: 10,
+      stress: 0,
+      morale: 60,
+      salute: 100,
     }
   }
 
@@ -25,7 +28,10 @@ export const validateStats = (stats: Partial<GameStats> | null | undefined): Gam
     figosita: clampStat(stats.figosita ?? 50),
     reputazione: clampStat(stats.reputazione ?? 50),
     intelligenza: clampStat(stats.intelligenza ?? 10),
-    carisma: clampStat(stats.carisma ?? 10)
+    carisma: clampStat(stats.carisma ?? 10),
+    stress: clampStat(stats.stress ?? 0),
+    morale: clampStat(stats.morale ?? 60),
+    salute: clampStat(stats.salute ?? 100),
   }
 }
 
@@ -232,7 +238,7 @@ export const validateScheduledExams = (exams: unknown): ScheduledExam[] => {
       difficulty: 'normale',
       announced: false
     }
-  }).filter(exam => exam.daysUntil >= 0)
+  }).filter(exam => (exam.daysUntil ?? 0) >= 0)
 }
 
 export const validateSchoolType = (schoolType: unknown): SchoolType | null => {

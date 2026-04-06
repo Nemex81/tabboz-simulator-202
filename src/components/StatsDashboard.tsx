@@ -15,7 +15,7 @@ import {
   Line,
 } from 'recharts'
 import { Card } from '@/components/ui/card'
-import { TrendingUp, ChartBar } from '@phosphor-icons/react'
+import { TrendUp, ChartBar } from '@phosphor-icons/react'
 import { GameStats, SubjectGrades } from '@/lib/types'
 import { calculateMedia } from '@/lib/game-utils'
 
@@ -90,7 +90,7 @@ export const StatsDashboard = React.memo(function StatsDashboard({
       {/* Bar chart dei voti */}
       <Card className="p-6 border-2 border-accent bg-card/50">
         <h3 className="text-xl font-bold mb-1 text-accent flex items-center gap-2">
-          <TrendingUp size={24} weight="fill" />
+          <TrendUp size={24} weight="fill" />
           VOTI PER MATERIA
         </h3>
         <div className="text-sm text-muted-foreground mb-4">

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Shield, ShieldWarning, HandCoins, Fist, Flag } from '@phosphor-icons/react'
+import { Shield, ShieldWarning, HandCoins, HandFist, Flag } from '@phosphor-icons/react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { SubjectGrades } from '@/lib/types'
 import type { SchoolEvent } from '@/lib/school-events'
@@ -218,7 +218,7 @@ export function GameDialogs(props: GameDialogsProps) {
         <AlertDialogContent className="border-2 border-destructive">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl text-destructive flex items-center gap-2">
-              <Fist size={32} weight="fill" />
+              <HandFist size={32} weight="fill" />
               INCONTRO CON I BULLI!
             </AlertDialogTitle>
             <AlertDialogDescription className="text-lg">
@@ -304,7 +304,7 @@ export function GameDialogs(props: GameDialogsProps) {
         {showKeyboardHelp && (
           <KeyboardShortcutsDialog
             open={showKeyboardHelp}
-            onClose={() => setShowKeyboardHelp(false)}
+            onOpenChange={(open) => { if (!open) setShowKeyboardHelp(false) }}
           />
         )}
 
@@ -321,10 +321,11 @@ export function GameDialogs(props: GameDialogsProps) {
         {showTeacherDialog && (
           <TeacherSelectionDialog
             open={showTeacherDialog}
-            onSelectSubject={handleTeacherSelection}
+            onSelectTeacher={handleTeacherSelection}
             onClose={() => setShowTeacherDialog(false)}
             actionType={teacherActionType}
             soldi={soldi}
+            grades={grades}
           />
         )}
       </Suspense>

@@ -42,6 +42,8 @@ export const getFriendTypeDescription = (type: FriendType): string => {
       return 'SPORTIVO - Pompa ferro e gioca a calcio'
     case 'ribelle':
       return 'RIBELLE - Non segue le regole di nessuno'
+    default:
+      return ''
   }
 }
 

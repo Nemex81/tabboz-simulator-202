@@ -13,8 +13,8 @@ import {
   Keyboard,
   ChartBar,
   HandCoins,
-  Fist,
-  Running,
+  HandFist,
+  PersonSimpleRun,
   ShieldWarning,
   IdentificationCard
 } from '@phosphor-icons/react'
@@ -211,6 +211,9 @@ function App() {
     checkAutoConditions,
   })
 
+  // Alias non-undefined per compatibilità JSX
+  const phaseActionsLeft = phaseActionsRemaining ?? 0
+
   const events = useEventEngine({
     stats,
     setStats,
@@ -218,14 +221,14 @@ function App() {
     setFriends,
     relationships,
     setRelationships,
-    girlfriend,
+    girlfriend: girlfriend ?? null,
     setGirlfriend,
     gameTime,
     consumeAction,
     announce,
-    phaseActionsRemaining,
+    phaseActionsRemaining: phaseActionsRemaining ?? 0,
     addLogEntry,
-    currentPhase
+    currentPhase: currentPhase ?? 'mattina'
   })
 
   const actions = useGameActions({
@@ -240,7 +243,7 @@ function App() {
     friends,
     relationships,
     setRelationships,
-    girlfriend,
+    girlfriend: girlfriend ?? null,
     setGirlfriend,
     setGameOver,
     setGameOverReason,
@@ -251,9 +254,9 @@ function App() {
     checkForNewRelationship: events.checkForNewRelationship,
     checkForNewGirlfriend: events.checkForNewGirlfriend,
     setShowSubjectDialog,
-    currentPhase,
-    dayType,
-    phaseActionsRemaining,
+    currentPhase: currentPhase ?? 'mattina',
+    dayType: dayType ?? 'feriale',
+    phaseActionsRemaining: phaseActionsRemaining ?? 0,
     schoolRecord,
     setSchoolRecord,
     gainExtraAction,
@@ -312,7 +315,7 @@ function App() {
   const handleRiposa = () => actions.handleRiposa()
 
   const handleOpenCorrompiDialog = () => {
-    if (phaseActionsRemaining <= 0) {
+    if ((phaseActionsRemaining ?? 0) <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
       return
@@ -327,7 +330,7 @@ function App() {
   }
 
   const handleOpenMinacciaDialog = () => {
-    if (phaseActionsRemaining <= 0) {
+    if ((phaseActionsRemaining ?? 0) <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
       return
@@ -345,7 +348,7 @@ function App() {
   }
 
   const handleVaiAScuola = () => {
-    if (phaseActionsRemaining <= 0) {
+    if ((phaseActionsRemaining ?? 0) <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!')
       return
@@ -363,23 +366,23 @@ function App() {
     if (!canAttendSchool()) {
       playSound.failure()
       announce('Non puoi andare a scuola: sei troppo malato! Resta a casa.')
-      addLogEntry('health', 'Assenza forzata', 'Non puoi andare a scuola a causa delle condizioni di salute.', 'negative', gameTime.currentDate, currentPhase)
+      addLogEntry('health', 'Assenza forzata', 'Non puoi andare a scuola a causa delle condizioni di salute.', 'negative', gameTime.currentDate, currentPhase ?? 'mattina')
       return
     }
     playSound.buttonClick()
     setStats((current) => ({
-      ...current,
-      intelligenza: clampStat(current.intelligenza + 2),
-      stanchezza: clampStat(current.stanchezza + 10)
+      ...current!,
+      intelligenza: clampStat(current!.intelligenza + 2),
+      stanchezza: clampStat(current!.stanchezza + 10)
     }))
-    setSchoolRecord((current) => ({
-      ...current,
+    setSchoolRecord((current): SchoolRecord => ({
+      ...(current ?? DEFAULT_SCHOOL_RECORD),
       wentToSchoolToday: true
     }))
     consumeAction()
     setMorningChoicePending(false)
     announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
-    addLogEntry('school', 'Vai a scuola', 'Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!', 'positive', gameTime.currentDate, currentPhase)
+    addLogEntry('school', 'Vai a scuola', 'Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!', 'positive', gameTime.currentDate, currentPhase ?? 'mattina')
 
     if (schoolMorningEvents.length === 0) {
       const events = drawSchoolMorningEvents(6)
@@ -405,7 +408,7 @@ function App() {
   useEffect(() => {
     const htmlElement = document.querySelector('html')
     if (htmlElement) {
-      htmlElement.setAttribute('data-theme', currentTheme)
+      htmlElement.setAttribute('data-theme', currentTheme ?? 'default')
     }
   }, [currentTheme])
 
@@ -439,7 +442,7 @@ function App() {
     const a = schoolRecord.assenze
     if (a === 15) {
       announce('📬 I tuoi genitori hanno ricevuto una LETTERA dalla scuola per le assenze! -50 Soldi (punizione)')
-      setStats((s) => ({ ...s, soldi: clampStat(s.soldi - 50, 0, 1000) }))
+      setStats((s) => ({ ...(s!), soldi: clampStat(s!.soldi - 50, 0, 1000) }))
       playSound.moneySpent()
     } else if (a === 25) {
       announce('⚠️ ATTENZIONE: 25 assenze! Rischi di NON essere ammesso allo scrutinio!')
@@ -522,7 +525,7 @@ function App() {
 
     if (outcome.statChanges) {
       setStats((current) => {
-        const updated = { ...current }
+        const updated = { ...current! }
         Object.entries(outcome.statChanges!).forEach(([key, value]) => {
           const statKey = key as keyof GameStats
           if (statKey === 'soldi') {
@@ -553,7 +556,7 @@ function App() {
 
       setGrades((current) => ({
         ...current,
-        [targetSubject]: clampStat((current[targetSubject] ?? 0) + outcome.gradeChanges!.change, 0, 10)
+        [targetSubject]: clampStat(((current ?? {})[targetSubject] ?? 0) + outcome.gradeChanges!.change, 0, 10)
       }))
     }
 
@@ -566,14 +569,14 @@ function App() {
         const conductStr = ` | Condotta: ${oldCondotta.toFixed(1)} → ${newCondotta.toFixed(1)}`
         deltaMsg = deltaMsg ? deltaMsg + conductStr : `📊${conductStr.trimStart()}`
       }
-      setSchoolRecord((current) => ({
-        ...current,
-        condotta: outcome.conductChange !== undefined ? clampStat(current.condotta + outcome.conductChange, 0, 10) : current.condotta,
-        note: outcome.noteChange !== undefined ? current.note + outcome.noteChange : current.note,
+      setSchoolRecord((current): SchoolRecord => ({
+        ...(current ?? DEFAULT_SCHOOL_RECORD),
+        condotta: outcome.conductChange !== undefined ? clampStat((current ?? DEFAULT_SCHOOL_RECORD).condotta + outcome.conductChange, 0, 10) : (current ?? DEFAULT_SCHOOL_RECORD).condotta,
+        note: outcome.noteChange !== undefined ? (current ?? DEFAULT_SCHOOL_RECORD).note + outcome.noteChange : (current ?? DEFAULT_SCHOOL_RECORD).note,
         // Reset giorni consecutivi se comportamento negativo
         consecutiveGoodDays: (outcome.conductChange !== undefined && outcome.conductChange < 0)
           ? 0
-          : current.consecutiveGoodDays
+          : (current ?? DEFAULT_SCHOOL_RECORD).consecutiveGoodDays
       }))
     }
 
@@ -587,7 +590,7 @@ function App() {
         ? (Object.values(outcome.statChanges).reduce((a, b) => a + b, 0) >= 0 ? 'positive' : 'negative')
         : 'neutral',
       gameTime.currentDate,
-      currentPhase
+      currentPhase ?? 'mattina'
     )
     if (deltaMsg) toast(deltaMsg)
     setShowSchoolEvent(false)
@@ -634,9 +637,9 @@ function App() {
     if (actuallyPassed) {
       const newYear = gameTime.schoolYear.currentYear + 1
       setGameTime((current) => ({
-        ...current,
-        schoolYear: calculateNextSchoolYear(current.schoolYear),
-        age: current.age + 1
+        ...current!,
+        schoolYear: calculateNextSchoolYear(current!.schoolYear),
+        age: current!.age + 1
       }))
       setGrades(schoolType ? getDefaultGradesForSchoolType(schoolType) : DEFAULT_GAME_STATE.grades)
       setSchoolRecord(DEFAULT_SCHOOL_RECORD)  // reset annuale
@@ -659,7 +662,7 @@ function App() {
     showBulliEvent,
     showReportCard,
     schoolType,
-    phaseActionsRemaining,
+    phaseActionsRemaining: phaseActionsRemaining ?? 0,
     handlePalestra,
     handleLampada,
     handleLavoro,
@@ -793,7 +796,7 @@ function App() {
             currentPhase === 'mattina' ? 'Pomeriggio' :
             currentPhase === 'pomeriggio' ? 'Sera' :
             currentPhase === 'sera' ? 'Notte' : 'Mattina'
-          const canAdvance = phaseActionsRemaining === 0
+          const canAdvance = (phaseActionsRemaining ?? 0) === 0
           const showRiposa =
             currentPhase === 'pomeriggio' ||
             (currentPhase === 'mattina' && (dayType !== 'feriale' || !gameTime.schoolYear.isSchoolPeriod))
@@ -813,7 +816,7 @@ function App() {
                     ? 'bg-primary/20 text-primary'
                     : 'bg-destructive/15 text-destructive'
                 }`}>
-                  {canAdvance ? '✓ Pronto ad avanzare' : `${phaseActionsRemaining} azioni rimaste`}
+                  {canAdvance ? '✓ Pronto ad avanzare' : `${phaseActionsRemaining ?? 0} azioni rimaste`}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -822,7 +825,7 @@ function App() {
                     variant="outline"
                     size="sm"
                     onClick={handleRiposa}
-                    disabled={phaseActionsRemaining <= 0}
+                    disabled={(phaseActionsRemaining ?? 0) <= 0}
                     title="Recupera parte della stanchezza (consuma 1 azione)"
                     className="flex items-center gap-1"
                   >
@@ -845,8 +848,8 @@ function App() {
                   size="sm"
                   onClick={advancePhaseOnly}
                   disabled={!canAdvance}
-                  title={canAdvance ? `Avanza a: ${nextPhaseLabel} (Ctrl+N)` : `Consuma prima le ${phaseActionsRemaining} azioni rimaste`}
-                  aria-label={`Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni rimaste per questa fase: ${phaseActionsRemaining}. ${canAdvance ? 'Pulsante abilitato. Premi per avanzare.' : 'Pulsante disabilitato. Devi consumare tutte le azioni prima di avanzare.'} Scorciatoia da tastiera: Ctrl+N`}
+                  title={canAdvance ? `Avanza a: ${nextPhaseLabel} (Ctrl+N)` : `Consuma prima le ${phaseActionsRemaining ?? 0} azioni rimaste`}
+                  aria-label={`Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni rimaste per questa fase: ${phaseActionsRemaining ?? 0}. ${canAdvance ? 'Pulsante abilitato. Premi per avanzare.' : 'Pulsante disabilitato. Devi consumare tutte le azioni prima di avanzare.'} Scorciatoia da tastiera: Ctrl+N`}
                   className="flex items-center gap-1"
                 >
                   ▶ <span>Prossima fase</span>
@@ -909,7 +912,7 @@ function App() {
               <p className="text-muted-foreground">Gestisci le impostazioni del gioco</p>
             </div>
 
-            <ThemeSelector currentTheme={currentTheme} onThemeChange={handleThemeChange} />
+            <ThemeSelector currentTheme={currentTheme ?? 'default'} onThemeChange={handleThemeChange} />
 
             <Card className="p-6 border-2 border-accent bg-card">
               <h3 className="text-2xl font-bold mb-4 text-accent flex items-center gap-2">
@@ -1029,7 +1032,7 @@ function App() {
                     label="Vai a Scuola"
                     onClick={handleVaiAScuola}
                     disabled={
-                      phaseActionsRemaining <= 0 ||
+                      phaseActionsLeft <= 0 ||
                       dayType !== 'feriale' ||
                       currentPhase !== 'mattina' ||
                       !gameTime.schoolYear.isSchoolPeriod ||
@@ -1038,7 +1041,7 @@ function App() {
                     blockedReason={
                       marinatoOggi
                         ? 'Hai già marinato stamattina'
-                        : phaseActionsRemaining <= 0 
+                        : phaseActionsLeft <= 0 
                           ? 'Nessuna azione per questa fascia oraria' 
                           : dayType !== 'feriale' 
                             ? 'Disponibile solo nei giorni feriali' 
@@ -1071,13 +1074,13 @@ function App() {
                     label="Marina!"
                     onClick={handleMarina}
                     disabled={
-                      phaseActionsRemaining <= 0 ||
+                      phaseActionsLeft <= 0 ||
                       dayType !== 'feriale' ||
                       currentPhase !== 'mattina' ||
                       !gameTime.schoolYear.isSchoolPeriod
                     }
                     blockedReason={
-                      phaseActionsRemaining <= 0
+                      phaseActionsLeft <= 0
                         ? 'Nessuna azione per questa fascia oraria'
                         : dayType !== 'feriale'
                           ? 'Disponibile solo nei giorni feriali'
@@ -1205,19 +1208,19 @@ function App() {
                       label="Corrompi Professore"
                       shortcut="Ctrl+6"
                       onClick={handleOpenCorrompiDialog}
-                      disabled={phaseActionsRemaining <= 0 || stats.soldi < 100}
-                      blockedReason={phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 100€'}
+                      disabled={phaseActionsLeft <= 0 || stats.soldi < 100}
+                      blockedReason={phaseActionsLeft <= 0 ? 'Nessuna azione per questa fascia oraria' : 'Servono almeno 100€'}
                       variant="default"
                       ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
                       helpText="Corrompi un professore con 100 euro. Scegli quale professore corrompere. Aumenta i voti di 0.5 punti nella materia scelta."
                       announce={announce}
                     />
                     <ActionButton
-                      icon={<Fist size={48} />}
+                      icon={<HandFist size={48} />}
                       label="Minaccia Professore"
                       shortcut="Ctrl+7"
                       onClick={handleOpenMinacciaDialog}
-                      disabled={phaseActionsRemaining <= 0}
+                      disabled={phaseActionsLeft <= 0}
                       blockedReason="Nessuna azione per questa fascia oraria"
                       variant="destructive"
                       ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
@@ -1236,7 +1239,7 @@ function App() {
                   <ExamsPanel
                     exams={scheduledExams}
                     onPrepareExam={handlePrepareExam}
-                    actionsRemaining={phaseActionsRemaining}
+                    actionsRemaining={phaseActionsRemaining ?? 0}
                     stanchezza={stats.stanchezza}
                   />
                 </Suspense>
@@ -1265,9 +1268,9 @@ function App() {
                   <EnhancedFriendsPanel
                     friends={friends}
                     stats={stats}
-                    actionsRemaining={phaseActionsRemaining}
+                    actionsRemaining={phaseActionsRemaining ?? 0}
                     onFriendAction={handleFriendAction}
-                    girlfriend={girlfriend}
+                    girlfriend={girlfriend ?? null}
                     onGirlfriendAction={handleGirlfriendAction}
                     onGirlfriendBreakup={handleGirlfriendBreakup}
                   />
@@ -1275,7 +1278,7 @@ function App() {
                     relationships={relationships}
                     stats={stats}
                     onTryRelationship={handleTryRelationship}
-                    actionsRemaining={phaseActionsRemaining}
+                    actionsRemaining={phaseActionsRemaining ?? 0}
                   />
                 </Suspense>
                 <Card className="p-3 border-2 border-accent bg-card">
@@ -1308,7 +1311,7 @@ function App() {
 
           <TabsContent value="character">
             <CharacterSheet
-              playerProfile={playerProfile}
+              playerProfile={playerProfile ?? null}
               stats={stats}
               schoolType={schoolType}
               schoolYear={gameTime.schoolYear.currentYear}
@@ -1316,7 +1319,7 @@ function App() {
               schoolRecord={schoolRecord}
               currentMedia={currentMedia}
               gameLog={gameLog}
-              healthRecord={healthRecord}
+              healthRecord={healthRecord ?? DEFAULT_HEALTH_RECORD}
             />
           </TabsContent>
 
@@ -1333,8 +1336,8 @@ function App() {
                     label="Studia"
                     shortcut="Ctrl+5"
                     onClick={handleStudia}
-                    disabled={morningChoicePending || phaseActionsRemaining <= 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
-                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.stanchezza > 80 ? 'Sei troppo stanco per studiare!' : 'Non è periodo scolastico'}
+                    disabled={morningChoicePending || phaseActionsLeft <= 0 || stats.stanchezza > 80 || !gameTime.schoolYear.isSchoolPeriod}
+                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : phaseActionsLeft <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.stanchezza > 80 ? 'Sei troppo stanco per studiare!' : 'Non è periodo scolastico'}
                     variant="secondary"
                     ariaLabel="Studia per migliorare i voti. Aumenta l'intelligenza e i voti scolastici. Richiede periodo scolastico. Tasto rapido: Ctrl+5"
                     helpText="Studia per migliorare i voti. Aumenta l'intelligenza e i voti in una materia a scelta. L'incremento dipende dalla tua intelligenza. Richiede periodo scolastico."
@@ -1353,7 +1356,7 @@ function App() {
                     icon={<Chats size={48} />}
                     label="Chiacchiera"
                     onClick={handleChiacchiera}
-                    disabled={morningChoicePending || phaseActionsRemaining <= 0}
+                    disabled={morningChoicePending || phaseActionsLeft <= 0}
                     blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : 'Nessuna azione per questa fascia oraria'}
                     variant="secondary"
                     ariaLabel="Chiacchiera con qualcuno. Gratis. +5 Carisma, +3 Reputazione"
@@ -1361,10 +1364,10 @@ function App() {
                     announce={announce}
                   />
                   <ActionButton
-                    icon={<Running size={48} />}
+                    icon={<PersonSimpleRun size={48} />}
                     label="Giro al Parco"
                     onClick={handleParco}
-                    disabled={morningChoicePending || phaseActionsRemaining <= 0}
+                    disabled={morningChoicePending || phaseActionsLeft <= 0}
                     blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : 'Nessuna azione per questa fascia oraria'}
                     variant="secondary"
                     ariaLabel="Giro rilassante al parco. Gratis. +5 Carisma, -5 Stanchezza, +2 Reputazione"
@@ -1375,7 +1378,7 @@ function App() {
                     icon={<UserCircle size={48} />}
                     label="Telefona"
                     onClick={handleTelefona}
-                    disabled={morningChoicePending || phaseActionsRemaining <= 0}
+                    disabled={morningChoicePending || phaseActionsLeft <= 0}
                     blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : 'Nessuna azione per questa fascia oraria'}
                     variant="secondary"
                     ariaLabel="Telefona a un amico. Gratis. +3 Carisma (richiede almeno un amico)"
@@ -1396,7 +1399,7 @@ function App() {
                     label="Atipa"
                     shortcut="Ctrl+9"
                     onClick={handleProvarciConAtipa}
-                    disabled={morningChoicePending || phaseActionsRemaining <= 0}
+                    disabled={morningChoicePending || phaseActionsLeft <= 0}
                     blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : 'Nessuna azione per questa fascia oraria'}
                     variant="default"
                     ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi Figosiità e Carisma; se accetta guadagni entrambi. Tasto rapido: Ctrl+9"
@@ -1420,8 +1423,8 @@ function App() {
                     label="Trucca Motorino"
                     shortcut="Ctrl+4"
                     onClick={handleMotorino}
-                    disabled={morningChoicePending || phaseActionsRemaining <= 0 || stats.soldi < 50 || stats.stanchezza > 80}
-                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : phaseActionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
+                    disabled={morningChoicePending || phaseActionsLeft <= 0 || stats.soldi < 50 || stats.stanchezza > 80}
+                    blockedReason={morningChoicePending ? '🏫 Scegli prima se andare a scuola o marinare!' : phaseActionsLeft <= 0 ? 'Nessuna azione per questa fascia oraria' : stats.soldi < 50 ? 'Servono almeno 50€' : 'Sei troppo stanco per trafficare col motorino!'}
                     ariaLabel="Trucca il motorino per aumentare molto la coattaggine. Costa 50 euro. Tasto rapido: Ctrl+4"
                   />
                   <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
@@ -1444,7 +1447,7 @@ function App() {
               onLampada={handleLampada}
               onLavoro={handleLavoro}
               morningChoicePending={morningChoicePending}
-              actionsRemaining={phaseActionsRemaining}
+              actionsRemaining={phaseActionsRemaining ?? 0}
               soldi={stats.soldi}
               muscoli={stats.muscoli}
               stanchezza={stats.stanchezza}

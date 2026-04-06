@@ -1,4 +1,4 @@
-import { GameStats, ReputationLevel, SubjectGrades, SchoolType, SUBJECT_WEIGHTS } from '@/lib/types'
+import { GameStats, SubjectGrades, SchoolType, SUBJECT_WEIGHTS } from '@/lib/types'
 
 export const clampStat = (value: number, min: number = 0, max: number = 100): number => {
   return Math.max(min, Math.min(max, value))
@@ -85,12 +85,12 @@ export const announceToScreenReader = (message: string, element: HTMLElement | n
   }
 }
 
-export const getReputationLevel = (reputazione: number): ReputationLevel => {
-  if (reputazione < 20) return 'Sfigato Totale'
-  if (reputazione < 40) return 'Nessuno'
-  if (reputazione < 60) return 'Coatto Base'
-  if (reputazione < 80) return 'Rispettato'
-  return 'Leggenda del Quartiere'
+export const getReputationLevel = (reputazione: number): { label: string; description: string } => {
+  if (reputazione < 20) return { label: 'Sfigato Totale', description: 'Nessuno ti conosce. Sei un fantasma.' }
+  if (reputazione < 40) return { label: 'Nessuno', description: 'Qualcuno sa chi sei, ma non abbastanza.' }
+  if (reputazione < 60) return { label: 'Coatto Base', description: 'Hai rispetto nel quartiere.' }
+  if (reputazione < 80) return { label: 'Rispettato', description: 'Tutti ti conoscono. Hai peso.' }
+  return { label: 'Leggenda del Quartiere', description: 'Sei una leggenda. Le storie su di te durano anni.' }
 }
 
 export const calculateReputationFromStats = (stats: GameStats): number => {
@@ -160,7 +160,7 @@ export const getReputationEventModifier = (reputazione: number): {
 } => {
   const level = getReputationLevel(reputazione)
   
-  switch (level) {
+  switch (level.label) {
     case 'Sfigato Totale':
       return { 
         encounterChanceMultiplier: 1.5, 
@@ -191,6 +191,8 @@ export const getReputationEventModifier = (reputazione: number): {
         positiveOutcomeBonus: 30,
         respectBonus: 20
       }
+    default:
+      return { encounterChanceMultiplier: 1.0, positiveOutcomeBonus: 0, respectBonus: 0 }
   }
 }
 

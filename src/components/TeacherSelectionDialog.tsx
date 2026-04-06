@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { HandCoins, Fist, CheckCircle, Warning, XCircle } from '@phosphor-icons/react'
+import { HandCoins, HandFist, CheckCircle, Warning, XCircle } from '@phosphor-icons/react'
 import {
   Dialog,
   DialogContent,
@@ -90,7 +90,7 @@ export function TeacherSelectionDialog({
               </>
             ) : (
               <>
-                <Fist size={32} weight="fill" />
+                <HandFist size={32} weight="fill" />
                 SCEGLI QUALE PROFESSORE MINACCIARE
               </>
             )}
@@ -182,7 +182,7 @@ export function TeacherSelectionDialog({
               </>
             ) : (
               <>
-                <Fist size={24} className="mr-2" weight="fill" />
+                <HandFist size={24} className="mr-2" weight="fill" />
                 Minaccia
               </>
             )}

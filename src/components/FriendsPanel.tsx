@@ -1,7 +1,7 @@
 import React from 'react'
 import { Friend } from '@/lib/types'
 import { Card } from '@/components/ui/card'
-import { UserCircle, Brain, Lightning, Barbell, Fist, User } from '@phosphor-icons/react'
+import { UserCircle, Brain, Lightning, Barbell, HandFist, User } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 
