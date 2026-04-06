@@ -54,8 +54,8 @@ export const FriendsPanel = React.memo(function FriendsPanel({ friends }: Friend
                 <div className="text-sm text-muted-foreground space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">Affinità</span>
-                    <Progress value={friend.affinita} className="flex-1 h-1.5" />
-                    <span className="text-xs font-mono">{friend.affinita}</span>
+                    <Progress value={friend.affinita ?? 0} className="flex-1 h-1.5" />
+                    <span className="text-xs font-mono">{friend.affinita ?? 0}</span>
                   </div>
                   {friend.intelligenza && friend.intelligenza > 60 && (
                     <div className="flex items-center gap-2">

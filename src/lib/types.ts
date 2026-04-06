@@ -288,14 +288,29 @@ export const DEFAULT_GAME_STATE: GameState = {
 }
 
 export interface Friend {
-  id: string
-  name: string
-  type: 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
-  affinita: number
+  // ── campi esistenti (INVARIATI) ──────────────────────────────
+  id:           string
+  name:         string
+  type:         FriendType
   intelligenza?: number
-  unlocked: boolean
-  tier?: RelationshipTier
-  bondType?: SocialBondType
+  unlocked:     boolean
+
+  // ── NUOVO: contesto di origine ───────────────────────────────
+  originType:   'compagno_classe' | 'compagno_istituto' | 'extrascolastico'
+  metAt?:       'classe' | 'corridoio' | 'quartiere' | 'palestra'
+              | 'online' | 'festa' | 'sport' | 'lavoro'
+  schoolYearMet?: number
+
+  // ── NUOVO: assi relazionali (import type da relation-system) ─
+  rel?: import('@/lib/relation-system').RelationStats
+
+  // ── NUOVO: tracking temporale per erosione inattività ────────
+  lastInteractionDay?: number   // dayIndex (dateToDayIndex) dell'ultima interazione
+
+  // ── DEPRECATO — mantenuto per migrazione KV legacy ───────────
+  affinita?: number             // letto solo da migrateLegacyFriend()
+  tier?:     RelationshipTier   // ora derivato, non stored
+  bondType?: SocialBondType     // ora derivato, non stored
 }
 
 export interface Relationship {

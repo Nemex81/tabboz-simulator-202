@@ -183,7 +183,13 @@ export const validateFriends = (friends: unknown): Friend[] => {
         type,
         affinita,
         intelligenza: typeof friend.intelligenza === 'number' ? (friend.intelligenza as number) : undefined,
-        unlocked: typeof friend.unlocked === 'boolean' ? (friend.unlocked as boolean) : true
+        unlocked: typeof friend.unlocked === 'boolean' ? (friend.unlocked as boolean) : true,
+        // Preserva i nuovi campi se presenti nel KV (dati già migrati)
+        originType: (friend.originType as Friend['originType']) ?? 'extrascolastico',
+        metAt: friend.metAt as Friend['metAt'] ?? undefined,
+        schoolYearMet: typeof friend.schoolYearMet === 'number' ? (friend.schoolYearMet as number) : undefined,
+        rel: friend.rel as import('@/lib/relation-system').RelationStats ?? undefined,
+        lastInteractionDay: typeof friend.lastInteractionDay === 'number' ? (friend.lastInteractionDay as number) : undefined,
       }
     })
 }

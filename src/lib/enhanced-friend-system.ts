@@ -28,7 +28,8 @@ export const generateRandomEnhancedFriend = (): Friend => {
     type,
     affinita: 50,
     unlocked: true,
-    intelligenza
+    intelligenza,
+    originType: 'extrascolastico' as const,
   }
 }
 
@@ -65,7 +66,7 @@ export const FRIEND_ACTIONS: FriendAction[] = [
     cost: 1,
     effects: '+10 Coattaggine, +5 Affinità, -10 Soldi',
     requirements: (stats, friend) => {
-      if (friend.affinita < 30) {
+      if ((friend.affinita ?? 50) < 30) {
         return { canDo: false, reason: 'Affinità troppo bassa (min 30)' }
       }
       if (stats.soldi < 10) {
@@ -118,7 +119,7 @@ export const FRIEND_ACTIONS: FriendAction[] = [
     cost: 1,
     effects: '+15 Coattaggine, +5 Affinità, -20 Soldi',
     requirements: (stats, friend) => {
-      if (friend.affinita < 50) {
+      if ((friend.affinita ?? 50) < 50) {
         return { canDo: false, reason: 'Affinità troppo bassa (min 50)' }
       }
       if (stats.soldi < 20) {
@@ -142,7 +143,7 @@ export const FRIEND_ACTIONS: FriendAction[] = [
     cost: 0,
     effects: '+20-50 Soldi random, -15 Affinità',
     requirements: (stats, friend) => {
-      if (friend.affinita < 60) {
+      if ((friend.affinita ?? 50) < 60) {
         return { canDo: false, reason: 'Affinità troppo bassa (min 60)' }
       }
       return { canDo: true }
@@ -161,11 +162,11 @@ export const applyFriendActionEffects = (
 } => {
   const action = FRIEND_ACTIONS.find(a => a.id === actionId)
   if (!action) {
-    return { newStats: {}, newAffinita: friend.affinita, message: 'Azione non trovata' }
+    return { newStats: {}, newAffinita: friend.affinita ?? 50, message: 'Azione non trovata' }
   }
   
   const newStats: Partial<GameStats> = {}
-  let newAffinita = friend.affinita
+  let newAffinita = friend.affinita ?? 50
   let message = ''
 
   switch (actionId) {

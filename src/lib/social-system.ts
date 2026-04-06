@@ -29,7 +29,8 @@ export const generateRandomFriend = (): Friend => {
     type,
     affinita: 50,
     intelligenza,
-    unlocked: true
+    unlocked: true,
+    originType: 'extrascolastico' as const,
   }
 }
 

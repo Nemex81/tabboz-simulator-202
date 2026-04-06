@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { GameStats, Friend, getRelationshipTier, getRelationshipTierLabel } from '@/lib/types'
+import { getAffinita } from '@/lib/relation-system'
 import type { Ragazza } from '@/lib/girlfriend-system'
 import {
   getFriendTypeDescription,
@@ -89,12 +90,13 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
       )}
 
       {friends.map((friend) => {
-        const tier = getRelationshipTier(friend.affinita, friend.bondType)
+        const _affinita = getAffinita(friend)
+        const tier = getRelationshipTier(_affinita, friend.bondType)
         const isBestFriend = tier === 'migliore_amico'
         const isRomantic = tier === 'trombamica' || tier === 'fidanzata'
-        const affinitaColor = friend.affinita < 30 
+        const affinitaColor = _affinita < 30 
           ? 'bg-destructive'
-          : friend.affinita < 60
+          : _affinita < 60
           ? 'bg-accent'
           : 'bg-primary'
         
@@ -144,14 +146,14 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
                   Affinità
                 </span>
                 <span className={`text-2xl font-bold ${
-                  friend.affinita < 30 ? 'text-destructive' :
-                  friend.affinita < 60 ? 'text-accent' : 'text-primary'
+                  _affinita < 30 ? 'text-destructive' :
+                  _affinita < 60 ? 'text-accent' : 'text-primary'
                 }`}>
-                  {friend.affinita}
+                  {_affinita}
                 </span>
               </div>
               <Progress 
-                value={friend.affinita} 
+                value={_affinita} 
                 className="h-2"
               />
               <div className="mt-1 text-xs text-muted-foreground">
@@ -210,7 +212,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
               </div>
             </div>
             
-            {friend.affinita <= 0 && (
+            {_affinita <= 0 && (
               <div className="mt-4 p-4 bg-destructive/20 border border-destructive rounded text-center">
                 <XCircle size={32} className="mx-auto mb-2 text-destructive" weight="fill" />
                 <p className="text-destructive font-bold">

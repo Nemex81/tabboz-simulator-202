@@ -89,6 +89,7 @@ import {
   calculateRelationshipSuccess,
   getFriendStudyBonus
 } from '@/lib/social-system'
+import { migrateLegacyFriend } from '@/lib/relation-system'
 import {
   generateScheduledExam,
   calculateExamGrade,
@@ -113,7 +114,7 @@ function App() {
   const schoolType = validateSchoolType(rawSchoolType)
   const playerProfile = rawPlayerProfile
   const grades = validateGrades(rawGrades, schoolType)
-  const friends = validateFriends(rawFriends)
+  const friends = validateFriends(rawFriends).map(migrateLegacyFriend)
   const relationships = validateRelationships(rawRelationships)
   const girlfriend = rawGirlfriend
   const schoolRecord = rawSchoolRecord || DEFAULT_SCHOOL_RECORD
