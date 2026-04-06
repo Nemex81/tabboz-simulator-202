@@ -1,9 +1,25 @@
-# Piano Logico — Sistema Materie Scolastiche Dinamico
+# Piano Tecnico Implementativo — Sistema Materie Scolastiche Dinamico
 
-> **Versione**: 1.0  
+> **Versione**: 1.1 — _revisione post-validazione_  
 > **Data**: 2026-04-06  
-> **Stato**: Progettazione completata — implementazione da avviare  
+> **Stato**: ✅ Validato con correzioni — pronto per implementazione  
 > **Ambientazione**: Roma, sistema scolastico italiano reale
+
+---
+
+## Risultato Validazione
+
+| # | Problema rilevato | Gravità | Risoluzione |
+|---|-------------------|---------|-------------|
+| V1 | `liceo` esiste in `types.ts` ma è già rotto (`validateSchoolType` lo ignora, `SchoolSelection` non lo mostra) — mancava la strategia di migrazione `liceo → liceoScientifico` | 🔴 Critico | Aggiunta Fase 0 — Pre-migrazione |
+| V2 | `calculateGPA` non esiste — la funzione si chiama `calculateWeightedMedia` in `game-utils.ts` | 🔴 Critico | Corretta nomenclatura in Fase 2 |
+| V3 | `GradeProgressPanel` non esiste nel workspace — va creato, non aggiornato | 🔴 Critico | Spostato come nuovo componente in Fase 3 |
+| V4 | `validateSchoolType` in `data-validation.ts` non menzionato — non copre i 6 nuovi valori | 🔴 Critico | Aggiunto in Fase 1 |
+| V5 | `COMMON_SUBJECTS` e `SPECIFIC_SUBJECTS` non devono stare in `types.ts` (file di tipi puri) | 🔴 Critico | Spostati in nuovo file `src/lib/subjects.ts` |
+| V6 | `gradesHistory` menzionato solo nelle Considerazioni, assente dalle fasi implementative | 🟡 Moderato | Aggiunto in Fase 1 — `GameState` |
+| V7 | `DEFAULT_GAME_STATE.grades` (7 materie fisse) diventa obsoleto senza strategia | 🟡 Moderato | Aggiunto in Fase 1 — aggiornamento `DEFAULT_GAME_STATE` |
+| V8 | Tab "Scuola/Voti" di `CharacterSheet` non esiste | 🟡 Moderato | Aggiunto come nuovo tab in Fase 3 |
+| V9 | `getSchoolTypeName` non aggiornato per `conservatorio` e `alberghiero` | 🟡 Moderato | Aggiunto in Fase 0 |
 
 ---
 
@@ -15,6 +31,21 @@ coerente di materie, alcune delle quali entrano ed escono in base all'anno frequ
 
 Questo permette di modellare fedelmente i 5 anni di scuola superiore italiana con
 circa 10-14 materie attive per anno, che si evolvono nel tempo.
+
+---
+
+## File Coinvolti
+
+| File | Tipo intervento |
+|------|----------------|
+| `src/lib/types.ts` | Modifica tipi + interfacce |
+| `src/lib/subjects.ts` | **Nuovo file** — costanti dati |
+| `src/lib/game-utils.ts` | Modifica funzioni di calcolo |
+| `src/lib/data-validation.ts` | Modifica validatore |
+| `src/components/SchoolSelection.tsx` | Modifica UI — aggiunte 3 scuole |
+| `src/components/ExamsPanel.tsx` | Modifica — lista materie dinamica |
+| `src/components/CharacterSheet.tsx` | Modifica — nuovo tab Scuola/Voti |
+| `src/components/GradeProgressPanel.tsx` | **Nuovo componente** |
 
 ---
 
@@ -326,32 +357,165 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 
 ---
 
-## Piano di Implementazione — 3 Fasi
+## Piano di Implementazione — 5 Fasi
 
-### Fase 1 — `src/lib/types.ts` (nessun impatto su App.tsx)
+> Le fasi sono **sequenziali**: ogni fase dipende dalla precedente.  
+> Spunta ogni checkbox `- [x]` al completamento dell'attività.
 
-- [ ] Aggiungere tipo `SchoolType` con 6 valori (rimuovere duplicato `tecnico`)
-- [ ] Aggiungere interfaccia `SubjectDefinition`
-- [ ] Definire costante `COMMON_SUBJECTS: SubjectDefinition[]` (7 materie)
-- [ ] Definire costante `SPECIFIC_SUBJECTS: Record<SchoolType, SubjectDefinition[]>`
-- [ ] Aggiungere funzione `getActiveSubjectsForYear(schoolType, year)`
-- [ ] Aggiornare `getDefaultGradesForSchoolType` come wrapper retrocompatibile
-- [ ] Aggiornare `getSubjectDisplayName` con tutti i display name
-- [ ] Aggiornare `SUBJECT_WEIGHTS` o deprecarlo in favore del peso in `SubjectDefinition`
+---
+
+### Fase 0 — Pre-migrazione `liceo → liceoScientifico`
+
+> ⚠️ Il tipo `liceo` esiste già nel codice ma è **già non funzionante** (`validateSchoolType` lo scarta, `SchoolSelection` non lo mostra). Va rimosso/rinominato prima di procedere.
+
+**File: `src/lib/types.ts`**
+- [ ] Rinominare valore `'liceo'` → `'liceoScientifico'` nel tipo `SchoolType` (rimuovere anche il duplicato `'tecnico'`)
+- [ ] Nella costante `SUBJECT_WEIGHTS`: rinominare la chiave `liceo` → `liceoScientifico` e aggiungere le chiavi mancanti `conservatorio` e `alberghiero` (come placeholder con pesi identici a `artistico` fino a Fase 1)
+- [ ] In `getDefaultGradesForSchoolType`: rinominare il `case 'liceo'` → `case 'liceoScientifico'`; aggiungere `case 'conservatorio'` e `case 'alberghiero'` come fallback su `tecnico`
+- [ ] In `getSchoolTypeName`: aggiornare il `Record<SchoolType, string>` con tutti e 6 i valori:
+  ```ts
+  liceoScientifico: 'Liceo Scientifico',
+  tecnico:          'Istituto Tecnico Informatico',
+  agraria:          'Istituto Tecnico Agrario',
+  artistico:        'Liceo Artistico',
+  conservatorio:    'Liceo Musicale',
+  alberghiero:      'Istituto Alberghiero',
+  ```
+
+**File: `src/lib/data-validation.ts` — funzione `validateSchoolType`**
+- [ ] Aggiornare il guard per accettare tutti e 6 i valori validi:
+  ```ts
+  const VALID_SCHOOL_TYPES = ['tecnico','agraria','artistico','conservatorio','alberghiero','liceoScientifico'] as const
+  if (VALID_SCHOOL_TYPES.includes(schoolType as SchoolType)) return schoolType as SchoolType
+  ```
+
+**Verifica Fase 0**
+- [ ] `tsc --noEmit` senza errori su `types.ts` e `data-validation.ts`
+
+---
+
+### Fase 1 — Nuovo file `src/lib/subjects.ts` + aggiornamento `types.ts`
+
+> Creare un file dedicato per i dati (materie), separando i tipi dalla logica di business.
+
+**File nuovo: `src/lib/subjects.ts`**
+- [ ] Importare `SchoolType` da `@/lib/types`
+- [ ] Aggiungere interfaccia `SubjectDefinition` (come da spec):
+  ```ts
+  export interface SubjectDefinition {
+    key: string
+    displayName: string
+    weight: number
+    fromYear: number
+    toYear: number
+    isCommon: boolean
+    countsForGPA: boolean
+    weeklyHours?: number
+    weightBySchoolType?: Partial<Record<SchoolType, number>>
+  }
+  ```
+- [ ] Definire e esportare `COMMON_SUBJECTS: SubjectDefinition[]` (7 materie con override peso per `matematica` e `fisica`)
+- [ ] Definire e esportare `SPECIFIC_SUBJECTS: Record<SchoolType, SubjectDefinition[]>` con tutte le materie per i 6 indirizzi (dati dalle tabelle di questo documento)
+- [ ] Aggiungere e esportare funzione `getActiveSubjectsForYear(schoolType: SchoolType, schoolYear: number): SubjectDefinition[]`
+- [ ] Aggiungere e esportare funzione `getGradeWeight(subject: SubjectDefinition, schoolType: SchoolType): number` — risolve `weightBySchoolType[schoolType] ?? weight`
+
+**File: `src/lib/types.ts`**
+- [ ] Spostare interfaccia `SubjectDefinition` → `src/lib/subjects.ts` (aggiungere re-export `export type { SubjectDefinition } from '@/lib/subjects'` per retrocompatibilità se importata altrove)
+- [ ] Aggiornare `getDefaultGradesForSchoolType` come wrapper retrocompatibile:
+  ```ts
+  import { getActiveSubjectsForYear } from '@/lib/subjects'
+  export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
+    return Object.fromEntries(
+      getActiveSubjectsForYear(schoolType, 1)
+        .filter(s => s.countsForGPA)
+        .map(s => [s.key, 6])
+    )
+  }
+  ```
+- [ ] Aggiornare `getSubjectDisplayName` per delegare a `COMMON_SUBJECTS` + `SPECIFIC_SUBJECTS` per il display name, con fallback al key formattato
+- [ ] Deprecare `SUBJECT_WEIGHTS` — aggiungere commento `/** @deprecated usare getGradeWeight() da subjects.ts */` (non rimuovere fino a Fase 2)
+- [ ] Aggiungere campo `gradesHistory: Record<number, SubjectGrades>` all'interfaccia `GameState`
+- [ ] Aggiornare `DEFAULT_GAME_STATE` — `grades` diventa il risultato di `getDefaultGradesForSchoolType('tecnico')` (default tecnico come da Fase 0)
+
+**Verifica Fase 1**
+- [ ] `tsc --noEmit` senza errori su tutti i file modificati
+- [ ] `getDefaultGradesForSchoolType('tecnico')` restituisce esattamente le materie year=1 filtrate per `countsForGPA`
+- [ ] `getActiveSubjectsForYear('liceoScientifico', 3)` include `fisicaAvanzata` ma non `fisica` (che esce anno 2)
+
+---
 
 ### Fase 2 — `src/lib/game-utils.ts`
 
-- [ ] Aggiungere `getGPASubjectsForYear(schoolType, year)` — filtra solo `countsForGPA: true`
-- [ ] Aggiungere `archiveYearGrades(grades, schoolType, fromYear)` — salva i voti
-  dell'anno concluso e rimuove le materie uscenti
-- [ ] Aggiornare `calculateGPA` per usare i pesi da `SubjectDefinition`
+**Funzioni nuove**
+- [ ] Aggiungere `getGPASubjectsForYear(schoolType: SchoolType, year: number): SubjectDefinition[]` — shortcut che filtra `getActiveSubjectsForYear` per `countsForGPA: true`
+- [ ] Aggiungere `archiveYearGrades(grades: SubjectGrades, schoolType: SchoolType, fromYear: number): { archived: SubjectGrades; next: SubjectGrades }` — separa i voti delle materie uscenti (archived) da quelli delle materie che continuano nell'anno successivo (next)
 
-### Fase 3 — Componenti UI
+**Funzioni aggiornate**
+- [ ] Aggiornare `calculateWeightedMedia` per usare `getGradeWeight()` da `subjects.ts` invece di `SUBJECT_WEIGHTS` — nuovo import: `import { getGradeWeight, getActiveSubjectsForYear } from '@/lib/subjects'`
+- [ ] Rimuovere import `SUBJECT_WEIGHTS` da `game-utils.ts` dopo l'aggiornamento
 
-- [ ] `ExamsPanel.tsx` — usa `getActiveSubjectsForYear` invece della lista statica
-- [ ] `CharacterSheet.tsx` (tab Scuola/Voti) — lista materie dinamica
-- [ ] `SchoolSetup` / `CharacterCreation` — mostra i 6 indirizzi disponibili
-- [ ] `GradeProgressPanel` — mostra materie attive per anno corrente
+**Verifica Fase 2**
+- [ ] `calculateWeightedMedia` produce lo stesso risultato di prima per `tecnico`, `agraria`, `artistico` con le materie esistenti (test con valori noti)
+- [ ] `tsc --noEmit` senza errori
+
+---
+
+### Fase 3 — `src/lib/data-validation.ts`
+
+- [ ] Aggiornare `validateGrades` — quando `schoolType` è fornito, usare `getDefaultGradesForSchoolType(schoolType)` come baseline per le chiavi attese (invece di una lista hardcoded)
+
+**Verifica Fase 3**
+- [ ] `tsc --noEmit` senza errori
+- [ ] `validateGrades(null, 'liceoScientifico')` restituisce i voti default del liceo scientifico year=1
+
+---
+
+### Fase 4 — Componenti UI
+
+> Aggiornare i componenti esistenti e creare i nuovi. Ogni punto è indipendente dagli altri a parità di Fase 1-3 completate.
+
+**`src/components/SchoolSelection.tsx`**
+- [ ] Aggiungere 3 nuove card per `conservatorio`, `alberghiero`, `liceoScientifico` con icone appropriate (`MusicNote`, `ForkKnife`/`ChefHat`, `Atom` da `@phosphor-icons/react`)
+- [ ] Aggiornare la griglia da `md:grid-cols-3` a `md:grid-cols-3 lg:grid-cols-3` con 2 righe (o `grid-cols-2 md:grid-cols-3`) per 6 card
+
+**`src/components/ExamsPanel.tsx`**
+- [ ] Aggiungere prop `schoolType: SchoolType` e `schoolYear: number` al component
+- [ ] Sostituire la lista statica di soggetti con `getActiveSubjectsForYear(schoolType, schoolYear).map(s => s.key)` per `generateScheduledExam`
+
+**`src/components/CharacterSheet.tsx`**
+- [ ] Aggiungere tab **"Scuola"** (`value="scuola"`) alla `TabsList` (aggiornare `grid-cols-5` → `grid-cols-6`)
+- [ ] Aggiungere `TabsContent` per il tab Scuola: lista materie attive per anno corrente con voto e peso, media pesata corrente, storico anni precedenti da `gradesHistory`
+- [ ] Aggiungere props necessarie al componente: `grades: SubjectGrades` e `gradesHistory: Record<number, SubjectGrades>`
+
+**`src/components/GradeProgressPanel.tsx` — Nuovo componente**
+- [ ] Creare componente `GradeProgressPanel` che mostra:
+  - Lista materie attive per anno corrente con barra progresso (voto/10)
+  - Indicatore visivo per materie con `countsForGPA: false` (badge "Non fa media")
+  - Media pesata corrente calcolata con `calculateWeightedMedia`
+- [ ] Props: `grades: SubjectGrades`, `schoolType: SchoolType`, `schoolYear: number`
+
+**Verifica Fase 4**
+- [ ] Tutte le 6 scuole selezionabili in `SchoolSelection` senza errori TypeScript
+- [ ] `ExamsPanel` mostra solo materie dell'anno corrente
+- [ ] `CharacterSheet` mostra il tab Scuola con materie corrette per tipo/anno
+- [ ] `GradeProgressPanel` renderizza senza crash per tutti e 6 i tipi di scuola
+
+---
+
+### Fase 5 — Integrazione in `App.tsx`
+
+- [ ] Aggiornare `handleSchoolSelection` per inizializzare `gradesHistory: {}` nel KV
+- [ ] Passare `schoolYear` a `ExamsPanel` come prop
+- [ ] Aggiungere `gradesHistory` allo stato KV: `useKV<Record<number, SubjectGrades>>('tabboz-grades-history', {})`
+- [ ] Passare `GradeProgressPanel` o il tab Scuola dove necessario nella UI principale
+- [ ] Al completamento dell'anno scolastico (logica esistente in `useGameTime`): chiamare `archiveYearGrades` e aggiornare `gradesHistory`
+
+**Verifica Fase 5**
+- [ ] Nuovo gioco con `liceoScientifico`: anno 1 ha le materie corrette, anno 3 ha `fisicaAvanzata` al posto di `fisica`
+- [ ] `tsc --noEmit` senza errori sull'intero workspace
+- [ ] Nessuna regressione nei test esistenti (se presenti)
+
+---
 
 ---
 
@@ -360,8 +524,9 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 ### Retrocompatibilità KV
 Il salvataggio di `grades` nel KV store contiene le chiavi delle materie come stringhe.
 Quando si passa all'anno successivo e alcune materie escono, i voti delle materie
-archiviate restano nel KV ma non vengono più visualizzati. Considerare un campo
-separato `gradesHistory: Record<number, SubjectGrades>` per anno.
+archiviate restano nel KV ma non vengono più visualizzati. Il campo separato
+`gradesHistory: Record<number, SubjectGrades>` (aggiunto in Fase 1) gestisce
+l'archiviazione dei voti per anno tramite la funzione `archiveYearGrades` (Fase 2).
 
 ### Media Annuale vs Media Corrente
 - **Media corrente**: calcolata solo sulle materie attive nell'anno in corso
@@ -372,6 +537,18 @@ separato `gradesHistory: Record<number, SubjectGrades>` per anno.
 Le materie con `countsForGPA: false` (stage, religione) vengono mostrate in UI
 ma non influenzano la media. Il giocatore può comunque guadagnare reputazione
 e eventi narrativi da queste attività.
+
+### Priorità `weightBySchoolType`
+La funzione `getGradeWeight(subject, schoolType)` usa la seguente logica:
+```ts
+return subject.weightBySchoolType?.[schoolType] ?? subject.weight
+```
+Il campo `weightBySchoolType` ha sempre precedenza sul `weight` base.
+
+### `isCommon` — nota
+Il campo `isCommon: boolean` in `SubjectDefinition` è descrittivo (utile per filtri futuri
+e per la UI)  ma non viene usato nella logica di `getActiveSubjectsForYear`, che
+separa i dati strutturalmente in `COMMON_SUBJECTS` e `SPECIFIC_SUBJECTS`.
 
 ---
 
