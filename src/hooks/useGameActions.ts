@@ -659,7 +659,8 @@ export function useGameActions({
     checkForNewRelationship()
     checkForNewGirlfriend()
     triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend])
+    addLogEntry('action_neutral', 'Shopping al centro commerciale', 'Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -100 Soldi', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
 
   const handleTryRelationship = useCallback((relationshipId: string) => {
     const gt = gameTimeRef.current

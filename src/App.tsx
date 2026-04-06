@@ -47,6 +47,7 @@ import { useEventEngine } from '@/hooks/useEventEngine'
 import { useGameActions } from '@/hooks/useGameActions'
 import { useAppDialogs } from '@/hooks/useAppDialogs'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { useGameLog } from '@/hooks/useGameLog'
 import { Ragazza, generateRandomGirlfriend, performGirlfriendAction, shouldGirlfriendBreakup } from '@/lib/girlfriend-system'
 import { 
   validateStats, 
@@ -167,6 +168,7 @@ function App() {
 
   // --- Custom Hooks ---
   const { stats, setStats } = useGameStats(announce)
+  const { gameLog, addLogEntry, clearLog } = useGameLog()
 
   const {
     gameTime, setGameTime, scheduledExams, setScheduledExams,
@@ -203,7 +205,9 @@ function App() {
     gameTime,
     consumeAction,
     announce,
-    phaseActionsRemaining
+    phaseActionsRemaining,
+    addLogEntry,
+    currentPhase
   })
 
   const actions = useGameActions({
@@ -235,6 +239,7 @@ function App() {
     schoolRecord,
     setSchoolRecord,
     gainExtraAction,
+    addLogEntry,
     marinatoOggi,
   })
 
@@ -469,6 +474,7 @@ function App() {
     setSchoolType(null)
     setPlayerProfile(null)
     setSchoolRecord(DEFAULT_SCHOOL_RECORD)
+    clearLog()
     announce('Gioco RESETTATO! Crea di nuovo il tuo personaggio!')
   }
 
@@ -1270,6 +1276,7 @@ function App() {
               age={gameTime.age}
               schoolRecord={schoolRecord}
               currentMedia={currentMedia}
+              gameLog={gameLog}
             />
           </TabsContent>
 
