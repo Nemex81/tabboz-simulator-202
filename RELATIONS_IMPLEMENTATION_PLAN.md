@@ -204,6 +204,8 @@ export function migrateLegacyFriend(f: Friend): Friend
 export function dateToDayIndex(date: GameDate): number
   // (date.year - 2026) * 365 + (date.month - 1) * 30 + date.day
   // Approssimazione sufficiente per confronti relativi
+  // NOTA: approssimazione (mesi = 30gg fissi). Adatta solo a confronti
+  // relativi di inattività. Non usare per calcoli di data precisi.
 
 export function clampRel(rel: RelationStats): RelationStats
   // Clampa tutti i valori a 0-100
@@ -500,6 +502,9 @@ export interface SchoolMorningOutcome {
 │                                                          │
 │ E3. Cleanup finale                                       │
 │     - Rimuovere FriendsPanel.tsx (non più usato)         │
+│       ⚠️  Prima della rimozione eseguire grep -r "FriendsPanel"
+│           su src/ per verificare assenza di import, lazy-load
+│           o riferimenti in test. Rimuovere solo se risultato vuoto.
 │     - Aggiornare imports/lazy in App.tsx                  │
 │     - Verificare che RelationshipsPanel (ragazze) sia    │
 │       invariato e funzionante                            │
@@ -578,7 +583,7 @@ Riportato dal piano originale con correzioni minori per coerenza con le GameStat
 | id | label | effects | failEffects | failChance |
 |---|---|---|---|---|
 | `dichiara_amore` | Dichiarati | amore +15 | amore -15, romantico -10 | 30 |
-| `bacio` | Bacio *(req. amore >= 70)* | amore +10, romantico +5 | — | — |
+| `bacio` | Bacio *(req. amore >= 40, romantico >= 50)* | amore +10, romantico +5 | — | — |
 | `litigate_coppia` | Litiga da coppia | amore -15, odio +10 | — | — |
 
 ### CAT 7 — CONFLITTO (odio >= 30, tranne chiedi_scusa)
