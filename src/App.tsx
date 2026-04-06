@@ -90,6 +90,7 @@ import {
   getFriendStudyBonus
 } from '@/lib/social-system'
 import { migrateLegacyFriend } from '@/lib/relation-system'
+import { useGameRelations } from '@/hooks/useGameRelations'
 import {
   generateScheduledExam,
   calculateExamGrade,
@@ -314,6 +315,15 @@ function App() {
     handleTelefona,
     handleMarina: handleMarinaFromHook,
   } = actions
+
+  const { doInteraction } = useGameRelations({
+    friends,
+    setFriends: setRawFriends,
+    stats,
+    setStats,
+    gameDate: gameTime.currentDate,
+    announce,
+  })
 
   const handleRiposa = () => actions.handleRiposa()
 
@@ -1283,6 +1293,7 @@ function App() {
                     stats={stats}
                     actionsRemaining={phaseActionsRemaining ?? 0}
                     onFriendAction={handleFriendAction}
+                    onRelationInteraction={doInteraction}
                     girlfriend={girlfriend ?? null}
                     onGirlfriendAction={handleGirlfriendAction}
                     onGirlfriendBreakup={handleGirlfriendBreakup}

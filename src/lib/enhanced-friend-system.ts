@@ -1,5 +1,6 @@
 import { GameStats, Friend, FriendType } from '@/lib/types'
 import { randomChance } from '@/lib/game-utils'
+import { ORIGIN_INITIAL_STATS, MET_AT_TYPE_WEIGHTS } from '@/lib/relation-system'
 
 // Re-export per compatibilità con componenti che importano da qui
 export type { FriendType, Friend as EnhancedFriend }
@@ -30,6 +31,82 @@ export const generateRandomEnhancedFriend = (): Friend => {
     unlocked: true,
     intelligenza,
     originType: 'extrascolastico' as const,
+  }
+}
+
+/**
+ * Genera un Friend di tipo scolastico (compagno di classe o istituto).
+ * Imposta originType corretto e rel iniziale da ORIGIN_INITIAL_STATS.
+ */
+export const generateSchoolFriend = (
+  originType: 'compagno_classe' | 'compagno_istituto' = 'compagno_classe',
+  schoolYear?: number
+): Friend => {
+  const name = ITALIAN_MALE_NAMES[Math.floor(Math.random() * ITALIAN_MALE_NAMES.length)]
+  const types: FriendType[] = ['coatto', 'secchione', 'sportivo', 'ribelle']
+  const type = types[Math.floor(Math.random() * types.length)]
+
+  let intelligenza = Math.floor(Math.random() * 60) + 20
+  if (type === 'secchione') {
+    intelligenza = Math.floor(Math.random() * 30) + 70
+  } else if (type === 'ribelle' || type === 'coatto') {
+    intelligenza = Math.floor(Math.random() * 30) + 20
+  }
+
+  return {
+    id: `friend_${Date.now()}_${Math.random()}`,
+    name,
+    type,
+    affinita: ORIGIN_INITIAL_STATS[originType].amicizia,
+    unlocked: true,
+    intelligenza,
+    originType,
+    metAt: 'classe',
+    schoolYearMet: schoolYear,
+    rel: { ...ORIGIN_INITIAL_STATS[originType] },
+  }
+}
+
+/**
+ * Genera un Friend extrascolastico, con originType e location coerenti.
+ * Usa MET_AT_TYPE_WEIGHTS per determinare il type in base al luogo.
+ */
+export const generateExtraFriend = (
+  location: keyof typeof MET_AT_TYPE_WEIGHTS = 'quartiere'
+): Friend => {
+  const name = ITALIAN_MALE_NAMES[Math.floor(Math.random() * ITALIAN_MALE_NAMES.length)]
+
+  // Selezione type pesata per location
+  const weights = MET_AT_TYPE_WEIGHTS[location] ?? {}
+  const entries = Object.entries(weights) as [FriendType, number][]
+  let type: FriendType = 'generico'
+  if (entries.length > 0) {
+    const total = entries.reduce((s, [, w]) => s + w, 0)
+    let rand = Math.random() * total
+    for (const [t, w] of entries) {
+      rand -= w
+      if (rand <= 0) { type = t; break }
+    }
+  }
+
+  let intelligenza = Math.floor(Math.random() * 60) + 20
+  if (type === 'secchione') {
+    intelligenza = Math.floor(Math.random() * 30) + 70
+  } else if (type === 'ribelle' || type === 'coatto') {
+    intelligenza = Math.floor(Math.random() * 30) + 20
+  }
+
+  const originStats = ORIGIN_INITIAL_STATS['extrascolastico']
+  return {
+    id: `friend_${Date.now()}_${Math.random()}`,
+    name,
+    type,
+    affinita: originStats.amicizia,
+    unlocked: true,
+    intelligenza,
+    originType: 'extrascolastico',
+    metAt: location as Friend['metAt'],
+    rel: { ...originStats },
   }
 }
 

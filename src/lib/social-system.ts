@@ -1,5 +1,6 @@
 import { Friend, Relationship, GameStats, FriendType } from '@/lib/types'
 import { randomChance } from '@/lib/game-utils'
+import { LOCATION_PROB_BONUS } from '@/lib/relation-system'
 
 export const FRIEND_NAMES = [
   'Marco', 'Luca', 'Andrea', 'Simone', 'Davide', 'Francesco', 'Alessandro', 'Matteo',
@@ -54,7 +55,8 @@ export const generateRandomRelationship = (): Relationship => {
 export const checkNewFriendEvent = (carisma: number, location: string): boolean => {
   const baseChance = 15
   const carismaBonus = Math.floor(carisma / 10)
-  const totalChance = baseChance + carismaBonus
+  const locationBonus = LOCATION_PROB_BONUS[location] ?? 0
+  const totalChance = baseChance + carismaBonus + locationBonus
   
   return randomChance(totalChance)
 }

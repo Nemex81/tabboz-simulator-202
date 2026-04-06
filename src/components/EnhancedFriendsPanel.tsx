@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { GameStats, Friend, getRelationshipTier, getRelationshipTierLabel } from '@/lib/types'
-import { getAffinita } from '@/lib/relation-system'
+import { getAffinita, INTERACTION_CATALOG, checkInteractionAvailable, getRelationTierV2, getRelationTierV2Label } from '@/lib/relation-system'
 import type { Ragazza } from '@/lib/girlfriend-system'
 import {
   getFriendTypeDescription,
@@ -18,6 +18,7 @@ interface EnhancedFriendsPanelProps {
   stats: GameStats
   actionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
+  onRelationInteraction?: (friendId: string, interactionId: string) => void
   girlfriend: Ragazza | null
   onGirlfriendAction: (action: string) => void
   onGirlfriendBreakup: () => void
@@ -28,6 +29,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   stats,
   actionsRemaining,
   onFriendAction,
+  onRelationInteraction,
   girlfriend,
   onGirlfriendAction,
   onGirlfriendBreakup,
@@ -212,6 +214,63 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
               </div>
             </div>
             
+            {/* ── Interazioni relazionali (sistema 4-assi) ──────────────────── */}
+            {onRelationInteraction && friend.rel && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-bold text-muted-foreground uppercase">
+                    Relazione
+                  </h4>
+                  <Badge variant="outline" className="text-xs">
+                    {getRelationTierV2Label(getRelationTierV2(friend.rel))}
+                  </Badge>
+                </div>
+                {/* 4 barre relazionali */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3 text-xs">
+                  {([
+                    { key: 'amicizia',  label: 'Amicizia',  color: 'bg-primary' },
+                    { key: 'romantico', label: 'Romantico', color: 'bg-pink-400' },
+                    { key: 'amore',     label: 'Amore',     color: 'bg-red-500' },
+                    { key: 'odio',      label: 'Odio',      color: 'bg-destructive' },
+                  ] as const).map(({ key, label, color }) => (
+                    <div key={key} className="flex items-center gap-1">
+                      <span className="w-16 text-muted-foreground shrink-0">{label}</span>
+                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${color} rounded-full transition-all`}
+                          style={{ width: `${friend.rel![key]}%` }}
+                        />
+                      </div>
+                      <span className="w-6 text-right font-mono text-muted-foreground">
+                        {friend.rel![key]}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {/* Azioni interazione — solo le prime 6 disponibili */}
+                <div className="grid grid-cols-2 gap-1">
+                  {Object.values(INTERACTION_CATALOG)
+                    .filter(def => {
+                      const { canUse } = checkInteractionAvailable(def.id, friend.rel!)
+                      return canUse
+                    })
+                    .slice(0, 6)
+                    .map(def => (
+                      <Button
+                        key={def.id}
+                        size="sm"
+                        variant="outline"
+                        className="h-auto py-1.5 px-2 text-xs justify-start"
+                        onClick={() => onRelationInteraction!(friend.id, def.id)}
+                        title={def.description}
+                      >
+                        {def.label}
+                      </Button>
+                    ))}
+                </div>
+              </div>
+            )}
+
             {_affinita <= 0 && (
               <div className="mt-4 p-4 bg-destructive/20 border border-destructive rounded text-center">
                 <XCircle size={32} className="mx-auto mb-2 text-destructive" weight="fill" />
