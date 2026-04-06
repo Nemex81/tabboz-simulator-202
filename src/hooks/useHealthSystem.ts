@@ -175,49 +175,51 @@ export function useHealthSystem({
 
       const toRemove: HealthConditionId[] = []
 
-      setHealthRecord((prev) => ({
-        ...prev,
-        conditions: prev.conditions.map((c) => {
-          const template = HEALTH_CONDITIONS[c.id]
-          if (!template) return c
-          const updated = { ...c, daysElapsed: c.daysElapsed + 1 }
+      // FIX1: calcola updatedConditions FUORI dal setter per evitare
+      // side-effect (setStats) annidati dentro setHealthRecord — unsafe in StrictMode
+      const updatedConditions = currentConditions.map((c) => {
+        const template = HEALTH_CONDITIONS[c.id]
+        if (!template) return c
+        const updated = { ...c, daysElapsed: c.daysElapsed + 1 }
 
-          // Condizioni cumulative: applica danno giornaliero
-          if (template.cumulative) {
-            setStats((s) => {
-              const next = { ...s }
-              for (const [key, mod] of Object.entries(template.statModifiers)) {
-                const k = key as keyof GameStats
-                const maxVal = k === 'soldi' ? 1000 : 100
-                ;(next as Record<string, number>)[k] = clampStat(
-                  (next[k] as number) + (mod as number),
-                  0,
-                  maxVal
-                )
-              }
-              return next
-            })
-          }
+        // Condizioni cumulative: applica danno giornaliero
+        if (template.cumulative) {
+          setStats((s) => {
+            const next = { ...s }
+            for (const [key, mod] of Object.entries(template.statModifiers)) {
+              const k = key as keyof GameStats
+              const maxVal = k === 'soldi' ? 1000 : 100
+              ;(next as Record<string, number>)[k] = clampStat(
+                (next[k] as number) + (mod as number),
+                0,
+                maxVal
+              )
+            }
+            return next
+          })
+        }
 
-          // Check durata finita
-          if (template.durationDays !== null && updated.daysElapsed >= template.durationDays) {
+        // Check durata finita
+        if (template.durationDays !== null && updated.daysElapsed >= template.durationDays) {
+          toRemove.push(c.id)
+        }
+
+        // Check auto-resolve
+        if (template.autoResolve) {
+          const s = statsRef.current
+          const shouldResolve =
+            (template.autoResolve.check === 'stress_low' && s.stress < template.autoResolve.threshold) ||
+            (template.autoResolve.check === 'morale_high' && s.morale > template.autoResolve.threshold)
+          if (shouldResolve) {
             toRemove.push(c.id)
           }
+        }
 
-          // Check auto-resolve
-          if (template.autoResolve) {
-            const s = statsRef.current
-            const shouldResolve =
-              (template.autoResolve.check === 'stress_low' && s.stress < template.autoResolve.threshold) ||
-              (template.autoResolve.check === 'morale_high' && s.morale > template.autoResolve.threshold)
-            if (shouldResolve) {
-              toRemove.push(c.id)
-            }
-          }
+        return updated
+      })
 
-          return updated
-        }),
-      }))
+      // FIX1: setter puro — nessun side-effect al suo interno
+      setHealthRecord((prev) => ({ ...prev, conditions: updatedConditions }))
 
       // Rimuovi condizioni scadute fuori dal setter per evitare nesting
       for (const id of toRemove) {
