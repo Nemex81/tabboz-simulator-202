@@ -51,9 +51,8 @@ export function DiaryPanel({ gameLog, previewOnly = false }: DiaryPanelProps) {
         <h3 id="diary-title" className="sr-only">Anteprima diario — ultimi 7 eventi</h3>
       )}
       <ul
-        role="log"
+        role="list"
         aria-label={previewOnly ? 'Ultimi 7 eventi del diario' : 'Diario completo degli eventi'}
-        aria-live="off"
         className="space-y-2"
       >
         {entries.map((entry) => (
@@ -65,20 +64,39 @@ export function DiaryPanel({ gameLog, previewOnly = false }: DiaryPanelProps) {
               entry.result === 'negative' ? 'border-destructive/30 bg-destructive/5' :
               'border-muted bg-muted/20'
             }`}
-            aria-label={`${entry.date ? formatDate(entry.date) : ''}, ${entry.phase}: ${entry.title}. ${resultLabel(entry.result)}. ${entry.description}`}
           >
             <ResultIcon result={entry.result} />
-            <div className="flex-1 min-w-0" aria-hidden="true">
-              <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex-1 min-w-0">
+              {/* SR-only: esito (l'icona ResultIcon è aria-hidden) */}
+              <span className="sr-only">{resultLabel(entry.result)}. </span>
+
+              {/* Riga data + fase — visiva con aria-hidden, duplicata per SR */}
+              <div className="flex items-center gap-2 flex-wrap" aria-hidden="true">
                 <span className="text-xs text-muted-foreground font-mono">
                   {entry.date ? formatDate(entry.date) : '??/??/????'}
                 </span>
                 <span className="text-xs text-muted-foreground">·</span>
                 <span className="text-xs text-muted-foreground">{entry.phase}</span>
               </div>
-              <p className="text-sm font-semibold text-foreground mt-0.5 truncate">{entry.title}</p>
+              {/* Stesso contenuto per SR */}
+              <span className="sr-only">
+                {entry.date ? formatDate(entry.date) : 'Data sconosciuta'}, {entry.phase}.{' '}
+              </span>
+
+              {/* Titolo — visibile, leggibile direttamente da NVDA */}
+              <p className="text-sm font-semibold text-foreground mt-0.5 truncate">
+                {entry.title}
+              </p>
+
+              {/* Descrizione in modalità completa — visibile */}
               {!previewOnly && (
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{entry.description}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  {entry.description}
+                </p>
+              )}
+              {/* Descrizione in modalità preview — solo per SR */}
+              {previewOnly && (
+                <span className="sr-only">{entry.description}</span>
               )}
             </div>
           </li>
