@@ -70,6 +70,7 @@ export function useHealthSystem({
   const statsRef = useRef(stats)
   statsRef.current = stats
   const healthRecordRef = useRef<HealthRecord | undefined>(healthRecord)
+  healthRecordRef.current = healthRecord
   // ── applyCondition ────────────────────────────────────────────
   const applyCondition = useCallback(
     (id: HealthConditionId, currentDate: GameDate, currentPhase: DayPhase) => {
