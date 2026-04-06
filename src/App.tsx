@@ -89,7 +89,7 @@ import {
   calculateRelationshipSuccess,
   getFriendStudyBonus
 } from '@/lib/social-system'
-import { migrateLegacyFriend } from '@/lib/relation-system'
+import { migrateLegacyFriend, applyDailyErosion, dateToDayIndex } from '@/lib/relation-system'
 import { useGameRelations } from '@/hooks/useGameRelations'
 import {
   generateScheduledExam,
@@ -213,6 +213,15 @@ function App() {
     addLogEntry,
     tickConditions,
     checkAutoConditions,
+    onDayAdvanced: (newDate) => {
+      // C2: erosione giornaliera relazioni
+      setRawFriends(prev =>
+        applyDailyErosion(
+          (prev ?? []).map(migrateLegacyFriend),
+          dateToDayIndex(newDate)
+        )
+      )
+    },
   })
 
   // Alias non-undefined per compatibilità JSX

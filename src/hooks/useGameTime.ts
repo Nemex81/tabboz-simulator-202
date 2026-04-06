@@ -46,6 +46,8 @@ interface UseGameTimeParams {
   ) => void
   tickConditions: (currentDate: import('@/lib/types').GameDate) => void
   checkAutoConditions: (currentDate: import('@/lib/types').GameDate, currentPhase: import('@/lib/types').DayPhase) => void
+  /** Callback opzionale invocato a fine di ogni avanzamento giorno (C1). */
+  onDayAdvanced?: (newDate: import('@/lib/types').GameDate) => void
 }
 
 export function useGameTime({
@@ -68,6 +70,7 @@ export function useGameTime({
   addLogEntry,
   tickConditions,
   checkAutoConditions,
+  onDayAdvanced,
 }: UseGameTimeParams) {
   const [rawGameTime, setRawGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
   const [rawScheduledExams, setRawScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
@@ -341,6 +344,8 @@ export function useGameTime({
     // ⚠️ rawGameTime è il valore pre-mutazione nello scope (corretto per l'invariante)
     const nextDate = advanceGameTime(validateGameTime(rawGameTime)).currentDate
     tickConditions(nextDate)
+    // C1: notifica i listener (es. erosione relazioni) del nuovo giorno
+    onDayAdvanced?.(nextDate)
     playSound.success()
     announce('Nuovo giorno! Azioni ripristinate.')
   }, [
@@ -363,6 +368,7 @@ export function useGameTime({
     rawGameTime,
     addLogEntry,
     tickConditions,
+    onDayAdvanced,
   ])
 
   const gainExtraAction = useCallback(() => {
