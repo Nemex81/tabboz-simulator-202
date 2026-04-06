@@ -1,4 +1,6 @@
 import type { TraitId } from '@/lib/character-traits'
+import { getActiveSubjectsForYear, COMMON_SUBJECTS, SPECIFIC_SUBJECTS } from '@/lib/subjects'
+export type { SubjectDefinition } from '@/lib/subjects'
 
 export interface GameStats {
   muscoli: number
@@ -27,7 +29,13 @@ export interface ScheduledExam {
   announced?: boolean
 }
 
-export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'tecnico' | 'agraria'
+export type SchoolType =
+  | 'tecnico'
+  | 'agraria'
+  | 'artistico'
+  | 'conservatorio'
+  | 'alberghiero'
+  | 'liceoScientifico'
 
 export interface SubjectGrades {
   [subject: string]: number
@@ -99,8 +107,9 @@ export type RelationshipTier =
 
 export type SocialBondType = 'amicizia' | 'romantico'
 
+/** @deprecated usare getGradeWeight() da subjects.ts */
 export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
-  liceo: {
+  liceoScientifico: {
     matematica: 1.5,
     fisica: 1.3,
     italiano: 1.0,
@@ -136,76 +145,56 @@ export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
     storia: 1.5,
     scienze: 0.8,
     edFisica: 0.7
+  },
+  conservatorio: {
+    disegno: 1.5,
+    storiaArte: 1.3,
+    matematica: 0.8,
+    italiano: 1.2,
+    inglese: 1.0,
+    storia: 1.5,
+    scienze: 0.8,
+    edFisica: 0.7
+  },
+  alberghiero: {
+    disegno: 1.5,
+    storiaArte: 1.3,
+    matematica: 0.8,
+    italiano: 1.2,
+    inglese: 1.0,
+    storia: 1.5,
+    scienze: 0.8,
+    edFisica: 0.7
   }
 }
 
 export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
-  switch (schoolType) {
-    case 'liceo':
-      return {
-        matematica: 6,
-        fisica: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        scienze: 6,
-        edFisica: 6
-      }
-    case 'tecnico':
-      return {
-        matematica: 6,
-        fisica: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        scienze: 6,
-        edFisica: 6
-      }
-    case 'agraria':
-      return {
-        matematica: 6,
-        fisica: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        scienze: 6,
-        edFisica: 6
-      }
-    case 'artistico':
-      return {
-        matematica: 6,
-        disegno: 6,
-        storiaArte: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        scienze: 6,
-        edFisica: 6
-      }
-  }
+  return Object.fromEntries(
+    getActiveSubjectsForYear(schoolType, 1)
+      .filter(s => s.countsForGPA)
+      .map(s => [s.key, 6])
+  )
 }
 
 export function getSubjectDisplayName(subject: string): string {
-  const displayNames: Record<string, string> = {
-    matematica: 'Matematica',
-    fisica: 'Fisica',
-    italiano: 'Italiano',
-    inglese: 'Inglese',
-    storia: 'Storia',
-    scienze: 'Scienze',
-    disegno: 'Disegno',
-    storiaArte: 'Storia dell\'Arte',
-    edFisica: 'Ed. Fisica'
+  for (const s of COMMON_SUBJECTS) {
+    if (s.key === subject) return s.displayName
   }
-  return displayNames[subject] || subject
+  for (const subjects of Object.values(SPECIFIC_SUBJECTS)) {
+    const found = subjects.find(s => s.key === subject)
+    if (found) return found.displayName
+  }
+  return subject.replace(/([A-Z])/g, ' $1').trim()
 }
 
 export function getSchoolTypeName(schoolType: SchoolType): string {
   const names: Record<SchoolType, string> = {
-    liceo: 'Liceo',
-    tecnico: 'Istituto Tecnico',
-    agraria: 'Istituto Agrario',
-    artistico: 'Istituto Artistico'
+    liceoScientifico: 'Liceo Scientifico',
+    tecnico:          'Istituto Tecnico Informatico',
+    agraria:          'Istituto Tecnico Agrario',
+    artistico:        'Liceo Artistico',
+    conservatorio:    'Liceo Musicale',
+    alberghiero:      'Istituto Alberghiero',
   }
   return names[schoolType] || schoolType
 }
@@ -242,6 +231,7 @@ export const getRelationshipTierLabel = (tier: RelationshipTier): string => {
 export interface GameState {
   stats: GameStats
   grades: SubjectGrades
+  gradesHistory: Record<number, SubjectGrades>
   gameTime: GameTime
 }
 
@@ -266,9 +256,13 @@ export const DEFAULT_GAME_STATE: GameState = {
     italiano: 6,
     inglese: 6,
     storia: 6,
-    scienze: 6,
-    edFisica: 6
+    edFisica: 6,
+    diritto: 6,
+    scienzeInt: 6,
+    chimicaInt: 6,
+    tecnInfo: 6,
   },
+  gradesHistory: {},
   gameTime: {
     currentDate: { day: 15, month: 9, year: 2026 },
     actionsRemaining: 3,

@@ -1,4 +1,4 @@
-import { GameStats, SubjectGrades, GameTime, Friend, Relationship, ScheduledExam, SchoolType } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, Friend, Relationship, ScheduledExam, SchoolType, getDefaultGradesForSchoolType } from '@/lib/types'
 import { clampStat } from '@/lib/game-utils'
 
 export const validateStats = (stats: Partial<GameStats> | null | undefined): GameStats => {
@@ -36,17 +36,19 @@ export const validateStats = (stats: Partial<GameStats> | null | undefined): Gam
 }
 
 export const validateGrades = (grades: Partial<SubjectGrades> | null | undefined, schoolType?: SchoolType | null): SubjectGrades => {
+  const defaults = schoolType ? getDefaultGradesForSchoolType(schoolType) : {
+    matematica: 6,
+    italiano: 6,
+    storia: 6,
+    edFisica: 6
+  }
+
   if (!grades || typeof grades !== 'object') {
-    return {
-      matematica: 6,
-      italiano: 6,
-      storia: 6,
-      edFisica: 6
-    }
+    return defaults
   }
 
   const validated: SubjectGrades = {}
-  
+
   for (const [key, value] of Object.entries(grades)) {
     if (typeof value === 'number' && !isNaN(value)) {
       validated[key] = clampStat(value, 0, 10)
@@ -242,8 +244,7 @@ export const validateScheduledExams = (exams: unknown): ScheduledExam[] => {
 }
 
 export const validateSchoolType = (schoolType: unknown): SchoolType | null => {
-  if (schoolType === 'tecnico' || schoolType === 'agraria' || schoolType === 'artistico') {
-    return schoolType
-  }
+  const VALID_SCHOOL_TYPES = ['tecnico', 'agraria', 'artistico', 'conservatorio', 'alberghiero', 'liceoScientifico'] as const
+  if (VALID_SCHOOL_TYPES.includes(schoolType as SchoolType)) return schoolType as SchoolType
   return null
 }

@@ -14,7 +14,7 @@ import {
 } from '@/lib/time-utils'
 import { generateScheduledExam, calculateExamGrade, getDifficultyText, getDifficultyAnnouncement } from '@/lib/exam-system'
 import { getParentEventByMedia, getConductEvent, getScaledTeacherEvent } from '@/lib/school-events'
-import { calculateMedia, clampStat } from '@/lib/game-utils'
+import { calculateMedia, clampStat, getGPASubjectsForYear } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 import { SchoolEvent } from '@/lib/school-events'
 import { drawSchoolMorningEvents, SchoolMorningEvent } from '@/lib/school-morning-events'
@@ -295,7 +295,9 @@ export function useGameTime({
           .filter((e) => e !== null) as ScheduledExam[]
 
         if (newGameTime.schoolYear.isSchoolPeriod && updatedExams.length < 3 && Math.random() < 0.3 && st) {
-          const subjects = Object.keys(gradesRef.current)
+          const currentYear = newGameTime.schoolYear.currentYear
+          const examSubjects = getGPASubjectsForYear(st, currentYear).map(s => s.key)
+          const subjects = examSubjects.length > 0 ? examSubjects : Object.keys(gradesRef.current)
           const newExam = generateScheduledExam(subjects)
           announce(
             `NUOVA VERIFICA programmata di ${getSubjectDisplayName(newExam.subject)} tra ${newExam.daysUntil} giorni! Difficoltà: ${getDifficultyText(newExam.difficulty)}`

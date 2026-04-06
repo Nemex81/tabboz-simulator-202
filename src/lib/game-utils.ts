@@ -1,4 +1,5 @@
-import { GameStats, SubjectGrades, SchoolType, SUBJECT_WEIGHTS } from '@/lib/types'
+import { GameStats, SubjectGrades, SchoolType } from '@/lib/types'
+import { getGradeWeight, getActiveSubjectsForYear, SubjectDefinition } from '@/lib/subjects'
 
 export const clampStat = (value: number, min: number = 0, max: number = 100): number => {
   return Math.max(min, Math.min(max, value))
@@ -46,13 +47,14 @@ export const calculateMedia = (grades: { [key: string]: number }): number => {
 // Media pesata per materia (Step 2): materie fondamentali contano di più
 export const calculateWeightedMedia = (grades: SubjectGrades, schoolType: SchoolType | null): number => {
   if (!schoolType) return calculateMedia(grades)
-  const weights = SUBJECT_WEIGHTS[schoolType]
   const entries = Object.entries(grades)
   if (entries.length === 0) return 0
+  const allSubjects = getActiveSubjectsForYear(schoolType, 1) // fallback year=1; caller passa voti già filtrati
   let totalWeight = 0
   let weightedSum = 0
   for (const [subject, grade] of entries) {
-    const weight = weights[subject] ?? 1.0
+    const subjectDef = allSubjects.find(s => s.key === subject)
+    const weight = subjectDef ? getGradeWeight(subjectDef, schoolType) : 1.0
     totalWeight += weight
     weightedSum += grade * weight
   }
@@ -70,6 +72,30 @@ export const getWorstSubjects = (grades: SubjectGrades, count: number = 3): stri
 
 export const randomChance = (percentage: number): boolean => {
   return seededRandom() * 100 < percentage
+}
+
+export function getGPASubjectsForYear(schoolType: SchoolType, year: number): SubjectDefinition[] {
+  return getActiveSubjectsForYear(schoolType, year).filter(s => s.countsForGPA)
+}
+
+export function archiveYearGrades(
+  grades: SubjectGrades,
+  schoolType: SchoolType,
+  fromYear: number
+): { archived: SubjectGrades; next: SubjectGrades } {
+  const nextYearSubjectKeys = new Set(
+    getActiveSubjectsForYear(schoolType, fromYear + 1).map(s => s.key)
+  )
+  const archived: SubjectGrades = {}
+  const next: SubjectGrades = {}
+  for (const [key, value] of Object.entries(grades)) {
+    if (nextYearSubjectKeys.has(key)) {
+      next[key] = value
+    } else {
+      archived[key] = value
+    }
+  }
+  return { archived, next }
 }
 
 export const checkGameOver = (stats: GameStats): { isOver: boolean; reason: string } => {

@@ -70,7 +70,8 @@ import {
   getReputationLevel,
   getReputationEventModifier,
   calculateStudyGradeIncrease,
-  canAvoidNegativeEventWithCharisma
+  canAvoidNegativeEventWithCharisma,
+  archiveYearGrades
 } from '@/lib/game-utils'
 import { 
   advanceGameTime, 
@@ -107,6 +108,7 @@ function App() {
   const [rawGirlfriend, setRawGirlfriend] = useKV<Ragazza | null>('tabboz-girlfriend', null)
   const [currentTheme, setCurrentTheme] = useKV<ThemeVariant>('tabboz-theme', 'default')
   const [rawSchoolRecord, setRawSchoolRecord] = useKV<SchoolRecord>('tabboz-school-record', DEFAULT_SCHOOL_RECORD)
+  const [rawGradesHistory, setRawGradesHistory] = useKV<Record<number, SubjectGrades>>('tabboz-grades-history', {})
 
   const schoolType = validateSchoolType(rawSchoolType)
   const playerProfile = rawPlayerProfile
@@ -479,6 +481,7 @@ function App() {
     setPlayerProfile(profile)
     setCurrentTheme(theme)
     setGrades(getDefaultGradesForSchoolType(selected))
+    setRawGradesHistory({})
     announce(`Ciao ${profile.name}! Hai scelto: ${selected.toUpperCase()}! Buona fortuna!`)
   }
 
@@ -503,6 +506,7 @@ function App() {
     setSchoolType(null)
     setPlayerProfile(null)
     setSchoolRecord(DEFAULT_SCHOOL_RECORD)
+    setRawGradesHistory({})
     clearLog()
     setHealthRecord(DEFAULT_HEALTH_RECORD)
     announce('Gioco RESETTATO! Crea di nuovo il tuo personaggio!')
@@ -635,13 +639,21 @@ function App() {
     const actuallyPassed = weightedMedia >= promotionThreshold
 
     if (actuallyPassed) {
-      const newYear = gameTime.schoolYear.currentYear + 1
+      const completedYear = gameTime.schoolYear.currentYear
+      const newYear = completedYear + 1
+      // Archivia i voti dell'anno appena concluso
+      if (schoolType) {
+        const { archived, next } = archiveYearGrades(grades, schoolType, completedYear)
+        setRawGradesHistory(prev => ({ ...(prev ?? {}), [completedYear]: archived }))
+        setGrades(next)
+      } else {
+        setGrades(getDefaultGradesForSchoolType(schoolType ?? 'tecnico'))
+      }
       setGameTime((current) => ({
         ...current!,
         schoolYear: calculateNextSchoolYear(current!.schoolYear),
         age: current!.age + 1
       }))
-      setGrades(schoolType ? getDefaultGradesForSchoolType(schoolType) : DEFAULT_GAME_STATE.grades)
       setSchoolRecord(DEFAULT_SCHOOL_RECORD)  // reset annuale
       playSound.success()
       announce(`PROMOSSO! Ora sei in ${newYear}° superiore! I voti sono stati resettati.`)
@@ -1320,6 +1332,8 @@ function App() {
               currentMedia={currentMedia}
               gameLog={gameLog}
               healthRecord={healthRecord ?? DEFAULT_HEALTH_RECORD}
+              grades={grades}
+              gradesHistory={rawGradesHistory ?? {}}
             />
           </TabsContent>
 

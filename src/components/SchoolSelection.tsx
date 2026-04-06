@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SchoolType, getSchoolTypeName, PlayerProfile, ThemeVariant } from '@/lib/types'
-import { GraduationCap, Tractor, PaintBrush, User, GenderMale, GenderFemale, Palette, Moon, Sun, Plant } from '@phosphor-icons/react'
+import { GraduationCap, Tractor, PaintBrush, User, GenderMale, GenderFemale, Palette, Moon, Sun, Plant, MusicNotes, ForkKnife, Atom } from '@phosphor-icons/react'
 
 interface SchoolSelectionProps {
   onSelectSchool: (schoolType: SchoolType, profile: PlayerProfile, theme: ThemeVariant) => void
@@ -271,6 +271,81 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
                 <p>✓ 12 Materie artistiche</p>
                 <p>✓ Progetti creativi</p>
                 <p>✓ Mostre d'arte</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 border-2 border-primary bg-card hover:bg-primary/10 transition-all cursor-pointer group"
+            onClick={() => handleSchoolSelect('conservatorio')}>
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <MusicNotes size={80} weight="fill" className="text-primary group-hover:scale-110 transition-transform" />
+              </div>
+              <h3 className="text-2xl font-bold text-primary">
+                {getSchoolTypeName('conservatorio')}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Strumento, Teoria, Armonia, Storia della musica e musica d'insieme
+              </p>
+              <div className="pt-4">
+                <Button className="w-full bg-primary" size="lg">
+                  SCEGLI MUSICALE
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground space-y-1 pt-2">
+                <p>✓ Strumento peso 2.0</p>
+                <p>✓ Saggi e concerti</p>
+                <p>✓ Teoria avanzata</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 border-2 border-accent bg-card hover:bg-accent/10 transition-all cursor-pointer group"
+            onClick={() => handleSchoolSelect('alberghiero')}>
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <ForkKnife size={80} weight="fill" className="text-accent group-hover:scale-110 transition-transform" />
+              </div>
+              <h3 className="text-2xl font-bold text-accent">
+                {getSchoolTypeName('alberghiero')}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Cucina, Sala vendita, Scienze degli alimenti, Enologia e turismo
+              </p>
+              <div className="pt-4">
+                <Button className="w-full bg-accent" size="lg">
+                  SCEGLI ALBERGHIERO
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground space-y-1 pt-2">
+                <p>✓ Laboratorio cucina</p>
+                <p>✓ Esami pratici</p>
+                <p>✓ Stage alberghiero</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 border-2 border-secondary bg-card hover:bg-secondary/10 transition-all cursor-pointer group"
+            onClick={() => handleSchoolSelect('liceoScientifico')}>
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <Atom size={80} weight="fill" className="text-secondary group-hover:scale-110 transition-transform" />
+              </div>
+              <h3 className="text-2xl font-bold text-secondary">
+                {getSchoolTypeName('liceoScientifico')}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Matematica avanzata, Fisica, Latino, Scienze naturali e filosofia
+              </p>
+              <div className="pt-4">
+                <Button className="w-full bg-secondary" size="lg">
+                  SCEGLI SCIENTIFICO
+                </Button>
+              </div>
+              <div className="text-xs text-muted-foreground space-y-1 pt-2">
+                <p>✓ Fisica avanzata peso 1.4</p>
+                <p>✓ Matematica peso 1.5</p>
+                <p>✓ PCTO scientifico</p>
               </div>
             </div>
           </Card>

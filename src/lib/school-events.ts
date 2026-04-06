@@ -391,7 +391,7 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
         ]
       }
     ],
-    liceo: [
+    liceoScientifico: [
       {
         type: 'schoolSpecific',
         title: 'VERSIONE DI LATINO!',
@@ -410,6 +410,56 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
             action: () => ({
               message: 'Il vicino non sapeva neanche lui! -1 Latino',
               gradeChanges: { subject: 'latino', change: -1 }
+            })
+          }
+        ]
+      }
+    ],
+    conservatorio: [
+      {
+        type: 'schoolSpecific',
+        title: 'SAGGIO DI FINE SEMESTRE!',
+        description: 'Devi esibirti davanti a tutta la scuola! Lo strumento è tuo amico... vero?',
+        choices: [
+          {
+            label: 'Ti esibisci con impegno',
+            action: () => ({
+              message: 'Esibizione PERFETTA! +2 Strumento, +15 Figosità',
+              statChanges: { figosita: 15 },
+              gradeChanges: { subject: 'strumento', change: 2 }
+            })
+          },
+          {
+            label: 'Ti blocchi per l\'ansia',
+            action: () => ({
+              message: 'Hai dimenticato tutto! -1 Strumento, -10 Figosità',
+              statChanges: { figosita: -10 },
+              gradeChanges: { subject: 'strumento', change: -1 }
+            })
+          }
+        ]
+      }
+    ],
+    alberghiero: [
+      {
+        type: 'schoolSpecific',
+        title: 'ESAME PRATICO DI CUCINA!',
+        description: 'Devi preparare un primo piatto al prof. Il fuoco è acceso.',
+        choices: [
+          {
+            label: 'Cucini con cura',
+            action: () => ({
+              message: 'Pasta ECCELLENTE! +2 Cucina, +10 Figosità',
+              statChanges: { figosita: 10 },
+              gradeChanges: { subject: 'laboratorioCucina', change: 2 }
+            })
+          },
+          {
+            label: 'Bruci tutto',
+            action: () => ({
+              message: 'Hai bruciato la pasta! -1 Cucina, +5 Coattaggine',
+              statChanges: { coattaggine: 5 },
+              gradeChanges: { subject: 'laboratorioCucina', change: -1 }
             })
           }
         ]

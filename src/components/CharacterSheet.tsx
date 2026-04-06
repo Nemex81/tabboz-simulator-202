@@ -2,10 +2,11 @@ import React from 'react'
 import { IdentificationCard, Star, Trophy, GraduationCap, BookOpen, Heart } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats, SchoolType, SchoolRecord, GameLogEntry, HealthRecord } from '@/lib/types'
+import { GameStats, SchoolType, SchoolRecord, GameLogEntry, HealthRecord, SubjectGrades } from '@/lib/types'
 import { getReputationLevel } from '@/lib/game-utils'
 import { DiaryPanel } from '@/components/DiaryPanel'
 import { HealthRecordPanel } from '@/components/HealthRecordPanel'
+import { GradeProgressPanel } from '@/components/GradeProgressPanel'
 
 interface CharacterSheetProps {
   playerProfile: { name: string; gender: 'maschio' | 'femmina' } | null
@@ -17,6 +18,8 @@ interface CharacterSheetProps {
   currentMedia: number
   gameLog: GameLogEntry[]
   healthRecord: HealthRecord
+  grades: SubjectGrades
+  gradesHistory: Record<number, SubjectGrades>
 }
 
 export function CharacterSheet({
@@ -29,14 +32,21 @@ export function CharacterSheet({
   currentMedia,
   gameLog,
   healthRecord,
+  grades,
+  gradesHistory,
 }: CharacterSheetProps) {
   return (
     <Tabs defaultValue="profilo" className="w-full mt-6">
-      <TabsList className="grid w-full grid-cols-5 gap-1 bg-muted/50 p-1 h-auto mb-6">
+      <TabsList className="grid w-full grid-cols-6 gap-1 bg-muted/50 p-1 h-auto mb-6">
         <TabsTrigger value="profilo">
           <IdentificationCard size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Profilo</span>
           <span className="sm:hidden">👤</span>
+        </TabsTrigger>
+        <TabsTrigger value="scuola" aria-label="Voti scuola">
+          <GraduationCap size={18} className="mr-1" weight="fill" aria-hidden="true" />
+          <span className="hidden sm:inline">Scuola</span>
+          <span className="sm:hidden">🎓</span>
         </TabsTrigger>
         <TabsTrigger value="aspetto" disabled aria-label="Aspetto: non ancora disponibile">
           <span className="hidden sm:inline">Aspetto</span>
@@ -222,6 +232,44 @@ export function CharacterSheet({
       <TabsContent value="diario">
         <div className="mt-2">
           <DiaryPanel gameLog={gameLog} previewOnly={false} />
+        </div>
+      </TabsContent>
+
+      <TabsContent value="scuola">
+        <div className="mt-2 space-y-6">
+          {schoolType ? (
+            <>
+              <GradeProgressPanel
+                grades={grades}
+                schoolType={schoolType}
+                schoolYear={schoolYear}
+              />
+              {Object.keys(gradesHistory).length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+                    Storico anni precedenti
+                  </h4>
+                  {Object.entries(gradesHistory)
+                    .sort(([a], [b]) => Number(b) - Number(a))
+                    .map(([year, histGrades]) => {
+                      const avg = Object.values(histGrades).length
+                        ? (Object.values(histGrades).reduce((s, v) => s + v, 0) / Object.values(histGrades).length).toFixed(1)
+                        : '—'
+                      return (
+                        <div key={year} className="flex items-center justify-between px-2 py-1.5 rounded bg-muted/20 text-sm">
+                          <span className="text-muted-foreground">Anno {year}°</span>
+                          <span className="font-semibold">{avg}</span>
+                        </div>
+                      )
+                    })}
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">
+              Seleziona prima un indirizzo scolastico.
+            </p>
+          )}
         </div>
       </TabsContent>
 
