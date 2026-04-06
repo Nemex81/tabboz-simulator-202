@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { GameStats, Friend, getRelationshipTier, getRelationshipTierLabel } from '@/lib/types'
-import { getAffinita, getRelationTierV2, getRelationTierV2Label } from '@/lib/relation-system'
+import { getAffinita } from '@/lib/relation-system'
 import { RelationCard } from '@/components/RelationCard'
 import type { Ragazza } from '@/lib/girlfriend-system'
 import {

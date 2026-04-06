@@ -236,6 +236,8 @@ export const applyFriendActionEffects = (
   newStats: Partial<GameStats>
   newAffinita: number
   message: string
+  /** E1: rel aggiornata se il friend usa il sistema 4-assi, undefined altrimenti */
+  newRel?: import('@/lib/relation-system').RelationStats
 } => {
   const action = FRIEND_ACTIONS.find(a => a.id === actionId)
   if (!action) {
@@ -291,7 +293,12 @@ export const applyFriendActionEffects = (
   
   newAffinita = Math.max(0, Math.min(100, newAffinita))
   
-  return { newStats, newAffinita, message }
+  // E1: sincronizza rel.amicizia con newAffinita se il friend usa il nuovo sistema
+  const newRel = friend.rel
+    ? { ...friend.rel, amicizia: Math.max(0, Math.min(100, newAffinita)) }
+    : undefined
+
+  return { newStats, newAffinita, message, newRel }
 }
 
 export const checkBestFriend = (affinita: number): boolean => {

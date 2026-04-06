@@ -254,6 +254,7 @@ function App() {
     scheduledExams,
     setScheduledExams,
     friends,
+    setFriends: setRawFriends,
     relationships,
     setRelationships,
     girlfriend: girlfriend ?? null,

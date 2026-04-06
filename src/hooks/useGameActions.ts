@@ -32,6 +32,7 @@ interface UseGameActionsParams {
   scheduledExams: ScheduledExam[]
   setScheduledExams: (updater: ((prev: ScheduledExam[]) => ScheduledExam[]) | ScheduledExam[]) => void
   friends: Friend[]
+  setFriends: (updater: ((prev: Friend[]) => Friend[]) | Friend[]) => void
   relationships: Relationship[]
   setRelationships: (updater: ((prev: Relationship[]) => Relationship[]) | Relationship[]) => void
   girlfriend: Ragazza | null
@@ -77,6 +78,7 @@ export function useGameActions({
   scheduledExams,
   setScheduledExams,
   friends,
+  setFriends,
   relationships,
   setRelationships,
   girlfriend,
@@ -782,6 +784,19 @@ export function useGameActions({
       return
     }
     const result = applyFriendActionEffects(actionId, s, friend)
+    // E1: aggiorna affinita (legacy) e rel.amicizia (new) nel KV
+    const clampedAffinita = result.newAffinita
+    setFriends((prev) =>
+      prev.map((f) =>
+        f.id !== friendId
+          ? f
+          : {
+              ...f,
+              affinita: clampedAffinita,
+              rel: result.newRel ?? f.rel,
+            }
+      )
+    )
     if (Object.keys(result.newStats).length > 0) {
       setStats((current) => {
         const updated = { ...current }
@@ -800,7 +815,7 @@ export function useGameActions({
     consumeAction()
     playSound.success()
     announce(result.message)
-  }, [setStats, consumeAction, announce])
+  }, [setStats, setFriends, consumeAction, announce])
 
   // B1-FIX-4 applicato
   const handleGirlfriendAction = useCallback((action: string) => {
