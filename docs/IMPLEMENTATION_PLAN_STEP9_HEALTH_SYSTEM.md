@@ -731,11 +731,12 @@ Inserire DOPO il blocco `setRawScheduledExams(...)` e PRIMA di `setSchoolRecord(
 
 ```ts
 // STEP 9C: tick condizioni di salute per il nuovo giorno
-const nextDate = advanceGameTime(gameTimeRef.current).currentDate
+// ⚠️ Usare rawGameTime (valore pre-mutazione nello scope), NON gameTimeRef.current
+const nextDate = advanceGameTime(rawGameTime).currentDate
 tickConditions(nextDate)
 ```
 
-**Nota**: `advanceGameTime` è deterministico e viene chiamato sia dentro il setter che qui. Entrambe le invocazioni producono lo stesso `currentDate`. La chiamata interna al setter aggiorna lo stato; questa chiamata esterna fornisce la data a `tickConditions`.
+**Nota**: `advanceGameTime` è deterministico. `rawGameTime` è il valore pre-mutazione già disponibile nello scope di `advanceToNextDay` (la variabile `useKV` non ancora aggiornata). Produce lo stesso `currentDate` che verrebbe calcolato dentro il setter, ed è esplicitamente corretto senza rischiare stale closure da `gameTimeRef`.
 
 #### Modifica T4 — Chiamare `checkAutoConditions` in `advancePhaseOnly`
 
@@ -1139,10 +1140,10 @@ Aggiungere DOPO il `TabsContent value="diario"` e PRIMA della chiusura `</Tabs>`
 
 #### Modifica D7 — Aggiungere `salute` alla barra statistiche (tab Profilo)
 
-Nel tab Profilo, sezione STATISTICHE, aggiungere `Salute` come PRIMA voce della lista:
+Nel tab Profilo, sezione STATISTICHE, aggiungere `Salute` come voce **dopo `Morale`** (raggruppata con le stat fisico-mentali: Stanchezza, Stress, Morale, Salute):
 
 ```ts
-// Aggiungere come primo elemento dell'array in sezione Statistiche:
+// Inserire DOPO ['Morale', stats.morale ?? 60, 'text-accent'] e PRIMA di ['Reputazione', ...]:
 ['Salute', stats.salute, 'text-primary'],
 ```
 

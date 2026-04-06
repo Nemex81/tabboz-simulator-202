@@ -44,6 +44,8 @@ interface UseGameTimeParams {
     date: import('@/lib/types').GameDate,
     phase: import('@/lib/types').DayPhase
   ) => void
+  tickConditions: (currentDate: import('@/lib/types').GameDate) => void
+  checkAutoConditions: (currentDate: import('@/lib/types').GameDate, currentPhase: import('@/lib/types').DayPhase) => void
 }
 
 export function useGameTime({
@@ -64,6 +66,8 @@ export function useGameTime({
   setGameOver,
   setGameOverReason,
   addLogEntry,
+  tickConditions,
+  checkAutoConditions,
 }: UseGameTimeParams) {
   const [rawGameTime, setRawGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
   const [rawScheduledExams, setRawScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
@@ -196,9 +200,11 @@ export function useGameTime({
     if (wasAbsent) {
       addLogEntry('school', 'Assenza scolastica', '📋 Non sei andato a scuola ieri! La giornata è contata come assenza.', 'negative', gameTime.currentDate, 'mattina')
     }
+    // STEP 9C: check condizioni automatiche dopo ogni cambio fase
+    checkAutoConditions(gameTime.currentDate, nextPhase)
   }, [currentPhase, dayType, setStats, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining,
       setSchoolMorningEvents, setShowSchoolMorning, announce, schoolRecord, setSchoolRecord, setGameOver, setGameOverReason,
-      setSchoolEvent, setShowSchoolEvent, gameTime, addLogEntry])
+      setSchoolEvent, setShowSchoolEvent, gameTime, addLogEntry, checkAutoConditions])
 
   const advanceToNextDay = useCallback(() => {
     setRawGameTime((current) => {
@@ -328,6 +334,10 @@ export function useGameTime({
     }
     // F3: reset flag presenza giornaliera (per handleDormi che salta le fasi)
     setSchoolRecord((prev) => ({ ...prev, wentToSchoolToday: false }))
+    // STEP 9C: tick condizioni di salute per il nuovo giorno
+    // ⚠️ rawGameTime è il valore pre-mutazione nello scope (corretto per l'invariante)
+    const nextDate = advanceGameTime(rawGameTime).currentDate
+    tickConditions(nextDate)
     playSound.success()
     announce('Nuovo giorno! Azioni ripristinate.')
   }, [
@@ -349,6 +359,7 @@ export function useGameTime({
     setGameOverReason,
     rawGameTime,
     addLogEntry,
+    tickConditions,
   ])
 
   const gainExtraAction = useCallback(() => {

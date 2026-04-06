@@ -1,10 +1,11 @@
 import React from 'react'
-import { IdentificationCard, Star, Trophy, GraduationCap, BookOpen } from '@phosphor-icons/react'
+import { IdentificationCard, Star, Trophy, GraduationCap, BookOpen, Heart } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats, SchoolType, SchoolRecord, GameLogEntry } from '@/lib/types'
+import { GameStats, SchoolType, SchoolRecord, GameLogEntry, HealthRecord } from '@/lib/types'
 import { getReputationLevel } from '@/lib/game-utils'
 import { DiaryPanel } from '@/components/DiaryPanel'
+import { HealthRecordPanel } from '@/components/HealthRecordPanel'
 
 interface CharacterSheetProps {
   playerProfile: { name: string; gender: 'maschio' | 'femmina' } | null
@@ -15,6 +16,7 @@ interface CharacterSheetProps {
   schoolRecord: SchoolRecord
   currentMedia: number
   gameLog: GameLogEntry[]
+  healthRecord: HealthRecord
 }
 
 export function CharacterSheet({
@@ -26,10 +28,11 @@ export function CharacterSheet({
   schoolRecord,
   currentMedia,
   gameLog,
+  healthRecord,
 }: CharacterSheetProps) {
   return (
     <Tabs defaultValue="profilo" className="w-full mt-6">
-      <TabsList className="grid w-full grid-cols-4 gap-1 bg-muted/50 p-1 h-auto mb-6">
+      <TabsList className="grid w-full grid-cols-5 gap-1 bg-muted/50 p-1 h-auto mb-6">
         <TabsTrigger value="profilo">
           <IdentificationCard size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Profilo</span>
@@ -44,6 +47,11 @@ export function CharacterSheet({
           <BookOpen size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Diario</span>
           <span className="sm:hidden">📓</span>
+        </TabsTrigger>
+        <TabsTrigger value="salute" aria-label="Registro salute">
+          <Heart size={18} className="mr-1" weight="fill" aria-hidden="true" />
+          <span className="hidden sm:inline">Salute</span>
+          <span className="sm:hidden">❤️</span>
         </TabsTrigger>
         <TabsTrigger value="obiettivi" disabled aria-label="Obiettivi: non ancora disponibile">
           <span className="hidden sm:inline">Obiettivi</span>
@@ -89,6 +97,7 @@ export function CharacterSheet({
               ['Stanchezza', stats.stanchezza, 'text-destructive'],
               ['Stress', stats.stress ?? 0, 'text-destructive'],
               ['Morale', stats.morale ?? 60, 'text-accent'],
+              ['Salute', stats.salute ?? 100, 'text-primary'],
               ['Reputazione', stats.reputazione, 'text-primary'],
               ['Soldi', stats.soldi, 'text-secondary'],
             ] as [string, number, string][]).map(([label, value, color]) => (
@@ -213,6 +222,12 @@ export function CharacterSheet({
       <TabsContent value="diario">
         <div className="mt-2">
           <DiaryPanel gameLog={gameLog} previewOnly={false} />
+        </div>
+      </TabsContent>
+
+      <TabsContent value="salute">
+        <div className="mt-2">
+          <HealthRecordPanel healthRecord={healthRecord} gameLog={gameLog} />
         </div>
       </TabsContent>
     </Tabs>

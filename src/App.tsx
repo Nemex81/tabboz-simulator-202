@@ -40,7 +40,7 @@ import { CharacterSheet } from '@/components/CharacterSheet'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant, SchoolRecord, DEFAULT_SCHOOL_RECORD } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, getSubjectDisplayName, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant, SchoolRecord, DEFAULT_SCHOOL_RECORD, DEFAULT_HEALTH_RECORD } from '@/lib/types'
 import { useGameStats } from '@/hooks/useGameStats'
 import { useGameTime } from '@/hooks/useGameTime'
 import { useEventEngine } from '@/hooks/useEventEngine'
@@ -48,6 +48,7 @@ import { useGameActions } from '@/hooks/useGameActions'
 import { useAppDialogs } from '@/hooks/useAppDialogs'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useGameLog } from '@/hooks/useGameLog'
+import { useHealthSystem } from '@/hooks/useHealthSystem'
 import { Ragazza, generateRandomGirlfriend, performGirlfriendAction, shouldGirlfriendBreakup } from '@/lib/girlfriend-system'
 import { 
   validateStats, 
@@ -171,6 +172,20 @@ function App() {
   const { gameLog, addLogEntry, clearLog } = useGameLog()
 
   const {
+    healthRecord,
+    setHealthRecord,
+    applyCondition,
+    tickConditions,
+    checkAutoConditions,
+    canAttendSchool,
+  } = useHealthSystem({
+    stats,
+    setStats,
+    playerGender: playerProfile?.gender ?? 'maschio',
+    addLogEntry,
+  })
+
+  const {
     gameTime, setGameTime, scheduledExams, setScheduledExams,
     consumeAction, advanceToNextDay, gainExtraAction, handleDormi,
     currentPhase, dayType, phaseActionsRemaining, advancePhaseOnly,
@@ -192,6 +207,8 @@ function App() {
     setGameOver,
     setGameOverReason,
     addLogEntry,
+    tickConditions,
+    checkAutoConditions,
   })
 
   const events = useEventEngine({
@@ -242,6 +259,7 @@ function App() {
     gainExtraAction,
     addLogEntry,
     marinatoOggi,
+    applyCondition,
   })
 
   // Destructure event engine results per compatibilità con JSX esistente
@@ -340,6 +358,12 @@ function App() {
     if (schoolRecord.wentToSchoolToday) {
       playSound.failure()
       announce('Sei già andato a scuola oggi!')
+      return
+    }
+    if (!canAttendSchool()) {
+      playSound.failure()
+      announce('Non puoi andare a scuola: sei troppo malato! Resta a casa.')
+      addLogEntry('health', 'Assenza forzata', 'Non puoi andare a scuola a causa delle condizioni di salute.', 'negative', gameTime.currentDate, currentPhase)
       return
     }
     playSound.buttonClick()
@@ -477,6 +501,7 @@ function App() {
     setPlayerProfile(null)
     setSchoolRecord(DEFAULT_SCHOOL_RECORD)
     clearLog()
+    setHealthRecord(DEFAULT_HEALTH_RECORD)
     announce('Gioco RESETTATO! Crea di nuovo il tuo personaggio!')
   }
 
@@ -1291,6 +1316,7 @@ function App() {
               schoolRecord={schoolRecord}
               currentMedia={currentMedia}
               gameLog={gameLog}
+              healthRecord={healthRecord}
             />
           </TabsContent>
 

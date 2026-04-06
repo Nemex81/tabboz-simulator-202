@@ -12,6 +12,7 @@ export interface GameStats {
   reputazione: number
   intelligenza: number
   carisma: number
+  salute: number
 }
 
 export interface ScheduledExam {
@@ -254,7 +255,8 @@ export const DEFAULT_GAME_STATE: GameState = {
     figosita: 50,
     reputazione: 50,
     intelligenza: 10,
-    carisma: 10
+    carisma: 10,
+    salute: 100
   },
   grades: {
     matematica: 6,
@@ -343,6 +345,7 @@ export type LogEntryType =
   | 'school'           // evento scolastico (voto, nota, sospensione)
   | 'social'           // evento sociale (amico, ragazza)
   | 'system'           // evento di sistema (fine anno, game over, nuovo anno)
+  | 'health'           // condizione di salute (insorgenza, guarigione, peggioramento)
 
 export type DayPhaseLabel = 'Mattina' | 'Pomeriggio' | 'Sera' | 'Notte'
 
@@ -357,3 +360,168 @@ export interface GameLogEntry {
 }
 
 export const MAX_LOG_ENTRIES = 200
+
+// ── Health System ──────────────────────────────────────────────
+
+export type HealthConditionId =
+  | 'raffreddore'
+  | 'influenza'
+  | 'febbre_alta'
+  | 'infortunio_lieve'
+  | 'infortunio_grave'
+  | 'sbornia'
+  | 'dipendenza_fumo'
+  | 'dipendenza_alcol'
+  | 'esaurito'
+  | 'depresso'
+  | 'ciclo_mestruale'
+  | 'gravidanza'
+
+export type HealthConditionSeverity = 'lieve' | 'moderata' | 'grave'
+
+export interface HealthConditionTemplate {
+  id: HealthConditionId
+  label: string
+  description: string
+  severity: HealthConditionSeverity
+  durationDays: number | null
+  statModifiers: Partial<Record<keyof GameStats, number>>
+  genderRestricted?: 'femmina'
+  forcesAbsence?: boolean
+  autoOnset?: {
+    check: 'stress_high' | 'morale_low'
+    threshold: number
+  }
+  autoResolve?: {
+    check: 'stress_low' | 'morale_high'
+    threshold: number
+  }
+  cumulative?: boolean
+}
+
+export interface ActiveCondition {
+  id: HealthConditionId
+  startDate: GameDate
+  daysElapsed: number
+  appliedModifiers: Partial<Record<keyof GameStats, number>>
+}
+
+export interface HealthRecord {
+  conditions: ActiveCondition[]
+  lastCheckupDate?: GameDate
+  /** Data in cui è previsto il prossimo ciclo (solo per personaggi femminili). */
+  nextCycleDate?: GameDate
+}
+
+export const DEFAULT_HEALTH_RECORD: HealthRecord = {
+  conditions: [],
+}
+
+export const HEALTH_CONDITIONS: Record<HealthConditionId, HealthConditionTemplate> = {
+  raffreddore: {
+    id: 'raffreddore',
+    label: 'Raffreddore',
+    description: 'Naso chiuso e starnuti. Niente di grave, ma sei un po\' rimbambito.',
+    severity: 'lieve',
+    durationDays: 5,
+    statModifiers: { intelligenza: -3, muscoli: -5 },
+  },
+  influenza: {
+    id: 'influenza',
+    label: 'Influenza',
+    description: 'Febbre, dolori, e voglia di starsene a letto. Dura un bel po\'.',
+    severity: 'moderata',
+    durationDays: 10,
+    statModifiers: { intelligenza: -10, muscoli: -15, morale: -10 },
+  },
+  febbre_alta: {
+    id: 'febbre_alta',
+    label: 'Febbre Alta',
+    description: 'Temperatura alle stelle! Non puoi andare a scuola in queste condizioni.',
+    severity: 'grave',
+    durationDays: 7,
+    statModifiers: { intelligenza: -20, muscoli: -20 },
+    forcesAbsence: true,
+  },
+  infortunio_lieve: {
+    id: 'infortunio_lieve',
+    label: 'Infortunio Lieve',
+    description: 'Una storta o un livido. Niente di rotto, ma fa male.',
+    severity: 'lieve',
+    durationDays: 7,
+    statModifiers: { muscoli: -10, figosita: -5 },
+  },
+  infortunio_grave: {
+    id: 'infortunio_grave',
+    label: 'Infortunio Grave',
+    description: 'Frattura o stiramento serio. Ci vorranno settimane per riprenderti.',
+    severity: 'grave',
+    durationDays: 21,
+    statModifiers: { muscoli: -30, figosita: -15, morale: -10 },
+  },
+  sbornia: {
+    id: 'sbornia',
+    label: 'Sbornia',
+    description: 'Testa che gira, stomaco in subbuglio. Mai pi\u00f9... fino alla prossima volta.',
+    severity: 'lieve',
+    durationDays: 1,
+    statModifiers: { intelligenza: -15, muscoli: -10, morale: -5 },
+  },
+  dipendenza_fumo: {
+    id: 'dipendenza_fumo',
+    label: 'Dipendenza da Fumo',
+    description: 'Le sigarette ti stanno consumando. Ogni giorno peggiori un po\'.',
+    severity: 'moderata',
+    durationDays: null,
+    statModifiers: { muscoli: -5, salute: -3 },
+    cumulative: true,
+  },
+  dipendenza_alcol: {
+    id: 'dipendenza_alcol',
+    label: 'Dipendenza da Alcol',
+    description: 'L\'alcol ti sta rovinando la vita. Ogni giorno \u00e8 peggio del precedente.',
+    severity: 'grave',
+    durationDays: null,
+    statModifiers: { intelligenza: -10, morale: -10, salute: -5 },
+    cumulative: true,
+  },
+  esaurito: {
+    id: 'esaurito',
+    label: 'Esaurito',
+    description: 'Troppo stress! Non riesci a concentrarti su nulla.',
+    severity: 'moderata',
+    durationDays: null,
+    statModifiers: { intelligenza: -10, morale: -5 },
+    autoOnset: { check: 'stress_high', threshold: 85 },
+    autoResolve: { check: 'stress_low', threshold: 70 },
+  },
+  depresso: {
+    id: 'depresso',
+    label: 'Depresso',
+    description: 'Non hai voglia di fare niente. Il mondo sembra grigio.',
+    severity: 'grave',
+    durationDays: null,
+    statModifiers: { morale: -10, reputazione: -5, carisma: -5 },
+    autoOnset: { check: 'morale_low', threshold: 15 },
+    autoResolve: { check: 'morale_high', threshold: 25 },
+  },
+  // ── Gender-specific (STEP 9E) ──
+  ciclo_mestruale: {
+    id: 'ciclo_mestruale',
+    label: 'Ciclo Mestruale',
+    description: 'Quel periodo del mese. Crampi e malumore.',
+    severity: 'lieve',
+    durationDays: 5,
+    statModifiers: { morale: -5, muscoli: -5 },
+    genderRestricted: 'femmina',
+  },
+  gravidanza: {
+    id: 'gravidanza',
+    label: 'Gravidanza',
+    description: 'Una situazione... complicata. Tutto cambier\u00e0.',
+    severity: 'grave',
+    durationDays: 280,
+    statModifiers: { muscoli: -10, morale: -15, stress: 20 },
+    genderRestricted: 'femmina',
+  },
+}

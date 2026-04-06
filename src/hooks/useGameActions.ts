@@ -59,6 +59,11 @@ interface UseGameActionsParams {
     date: import('@/lib/types').GameDate,
     phase: import('@/lib/types').DayPhase
   ) => void
+  applyCondition: (
+    id: import('@/lib/types').HealthConditionId,
+    currentDate: import('@/lib/types').GameDate,
+    currentPhase: import('@/lib/types').DayPhase
+  ) => void
   marinatoOggi: boolean
 }
 
@@ -92,6 +97,7 @@ export function useGameActions({
   setSchoolRecord,
   gainExtraAction,
   addLogEntry,
+  applyCondition,
   marinatoOggi,
 }: UseGameActionsParams) {
   // Refs per accesso stabile
@@ -160,7 +166,14 @@ export function useGameActions({
     checkForNewFriend('in palestra')
     checkForNewRelationship()
     triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, addLogEntry])
+    // STEP 9C: rischio infortunio da palestra
+    const injuryRoll = Math.random()
+    if (injuryRoll < 0.02) {
+      applyCondition('infortunio_grave', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    } else if (injuryRoll < 0.12) {
+      applyCondition('infortunio_lieve', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    }
+  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, addLogEntry, applyCondition])
 
   const handleLampada = useCallback(() => {
     const gt = gameTimeRef.current
@@ -561,7 +574,11 @@ export function useGameActions({
     checkForNewRelationship()
     checkForNewGirlfriend()
     triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
+    // STEP 9C: rischio sbornia dopo la discoteca
+    if (Math.random() < 0.15) {
+      applyCondition('sbornia', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    }
+  }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry, applyCondition])
 
   const handleCinema = useCallback(() => {
     const gt = gameTimeRef.current
@@ -923,7 +940,11 @@ export function useGameActions({
     checkForNewFriend('al parco')
     checkForNewRelationship()
     checkForNewGirlfriend()
-  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
+    // STEP 9C: leggero rischio raffreddore al parco
+    if (Math.random() < 0.05) {
+      applyCondition('raffreddore', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    }
+  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry, applyCondition])
 
   // B1-FIX-5 applicato
   const handleTelefona = useCallback(() => {
