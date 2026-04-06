@@ -36,6 +36,14 @@ interface UseGameTimeParams {
   schoolRecord: SchoolRecord
   setGameOver: (v: boolean) => void
   setGameOverReason: (v: string) => void
+  addLogEntry: (
+    type: import('@/lib/types').LogEntryType,
+    title: string,
+    description: string,
+    result: import('@/lib/types').GameLogEntry['result'],
+    date: import('@/lib/types').GameDate,
+    phase: import('@/lib/types').DayPhase
+  ) => void
 }
 
 export function useGameTime({
@@ -55,6 +63,7 @@ export function useGameTime({
   schoolRecord,
   setGameOver,
   setGameOverReason,
+  addLogEntry,
 }: UseGameTimeParams) {
   const [rawGameTime, setRawGameTime] = useKV<GameTime>('tabboz-time', DEFAULT_GAME_STATE.gameTime)
   const [rawScheduledExams, setRawScheduledExams] = useKV<ScheduledExam[]>('tabboz-exams', [])
@@ -79,6 +88,8 @@ export function useGameTime({
   phaseActionsRemainingRef.current = phaseActionsRemaining
   const currentPhaseRef = useRef(currentPhase)
   currentPhaseRef.current = currentPhase
+  const gameTimeRef = useRef(gameTime)
+  gameTimeRef.current = gameTime
 
   const consumeAction = useCallback(() => {
     // Solo phaseActionsRemaining viene decrementata (Fix5)
@@ -90,6 +101,13 @@ export function useGameTime({
     const currentIdx = PHASE_SEQUENCE.indexOf(currentPhase)
     const nextIdx = (currentIdx + 1) % PHASE_SEQUENCE.length
     const nextPhase = PHASE_SEQUENCE[nextIdx]
+
+    // 8B-5: estrarre prima del setter per chiamare addLogEntry dopo (fuori da ogni setter)
+    const wasAbsent =
+      !schoolRecord.wentToSchoolToday &&
+      dayType === 'feriale' &&
+      gameTime.schoolYear.isSchoolPeriod &&
+      nextPhase === 'mattina'
 
     if (nextPhase === 'mattina') {
       const nightRecovery = DAY_PHASE_CONFIG[dayType]['notte'].nightRecovery
@@ -174,9 +192,13 @@ export function useGameTime({
         setShowSchoolEvent(true)
       }
     }
+    // 8B-5: log assenza fuori da ogni setter
+    if (wasAbsent) {
+      addLogEntry('school', 'Assenza scolastica', '📋 Non sei andato a scuola ieri! La giornata è contata come assenza.', 'negative', gameTime.currentDate, 'mattina')
+    }
   }, [currentPhase, dayType, setStats, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining,
       setSchoolMorningEvents, setShowSchoolMorning, announce, schoolRecord, setSchoolRecord, setGameOver, setGameOverReason,
-      setSchoolEvent, setShowSchoolEvent, gameTime])
+      setSchoolEvent, setShowSchoolEvent, gameTime, addLogEntry])
 
   const advanceToNextDay = useCallback(() => {
     setRawGameTime((current) => {
@@ -197,6 +219,7 @@ export function useGameTime({
           setStats((s) => ({ ...s, soldi: clampStat(s.soldi + paghetta, 0, 1000) }))
           playSound.moneyEarned()
           announce(`SABATO! I tuoi ti hanno dato la PAGHETTA! +${paghetta}€ (media ≥ 7)`)
+          addLogEntry('system', 'Paghetta ricevuta!', `SABATO! I tuoi ti hanno dato la PAGHETTA! +${paghetta}€ (media ≥ 7)`, 'positive', newGameTime.currentDate, 'mattina')
           return { ...newGameTime, lastPaghettaDate: newGameTime.currentDate }
         } else {
           const parentEvent = getParentEventByMedia(currentMedia, statsRef.current)
@@ -282,6 +305,7 @@ export function useGameTime({
     const currentDayType = getDayType(currentGt.currentDate)
     if (!schoolRecord.wentToSchoolToday && currentDayType === 'feriale' && currentGt.schoolYear.isSchoolPeriod) {
       announce('📋 Sei andato a dormire senza andare a scuola! +1 Assenza, -0.2 Condotta.')
+      addLogEntry('school', 'Assenza non giustificata', '📋 Sei andato a dormire senza andare a scuola! +1 Assenza, -0.2 Condotta.', 'negative', currentGt.currentDate, 'notte')
       setSchoolRecord((prev) => ({
         ...prev,
         assenze: prev.assenze + 1,
@@ -324,6 +348,7 @@ export function useGameTime({
     setGameOver,
     setGameOverReason,
     rawGameTime,
+    addLogEntry,
   ])
 
   const gainExtraAction = useCallback(() => {
@@ -349,9 +374,18 @@ export function useGameTime({
       ? 'Sei crollato di notte! Riposo parziale (80%). Ci si vede domani!'
       : 'Dormi come un ghiro! Stanchezza AZZERATA. Buonanotte!'
     announce(msg)
+    const dormiResult: 'neutral' | 'positive' = isNight ? 'neutral' : 'positive'
+    addLogEntry(
+      'system',
+      isNight ? 'Notte insonne' : 'Notte di sonno',
+      msg,
+      dormiResult,
+      gameTimeRef.current.currentDate,
+      currentPhaseRef.current
+    )
     playSound.success()
     advanceToNextDay()
-  }, [setStats, announce, advanceToNextDay])
+  }, [setStats, announce, advanceToNextDay, addLogEntry])
 
   return {
     gameTime,

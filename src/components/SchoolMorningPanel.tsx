@@ -18,6 +18,15 @@ interface SchoolMorningPanelProps {
   onGainExtraAction: () => void
   onConsumeAction: () => void
   announce: (msg: string) => void
+  addLogEntry: (
+    type: import('@/lib/types').LogEntryType,
+    title: string,
+    description: string,
+    result: import('@/lib/types').GameLogEntry['result'],
+    date: import('@/lib/types').GameDate,
+    phase: import('@/lib/types').DayPhase
+  ) => void
+  currentDate: import('@/lib/types').GameDate
 }
 
 const categoryLabel: Record<SchoolMorningEvent['category'], string> = {
@@ -91,6 +100,8 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
   onGainExtraAction,
   onConsumeAction,
   announce,
+  addLogEntry,
+  currentDate,
 }: SchoolMorningPanelProps) {
   const [resolvedIds, setResolvedIds] = React.useState<Set<string>>(new Set())
 
@@ -123,9 +134,22 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
 
       playSound.buttonClick()
       announce(result.message)
+      const deltaSum = Object.entries(result.delta)
+        .filter(([k]) => k !== 'soldi')
+        .reduce((acc, [, v]) => acc + (v ?? 0), 0)
+      const logResult: import('@/lib/types').GameLogEntry['result'] =
+        deltaSum > 0 ? 'positive' : deltaSum < 0 ? 'negative' : 'neutral'
+      addLogEntry(
+        event.category === 'didattica' ? 'school' : 'social',
+        event.title,
+        result.message,
+        logResult,
+        currentDate,
+        'mattina'
+      )
       setResolvedIds((prev) => new Set([...prev, event.id]))
     },
-    [resolvedIds, stats, onStatChange, onGainExtraAction, onConsumeAction, announce]
+    [resolvedIds, stats, onStatChange, onGainExtraAction, onConsumeAction, announce, addLogEntry, currentDate]
   )
 
   return (

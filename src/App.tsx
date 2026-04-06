@@ -191,6 +191,7 @@ function App() {
     schoolRecord,
     setGameOver,
     setGameOverReason,
+    addLogEntry,
   })
 
   const events = useEventEngine({
@@ -354,6 +355,7 @@ function App() {
     consumeAction()
     setMorningChoicePending(false)
     announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
+    addLogEntry('school', 'Vai a scuola', 'Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!', 'positive', gameTime.currentDate, currentPhase)
 
     if (schoolMorningEvents.length === 0) {
       const events = drawSchoolMorningEvents(6)
@@ -552,6 +554,16 @@ function App() {
 
     playSound.eventTrigger()
     announce(outcome.message)
+    addLogEntry(
+      'school',
+      schoolEvent?.title ?? 'Evento scolastico',
+      outcome.message,
+      outcome.statChanges
+        ? (Object.values(outcome.statChanges).reduce((a, b) => a + b, 0) >= 0 ? 'positive' : 'negative')
+        : 'neutral',
+      gameTime.currentDate,
+      currentPhase
+    )
     if (deltaMsg) toast(deltaMsg)
     setShowSchoolEvent(false)
     setSchoolEvent(null)
@@ -1074,6 +1086,8 @@ function App() {
                       onGainExtraAction={gainExtraAction}
                       onConsumeAction={consumeAction}
                       announce={announce}
+                      addLogEntry={addLogEntry}
+                      currentDate={gameTime.currentDate}
                     />
                   </Suspense>
                 )}
