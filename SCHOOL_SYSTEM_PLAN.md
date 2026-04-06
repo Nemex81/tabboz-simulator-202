@@ -1,8 +1,8 @@
 # Piano Tecnico Implementativo — Sistema Materie Scolastiche Dinamico
 
-> **Versione**: 1.3 — _riduzione volume dati (V10): 6×10 materie, range semplificati_  
+> **Versione**: 1.4 — _riduzione volume dati + correzioni key finali_  
 > **Data**: 2026-04-06  
-> **Stato**: ✅ Rivalidato — pronto per implementazione  
+> **Stato**: ✅ Validato v1.4 — pronto per implementazione  
 > **Ambientazione**: Roma, sistema scolastico italiano reale
 
 ---
@@ -162,7 +162,7 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 
 ## Materie Specifiche per Istituto
 
-### 🖥️ Istituto Tecnico Informatico (10 materie specifiche)
+### 🖥️ Istituto Tecnico Informatico (11 materie specifiche)
 
 | Key | Nome | Anni | Peso |
 |-----|------|------|------|
@@ -176,10 +176,11 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 | `linguaggio` | Linguaggi di Programmazione | 3→5 | 1.4 |
 | `basiDati` | Basi di Dati | 3→5 | 1.3 |
 | `webDev` | Sviluppo Web e Sicurezza | 3→5 | 1.2 |
+| `stageAziendale` | Stage Aziendale (PCTO) | 3→5 | 0.0 |
 
 ---
 
-### 🌾 Istituto Agrario (10 materie specifiche)
+### 🌾 Istituto Agrario (11 materie specifiche)
 
 | Key | Nome | Anni | Peso |
 |-----|------|------|------|
@@ -193,6 +194,7 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 | `economiaAgraria` | Economia Agraria | 3→5 | 1.3 |
 | `biologia` | Biologia Applicata | 3→5 | 1.3 |
 | `ambienteRurale` | Gestione Ambiente Rurale | 3→5 | 1.1 |
+| `stageAgricolo` | Stage Agricolo (PCTO) | 3→5 | 0.0 |
 
 ---
 
@@ -204,7 +206,7 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 | `disegnoGeo` | Disegno Geometrico e Proiettivo | 1→2 | 1.0 |
 | `disegnoArtist` | Disegno Artistico | 1→2 | 1.1 |
 | `laboratorioPit` | Laboratorio Pittura | 1→2 | 1.0 |
-| `chimicaInt` | Chimica dei Materiali | 1→2 | 0.9 |
+| `chimicaMat` | Chimica dei Materiali | 1→2 | 0.9 |
 | `filosofia` | Filosofia | 3→5 | 1.1 |
 | `progettazioneArt` | Progettazione Artistica | 3→5 | 1.5 |
 | `laboratorioProg` | Laboratorio di Indirizzo | 3→5 | 1.4 |
@@ -240,7 +242,7 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 | `laboratorioSala` | Lab. Servizi Sala e Vendita | 1→5 | 1.4 |
 | `diritto` | Diritto ed Economia | 1→2 | 0.8 |
 | `scienzeInt` | Scienze Integrate Bio+Terra | 1→2 | 1.0 |
-| `chimicaInt` | Chimica e Laboratorio | 1→2 | 1.0 |
+| `chimicaAlb` | Chimica e Laboratorio | 1→2 | 1.0 |
 | `alimentazione` | Scienza e Cultura dell'Alimentazione | 3→5 | 1.3 |
 | `enologia` | Enologia e Cultura del Vino | 3→5 | 1.3 |
 | `stageAlberghiero` | Stage Alberghiero (PCTO) | 3→5 | 0.0 |
@@ -261,6 +263,23 @@ export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGr
 | `chimicaOrg` | Chimica Organica e Biochimica | 3→5 | 1.2 |
 | `laboratorioSci` | Laboratorio Scientifico | 3→5 | 1.0 |
 | `alternanzaSci` | PCTO Scientifico | 3→5 | 0.0 |
+
+---
+
+## Riepilogo Conteggi Materie Attive
+
+> Comuni (7) + specifiche attive per anno. Target: 10-14 materie per anno.
+
+| Istituto | Anno 1 | Anno 2 | Anno 3 | Anno 4 | Anno 5 |
+|----------|--------|--------|--------|--------|--------|
+| Tecnico | 11 | 11 | 13 | 13 | 13 |
+| Agraria | 11 | 11 | 13 | 13 | 13 |
+| Artistico | 12 | 12 | 12 | 12 | 12 |
+| Conservatorio | 14 | 14 | 14 | 14 | 14 |
+| Alberghiero | 14 | 14 | 13 | 13 | 13 |
+| Liceo Scientifico | 12 | 12 | 13 | 13 | 13 |
+
+Tutti i valori sono nel range 10-14. ✅
 
 ---
 
