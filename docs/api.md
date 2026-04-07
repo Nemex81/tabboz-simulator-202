@@ -4,6 +4,14 @@
 
 ---
 
+## Aggiornamenti recenti (08 Apr 2026)
+
+- `useSchoolSystem` / flow scuole: introdotto `initSchoolYear` per inizializzare l'anno scolastico dall'onboarding (`SchoolSelection`).
+- `SchoolRecord` ora include `isAtSchool: boolean` (flag persistente usato nelle routine mattutine).
+- Nota implementativa: per evitare problemi di reconciliaton DOM durante la sequenza `SchoolMorningPanel`, alcune chiamate di aggiornamento parent vengono deferrate al prossimo tick (pattern `setTimeout(..., 0)`) — vedi `src/components/SchoolMorningPanel.tsx`.
+- Il report di analisi codice completo è disponibile in `docs/ANALISI_CODEBASE_COMPLETA.md`.
+
+
 ## Indice
 
 1. [Tipi e Interfacce Principali](#tipi-e-interfacce-principali)

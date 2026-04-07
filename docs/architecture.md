@@ -4,6 +4,16 @@
 
 ---
 
+## Aggiornamenti recenti (08 Apr 2026)
+
+- Aggiunte e modifiche al sottosistema "scuola": `initSchoolYear` è ora invocabile dall'onboarding (`SchoolSelection`).
+- `SchoolRecord` include il campo persistente `isAtSchool` per indicare presenza mattutina (persistente in KV).
+- Risolto un problema runtime di reconciliaton: alcune chiamate che aggiornavano lo stato del genitore sono state deferite al prossimo tick (pattern `setTimeout(..., 0)`) per evitare errori DOM `removeChild` in flussi mattutini.
+- Per garantire remount puliti del pannello mattutino, `SchoolMorningPanel` viene ora renderizzato con keying/Suspense controllata quando `isComplete` cambia.
+- Aggiunta logica di guard per il comando "Avanza fase" (UI + scorciatoia): viene bloccato durante la sequenza mattutina scolastica attiva.
+- Report di analisi codice completo: `docs/ANALISI_CODEBASE_COMPLETA.md` (vedi sezione Documentazione).
+
+
 ## Indice
 
 1. [Panoramica](#panoramica)
