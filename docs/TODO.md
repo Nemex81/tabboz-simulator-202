@@ -88,14 +88,14 @@
 - [x] Evento strutturato con probabilita 35% base + modificatori da prof
 - [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 2D — Refactor `handleVaiAScuola`
+### [x] Fase 2D — Refactor `handleVaiAScuola`
 
-- [ ] **C10** — Aggiungere `consumeAllMorningActions(): void` in `useGameTime` (imposta `phaseActionsRemaining = 0`) e includerlo nel return hook
-- [ ] Sostituire `drawSchoolMorningEvents(6)` con generazione `SchoolDayState` via `generateSchoolDaySlots`
-- [ ] Sostituire `consumeAction()` con `consumeAllMorningActions()` in `handleVaiAScuola`
-- [ ] Salvare `SchoolDayState` in KV
-- [ ] Mantenere fallback legacy se `timetable` e `null`
-- [ ] `npx tsc --noEmit` zero errori
+- [x] **C10** — Aggiungere `consumeAllMorningActions(): void` in `useGameTime` (imposta `phaseActionsRemaining = 0`) e includerlo nel return hook
+- [x] Sostituire `drawSchoolMorningEvents(6)` con generazione `SchoolDayState` via `generateSchoolDaySlots`
+- [x] Sostituire `consumeAction()` con `consumeAllMorningActions()` in `handleVaiAScuola`
+- [x] Salvare `SchoolDayState` in KV
+- [x] Mantenere fallback legacy se `timetable` e `null`
+- [x] `npx tsc --noEmit` zero errori
 
 ### [ ] Fase 2E — Evoluzione `SchoolMorningPanel` (modalita sequenziale)
 

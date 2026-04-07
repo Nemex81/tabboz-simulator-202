@@ -93,6 +93,9 @@ import {
 } from '@/lib/social-system'
 import { migrateLegacyFriend, applyDailyErosion, dateToDayIndex } from '@/lib/relation-system'
 import { useGameRelations } from '@/hooks/useGameRelations'
+import { useSchoolSystem } from '@/hooks/useSchoolSystem'
+import { generateSchoolDaySlots } from '@/lib/school-day-engine'
+import type { SchoolDayState } from '@/lib/types'
 import {
   generateScheduledExam,
   calculateExamGrade,
@@ -197,7 +200,7 @@ function App() {
 
   const {
     gameTime, setGameTime, scheduledExams, setScheduledExams,
-    consumeAction, advanceToNextDay, gainExtraAction, handleDormi,
+    consumeAction, consumeAllMorningActions, advanceToNextDay, gainExtraAction, handleDormi,
     currentPhase, dayType, phaseActionsRemaining, advancePhaseOnly,
   } = useGameTime({
     grades,
@@ -342,6 +345,15 @@ function App() {
     announce,
   })
 
+  // Sistema scolastico avanzato (Fase 1F / Blocco 2)
+  const {
+    timetable,
+    teachers,
+    schoolDayState: _schoolDayStateFromHook,
+    setSchoolDayState,
+    getTodaySchedule,
+  } = useSchoolSystem()
+
   const handleRiposa = () => actions.handleRiposa()
 
   const handleOpenCorrompiDialog = () => {
@@ -410,13 +422,41 @@ function App() {
       wentToSchoolToday: true,
       isAtSchool: true
     }))
-    consumeAction()
+    // C10 — consuma TUTTE le azioni mattutine (non solo una)
+    consumeAllMorningActions()
     setMorningChoicePending(false)
     announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
     addLogEntry('school', 'Vai a scuola', 'Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!', 'positive', gameTime.currentDate, currentPhase ?? 'mattina')
 
-    const morningEvents = drawSchoolMorningEvents(6)
-    setSchoolMorningEvents(morningEvents)
+    // Fase 2D — flusso sequenziale se il timetable è stato generato
+    if (timetable !== null) {
+      // dayOfWeek: JS getDay() 1=Lun→0, 2=Mar→1, ..., 5=Ven→4
+      const jsDay = new Date(
+        gameTime.currentDate.year,
+        gameTime.currentDate.month - 1,
+        gameTime.currentDate.day
+      ).getDay()
+      const dayOfWeek = jsDay - 1  // 0=Lun … 4=Ven
+      const daySchedule = getTodaySchedule(dayOfWeek)
+      if (daySchedule.length >= 6) {
+        const slots = generateSchoolDaySlots(daySchedule, teachers, stats)
+        const newState: SchoolDayState = {
+          date: gameTime.currentDate,
+          slots,
+          currentSlotIndex: 0,
+          isComplete: false,
+        }
+        setSchoolDayState(newState)
+      } else {
+        // Orario incompleto: fallback legacy
+        const morningEvents = drawSchoolMorningEvents(6)
+        setSchoolMorningEvents(morningEvents)
+      }
+    } else {
+      // Fallback legacy: nessun timetable generato (partita precedente)
+      const morningEvents = drawSchoolMorningEvents(6)
+      setSchoolMorningEvents(morningEvents)
+    }
     setShowSchoolMorning(true)
   }
 

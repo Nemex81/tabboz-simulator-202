@@ -103,6 +103,12 @@ export function useGameTime({
     setPhaseActionsRemaining((n) => Math.max(0, (n ?? 0) - 1))
   }, [setPhaseActionsRemaining])
 
+  // C10 — Consuma tutte le azioni mattutine rimanenti quando il giocatore va a scuola.
+  // La mattinata scolastica sostituisce completamente il tempo libero della mattina.
+  const consumeAllMorningActions = useCallback(() => {
+    setPhaseActionsRemaining(0)
+  }, [setPhaseActionsRemaining])
+
   /** Avanza alla fase successiva; se torna a 'mattina' avanza anche il giorno. */
   const advancePhaseOnly = useCallback(() => {
     const currentIdx = PHASE_SEQUENCE.indexOf(currentPhase ?? 'mattina')
@@ -416,6 +422,7 @@ export function useGameTime({
     scheduledExams,
     setScheduledExams: setRawScheduledExams,
     consumeAction,
+    consumeAllMorningActions,
     advanceToNextDay,
     gainExtraAction,
     handleDormi,
