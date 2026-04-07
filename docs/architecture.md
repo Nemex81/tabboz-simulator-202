@@ -87,6 +87,7 @@ tabboz-simulator-202/
     │   ├── character-traits.ts # Tratti caratteriali (ispirazione CK3)
     │   ├── school-events.ts    # Eventi scolastici (professore, genitori)
     │   ├── school-morning-events.ts  # Eventi narrativi mattutini
+    │   ├── street-morning-events.ts  # Eventi narrativi mattutini (strada/marina)
     │   ├── afternoon-events.ts # Eventi narrativi pomeridiani
     │   ├── phase-actions.ts    # Azioni disponibili per fase/giorno
     │   ├── bet-system.ts       # Sistema scommesse e gare motorini
@@ -225,6 +226,8 @@ useGameStats(validatedStats)         ← Hook business logic
 | `tabboz-school-record`     | `SchoolRecord`            | Condotta, assenze, note           |
 | `tabboz-grades-history`    | `Record<number, Grades>`  | Archivio voti per anno scolastico |
 
+Nota: `SchoolRecord` ora include il campo persistente `isAtSchool: boolean` usato come flag indicativo se il giocatore si è recato fisicamente a scuola nella mattina corrente.
+
 ### Flusso di Aggiornamento
 
 ```
@@ -252,6 +255,7 @@ Gli hook incapsulano la logica di gioco e separano le responsabilità:
 | `useHealthSystem`        | Condizioni di salute (influenza, infortunio, ecc.)         |
 | `useGameLog`             | Diario giornaliero con entry tipizzate                     |
 | `useAppDialogs`          | Stato on/off di tutti i dialog modali                      |
+|                         | Include ora stati specifici per gli eventi mattutini: `schoolMorningEvents`, `showSchoolMorning`, `streetMorningEvents`, `showStreetMorning` |
 | `useKeyboardShortcuts`   | Binding tastiera per a11y e power user                     |
 
 ### Orchestrazione
@@ -320,7 +324,7 @@ Organizzati per area funzionale:
 | Componente              | Descrizione                                         |
 | ----------------------- | --------------------------------------------------- |
 | `CityPanel`             | Hub principale: location e azioni disponibili       |
-| `SchoolMorningPanel`    | Eventi narrativi scolastici mattutini               |
+| `SchoolMorningPanel`    | Eventi narrativi mattutini (supporta prop `context: 'school' | 'street'` per renderizzare pool scuola o strada) |
 | `EnhancedFriendsPanel`  | Gestione amici con sistema 4 assi                   |
 | `RelationshipsPanel`    | Lista interessi sentimentali                        |
 | `GirlfriendPanel`       | Dettaglio fidanzata corrente                        |

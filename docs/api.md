@@ -159,6 +159,19 @@ type ReputationLevel = 'sfigato' | 'normale' | 'popolare' | 'leggenda';
 type HealthConditionId =
   | 'ciclo_doloroso' | 'influenza' | 'intossicazione' | 'infortunio'
   | 'tossicchiella' | 'pancia_gonfia' | 'sfogo_acne' | 'herpes_labiale';
+
+// Nuovo: tipo unificato per categorie eventi mattutini
+type MorningEventCategory =
+  | 'didattica' | 'sociale' | 'istituto'
+  | 'strada' | 'casa' | 'citta' | 'amici';
+
+// SchoolRecord: ora include `isAtSchool` (flag persistente KV)
+interface SchoolRecord {
+  wentToSchoolToday: boolean;
+  notes?: string[];
+  conduct?: number;
+  isAtSchool: boolean; // true se il giocatore si è recato fisicamente a scuola nella mattina corrente
+}
 ```
 
 ---
@@ -438,6 +451,16 @@ Eventi narrativi della mattina scolastica.
 | Funzione | Firma | Descrizione |
 | --- | --- | --- |
 | `drawSchoolMorningEvents` | `(stats: GameStats, count?: number) → SchoolMorningEvent[]` | Pesca 1-2 eventi mattutini casuali |
+
+---
+
+### street-morning-events.ts
+
+Eventi narrativi mattutini per la scelta di non andare a scuola (es. "marinare").
+
+| Funzione | Firma | Descrizione |
+| --- | --- | --- |
+| `drawStreetMorningEvents` | `(stats: GameStats, count?: number) → SchoolMorningEvent[]` | Pesca eventi mattutini dal pool strada/marina (usa `MorningEventCategory`) |
 
 ---
 
@@ -792,6 +815,9 @@ function useAppDialogs(): {
   schoolMorningEvents: SchoolMorningEvent[];
   setSchoolMorningEvents: Setter<SchoolMorningEvent[]>;
   showSchoolMorning: boolean;       setShowSchoolMorning: Setter<boolean>;
+  showStreetMorning: boolean;       setShowStreetMorning: Setter<boolean>;
+  streetMorningEvents: SchoolMorningEvent[];
+  setStreetMorningEvents: Setter<SchoolMorningEvent[]>;
 }
 ```
 
