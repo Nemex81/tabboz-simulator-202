@@ -1282,6 +1282,18 @@ function App() {
                       onNewFriend={(f) => setFriends((current) => [...current, f])}
                       addLogEntry={addLogEntry}
                       currentDate={gameTime.currentDate}
+                      schoolDayState={_schoolDayStateFromHook ?? undefined}
+                      onSlotComplete={(idx) => {
+                        setSchoolDayState((prev) => {
+                          if (!prev) return prev
+                          const next = idx + 1
+                          return {
+                            ...prev,
+                            currentSlotIndex: next,
+                            isComplete: next >= prev.slots.length,
+                          }
+                        })
+                      }}
                     />
                   </Suspense>
                 )}

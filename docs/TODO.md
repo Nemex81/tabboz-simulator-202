@@ -97,15 +97,15 @@
 - [x] Mantenere fallback legacy se `timetable` e `null`
 - [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 2E — Evoluzione `SchoolMorningPanel` (modalita sequenziale)
+### [x] Fase 2E — Evoluzione `SchoolMorningPanel` (modalita sequenziale)
 
-- [ ] Aggiungere props: `schoolDayState`, `onAdvanceHour`, `onBreakAction`, `onDayComplete`, `teachers`
-- [ ] Modalita `context="school"`: mostra slot corrente, pulsante "Avanti", navigazione bloccante
-- [ ] Modalita `context="street"`: comportamento invariato
-- [ ] Slot break: delega a `SchoolBreakPanel` (stub iniziale, completato in Blocco 4)
-- [ ] Completamento tutti gli slot → chiama `onDayComplete`
-- [ ] Accessibilita: focus management, annunci ARIA per cambio ora
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Aggiungere props: `schoolDayState`, `onSlotComplete`
+- [x] Modalita `context="school"` + `schoolDayState` presente: mostra slot corrente, pulsante "Ora terminata", navigazione bloccante
+- [x] Modalita `context="street"` / legacy: comportamento invariato
+- [x] Slot break: card "Intervallo" con pulsante "Fine intervallo" e applicazione statDelta
+- [x] Completamento tutti gli slot → mostra riepilogo "Giornata scolastica completata!"
+- [x] Accessibilita: `role="region"`, `aria-label` per ora corrente, `aria-live="polite"` su cambio slot
+- [x] `npx tsc --noEmit` zero errori
 
 ---
 

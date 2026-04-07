@@ -276,7 +276,7 @@ export const ORDINARY_TEMPLATES: Record<string, string[]> = {
     '{ora}ª ora — {materia}. {teacher} introduce Kant e la Critica della Ragion Pura. Classe scettica.',
     '{ora}ª ora — {materia}. Hegel: dialettica tesi-antitesi-sintesi. {teacher} usa esempi storici.',
     '{ora}ª ora — {materia}. {teacher} guida una discussione su libertà e determinismo.',
-    '{ora}ª ora — {materia}. Filosofia del '900: Nietzsche e il Superuomo. Molte interpretazioni in classe.',
+    '{ora}ª ora — {materia}. Filosofia del \u2019900: Nietzsche e il Superuomo. Molte interpretazioni in classe.',
     '{ora}ª ora — {materia}. {teacher} spiega il pensiero di Platone: mito della caverna sul proiettore.',
     '{ora}ª ora — {materia}. {teacher} assegna un saggio breve da consegnare entro la fine della settimana.',
   ],
@@ -328,7 +328,7 @@ export const ORDINARY_TEMPLATES: Record<string, string[]> = {
     '{ora}ª ora — {materia}. {teacher} racconta Beethoven e la sua sordità con commento all\'ascolto.',
     '{ora}ª ora — {materia}. Il Barocco musicale: Vivaldi e il Concerto per le stagioni. {teacher} fa ascoltare.',
     '{ora}ª ora — {materia}. {teacher} parla del jazz e delle sue radici afroamericane.',
-    '{ora}ª ora — {materia}. Musica del '900: atonalismo e dodecafonia. Classe disorientata.',
+    '{ora}ª ora — {materia}. Musica del \u2019900: atonalismo e dodecafonia. Classe disorientata.',
     '{ora}ª ora — {materia}. {teacher} confronta opera lirica e musical a confronto su proiettore.',
   ],
 
