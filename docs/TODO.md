@@ -8,14 +8,14 @@
 
 ---
 
-## [ ] Blocco 1 — Strutture Dati Base
+## [x] Blocco 1 — Strutture Dati Base
 
-### [ ] Fase 1A — Popolare `weeklyHours` in `subjects.ts`
+### [x] Fase 1A — Popolare `weeklyHours` in `subjects.ts`
 
-- [ ] Aggiungere `weeklyHours` a tutte le entry in `COMMON_SUBJECTS` (7 materie)
-- [ ] Aggiungere `weeklyHours` a tutte le entry in `SPECIFIC_SUBJECTS` per tutti e 6 gli indirizzi
-- [ ] Verificare che il totale ore/settimana per ogni indirizzo/anno sia coerente (28-32 slot per 30 disponibili)
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Aggiungere `weeklyHours` a tutte le entry in `COMMON_SUBJECTS` (7 materie)
+- [x] Aggiungere `weeklyHours` a tutte le entry in `SPECIFIC_SUBJECTS` per tutti e 6 gli indirizzi
+- [x] Verificare che il totale ore/settimana per ogni indirizzo/anno sia coerente (28-32 slot per 30 disponibili)
+- [x] `npx tsc --noEmit` zero errori
 
 ### [ ] Fase 1B — Nuovi tipi in `types.ts`
 
