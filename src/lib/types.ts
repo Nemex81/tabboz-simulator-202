@@ -658,5 +658,6 @@ export type BreakActionType =
   | 'chiedi_spiegazione'
   | 'chiedi_revoca_voto'
   | 'corruzione_prof'
+  | 'minaccia_prof'
   | 'bar_scolastico'
   | 'riposa'
