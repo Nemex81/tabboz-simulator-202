@@ -95,6 +95,7 @@ import { migrateLegacyFriend, applyDailyErosion, dateToDayIndex } from '@/lib/re
 import { useGameRelations } from '@/hooks/useGameRelations'
 import { useSchoolSystem } from '@/hooks/useSchoolSystem'
 import { generateSchoolDaySlots } from '@/lib/school-day-engine'
+import { applyYearTransition } from '@/lib/school-roster-transitions'
 import type { SchoolDayState } from '@/lib/types'
 import {
   generateScheduledExam,
@@ -349,6 +350,9 @@ function App() {
   const {
     timetable,
     teachers,
+    setTeachers,
+    classRoster,
+    setClassRoster,
     schoolDayState: _schoolDayStateFromHook,
     setSchoolDayState,
     getTodaySchedule,
@@ -737,6 +741,21 @@ function App() {
         age: current!.age + 1
       }))
       setSchoolRecord(DEFAULT_SCHOOL_RECORD)  // reset annuale
+
+      // Fase 3C — Transizione annuale: compagni bocciati, nuovi studenti, turnover professori
+      if (schoolType) {
+        const transition = applyYearTransition(
+          classRoster,
+          teachers,
+          schoolType,
+          newYear,
+          friends
+        )
+        setTeachers(transition.newTeachers)
+        setClassRoster(transition.newRoster)
+        setRawFriends(transition.updatedFriends)
+      }
+
       playSound.success()
       announce(`PROMOSSO! Ora sei in ${newYear}° superiore! I voti sono stati resettati.`)
     } else {

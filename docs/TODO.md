@@ -109,33 +109,33 @@
 
 ---
 
-## [ ] Blocco 3 — Sistema Relazionale Professori e Compagni
+## [x] Blocco 3 — Sistema Relazionale Professori e Compagni
 
-### [ ] Fase 3A — Logica Relazionale Professori
+### [x] Fase 3A — Logica Relazionale Professori
 
-- [ ] Creare `src/lib/teacher-relations.ts`
-- [ ] `applyTeacherRelationChange(teacher, change, reason, date)` con isteresi ostilita
-- [ ] `getCorruptionChance(teacher, amount)` — formula con scaling corruzione
-- [ ] `getThreatSuccess(teacher)` — formula con conseguenze
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/teacher-relations.ts`
+- [x] `applyTeacherRelationChange(teacher, change, reason, date)` con isteresi ostilita
+- [x] `getCorruptionChance(teacher, amount)` — formula con scaling corruzione
+- [x] `getThreatSuccess(teacher)` — formula con conseguenze
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 3B — Logica Relazionale Compagni
+### [x] Fase 3B — Logica Relazionale Compagni
 
-- [ ] Creare `src/lib/classmate-relations.ts`
-- [ ] Interazioni: chiacchiera, studia insieme, litiga, promuovi ad amico
-- [ ] `classmateRelationToFriendship(classmate)` — mapping scala -100/+100 → 0/100
-- [ ] `promotClassmateToFriend(classmate)` — crea Friend in friends[]
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/classmate-relations.ts`
+- [x] Interazioni: chiacchiera, studia insieme, litiga, promuovi ad amico
+- [x] `classmateRelationToFriendship(classmate)` — mapping scala -100/+100 → 0/100
+- [x] `promoteToFriend(classmate, schoolYear)` — crea Friend in friends[]
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 3C — Transizioni Annuali
+### [x] Fase 3C — Transizioni Annuali
 
-- [ ] Creare `src/lib/school-roster-transitions.ts`
-- [ ] `applyYearTransition(classRoster, teachers, schoolType, newYear, friends)`
-- [ ] Bocciatura 1-4 compagni, arrivo 0-2 nuovi
-- [ ] Sostituzione 0-2 professori
-- [ ] Compagni bocciati → amici extrascolastici (relazione preservata)
-- [ ] Integrare in `useGameTime` al cambio anno scolastico
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/school-roster-transitions.ts`
+- [x] `applyYearTransition(classRoster, teachers, schoolType, newYear, friends)`
+- [x] Bocciatura 1-4 compagni, arrivo 0-2 nuovi
+- [x] Sostituzione 0-2 professori
+- [x] Compagni bocciati → amici extrascolastici (relazione preservata)
+- [x] Integrare in `App.tsx` nel blocco `if (actuallyPassed)` dopo `setSchoolRecord`
+- [x] `npx tsc --noEmit` zero errori
 
 ---
 
