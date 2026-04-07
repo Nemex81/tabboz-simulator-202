@@ -63,30 +63,30 @@
 
 ---
 
-## [ ] Blocco 2 — Mattinata Sequenziale
+## [x] Blocco 2 — Mattinata Sequenziale (parziale: 2A-2C completate)
 
-### [ ] Fase 2A — Template Eventi Ordinari
+### [x] Fase 2A — Template Eventi Ordinari
 
-- [ ] Creare `src/lib/school-day-templates.ts`
-- [ ] 8-10 template per materia + pool fallback generico
-- [ ] Template con placeholder: `{ora}`, `{teacher}`, `{materia}`
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/school-day-templates.ts`
+- [x] 8-10 template per materia + pool fallback generico
+- [x] Template con placeholder: `{ora}`, `{teacher}`, `{materia}`
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 2B — Eventi Strutturati Contestuali
+### [x] Fase 2B — Eventi Strutturati Contestuali
 
-- [ ] Creare `src/lib/school-structured-events.ts`
-- [ ] Estendere `SchoolMorningEvent` con `subjectFilter`, `severityRange`, `relationRange`
-- [ ] Migrare/adattare eventi esistenti da `school-morning-events.ts` dove applicabile
-- [ ] Aggiungere eventi nuovi specifici per materia (interrogazione, compito in classe, ecc.)
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/school-structured-events.ts`
+- [x] Estendere `SchoolMorningEvent` con `subjectFilter`, `severityRange`, `relationRange`
+- [x] Migrare/adattare eventi esistenti da `school-morning-events.ts` dove applicabile
+- [x] Aggiungere eventi nuovi specifici per materia (interrogazione, compito in classe, ecc.)
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 2C — Generatore Slot Giornalieri
+### [x] Fase 2C — Generatore Slot Giornalieri
 
-- [ ] Creare `src/lib/school-day-engine.ts`
-- [ ] Implementare `generateSchoolDaySlots(daySchedule, teachers, stats)`
-- [ ] 7 slot: 3 ore + break + 3 ore
-- [ ] Evento strutturato con probabilita 35% base + modificatori da prof
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/school-day-engine.ts`
+- [x] Implementare `generateSchoolDaySlots(daySchedule, teachers, stats)`
+- [x] 7 slot: 3 ore + break + 3 ore
+- [x] Evento strutturato con probabilita 35% base + modificatori da prof
+- [x] `npx tsc --noEmit` zero errori
 
 ### [ ] Fase 2D — Refactor `handleVaiAScuola`
 
