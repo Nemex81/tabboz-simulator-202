@@ -34,12 +34,12 @@
 - [x] Vincoli: max 2 stessa materia/giorno, materie pesanti nelle prime ore, 6 slot pieni/giorno
 - [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 1D — Generatore Registro Classe
+### [x] Fase 1D — Generatore Registro Classe
 
-- [ ] Creare `src/lib/school-roster.ts`
-- [ ] Implementare `generateClassRoster(schoolYear)` — 18-25 compagni
-- [ ] Distribuzione personalita e relazione iniziale come da piano
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/school-roster.ts`
+- [x] Implementare `generateClassRoster(schoolYear)` — 18-25 compagni
+- [x] Distribuzione personalita e relazione iniziale come da piano
+- [x] `npx tsc --noEmit` zero errori
 
 ### [ ] Fase 1E — Generatore Corpo Docente
 
