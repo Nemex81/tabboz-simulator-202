@@ -27,12 +27,12 @@
 - [x] Aggiungere costanti di default: `DEFAULT_SCHOOL_DAY_STATE`
 - [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 1C — Generatore Orario Settimanale
+### [x] Fase 1C — Generatore Orario Settimanale
 
-- [ ] Creare `src/lib/school-timetable.ts`
-- [ ] Implementare `generateWeeklyTimetable(schoolType, schoolYear, teachers)`
-- [ ] Vincoli: max 2 stessa materia/giorno, materie pesanti nelle prime ore, 6 slot pieni/giorno
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/school-timetable.ts`
+- [x] Implementare `generateWeeklyTimetable(schoolType, schoolYear, teachers)`
+- [x] Vincoli: max 2 stessa materia/giorno, materie pesanti nelle prime ore, 6 slot pieni/giorno
+- [x] `npx tsc --noEmit` zero errori
 
 ### [ ] Fase 1D — Generatore Registro Classe
 
