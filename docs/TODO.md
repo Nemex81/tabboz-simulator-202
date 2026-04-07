@@ -17,15 +17,15 @@
 - [x] Verificare che il totale ore/settimana per ogni indirizzo/anno sia coerente (28-32 slot per 30 disponibili)
 - [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 1B — Nuovi tipi in `types.ts`
+### [x] Fase 1B — Nuovi tipi in `types.ts`
 
-- [ ] Aggiungere `TimetableSlot`, `WeeklyTimetable`
-- [ ] Aggiungere `ClassmatePersonality`, `Classmate`
-- [ ] Aggiungere `Teacher`, `TeacherMemoryEntry`
-- [ ] Aggiungere `OrdinaryHourEvent`, `HourSlot`, `SchoolDayState`
-- [ ] Aggiungere `BreakActionType` (anticipato da Blocco 4)
-- [ ] Aggiungere costanti di default: `DEFAULT_SCHOOL_DAY_STATE`
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Aggiungere `TimetableSlot`, `WeeklyTimetable`
+- [x] Aggiungere `ClassmatePersonality`, `Classmate`
+- [x] Aggiungere `Teacher`, `TeacherMemoryEntry`
+- [x] Aggiungere `OrdinaryHourEvent`, `HourSlot`, `SchoolDayState`
+- [x] Aggiungere `BreakActionType` (anticipato da Blocco 4)
+- [x] Aggiungere costanti di default: `DEFAULT_SCHOOL_DAY_STATE`
+- [x] `npx tsc --noEmit` zero errori
 
 ### [ ] Fase 1C — Generatore Orario Settimanale
 

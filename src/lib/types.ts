@@ -553,3 +553,110 @@ export const HEALTH_CONDITIONS: Record<HealthConditionId, HealthConditionTemplat
     genderRestricted: 'femmina',
   },
 }
+// ── Sistema Scolastico Avanzato — Fase 1B ─────────────────────
+
+// 2.1 Orario Settimanale
+
+export interface TimetableSlot {
+  subjectKey: string   // chiave materia da SubjectDefinition
+  teacherId: string    // id del Teacher assegnato
+}
+
+export type WeeklyTimetable = {
+  [day in 0 | 1 | 2 | 3 | 4]: TimetableSlot[]  // 6 slot per giorno (lun-ven)
+}
+
+// 2.2 Compagno di Classe
+
+export type ClassmatePersonality =
+  | 'secchione' | 'bullo' | 'simpatico' | 'silenzioso'
+  | 'sportivo' | 'ribelle' | 'nerd' | 'popolare'
+  | 'timido' | 'leader'
+
+export interface Classmate {
+  id: string
+  name: string
+  type: FriendType                    // coatto | secchione | sportivo | ribelle | generico
+  intelligenza: number                // 20-100
+  relation: number                    // -100 a +100, parte da 0
+  personality: ClassmatePersonality   // archetipo narrativo
+  promotedToFriend: boolean           // true quando il giocatore lo aggiunge agli amici
+  yearJoined: number                  // anno scolastico in cui e entrato nella classe
+}
+
+// 2.3 Professore
+
+export interface TeacherMemoryEntry {
+  type: 'corruzione' | 'minaccia' | 'buon_voto' | 'cattivo_voto'
+      | 'conversazione' | 'richiesta_spiegazione' | 'richiesta_revoca_voto'
+  date: GameDate
+  detail: string
+  impactOnRelation: number   // quanto ha cambiato la relazione
+}
+
+export interface Teacher {
+  id: string
+  name: string
+  subjectKey: string              // materia insegnata
+  gender: 'M' | 'F'
+
+  // Attributi (1-10)
+  severita: number
+  simpatia: number
+  corruttibilita: number
+  resistenzaMinacce: number
+
+  // Relazione col giocatore (-100 a +100) — C2
+  relazione: number
+  sogliaRottura: number           // sotto questo valore -> modalita ostile
+  isOstile: boolean               // derivato da relazione < sogliaRottura
+
+  // Memoria
+  memoria: TeacherMemoryEntry[]
+  corruptionCount: number         // tentativi corruzione riusciti
+  threatCount: number             // tentativi minaccia subiti
+}
+
+// 2.4 Stato Mattinata Scolastica
+
+export interface OrdinaryHourEvent {
+  message: string
+  statDelta: Partial<GameStats>   // tipicamente +1 intelligenza o +2 stanchezza
+}
+
+export interface HourSlot {
+  hourIndex: number               // 0-5 (prima ora = 0, sesta ora = 5)
+  type: 'lesson' | 'break'
+  subjectKey?: string             // assente per break
+  teacherId?: string              // assente per break
+  ordinaryEvent: OrdinaryHourEvent
+  structuredEvent?: import('@/lib/school-morning-events').SchoolMorningEvent
+  completed: boolean
+  playerChoice?: string           // id della scelta fatta (per log)
+}
+
+export interface SchoolDayState {
+  date: GameDate                  // data della mattinata in corso
+  slots: HourSlot[]               // 7 elementi: 3 ore + break + 3 ore
+  currentSlotIndex: number        // 0-6, slot attivo
+  isComplete: boolean
+}
+
+export const DEFAULT_SCHOOL_DAY_STATE: SchoolDayState = {
+  date: { day: 1, month: 9, year: 2026 },
+  slots: [],
+  currentSlotIndex: 0,
+  isComplete: false,
+}
+
+// Blocco 4 — anticipato per dipendenze (C11)
+export type BreakActionType =
+  | 'chiacchiera_compagno'
+  | 'studia_insieme'
+  | 'risolvi_conflitto'
+  | 'conversazione_prof'
+  | 'chiedi_spiegazione'
+  | 'chiedi_revoca_voto'
+  | 'corruzione_prof'
+  | 'bar_scolastico'
+  | 'riposa'
