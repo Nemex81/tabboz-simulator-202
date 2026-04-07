@@ -415,11 +415,9 @@ function App() {
     announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
     addLogEntry('school', 'Vai a scuola', 'Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!', 'positive', gameTime.currentDate, currentPhase ?? 'mattina')
 
-    if (schoolMorningEvents.length === 0) {
-      const events = drawSchoolMorningEvents(6)
-      setSchoolMorningEvents(events)
-      setShowSchoolMorning(true)
-    }
+    const morningEvents = drawSchoolMorningEvents(6)
+    setSchoolMorningEvents(morningEvents)
+    setShowSchoolMorning(true)
   }
 
   // F6: handleMarina dal hook — wrapper che imposta marinatoOggi per la mutua esclusività UI
@@ -458,6 +456,8 @@ function App() {
     setMarinatoOggi(false)
     setShowStreetMorning(false)
     setStreetMorningEvents([])
+    setShowSchoolMorning(false)
+    setSchoolMorningEvents([])
   }, [gameTime.currentDate.day, gameTime.currentDate.month, gameTime.currentDate.year])
 
   // BUG 2: nascondi SchoolMorningPanel quando si esce dalla mattina

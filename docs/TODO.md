@@ -55,6 +55,12 @@ Consultare il piano completo prima di iniziare ogni singola fase.
 - [ ] Verifica accessibilità: banner leggibile da NVDA
 - [ ] Verifica: tutti i `category` in `STREET_MORNING_EVENTS` coperti da label/color
 
+## Hotfix — SchoolMorningPanel non si apre dal secondo giorno
+
+- [x] `src/App.tsx` useEffect cambio data: aggiunge `setShowSchoolMorning(false)` e `setSchoolMorningEvents([])` al reset giornaliero
+- [x] `src/App.tsx` `handleVaiAScuola`: rimossa guardia `if (schoolMorningEvents.length === 0)` → draw sempre eseguito
+- [x] `npx tsc --noEmit` — zero errori
+
 ## Fase 7 (opzionale, dopo merge) — EventEngine
 
 - [ ] **N** — `src/hooks/useEventEngine.ts`: aggiunge `isAtSchool?: boolean` a `UseEventEngineParams` per filtrare eventi pomeridiani contestuali
