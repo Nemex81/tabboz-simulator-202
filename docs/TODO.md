@@ -41,15 +41,15 @@
 - [x] Distribuzione personalita e relazione iniziale come da piano
 - [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 1E — Generatore Corpo Docente
+### [x] Fase 1E — Generatore Corpo Docente
 
-- [ ] Creare `src/lib/school-teachers.ts`
-- [ ] Implementare `generateTeachers(schoolType, schoolYear)` — 1 prof per materia
-- [ ] Attributi 1-10 con distribuzione gaussiana centrata su 5
-- [ ] **C9** — Relazione iniziale: `(simpatia * 6 - 20) + Math.round((Math.random() - 0.5) * 16)` applicato una sola volta, persistito in KV (NON ricalcolato)
-- [ ] `sogliaRottura`: `-30 - (severita * 5)`
-- [ ] `isOstile`: derivato da `relazione < sogliaRottura`
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/school-teachers.ts`
+- [x] Implementare `generateTeachers(schoolType, schoolYear)` — 1 prof per materia
+- [x] Attributi 1-10 con distribuzione gaussiana centrata su 5
+- [x] **C9** — Relazione iniziale: `(simpatia * 6 - 20) + Math.round((Math.random() - 0.5) * 16)` applicato una sola volta, persistito in KV (NON ricalcolato)
+- [x] `sogliaRottura`: `-30 - (severita * 5)`
+- [x] `isOstile`: derivato da `relazione < sogliaRottura`
+- [x] `npx tsc --noEmit` zero errori
 
 ### [ ] Fase 1F — Hook `useSchoolSystem` e Init Partita
 
