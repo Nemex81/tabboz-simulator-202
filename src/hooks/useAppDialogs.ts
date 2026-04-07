@@ -17,6 +17,8 @@ export function useAppDialogs() {
   const [teacherActionType, setTeacherActionType] = useState<'corrompi' | 'minaccia'>('corrompi')
   const [schoolMorningEvents, setSchoolMorningEvents] = useState<SchoolMorningEvent[]>([])
   const [showSchoolMorning, setShowSchoolMorning] = useState(false)
+  const [streetMorningEvents, setStreetMorningEvents] = useState<SchoolMorningEvent[]>([])
+  const [showStreetMorning, setShowStreetMorning] = useState(false)
 
   return {
     gameOver,
@@ -47,5 +49,9 @@ export function useAppDialogs() {
     setSchoolMorningEvents,
     showSchoolMorning,
     setShowSchoolMorning,
+    streetMorningEvents,
+    setStreetMorningEvents,
+    showStreetMorning,
+    setShowStreetMorning,
   }
 }

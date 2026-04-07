@@ -6,12 +6,13 @@ import React, { useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { GameStats, Friend } from '@/lib/types'
+import { GameStats, Friend, MorningEventCategory } from '@/lib/types'
 import { SchoolMorningEvent, SchoolMorningChoice } from '@/lib/school-morning-events'
 import { clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 
 interface SchoolMorningPanelProps {
+  context: 'school' | 'street'
   events: SchoolMorningEvent[]
   stats: GameStats
   onStatChange: (updater: (prev: GameStats) => GameStats) => void
@@ -30,16 +31,24 @@ interface SchoolMorningPanelProps {
   currentDate: import('@/lib/types').GameDate
 }
 
-const categoryLabel: Record<SchoolMorningEvent['category'], string> = {
+const categoryLabel: Record<MorningEventCategory, string> = {
   didattica: '📚 Didattica',
   sociale: '👥 Sociale',
   istituto: '🏫 Istituto',
+  strada: '🛤️ Strada',
+  casa: '🏠 Casa',
+  citta: '🏙️ Città',
+  amici: '👫 Amici',
 }
 
-const categoryColor: Record<SchoolMorningEvent['category'], string> = {
+const categoryColor: Record<MorningEventCategory, string> = {
   didattica: 'bg-blue-100 text-blue-800',
   sociale: 'bg-green-100 text-green-800',
   istituto: 'bg-orange-100 text-orange-800',
+  strada: 'bg-gray-100 text-gray-800',
+  casa: 'bg-yellow-100 text-yellow-800',
+  citta: 'bg-purple-100 text-purple-800',
+  amici: 'bg-pink-100 text-pink-800',
 }
 
 function EventCard({
@@ -95,6 +104,7 @@ function EventCard({
 }
 
 export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
+  context,
   events,
   stats,
   onStatChange,
@@ -159,12 +169,21 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-center">
-        <p className="font-bold text-amber-800">🏫 Mattina scolastica</p>
-        <p className="text-sm text-amber-700">
-          Sei a scuola. Gestisci gli eventi della mattina, poi usa i controlli nella schermata principale per passare al pomeriggio.
-        </p>
-      </div>
+      {context === 'school' ? (
+        <div className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-center">
+          <p className="font-bold text-amber-800">🏫 Mattina scolastica</p>
+          <p className="text-sm text-amber-700">
+            Sei a scuola. Gestisci gli eventi della mattina, poi usa i controlli nella schermata principale per passare al pomeriggio.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-lg bg-slate-100 border border-slate-300 p-3 text-center">
+          <p className="font-bold text-slate-700">🛤️ Mattina per strada</p>
+          <p className="text-sm text-slate-600">
+            Hai marinato. Vediamo cosa succede in giro oggi...
+          </p>
+        </div>
+      )}
 
       {events.length === 0 && (
         <Card>

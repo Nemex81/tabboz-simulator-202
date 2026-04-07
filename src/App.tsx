@@ -83,6 +83,7 @@ import {
 import { playSound } from '@/lib/sound-effects'
 import { getTeacherEvent, getParentEventByMedia, SchoolEvent, EventOutcome } from '@/lib/school-events'
 import { drawSchoolMorningEvents, SchoolMorningEvent } from '@/lib/school-morning-events'
+import { drawStreetMorningEvents } from '@/lib/street-morning-events'
 import { 
   generateRandomFriend, 
   generateRandomRelationship, 
@@ -158,6 +159,10 @@ function App() {
     setSchoolMorningEvents,
     showSchoolMorning,
     setShowSchoolMorning,
+    streetMorningEvents,
+    setStreetMorningEvents,
+    showStreetMorning,
+    setShowStreetMorning,
   } = useAppDialogs()
 
   const ariaLiveRef = useRef<HTMLDivElement>(null)
@@ -402,7 +407,8 @@ function App() {
     }))
     setSchoolRecord((current): SchoolRecord => ({
       ...(current ?? DEFAULT_SCHOOL_RECORD),
-      wentToSchoolToday: true
+      wentToSchoolToday: true,
+      isAtSchool: true
     }))
     consumeAction()
     setMorningChoicePending(false)
@@ -427,6 +433,16 @@ function App() {
     setShowSchoolMorning(false)
     setSchoolMorningEvents([])
     setMorningChoicePending(false)
+
+    setSchoolRecord((current): SchoolRecord => ({
+      ...(current ?? DEFAULT_SCHOOL_RECORD),
+      isAtSchool: false
+    }))
+
+    const streetEvents = drawStreetMorningEvents(6)
+    setStreetMorningEvents(streetEvents)
+    setShowStreetMorning(true)
+
     handleMarinaFromHook()
   }
 
@@ -440,12 +456,15 @@ function App() {
   // F6: reset marinatoOggi al cambio di giorno
   useEffect(() => {
     setMarinatoOggi(false)
+    setShowStreetMorning(false)
+    setStreetMorningEvents([])
   }, [gameTime.currentDate.day, gameTime.currentDate.month, gameTime.currentDate.year])
 
   // BUG 2: nascondi SchoolMorningPanel quando si esce dalla mattina
   useEffect(() => {
     if (currentPhase !== 'mattina') {
       setShowSchoolMorning(false)
+      setShowStreetMorning(false)
     }
   }, [currentPhase])
 
@@ -1213,7 +1232,25 @@ function App() {
                 {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && schoolRecord.wentToSchoolToday && (
                   <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
                     <SchoolMorningPanel
+                      context="school"
                       events={schoolMorningEvents}
+                      stats={stats}
+                      onStatChange={setStats}
+                      onGainExtraAction={gainExtraAction}
+                      onConsumeAction={consumeAction}
+                      announce={announce}
+                      onNewFriend={(f) => setFriends((current) => [...current, f])}
+                      addLogEntry={addLogEntry}
+                      currentDate={gameTime.currentDate}
+                    />
+                  </Suspense>
+                )}
+
+                {showStreetMorning && dayType === 'feriale' && currentPhase === 'mattina' && marinatoOggi && (
+                  <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina per strada...</div>}>
+                    <SchoolMorningPanel
+                      context="street"
+                      events={streetMorningEvents}
                       stats={stats}
                       onStatChange={setStats}
                       onGainExtraAction={gainExtraAction}

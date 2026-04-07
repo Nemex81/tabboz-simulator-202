@@ -339,12 +339,17 @@ export interface PlayerProfile {
   traits?: string[]
 }
 
+export type MorningEventCategory =
+  | 'didattica' | 'sociale' | 'istituto'
+  | 'strada' | 'casa' | 'citta' | 'amici'
+
 export interface SchoolRecord {
   assenze: number
   note: number
   sospensioni: number
   condotta: number
   wentToSchoolToday: boolean
+  isAtSchool: boolean          // true solo se fisicamente a scuola oggi
   consecutiveGoodDays: number
 }
 
@@ -354,6 +359,7 @@ export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   sospensioni: 0,
   condotta: 8.0,
   wentToSchoolToday: false,
+  isAtSchool: false,
   consecutiveGoodDays: 0
 }
 

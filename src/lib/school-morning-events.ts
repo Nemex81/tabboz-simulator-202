@@ -1,14 +1,12 @@
 // src/lib/school-morning-events.ts
 // Pool di eventi randomizzati per la mattina scolastica.
 
-import { GameStats, Friend } from '@/lib/types'
+import { GameStats, Friend, MorningEventCategory } from '@/lib/types'
 import { generateSchoolFriend } from './enhanced-friend-system'
-
-export type SchoolMorningCategory = 'didattica' | 'sociale' | 'istituto'
 
 export interface SchoolMorningEvent {
   id: string
-  category: SchoolMorningCategory
+  category: MorningEventCategory
   title: string
   description: string
   probability: number           // 0–100

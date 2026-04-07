@@ -138,7 +138,8 @@ export function useGameTime({
             assenze: (prev ?? DEFAULT_SCHOOL_RECORD).assenze + 1,
             condotta: clampStat((prev ?? DEFAULT_SCHOOL_RECORD).condotta - 0.2, 0, 10),
             consecutiveGoodDays: 0,
-            wentToSchoolToday: false
+            wentToSchoolToday: false,
+            isAtSchool: false
           }))
           // F4: soglie assenze
           const newAssenze = schoolRecord.assenze + 1
@@ -161,13 +162,15 @@ export function useGameTime({
         ...(prev ?? DEFAULT_SCHOOL_RECORD),
         consecutiveGoodDays: newCGD,
         condotta: conductaBonus ? clampStat((prev ?? DEFAULT_SCHOOL_RECORD).condotta + 0.3, 0, 10) : (prev ?? DEFAULT_SCHOOL_RECORD).condotta,
-        wentToSchoolToday: false
+        wentToSchoolToday: false,
+        isAtSchool: false
       }))
           if (conductaBonus) announce(`🌟 ${newCGD} giorni di comportamento esemplare! +0.3 Condotta`)
         } else {
           setSchoolRecord((prev): SchoolRecord => ({
           ...(prev ?? DEFAULT_SCHOOL_RECORD),
-          wentToSchoolToday: false
+          wentToSchoolToday: false,
+          isAtSchool: false
         }))
         }
 
@@ -339,7 +342,7 @@ export function useGameTime({
       }
     }
     // F3: reset flag presenza giornaliera (per handleDormi che salta le fasi)
-    setSchoolRecord((prev): SchoolRecord => ({ ...(prev ?? DEFAULT_SCHOOL_RECORD), wentToSchoolToday: false }))
+    setSchoolRecord((prev): SchoolRecord => ({ ...(prev ?? DEFAULT_SCHOOL_RECORD), wentToSchoolToday: false, isAtSchool: false }))
     // STEP 9C: tick condizioni di salute per il nuovo giorno
     // ⚠️ rawGameTime è il valore pre-mutazione nello scope (corretto per l'invariante)
     const nextDate = advanceGameTime(validateGameTime(rawGameTime)).currentDate
