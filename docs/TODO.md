@@ -139,47 +139,47 @@
 
 ---
 
-## [ ] Blocco 4 — Intervallo e Pannello Scolastico
+## [x] Blocco 4 — Intervallo e Pannello Scolastico
 
-### [ ] Fase 4A — Sistema Azioni Intervallo
+### [x] Fase 4A — Sistema Azioni Intervallo
 
-- [ ] Creare `src/lib/school-break-actions.ts`
-- [ ] 9 azioni divise in 3 categorie: compagno, professore, indipendente
-- [ ] Ogni azione con `available()` e `execute()` context-aware
-- [ ] **C11** — `BreakContext` deve includere `todayTeachers: Teacher[]` (filtro da `daySchedule`) e `completedSlots: HourSlot[]` (slot lesson gia completati); entrambi derivabili da `SchoolDayState` senza nuovi KV
-- [ ] L'azione `chiedi_revoca_voto` usa `completedSlots` per trovare un voto insufficiente recente; usare `todayTeachers` per limitare la lista prof disponibili all'intervallo
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/school-break-actions.ts`
+- [x] 9 azioni divise in 3 categorie: compagno, professore, indipendente
+- [x] Ogni azione con `available()` e `execute()` context-aware
+- [x] **C11** — `BreakContext` deve includere `todayTeachers: Teacher[]` (filtro da `daySchedule`) e `completedSlots: HourSlot[]` (slot lesson gia completati); entrambi derivabili da `SchoolDayState` senza nuovi KV
+- [x] L'azione `chiedi_revoca_voto` usa `completedSlots` per trovare un voto insufficiente recente; usare `todayTeachers` per limitare la lista prof disponibili all'intervallo
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 4B — UI Pannello Intervallo
+### [x] Fase 4B — UI Pannello Intervallo
 
-- [ ] Creare `src/components/SchoolBreakPanel.tsx`
-- [ ] 3 tab: Compagni, Professori, Altro
-- [ ] Una sola azione selezionabile, poi chiusura automatica
-- [ ] Accessibilita: tab navigabili da tastiera, focus trap
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/components/SchoolBreakPanel.tsx`
+- [x] 3 tab: Compagni, Professori, Altro
+- [x] Una sola azione selezionabile, poi chiusura automatica
+- [x] Accessibilita: tab navigabili da tastiera, focus trap
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 4C — Home Scolastica Aggiornata
+### [x] Fase 4C — Home Scolastica Aggiornata
 
-- [ ] Creare o refactorare pannello home scuola
-- [ ] Contatore "Amici fatti: X / Y compagni"
-- [ ] Orario del giorno corrente (griglia 6 righe)
-- [ ] Ora corrente + materia + professore durante mattinata attiva
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/components/SchoolHomePanel.tsx`
+- [x] Contatore "Compagni promossi ad amici: X / Y compagni"
+- [x] Orario del giorno corrente (griglia 6 righe)
+- [x] Ora corrente + materia + professore durante mattinata attiva
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 4D — Pannello Professori
+### [x] Fase 4D — Pannello Professori
 
-- [ ] Creare `src/components/TeachersPanel.tsx`
-- [ ] Lista con nome, materia, indicatore relazione, segnale ostilita
-- [ ] Espandibile: storico interazioni
-- [ ] Azioni fuori mattinata (consumano azione pomeridiana)
-- [ ] Accessibilita: lista navigabile, stati annunciati
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/components/TeachersPanel.tsx`
+- [x] Lista con nome, materia, indicatore relazione, segnale ostilita
+- [x] Espandibile: storico interazioni
+- [x] Azioni fuori mattinata (consumano azione pomeridiana)
+- [x] Accessibilita: lista navigabile, stati annunciati
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] Fase 4E — Filtro Compagni nel Pannello Amici
+### [x] Fase 4E — Filtro Compagni nel Pannello Amici
 
-- [ ] Aggiungere filtro/tab "Compagni di classe" in `EnhancedFriendsPanel` o nella home scuola
-- [ ] Mostra roster con relazione e azioni disponibili
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Vista compagni integrata in `SchoolHomePanel` con toggle interno
+- [x] Mostra roster con relazione e azioni disponibili (promozione ad amico)
+- [x] `npx tsc --noEmit` zero errori
 
 ---
 

@@ -187,7 +187,7 @@ const chiedi_revoca_voto: BreakAction = {
     const roll = Math.random() * 100
 
     if (roll < baseChance) {
-      const delta = randomInt(-5, -5)  // -5 fisso: il prof accontenta ma a malincuore
+      const delta = randomInt(-5, -10)  // range con varianza narrativa: il prof accontenta ma a malincuore
       const updated = applyTeacherRelationChange(teacher, delta, 'richiesta_revoca_voto', ctx.currentDate)
       return {
         message: `${teacher.name} ha accettato di rivedere il voto. Relazione ${delta}.`,
