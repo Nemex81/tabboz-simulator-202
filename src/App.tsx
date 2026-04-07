@@ -372,6 +372,27 @@ function App() {
     initSchoolYear,
   } = useSchoolSystem()
 
+  const isSchoolMorningSequenceInProgress =
+    currentPhase === 'mattina' &&
+    showSchoolMorning &&
+    schoolRecord.wentToSchoolToday &&
+    ((_schoolDayStateFromHook?.slots.length ?? 0) > 0) &&
+    !_schoolDayStateFromHook?.isComplete
+
+  const handleAdvancePhaseGuarded = useCallback(() => {
+    if ((phaseActionsRemaining ?? 0) > 0) {
+      announce(`Devi consumare prima le ${phaseActionsRemaining ?? 0} azioni rimaste!`)
+      return
+    }
+
+    if (isSchoolMorningSequenceInProgress) {
+      announce('Completa prima tutte le ore di scuola prima di avanzare alla fase successiva.')
+      return
+    }
+
+    advancePhaseOnly()
+  }, [advancePhaseOnly, announce, isSchoolMorningSequenceInProgress, phaseActionsRemaining])
+
   const handleRiposa = () => actions.handleRiposa()
 
   // Blocco 4 \u2014 Promozione compagno ad amico dall'elenco classe
@@ -820,7 +841,7 @@ function App() {
     handleCinema,
     handleShoppingMall,
     setShowResetDialog,
-    advancePhaseOnly,
+    advancePhaseOnly: handleAdvancePhaseGuarded,
     setShowKeyboardHelp,
     announce
   })
@@ -945,7 +966,23 @@ function App() {
             currentPhase === 'mattina' ? 'Pomeriggio' :
             currentPhase === 'pomeriggio' ? 'Sera' :
             currentPhase === 'sera' ? 'Notte' : 'Mattina'
-          const canAdvance = (phaseActionsRemaining ?? 0) === 0
+          const canAdvance = (phaseActionsRemaining ?? 0) === 0 && !isSchoolMorningSequenceInProgress
+          const advanceStatusLabel =
+            isSchoolMorningSequenceInProgress
+              ? '🏫 Lezioni in corso'
+              : canAdvance
+                ? '✓ Pronto ad avanzare'
+                : `${phaseActionsRemaining ?? 0} azioni rimaste`
+          const advanceButtonTitle =
+            isSchoolMorningSequenceInProgress
+              ? 'Completa prima tutte le ore di scuola per passare alla fase successiva'
+              : canAdvance
+                ? `Avanza a: ${nextPhaseLabel} (Ctrl+N)`
+                : `Consuma prima le ${phaseActionsRemaining ?? 0} azioni rimaste`
+          const advanceAriaLabel =
+            isSchoolMorningSequenceInProgress
+              ? `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Pulsante disabilitato. Devi completare prima tutte le ore di scuola.`
+              : `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni rimaste per questa fase: ${phaseActionsRemaining ?? 0}. ${canAdvance ? 'Pulsante abilitato. Premi per avanzare.' : 'Pulsante disabilitato. Devi consumare tutte le azioni prima di avanzare.'} Scorciatoia da tastiera: Ctrl+N`
           const showRiposa =
             currentPhase === 'pomeriggio' ||
             (currentPhase === 'mattina' && (dayType !== 'feriale' || !gameTime.schoolYear.isSchoolPeriod))
@@ -963,9 +1000,11 @@ function App() {
                   className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                   canAdvance
                     ? 'bg-primary/20 text-primary'
-                    : 'bg-destructive/15 text-destructive'
+                    : isSchoolMorningSequenceInProgress
+                      ? 'bg-secondary/20 text-secondary'
+                      : 'bg-destructive/15 text-destructive'
                 }`}>
-                  {canAdvance ? '✓ Pronto ad avanzare' : `${phaseActionsRemaining ?? 0} azioni rimaste`}
+                  {advanceStatusLabel}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -995,10 +1034,10 @@ function App() {
                 <Button
                   variant={canAdvance ? 'default' : 'secondary'}
                   size="sm"
-                  onClick={advancePhaseOnly}
+                  onClick={handleAdvancePhaseGuarded}
                   disabled={!canAdvance}
-                  title={canAdvance ? `Avanza a: ${nextPhaseLabel} (Ctrl+N)` : `Consuma prima le ${phaseActionsRemaining ?? 0} azioni rimaste`}
-                  aria-label={`Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni rimaste per questa fase: ${phaseActionsRemaining ?? 0}. ${canAdvance ? 'Pulsante abilitato. Premi per avanzare.' : 'Pulsante disabilitato. Devi consumare tutte le azioni prima di avanzare.'} Scorciatoia da tastiera: Ctrl+N`}
+                  title={advanceButtonTitle}
+                  aria-label={advanceAriaLabel}
                   className="flex items-center gap-1"
                 >
                   ▶ <span>Prossima fase</span>
