@@ -1,12 +1,15 @@
 import React from 'react'
-import { IdentificationCard, Star, Trophy, GraduationCap, BookOpen, Heart } from '@phosphor-icons/react'
+import { IdentificationCard, Star, Trophy, GraduationCap, BookOpen, Heart, UsersThree } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats, SchoolType, SchoolRecord, GameLogEntry, HealthRecord, SubjectGrades } from '@/lib/types'
+import { GameStats, SchoolType, SchoolRecord, GameLogEntry, HealthRecord, SubjectGrades, Friend, Relationship } from '@/lib/types'
 import { getReputationLevel } from '@/lib/game-utils'
 import { DiaryPanel } from '@/components/DiaryPanel'
 import { HealthRecordPanel } from '@/components/HealthRecordPanel'
 import { GradeProgressPanel } from '@/components/GradeProgressPanel'
+import { RelationsPanel } from '@/components/RelationsPanel'
+import { RelationshipsPanel } from '@/components/RelationshipsPanel'
+import type { Ragazza } from '@/lib/girlfriend-system'
 
 interface CharacterSheetProps {
   playerProfile: { name: string; gender: 'maschio' | 'femmina' } | null
@@ -20,6 +23,16 @@ interface CharacterSheetProps {
   healthRecord: HealthRecord
   grades: SubjectGrades
   gradesHistory: Record<number, SubjectGrades>
+  // --- Relazioni ---
+  friends: Friend[]
+  relationships: Relationship[]
+  actionsRemaining: number
+  onFriendAction: (friendId: string, actionId: string) => void
+  onRelationInteraction?: (friendId: string, interactionId: string) => void
+  girlfriend: Ragazza | null
+  onGirlfriendAction: (action: string) => void
+  onGirlfriendBreakup: () => void
+  onTryRelationship: (relationshipId: string) => void
 }
 
 export function CharacterSheet({
@@ -34,6 +47,15 @@ export function CharacterSheet({
   healthRecord,
   grades,
   gradesHistory,
+  friends,
+  relationships,
+  actionsRemaining,
+  onFriendAction,
+  onRelationInteraction,
+  girlfriend,
+  onGirlfriendAction,
+  onGirlfriendBreakup,
+  onTryRelationship,
 }: CharacterSheetProps) {
   return (
     <Tabs defaultValue="profilo" className="w-full mt-6">
@@ -48,10 +70,10 @@ export function CharacterSheet({
           <span className="hidden sm:inline">Scuola</span>
           <span className="sm:hidden">🎓</span>
         </TabsTrigger>
-        <TabsTrigger value="aspetto" disabled aria-label="Aspetto: non ancora disponibile">
-          <span className="hidden sm:inline">Aspetto</span>
-          <span className="sm:hidden">👕</span>
-          <span className="ml-1 text-xs opacity-50">🔜</span>
+        <TabsTrigger value="relazioni" aria-label="Relazioni e amicizie">
+          <UsersThree size={18} className="mr-1" weight="fill" aria-hidden="true" />
+          <span className="hidden sm:inline">Relazioni</span>
+          <span className="sm:hidden">👥</span>
         </TabsTrigger>
         <TabsTrigger value="diario" aria-label="Diario degli eventi">
           <BookOpen size={18} className="mr-1" weight="fill" aria-hidden="true" />
@@ -226,6 +248,27 @@ export function CharacterSheet({
         </Card>
       </section>
 
+        </div>
+      </TabsContent>
+
+      <TabsContent value="relazioni">
+        <div className="mt-2 space-y-6">
+          <RelationsPanel
+            friends={friends}
+            stats={stats}
+            actionsRemaining={actionsRemaining}
+            onFriendAction={onFriendAction}
+            onRelationInteraction={onRelationInteraction}
+            girlfriend={girlfriend}
+            onGirlfriendAction={onGirlfriendAction}
+            onGirlfriendBreakup={onGirlfriendBreakup}
+          />
+          <RelationshipsPanel
+            relationships={relationships}
+            stats={stats}
+            onTryRelationship={onTryRelationship}
+            actionsRemaining={actionsRemaining}
+          />
         </div>
       </TabsContent>
 

@@ -25,11 +25,9 @@ import { TimeDisplay } from '@/components/TimeDisplay'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { GameDialogs } from '@/components/GameDialogs'
 // Pannelli social caricati in lazy (tab non visibile all'avvio)
-const FriendsPanel = lazy(() => import('@/components/FriendsPanel').then(m => ({ default: m.FriendsPanel })))
 const EnhancedFriendsPanel = lazy(() => import('@/components/EnhancedFriendsPanel').then(m => ({ default: m.EnhancedFriendsPanel })))
+const GradeProgressPanel = lazy(() => import('@/components/GradeProgressPanel').then(m => ({ default: m.GradeProgressPanel })))
 // const GirlfriendPanel = lazy(() => import('@/components/GirlfriendPanel').then(m => ({ default: m.GirlfriendPanel })))
-const RelationsPanel = lazy(() => import('@/components/RelationsPanel').then(m => ({ default: m.RelationsPanel })))
-const RelationshipsPanel = lazy(() => import('@/components/RelationshipsPanel').then(m => ({ default: m.RelationshipsPanel })))
 const ExamsPanel = lazy(() => import('@/components/ExamsPanel').then(m => ({ default: m.ExamsPanel })))
 // Dashboard lazy (tab nascosto all'avvio)
 const StatsDashboard = lazy(() => import('@/components/StatsDashboard').then(m => ({ default: m.StatsDashboard })))
@@ -1035,17 +1033,21 @@ function App() {
           </TabsContent>
 
           <TabsContent value="school" className="space-y-6 mt-6">
-            <Tabs defaultValue="grades" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 bg-card/50 p-1">
-                <TabsTrigger value="grades" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <Tabs defaultValue="home" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
+                <TabsTrigger value="home" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                  <GraduationCap size={18} className="mr-2" weight="fill" />
+                  Home
+                </TabsTrigger>
+                <TabsTrigger value="voti" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                   <GraduationCap size={18} className="mr-2" weight="fill" />
                   Voti
                 </TabsTrigger>
-                <TabsTrigger value="exams" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="verifiche" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Brain size={18} className="mr-2" weight="fill" />
                   Verifiche
                 </TabsTrigger>
-                <TabsTrigger value="friends" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+                <TabsTrigger value="amici" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
                   <UserCircle size={18} className="mr-2" weight="fill" />
                   Amici
                 </TabsTrigger>
@@ -1055,8 +1057,74 @@ function App() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="grades" className="space-y-6 mt-6">
-                {/* BUG 2: wrapper comune — i 3 pulsanti scuola visibili solo mattina feriale scolastica */}
+              <TabsContent value="home" className="space-y-6 mt-6">
+                {/* ── Sommario scolastico ── */}
+                <Card className="p-4 border-2 border-secondary bg-card">
+                  <h3 className="text-lg font-bold text-secondary mb-3 flex items-center gap-2">
+                    <GraduationCap size={20} weight="fill" aria-hidden="true" />
+                    SITUAZIONE SCOLASTICA
+                  </h3>
+                  <dl className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <dt className="text-muted-foreground">Media voti</dt>
+                      <dd className={`text-2xl font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-secondary'}`}>
+                        {currentMedia.toFixed(1)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Condotta</dt>
+                      <dd className={`text-2xl font-bold ${schoolRecord.condotta < 6 ? 'text-destructive' : 'text-primary'}`}>
+                        {schoolRecord.condotta.toFixed(1)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Assenze</dt>
+                      <dd className={`text-2xl font-bold ${schoolRecord.assenze >= 25 ? 'text-destructive' : 'text-foreground'}`}>
+                        {schoolRecord.assenze}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Note disciplinari</dt>
+                      <dd className="text-2xl font-bold text-foreground">{schoolRecord.note}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Compagni di classe</dt>
+                      <dd className="text-2xl font-bold text-accent">
+                        {friends.filter(f => f.originType === 'compagno_classe').length}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Anno scolastico</dt>
+                      <dd className="text-2xl font-bold text-foreground">{gameTime.schoolYear.currentYear}°</dd>
+                    </div>
+                  </dl>
+                </Card>
+
+                {/* Messaggio contestuale */}
+                {(() => {
+                  if (schoolRecord.assenze >= 20) return (
+                    <Card className="p-3 border border-destructive bg-destructive/5">
+                      <p className="text-sm text-destructive font-medium">⚠️ Attenzione: stai accumulando troppe assenze.</p>
+                    </Card>
+                  )
+                  if (currentMedia < 6) return (
+                    <Card className="p-3 border border-destructive bg-destructive/5">
+                      <p className="text-sm text-destructive font-medium">⚠️ La tua media è insufficiente. Studia di più!</p>
+                    </Card>
+                  )
+                  if (currentMedia >= 8) return (
+                    <Card className="p-3 border border-secondary bg-secondary/5">
+                      <p className="text-sm text-secondary font-medium">⭐ Ottima media! Continua così.</p>
+                    </Card>
+                  )
+                  return (
+                    <Card className="p-3 border border-muted bg-muted/20">
+                      <p className="text-sm text-muted-foreground">📚 Settimana nella norma. Niente di urgente.</p>
+                    </Card>
+                  )
+                })()}
+
+                {/* Azioni scuola — solo mattina feriale nel periodo scolastico */}
                 {currentPhase === 'mattina' && dayType === 'feriale' && gameTime.schoolYear.isSchoolPeriod && (
                 <>
                 <Card className="p-3 border-2 border-primary bg-card">
@@ -1166,7 +1234,9 @@ function App() {
                     />
                   </Suspense>
                 )}
+              </TabsContent>
 
+              <TabsContent value="voti" className="space-y-6 mt-6">
                 <Card className="p-6 border-2 border-secondary bg-card">
                   <h3 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
                     <GraduationCap size={32} weight="fill" />
@@ -1244,6 +1314,44 @@ function App() {
                   </div>
                 </Card>
 
+                {/* GradeProgressPanel + storico anni precedenti */}
+                {schoolType ? (
+                  <>
+                    <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Caricamento voti...</div>}>
+                      <GradeProgressPanel
+                        grades={grades}
+                        schoolType={schoolType}
+                        schoolYear={gameTime.schoolYear.currentYear}
+                      />
+                    </Suspense>
+                    {Object.keys(rawGradesHistory ?? {}).length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+                          Storico anni precedenti
+                        </h4>
+                        {Object.entries(rawGradesHistory ?? {})
+                          .sort(([a], [b]) => Number(b) - Number(a))
+                          .map(([year, histGrades]) => {
+                            const avg = Object.values(histGrades).length
+                              ? (Object.values(histGrades).reduce((s, v) => s + v, 0) /
+                                  Object.values(histGrades).length).toFixed(1)
+                              : '—'
+                            return (
+                              <div key={year} className="flex items-center justify-between px-2 py-1.5 rounded bg-muted/20 text-sm">
+                                <span className="text-muted-foreground">Anno {year}°</span>
+                                <span className="font-semibold">{avg}</span>
+                              </div>
+                            )
+                          })}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    Seleziona prima un indirizzo scolastico.
+                  </p>
+                )}
+
                 <Card className="p-3 border-2 border-destructive bg-card">
                   <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
                     <HandCoins size={24} weight="fill" />
@@ -1281,7 +1389,7 @@ function App() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="exams" className="space-y-6 mt-6">
+              <TabsContent value="verifiche" className="space-y-6 mt-6">
                 <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
                   <ExamsPanel
                     exams={scheduledExams}
@@ -1310,23 +1418,19 @@ function App() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="friends" className="space-y-6 mt-6">
+              <TabsContent value="amici" className="space-y-6 mt-6">
                 <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
-                  <RelationsPanel
-                    friends={friends}
+                  <EnhancedFriendsPanel
+                    friends={friends.filter(f =>
+                      f.originType === 'compagno_classe' || f.originType === 'compagno_istituto'
+                    )}
                     stats={stats}
                     actionsRemaining={phaseActionsRemaining ?? 0}
                     onFriendAction={handleFriendAction}
                     onRelationInteraction={doInteraction}
-                    girlfriend={girlfriend ?? null}
+                    girlfriend={null}
                     onGirlfriendAction={handleGirlfriendAction}
                     onGirlfriendBreakup={handleGirlfriendBreakup}
-                  />
-                  <RelationshipsPanel
-                    relationships={relationships}
-                    stats={stats}
-                    onTryRelationship={handleTryRelationship}
-                    actionsRemaining={phaseActionsRemaining ?? 0}
                   />
                 </Suspense>
                 <Card className="p-3 border-2 border-accent bg-card">
@@ -1370,6 +1474,15 @@ function App() {
               healthRecord={healthRecord ?? DEFAULT_HEALTH_RECORD}
               grades={grades}
               gradesHistory={rawGradesHistory ?? {}}
+              friends={friends}
+              relationships={relationships}
+              actionsRemaining={phaseActionsRemaining ?? 0}
+              onFriendAction={handleFriendAction}
+              onRelationInteraction={doInteraction}
+              girlfriend={girlfriend ?? null}
+              onGirlfriendAction={handleGirlfriendAction}
+              onGirlfriendBreakup={handleGirlfriendBreakup}
+              onTryRelationship={handleTryRelationship}
             />
           </TabsContent>
 
