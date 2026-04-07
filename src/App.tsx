@@ -24,8 +24,8 @@ import { ActionButton } from '@/components/ActionButton'
 import { TimeDisplay } from '@/components/TimeDisplay'
 import { ThemeSelector } from '@/components/ThemeSelector'
 import { GameDialogs } from '@/components/GameDialogs'
-// Pannelli social caricati in lazy (tab non visibile all'avvio)
-const EnhancedFriendsPanel = lazy(() => import('@/components/EnhancedFriendsPanel').then(m => ({ default: m.EnhancedFriendsPanel })))
+import { EnhancedFriendsPanel } from '@/components/EnhancedFriendsPanel'
+// Pannelli voti/esami caricati in lazy (tab non visibile all'avvio)
 const GradeProgressPanel = lazy(() => import('@/components/GradeProgressPanel').then(m => ({ default: m.GradeProgressPanel })))
 // const GirlfriendPanel = lazy(() => import('@/components/GirlfriendPanel').then(m => ({ default: m.GirlfriendPanel })))
 const ExamsPanel = lazy(() => import('@/components/ExamsPanel').then(m => ({ default: m.ExamsPanel })))
@@ -1419,20 +1419,18 @@ function App() {
               </TabsContent>
 
               <TabsContent value="amici" className="space-y-6 mt-6">
-                <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
-                  <EnhancedFriendsPanel
-                    friends={friends.filter(f =>
-                      f.originType === 'compagno_classe' || f.originType === 'compagno_istituto'
-                    )}
-                    stats={stats}
-                    actionsRemaining={phaseActionsRemaining ?? 0}
-                    onFriendAction={handleFriendAction}
-                    onRelationInteraction={doInteraction}
-                    girlfriend={null}
-                    onGirlfriendAction={handleGirlfriendAction}
-                    onGirlfriendBreakup={handleGirlfriendBreakup}
-                  />
-                </Suspense>
+                <EnhancedFriendsPanel
+                  friends={friends.filter(f =>
+                    f.originType === 'compagno_classe' || f.originType === 'compagno_istituto'
+                  )}
+                  stats={stats}
+                  actionsRemaining={phaseActionsRemaining ?? 0}
+                  onFriendAction={handleFriendAction}
+                  onRelationInteraction={doInteraction}
+                  girlfriend={null}
+                  onGirlfriendAction={handleGirlfriendAction}
+                  onGirlfriendBreakup={handleGirlfriendBreakup}
+                />
                 <Card className="p-3 border-2 border-accent bg-card">
                   <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
                     <Chats size={28} weight="fill" />
