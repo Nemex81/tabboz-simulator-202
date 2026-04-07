@@ -28,12 +28,15 @@ import { GameDialogs } from '@/components/GameDialogs'
 const FriendsPanel = lazy(() => import('@/components/FriendsPanel').then(m => ({ default: m.FriendsPanel })))
 const EnhancedFriendsPanel = lazy(() => import('@/components/EnhancedFriendsPanel').then(m => ({ default: m.EnhancedFriendsPanel })))
 // const GirlfriendPanel = lazy(() => import('@/components/GirlfriendPanel').then(m => ({ default: m.GirlfriendPanel })))
+const RelationsPanel = lazy(() => import('@/components/RelationsPanel').then(m => ({ default: m.RelationsPanel })))
 const RelationshipsPanel = lazy(() => import('@/components/RelationshipsPanel').then(m => ({ default: m.RelationshipsPanel })))
 const ExamsPanel = lazy(() => import('@/components/ExamsPanel').then(m => ({ default: m.ExamsPanel })))
 // Dashboard lazy (tab nascosto all'avvio)
 const StatsDashboard = lazy(() => import('@/components/StatsDashboard').then(m => ({ default: m.StatsDashboard })))
 // SchoolMorningPanel lazy (solo mattina feriale scolastica)
 const SchoolMorningPanel = lazy(() => import('@/components/SchoolMorningPanel').then(m => ({ default: m.SchoolMorningPanel })))
+// AfternoonEventPanel lazy (pomeriggio/sera)
+const AfternoonEventPanel = lazy(() => import('@/components/AfternoonEventPanel').then(m => ({ default: m.AfternoonEventPanel })))
 import { SchoolSelection } from '@/components/SchoolSelection'
 import { CityPanel } from '@/components/CityPanel'
 import { CharacterSheet } from '@/components/CharacterSheet'
@@ -297,7 +300,8 @@ function App() {
     handlePoliceScappa, handlePoliceCollabora,
     handleStreetRaceAccetta, handleStreetRaceRifiuta,
     handleBulliResisti, handleBulliCedi,
-    handleProvarciConAtipa, handleAtipaRinuncia, handleAtipaProva
+    handleProvarciConAtipa, handleAtipaRinuncia, handleAtipaProva,
+    afternoonEvent, handleAfternoonChoice,
   } = events
 
   // Destructure game actions per compatibilità con JSX esistente
@@ -1154,6 +1158,15 @@ function App() {
                   </Suspense>
                 )}
 
+                {afternoonEvent && (currentPhase === 'pomeriggio' || currentPhase === 'sera') && (
+                  <Suspense fallback={null}>
+                    <AfternoonEventPanel
+                      event={afternoonEvent}
+                      onChoice={handleAfternoonChoice}
+                    />
+                  </Suspense>
+                )}
+
                 <Card className="p-6 border-2 border-secondary bg-card">
                   <h3 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
                     <GraduationCap size={32} weight="fill" />
@@ -1299,7 +1312,7 @@ function App() {
 
               <TabsContent value="friends" className="space-y-6 mt-6">
                 <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
-                  <EnhancedFriendsPanel
+                  <RelationsPanel
                     friends={friends}
                     stats={stats}
                     actionsRemaining={phaseActionsRemaining ?? 0}

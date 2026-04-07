@@ -316,7 +316,35 @@ export const SCHOOL_MORNING_EVENTS: SchoolMorningEvent[] = [
       },
     ],
   },
-]
+  // ── EVENTO: COMPAGNO ISTITUTO (unico canale per originType 'compagno_istituto') ──
+
+  {
+    id: 'sm_compagno_istituto',
+    category: 'sociale',
+    title: 'Incontro alla mensa scolastica',
+    description: 'Durante la pausa pranzo incontri uno studente di un\'altra classe. Sembra simpatico.',
+    probability: 8,
+    choices: [
+      {
+        label: 'Ti presenti e attacchi bottone',
+        outcome: (s) => {
+          const newFriend = generateSchoolFriend('compagno_istituto')
+          return {
+            delta: { carisma: 2 },
+            message: `Hai conosciuto ${newFriend.name}! Un nuovo compagno di istituto! +2 Carisma`,
+            newFriend,
+          }
+        },
+      },
+      {
+        label: 'Mangi per conto tuo',
+        outcome: () => ({
+          delta: {},
+          message: 'Pranzo tranquillo, niente di nuovo.',
+        }),
+      },
+    ],
+  },]
 
 /**
  * Seleziona casualmente fino a `maxEvents` eventi per la mattina scolastica,

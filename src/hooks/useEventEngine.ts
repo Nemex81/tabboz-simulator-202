@@ -10,6 +10,7 @@ import {
 import { generateRandomFriend, generateRandomRelationship } from '@/lib/social-system'
 import { getFriendGenChance, LOCATION_PROB_BONUS } from '@/lib/relation-system'
 import { playSound } from '@/lib/sound-effects'
+import { getAfternoonEvent, AfternoonLocation, AfternoonEvent } from '@/lib/afternoon-events'
 
 interface UseEventEngineParams {
   stats: GameStats
@@ -60,6 +61,7 @@ export function useEventEngine({
   const [showBulliEvent, setShowBulliEvent] = useState(false)
   const [raceWinChance, setRaceWinChance] = useState(0)
   const [currentEvent, setCurrentEvent] = useState('')
+  const [afternoonEvent, setAfternoonEvent] = useState<AfternoonEvent | null>(null)
 
   // Refs per accesso stabile ai valori correnti negli useCallback
   const statsRef = useRef(stats)
@@ -84,6 +86,17 @@ export function useEventEngine({
   currentPhaseRef.current = currentPhase
 
   const checkForNewFriend = useCallback((location: string) => {
+    // Tentativo evento narrativo pomeridiano/serale (priorità su generazione silenziosa)
+    const phase = currentPhaseRef.current
+    if (phase === 'pomeriggio' || phase === 'sera') {
+      const evt = getAfternoonEvent(location as AfternoonLocation)
+      if (evt) {
+        setAfternoonEvent(evt)
+        return  // evento narrativo trovato — non generare amico silenzioso
+      }
+    }
+
+    // Fallback: generazione silenziosa (codice originale invariato)
     const carismaBonus = Math.floor(statsRef.current.carisma / 10)
     const locationBonus = LOCATION_PROB_BONUS[location] ?? 0
     const rawChance = 15 + carismaBonus + locationBonus
@@ -401,6 +414,59 @@ export function useEventEngine({
     // consumeAction() rimossa — già chiamata in handleProvarciConAtipa
   }, [setStats, announce, addLogEntry])
 
+  const handleAfternoonChoice = useCallback((choiceId: string) => {
+    if (!afternoonEvent) return
+    const choice = afternoonEvent.choices.find(c => c.id === choiceId)
+    if (!choice) return
+
+    const result = choice.outcome(statsRef.current)
+
+    // Applica delta stats
+    if (Object.keys(result.delta).length > 0) {
+      setStats(prev => {
+        const updated = { ...prev }
+        for (const [key, val] of Object.entries(result.delta)) {
+          if (key in updated && typeof val === 'number') {
+            (updated as Record<string, number>)[key] = clampStat(
+              (prev as Record<string, number>)[key] + val
+            )
+          }
+        }
+        return updated
+      })
+    }
+
+    // Aggiungi nuovo amico se generato
+    if (result.newFriend) {
+      setFriends(prev => [...prev, result.newFriend!])
+      playSound.success()
+    }
+
+    // Gestisci rivalitaDelta — applicato a un amico random esistente (ae_festa_litigata)
+    if (result.rivalitaDelta && friendsRef.current.length > 0) {
+      const randomIdx = Math.floor(Math.random() * friendsRef.current.length)
+      setFriends(prev => prev.map((f, i) => {
+        if (i !== randomIdx || !f.rel) return f
+        return {
+          ...f,
+          rel: { ...f.rel, rivalita: Math.min(100, (f.rel.rivalita ?? 0) + result.rivalitaDelta!) }
+        }
+      }))
+    }
+
+    announce(result.message)
+    addLogEntry(
+      'social',
+      afternoonEvent.title,
+      result.message,
+      result.newFriend ? 'positive' : 'neutral',
+      gameTimeRef.current.currentDate,
+      currentPhaseRef.current
+    )
+
+    setAfternoonEvent(null)
+  }, [afternoonEvent, setStats, setFriends, announce, addLogEntry])
+
   return {
     // Dialog state
     showMetallariEvent, setShowMetallariEvent,
@@ -426,6 +492,10 @@ export function useEventEngine({
     handleBulliCedi,
     handleProvarciConAtipa,
     handleAtipaRinuncia,
-    handleAtipaProva
+    handleAtipaProva,
+    // Afternoon events
+    afternoonEvent,
+    setAfternoonEvent,
+    handleAfternoonChoice,
   }
 }

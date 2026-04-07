@@ -24,11 +24,11 @@ export const generateRandomFriend = (location?: string): Friend => {
     intelligenza = Math.floor(Math.random() * 30) + 20
   }
 
-  const originType = location && ['classe', 'corridoio'].includes(location)
-    ? 'compagno_classe' as const
-    : location === 'quartiere'
-    ? 'compagno_istituto' as const
-    : 'extrascolastico' as const
+  const originType: Friend['originType'] =
+    location && ['classe', 'corridoio'].includes(location)
+      ? 'compagno_classe'
+      : 'extrascolastico'
+  // 'compagno_istituto' non si genera mai da location — solo da eventi dedicati
 
   return {
     id: `friend_${Date.now()}_${Math.random()}`,

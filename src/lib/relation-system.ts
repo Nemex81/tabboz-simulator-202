@@ -11,6 +11,7 @@ export interface RelationStats {
   romantico: number  // 0-100 — attrazione, flirt, tensione sentimentale
   amore:     number  // 0-100 — legame profondo (condizionato)
   odio:      number  // 0-100 — risentimento, rivalità, tradimenti accumulati
+  rivalita?: number  // 0-100, default 0 — competizione pubblica/reputazionale, asse indipendente, NON impatta tier
 }
 
 export type RelationTierV2 =
@@ -30,6 +31,7 @@ export interface RelationEffects {
   romantico?: number
   amore?:     number
   odio?:      number
+  rivalita?:  number  // asse rivalità — NON entra nel tier
   statsEffects?: Partial<GameStats>
 }
 
@@ -55,16 +57,16 @@ export interface InteractionDef {
 // ── Costanti ──────────────────────────────────────────────────────────────────
 
 export const DEFAULT_RELATION_STATS: RelationStats = {
-  amicizia: 0, romantico: 0, amore: 0, odio: 0
+  amicizia: 0, romantico: 0, amore: 0, odio: 0, rivalita: 0
 }
 
 export const ORIGIN_INITIAL_STATS: Record<
   'compagno_classe' | 'compagno_istituto' | 'extrascolastico',
   RelationStats
 > = {
-  compagno_classe:    { amicizia: 15, romantico: 0, amore: 0, odio: 0 },
-  compagno_istituto:  { amicizia: 5,  romantico: 0, amore: 0, odio: 0 },
-  extrascolastico:    { amicizia: 10, romantico: 0, amore: 0, odio: 0 },
+  compagno_classe:    { amicizia: 15, romantico: 0, amore: 0, odio: 0, rivalita: 0 },
+  compagno_istituto:  { amicizia: 5,  romantico: 0, amore: 0, odio: 0, rivalita: 0 },
+  extrascolastico:    { amicizia: 10, romantico: 0, amore: 0, odio: 0, rivalita: 0 },
 }
 
 /** Bonus probabilità incontro nuovo amico per location */
@@ -382,6 +384,43 @@ export const INTERACTION_CATALOG: Record<string, InteractionDef> = {
     prereq: { odio: 30 },
     effects: { amicizia: -8, odio: 10 },
   },
+
+  // ── CAT 7 — CONFLITTO (antagoniste) ────────────────────────────────────────
+  litigata_furiosa: {
+    id: 'litigata_furiosa', category: 7, categoryLabel: 'Conflitto',
+    label: 'Litigata furiosa',
+    description: 'Una lite feroce, senza freni.',
+    prereq: { odio: 20 },
+    effects: { amicizia: -15, odio: 12, rivalita: 25 },
+  },
+
+  sfida_pubblica: {
+    id: 'sfida_pubblica', category: 7, categoryLabel: 'Conflitto',
+    label: 'Sfida pubblica',
+    description: 'Lo/la sfidi davanti a tutti — questione di onore.',
+    prereq: { odio: 15 },
+    effects: { amicizia: -8, rivalita: 15, statsEffects: { morale: -10 } },
+    failEffects: { amicizia: -12, rivalita: 20, odio: 5, statsEffects: { reputazione: -5 } },
+    failChance: 40,
+  },
+
+  insulto_diretto: {
+    id: 'insulto_diretto', category: 7, categoryLabel: 'Conflitto',
+    label: 'Insulto diretto',
+    description: 'Parole pesanti, a bruciapelo.',
+    prereq: { odio: 10 },
+    effects: { amicizia: -10, odio: 15, rivalita: 20 },
+  },
+
+  sgarro_reputazione: {
+    id: 'sgarro_reputazione', category: 7, categoryLabel: 'Conflitto',
+    label: 'Sgarro alla reputazione',
+    description: 'Spargi voci e gli/le rovini la reputazione.',
+    prereq: { odio: 25 },
+    effects: { amicizia: -20, odio: 20, rivalita: 30, statsEffects: { reputazione: 5 } },
+    failEffects: { amicizia: -10, odio: 25, rivalita: 15, statsEffects: { reputazione: -10 } },
+    failChance: 35,
+  },
 }
 
 // ── Funzioni core ─────────────────────────────────────────────────────────────
@@ -393,6 +432,7 @@ export function clampRel(rel: RelationStats): RelationStats {
     romantico: Math.max(0, Math.min(100, Math.round(rel.romantico))),
     amore:     Math.max(0, Math.min(100, Math.round(rel.amore))),
     odio:      Math.max(0, Math.min(100, Math.round(rel.odio))),
+    rivalita:  Math.max(0, Math.min(100, Math.round(rel.rivalita ?? 0))),
   }
 }
 
@@ -430,6 +470,25 @@ export function getRelationTierV2Label(tier: RelationTierV2): string {
   return labels[tier]
 }
 
+// ── Rivalry tier (asse indipendente) ─────────────────────────────────────────
+
+export type RivalryTier = 'neutro' | 'rivale' | 'nemico_giurato'
+
+export function getRivalryTier(rivalita: number): RivalryTier {
+  if (rivalita >= 70) return 'nemico_giurato'
+  if (rivalita >= 30) return 'rivale'
+  return 'neutro'
+}
+
+export function getRivalryTierLabel(tier: RivalryTier): string {
+  const labels: Record<RivalryTier, string> = {
+    neutro:         'Neutro',
+    rivale:         '⚔️ Rivale',
+    nemico_giurato: '💀 Nemico Giurato',
+  }
+  return labels[tier]
+}
+
 /**
  * Getter di compatibilità: restituisce il valore di affinità del Friend
  * sia nel formato legacy (affinita: number) sia nel nuovo (rel.amicizia).
@@ -454,7 +513,13 @@ export function dateToDayIndex(date: GameDate): number {
  * invariato. Altrimenti crea `rel` a partire da `affinita` legacy.
  */
 export function migrateLegacyFriend(f: Friend): Friend {
-  if (f.rel != null) return f
+  if (f.rel != null) {
+    // Assicura che rivalita esista anche in friend migrati in precedenza
+    if (f.rel.rivalita == null) {
+      return { ...f, rel: { ...f.rel, rivalita: 0 } }
+    }
+    return f
+  }
   const affinita = f.affinita ?? 50
   const originType = f.originType ?? 'extrascolastico'
   return {
@@ -465,6 +530,7 @@ export function migrateLegacyFriend(f: Friend): Friend {
       romantico: 0,
       amore:     0,
       odio:      0,
+      rivalita:  0,
     },
   }
 }
@@ -541,6 +607,7 @@ export function applyInteractionEffects(
   if (effectsToApply.romantico != null) newRel.romantico += effectsToApply.romantico
   if (effectsToApply.amore     != null) newRel.amore     += effectsToApply.amore
   if (effectsToApply.odio      != null) newRel.odio      += effectsToApply.odio
+  if (effectsToApply.rivalita  != null) newRel.rivalita   = (newRel.rivalita ?? 0) + effectsToApply.rivalita
 
   // Applica effetti su GameStats
   if (effectsToApply.statsEffects) {
@@ -636,7 +703,8 @@ export function applyDailyErosion(
       rel.amicizia  === f.rel.amicizia &&
       rel.romantico === f.rel.romantico &&
       rel.amore     === f.rel.amore &&
-      rel.odio      === f.rel.odio
+      rel.odio      === f.rel.odio &&
+      (rel.rivalita ?? 0) === (f.rel.rivalita ?? 0)
     ) {
       return f
     }
@@ -653,6 +721,7 @@ function _describeRelEffects(effects: RelationEffects): string {
   if (effects.romantico != null) parts.push(`Romantico ${effects.romantico > 0 ? '+' : ''}${effects.romantico}`)
   if (effects.amore     != null) parts.push(`Amore ${effects.amore     > 0 ? '+' : ''}${effects.amore}`)
   if (effects.odio      != null) parts.push(`Odio ${effects.odio      > 0 ? '+' : ''}${effects.odio}`)
+  if (effects.rivalita  != null) parts.push(`Rivalità ${effects.rivalita > 0 ? '+' : ''}${effects.rivalita}`)
   if (effects.statsEffects) {
     const se = effects.statsEffects
     if (se.soldi      != null) parts.push(`Soldi ${se.soldi      > 0 ? '+' : ''}${se.soldi}€`)
