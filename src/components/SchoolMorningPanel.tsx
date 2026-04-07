@@ -158,7 +158,9 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
       addLogEntry('school', 'Evento scolastico', result.message, logResult, currentDate, 'mattina')
 
       setResolvedIds((prev) => new Set([...prev, eventId]))
-      onSlotComplete?.(slotIndex)
+      // Defer parent KV update to the next tick so React commits the local
+      // resolvedIds change first, preventing removeChild on DOM reconciliation.
+      setTimeout(() => onSlotComplete?.(slotIndex), 0)
     },
     [resolvedIds, stats, onStatChange, onGainExtraAction, announce, onNewFriend, addLogEntry, currentDate, onSlotComplete]
   )
@@ -271,7 +273,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
                   }
                   playSound.buttonClick()
                   announce('Intervallo terminato. Si torna in classe.')
-                  onSlotComplete?.(currentSlotIndex)
+                  setTimeout(() => onSlotComplete?.(currentSlotIndex), 0)
                 }}
                 aria-label="Fine intervallo, torna in classe"
               >
@@ -365,7 +367,9 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
                   }
                   playSound.buttonClick()
                   announce(`Ora ${currentLessonNumber} terminata.`)
-                  onSlotComplete?.(currentSlotIndex)
+                  // Defer to next tick to ensure current DOM commit completes
+                  // before the parent KV state update triggers a re-render.
+                  setTimeout(() => onSlotComplete?.(currentSlotIndex), 0)
                 }}
                 aria-label={`Termina ora ${currentLessonNumber} e vai alla successiva`}
               >

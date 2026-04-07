@@ -1358,7 +1358,9 @@ function App() {
                     {/* SchoolMorningPanel — slot lezione attivo */}
                     {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && schoolRecord.wentToSchoolToday &&
                      _schoolDayStateFromHook?.slots[_schoolDayStateFromHook?.currentSlotIndex]?.type !== 'break' && (
-                      <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
+                      <Suspense
+                        key={`smp-${_schoolDayStateFromHook?.isComplete ? 'done' : 'live'}`}
+                        fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
                         <SchoolMorningPanel
                           context="school"
                           events={schoolMorningEvents}
