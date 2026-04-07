@@ -24,9 +24,10 @@ introducendo:
 | 1a | `isAtSchool` mancante in `SchoolRecord` | CONFERMATO | Campo non esiste, `DEFAULT_SCHOOL_RECORD` non lo contiene |
 | 1b | Pool unico `SCHOOL_MORNING_EVENTS` non filtrato | CONFERMATO | Solo eventi scolastici, marina priva di contenuto |
 | 1c | `handleMarina` non genera eventi | CONFERMATO | Azzera eventi scolastici, nessun pool alternativo |
-| Corr.1 | `marinatoOggi` resta locale (useState) | CORRETTO | `isAtSchool` va su KV via `SchoolRecord`; reset duplicato su KV necessario al cambio giorno |
+| Corr.1 | Tipo categoria eventi mattutini | CORRETTO | Tipo unificato in `src/lib/types.ts` come `MorningEventCategory`, non in file school-specific |
 | Corr.2 | `useAppDialogs` deve ricevere nuovi state per street panel | CORRETTO | Aggiungere `streetMorningEvents`, `showStreetMorning` con setter |
 | Corr.3 | Guard render StreetMorningPanel usa `marinatoOggi` | CORRETTO | Non `isAtSchool`, per coerenza con la logica UI esistente in App.tsx |
+| Corr.4 | Reset `isAtSchool` al cambio giorno | CORRETTO | Consolidare in `useGameTime` nello stesso write KV che resetta `wentToSchoolToday` |
 | Passo F | Propagazione `isAtSchool` a `useEventEngine` | OPZIONALE MVP | `useEventEngine` non riceve `SchoolRecord` oggi; rimandato alla fase 2 |
 
 ---
@@ -64,10 +65,15 @@ App.tsx — render
 **File:** `src/lib/types.ts`
 **Modifiche:**
 
-1. Aggiungere `isAtSchool: boolean` all'interfaccia `SchoolRecord` dopo `wentToSchoolToday`.
-2. Aggiungere `isAtSchool: false` a `DEFAULT_SCHOOL_RECORD`.
+1. Aggiungere il tipo condiviso `MorningEventCategory` con valori unificati school+street.
+2. Aggiungere `isAtSchool: boolean` all'interfaccia `SchoolRecord` dopo `wentToSchoolToday`.
+3. Aggiungere `isAtSchool: false` a `DEFAULT_SCHOOL_RECORD`.
 
 ```typescript
+export type MorningEventCategory =
+  | 'didattica' | 'sociale' | 'istituto'
+  | 'strada' | 'casa' | 'citta' | 'amici'
+
 // Modifica interfaccia SchoolRecord
 export interface SchoolRecord {
   assenze: number
@@ -101,6 +107,13 @@ automaticamente il valore `false` per i record KV esistenti (backward-compatible
 **Struttura:** identica a `school-morning-events.ts` — stessa interfaccia `SchoolMorningEvent`,
 stessa firma `drawStreetMorningEvents(maxEvents: number): SchoolMorningEvent[]`.
 
+**Correzione tipo categorie (Nota 1, Opzione B):**
+
+- In `src/lib/school-morning-events.ts` rimuovere la definizione locale `SchoolMorningCategory`.
+- Importare `MorningEventCategory` da `@/lib/types` e usarlo in `SchoolMorningEvent.category`.
+- In `src/lib/street-morning-events.ts` importare `MorningEventCategory` da `@/lib/types`.
+- Non definire tipi categoria locali nei moduli evento.
+
 **Categorie e ID evento (minimo 10 eventi):**
 
 | ID | Categoria | Titolo | Prob |
@@ -116,18 +129,18 @@ stessa firma `drawStreetMorningEvents(maxEvents: number): SchoolMorningEvent[]`.
 | `st_genitori_ti_beccano` | `casa` | I genitori ti beccano a casa | 20 |
 | `st_passeggiata_solitaria` | `strada` | Giro da solo — momento di pace | 35 |
 
-**Nota sulla categoria:** La proprietà `category` di `SchoolMorningEvent` è attualmente
-tipata come `'didattica' | 'sociale' | 'istituto'`. Per mantenere retrocompatibilità con
-`SchoolMorningPanel` e le sue `categoryLabel`/`categoryColor`, estendere il tipo:
-
 ```typescript
-// In school-morning-events.ts — estendere (o esportare per riuso):
-export type SchoolMorningCategory =
-  | 'didattica' | 'sociale' | 'istituto'   // scolastico
-  | 'strada' | 'casa' | 'citta' | 'amici'  // fuori scuola
+// school-morning-events.ts
+import { GameStats, Friend, MorningEventCategory } from '@/lib/types'
 
-// aggiornare anche categoryLabel/categoryColor in SchoolMorningPanel
-// per coprire le nuove categorie
+export interface SchoolMorningEvent {
+  id: string
+  category: MorningEventCategory
+  // ...
+}
+
+// street-morning-events.ts
+import { GameStats, MorningEventCategory } from '@/lib/types'
 ```
 
 **Funzione draw:**
@@ -235,25 +248,36 @@ const handleMarina = () => {
 
 ---
 
+### Passo H-bis — `src/hooks/useGameTime.ts` — reset KV consolidato
+
+**Correzione race condition (Nota 2, Opzione B):** consolidare il reset giornaliero
+di `isAtSchool` nello stesso write KV che già resetta `wentToSchoolToday`.
+
+```typescript
+setSchoolRecord((current): SchoolRecord => ({
+  ...(current ?? DEFAULT_SCHOOL_RECORD),
+  wentToSchoolToday: false,
+  isAtSchool: false, // stesso write KV, nessuna race
+}))
+```
+
+---
+
 ### Passo H — `src/App.tsx` — Reset cambio giorno
 
 **Localizzare:** useEffect che resetta `marinatoOggi` al cambio di giorno (linea ~440).
-**Aggiungere** reset di `isAtSchool` e chiusura pannello strada:
+**Aggiungere** solo reset locali UI per pannello strada:
 
 ```typescript
 useEffect(() => {
   setMarinatoOggi(false)
   setShowStreetMorning(false)          // ← NUOVO
   setStreetMorningEvents([])           // ← NUOVO
-  setSchoolRecord((current): SchoolRecord => ({
-    ...(current ?? DEFAULT_SCHOOL_RECORD),
-    isAtSchool: false                  // ← NUOVO
-  }))
 }, [gameTime.currentDate.day, gameTime.currentDate.month, gameTime.currentDate.year])
 ```
 
-**NOTA:** Il reset di `wentToSchoolToday` avviene già in `useGameTime` —
-il reset di `isAtSchool` in questo useEffect è coerente (stesso trigger).
+**NOTA:** Il reset `isAtSchool=false` avviene in `useGameTime` nello stesso write KV
+di `wentToSchoolToday=false`, evitando doppie scritture concorrenti da `App.tsx`.
 
 ---
 
@@ -282,7 +306,7 @@ useEffect(() => {
 
 ```typescript
 // Nuove label per categorie strada
-const categoryLabel: Record<SchoolMorningEvent['category'], string> = {
+const categoryLabel: Record<MorningEventCategory, string> = {
   didattica: '📚 Didattica',
   sociale: '👥 Sociale',
   istituto: '🏫 Istituto',
@@ -292,7 +316,7 @@ const categoryLabel: Record<SchoolMorningEvent['category'], string> = {
   amici: '👫 Amici',
 }
 
-const categoryColor: Record<SchoolMorningEvent['category'], string> = {
+const categoryColor: Record<MorningEventCategory, string> = {
   didattica: 'bg-blue-100 text-blue-800',
   sociale: 'bg-green-100 text-green-800',
   istituto: 'bg-orange-100 text-orange-800',
@@ -366,6 +390,7 @@ C  useAppDialogs.ts      — nuovi state (dipende da school-morning-events.ts pe
 D-E App.tsx imports/destructuring
 F  App.tsx handleVaiAScuola
 G  App.tsx handleMarina
+H-bis useGameTime.ts reset giornaliero KV (`wentToSchoolToday` + `isAtSchool`)
 H  App.tsx reset cambio giorno
 I  App.tsx reset cambio fase
 L  SchoolMorningPanel.tsx context prop
@@ -394,8 +419,9 @@ N  useEventEngine.ts (fase 2)
 |---|---|
 | `src/lib/types.ts` | Modifica (`isAtSchool` in `SchoolRecord` + `DEFAULT_SCHOOL_RECORD`) |
 | `src/lib/street-morning-events.ts` | Creazione (nuovo) |
-| `src/lib/school-morning-events.ts` | Modifica (`SchoolMorningCategory` esteso) |
+| `src/lib/school-morning-events.ts` | Modifica (rimuove tipo locale categoria, importa `MorningEventCategory`) |
 | `src/hooks/useAppDialogs.ts` | Modifica (2 nuovi state pair) |
+| `src/hooks/useGameTime.ts` | Modifica (reset consolidato `wentToSchoolToday=false` + `isAtSchool=false` in un solo write KV) |
 | `src/App.tsx` | Modifica (import, destructuring, handleVaiAScuola, handleMarina, 2 useEffect, render JSX) |
 | `src/components/SchoolMorningPanel.tsx` | Modifica (prop `context`, nuove categorie) |
 | `src/hooks/useEventEngine.ts` | Modifica opzionale fase 2 |
@@ -412,9 +438,10 @@ N  useEventEngine.ts (fase 2)
 | D-E | 4 | Basso |
 | F | 1 | Basso |
 | G | 8 | Basso |
+| H-bis | 1-2 | Basso |
 | H | 5 | Basso |
 | I | 2 | Basso |
 | L | ~30 | Basso |
 | M | ~15 | Basso |
 
-**Totale stimato:** ~280 righe, nessun rischio architetturale alto.
+**Totale stimato:** ~282 righe, nessun rischio architetturale alto.
