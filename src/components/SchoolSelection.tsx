@@ -8,9 +8,11 @@ import { GraduationCap, Tractor, PaintBrush, User, GenderMale, GenderFemale, Pal
 
 interface SchoolSelectionProps {
   onSelectSchool: (schoolType: SchoolType, profile: PlayerProfile, theme: ThemeVariant) => void
+  /** Chiamata subito dopo onSelectSchool con solo lo schoolType, per trigger initSchoolYear in App.tsx */
+  onSchoolSelected?: (schoolType: SchoolType) => void
 }
 
-export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
+export function SchoolSelection({ onSelectSchool, onSchoolSelected }: SchoolSelectionProps) {
   const [step, setStep] = useState<'profile' | 'school'>('profile')
   const [playerName, setPlayerName] = useState('')
   const [playerGender, setPlayerGender] = useState<'maschio' | 'femmina' | null>(null)
@@ -37,6 +39,7 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
         traits: []
       }
       onSelectSchool(schoolType, profile, selectedTheme)
+      onSchoolSelected?.(schoolType)
     }
   }
 

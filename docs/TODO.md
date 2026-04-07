@@ -51,13 +51,13 @@
 - [x] `isOstile`: derivato da `relazione < sogliaRottura`
 - [x] `npx tsc --noEmit` zero errori
 
-### [~] Fase 1F — Hook `useSchoolSystem` e Init Partita
+### [x] Fase 1F — Hook `useSchoolSystem` e Init Partita
 
 - [x] Creare `src/hooks/useSchoolSystem.ts`
 - [x] 4 chiavi KV: `tabboz-weekly-timetable`, `tabboz-class-roster`, `tabboz-teachers`, `tabboz-school-day-state`
 - [x] Esporre: teachers, classRoster, timetable, schoolDayState + setter + helper
-- [ ] Integrare in `App.tsx`: istanziare hook, passare a componenti
-- [ ] Trigger generazione in `SchoolSelection.tsx` alla scelta scuola
+- [x] Integrare in `App.tsx`: istanziare hook, passare a componenti
+- [x] Trigger generazione in `SchoolSelection.tsx` alla scelta scuola
 - [x] Backward compatibility: partite esistenti senza strutture continuano a funzionare
 - [x] `npx tsc --noEmit` zero errori
 

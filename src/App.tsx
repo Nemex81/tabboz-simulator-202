@@ -35,6 +35,16 @@ const StatsDashboard = lazy(() => import('@/components/StatsDashboard').then(m =
 const SchoolMorningPanel = lazy(() => import('@/components/SchoolMorningPanel').then(m => ({ default: m.SchoolMorningPanel })))
 // AfternoonEventPanel lazy (pomeriggio/sera)
 const AfternoonEventPanel = lazy(() => import('@/components/AfternoonEventPanel').then(m => ({ default: m.AfternoonEventPanel })))
+// Nuovi pannelli scolastici (Blocco 4 — caricati in lazy)
+const SchoolHomePanel = lazy(() =>
+  import('@/components/SchoolHomePanel').then(m => ({ default: m.SchoolHomePanel }))
+)
+const TeachersPanel = lazy(() =>
+  import('@/components/TeachersPanel').then(m => ({ default: m.TeachersPanel }))
+)
+const SchoolBreakPanel = lazy(() =>
+  import('@/components/SchoolBreakPanel').then(m => ({ default: m.SchoolBreakPanel }))
+)
 import { SchoolSelection } from '@/components/SchoolSelection'
 import { CityPanel } from '@/components/CityPanel'
 import { CharacterSheet } from '@/components/CharacterSheet'
@@ -96,6 +106,7 @@ import { useGameRelations } from '@/hooks/useGameRelations'
 import { useSchoolSystem } from '@/hooks/useSchoolSystem'
 import { generateSchoolDaySlots } from '@/lib/school-day-engine'
 import { applyYearTransition } from '@/lib/school-roster-transitions'
+import { promoteToFriend } from '@/lib/classmate-relations'
 import type { SchoolDayState } from '@/lib/types'
 import {
   generateScheduledExam,
@@ -173,6 +184,8 @@ function App() {
   // F6: stato locale per mutua esclusività Vai a Scuola / Marina (si resetta al cambio giorno)
   const [marinatoOggi, setMarinatoOggi] = useState(false)
   const [morningChoicePending, setMorningChoicePending] = useState(false)
+  // Blocco 4 — navigazione sotto-pannelli scolastici
+  const [schoolSubPanel, setSchoolSubPanel] = useState<'home' | 'teachers' | 'break'>('home')
 
   const announce = useCallback((message: string) => {
     if (ariaLiveRef.current) {
@@ -356,9 +369,27 @@ function App() {
     schoolDayState: _schoolDayStateFromHook,
     setSchoolDayState,
     getTodaySchedule,
+    initSchoolYear,
   } = useSchoolSystem()
 
   const handleRiposa = () => actions.handleRiposa()
+
+  // Blocco 4 \u2014 Promozione compagno ad amico dall'elenco classe
+  const handlePromoteToFriend = useCallback((classmateId: string) => {
+    const classmate = (classRoster ?? []).find(c => c.id === classmateId)
+    if (!classmate) return
+    try {
+      const newFriend = promoteToFriend(classmate, gameTime.schoolYear.currentYear)
+      setRawFriends(prev => [...(prev ?? []), newFriend])
+      setClassRoster(prev => (prev ?? []).map(c =>
+        c.id === classmateId ? { ...c, promotedToFriend: true } : c
+      ))
+      playSound.success()
+      announce(`🎉 ${classmate.name} è ora un tuo amico!`)
+    } catch {
+      announce(`Non puoi ancora aggiungere ${classmate.name} agli amici (relazione insufficiente).`)
+    }
+  }, [classRoster, gameTime.schoolYear.currentYear, setRawFriends, setClassRoster, announce])
 
   const handleOpenCorrompiDialog = () => {
     if ((phaseActionsRemaining ?? 0) <= 0) {
@@ -795,7 +826,12 @@ function App() {
   })
 
   if (!schoolType) {
-    return <SchoolSelection onSelectSchool={handleSchoolSelection} />
+    return (
+      <SchoolSelection
+        onSelectSchool={handleSchoolSelection}
+        onSchoolSelected={(st) => initSchoolYear(st, gameTime.schoolYear.currentYear)}
+      />
+    )
   }
 
   const currentMedia = calculateWeightedMedia(grades, schoolType)
@@ -1135,212 +1171,247 @@ function App() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="home" className="space-y-6 mt-6">
-                {/* ── Sommario scolastico ── */}
-                <Card className="p-4 border-2 border-secondary bg-card">
-                  <h3 className="text-lg font-bold text-secondary mb-3 flex items-center gap-2">
-                    <GraduationCap size={20} weight="fill" aria-hidden="true" />
-                    SITUAZIONE SCOLASTICA
-                  </h3>
-                  <dl className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <dt className="text-muted-foreground">Media voti</dt>
-                      <dd className={`text-2xl font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-secondary'}`}>
-                        {currentMedia.toFixed(1)}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Condotta</dt>
-                      <dd className={`text-2xl font-bold ${schoolRecord.condotta < 6 ? 'text-destructive' : 'text-primary'}`}>
-                        {schoolRecord.condotta.toFixed(1)}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Assenze</dt>
-                      <dd className={`text-2xl font-bold ${schoolRecord.assenze >= 25 ? 'text-destructive' : 'text-foreground'}`}>
-                        {schoolRecord.assenze}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Note disciplinari</dt>
-                      <dd className="text-2xl font-bold text-foreground">{schoolRecord.note}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Compagni di classe</dt>
-                      <dd className="text-2xl font-bold text-accent">
-                        {friends.filter(f => f.originType === 'compagno_classe').length}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">Anno scolastico</dt>
-                      <dd className="text-2xl font-bold text-foreground">{gameTime.schoolYear.currentYear}°</dd>
-                    </div>
-                  </dl>
-                </Card>
-
-                {/* Messaggio contestuale */}
-                {(() => {
-                  if (schoolRecord.assenze >= 20) return (
-                    <Card className="p-3 border border-destructive bg-destructive/5">
-                      <p className="text-sm text-destructive font-medium">⚠️ Attenzione: stai accumulando troppe assenze.</p>
-                    </Card>
-                  )
-                  if (currentMedia < 6) return (
-                    <Card className="p-3 border border-destructive bg-destructive/5">
-                      <p className="text-sm text-destructive font-medium">⚠️ La tua media è insufficiente. Studia di più!</p>
-                    </Card>
-                  )
-                  if (currentMedia >= 8) return (
-                    <Card className="p-3 border border-secondary bg-secondary/5">
-                      <p className="text-sm text-secondary font-medium">⭐ Ottima media! Continua così.</p>
-                    </Card>
-                  )
-                  return (
-                    <Card className="p-3 border border-muted bg-muted/20">
-                      <p className="text-sm text-muted-foreground">📚 Settimana nella norma. Niente di urgente.</p>
-                    </Card>
-                  )
-                })()}
-
-                {/* Azioni scuola — solo mattina feriale nel periodo scolastico */}
-                {currentPhase === 'mattina' && dayType === 'feriale' && gameTime.schoolYear.isSchoolPeriod && (
-                <>
-                <Card className="p-3 border-2 border-primary bg-card">
-                  <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
-                    <GraduationCap size={24} weight="fill" />
-                    VAI A SCUOLA
-                  </h3>
-                  <ActionButton
-                    icon={<GraduationCap size={48} />}
-                    label="Vai a Scuola"
-                    onClick={handleVaiAScuola}
-                    disabled={
-                      phaseActionsLeft <= 0 ||
-                      dayType !== 'feriale' ||
-                      currentPhase !== 'mattina' ||
-                      !gameTime.schoolYear.isSchoolPeriod ||
-                      marinatoOggi
-                    }
-                    blockedReason={
-                      marinatoOggi
-                        ? 'Hai già marinato stamattina'
-                        : phaseActionsLeft <= 0 
-                          ? 'Nessuna azione per questa fascia oraria' 
-                          : dayType !== 'feriale' 
-                            ? 'Disponibile solo nei giorni feriali' 
-                            : currentPhase !== 'mattina'
-                              ? 'Disponibile solo la mattina'
-                              : 'Non è periodo scolastico'
-                    }
-                    variant="default"
-                    ariaLabel="Vai a scuola durante la mattina dei giorni feriali. +2 Intelligenza, +10 Stanchezza."
-                    helpText="Frequenta le lezioni a scuola. Disponibile solo la mattina dei giorni feriali durante il periodo scolastico. +2 Intelligenza, +10 Stanchezza."
-                    announce={announce}
-                  />
-                  <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-                    <p className="font-semibold mb-1">Effetti:</p>
-                    <p>• +2 Intelligenza</p>
-                    <p>• +10 Stanchezza</p>
-                    <p className="mt-2 text-primary font-semibold">📅 Disponibile: Mattina dei giorni feriali (periodo scolastico)</p>
+              <TabsContent value="home" className="space-y-4 mt-6">
+                {/* ── Pannello Professori ── */}
+                {schoolSubPanel === 'teachers' && (
+                  <div className="space-y-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSchoolSubPanel('home')}
+                      aria-label="Torna alla home scolastica"
+                      className="flex items-center gap-1"
+                    >
+                      ← Scuola
+                    </Button>
+                    <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Caricamento professori...</div>}>
+                      <TeachersPanel
+                        teachers={teachers ?? []}
+                        currentDate={gameTime.currentDate}
+                        onTeacherChange={(updater) => setTeachers(prev => updater(prev ?? []))}
+                        stats={stats}
+                        announce={announce}
+                        onConsumeAction={consumeAction}
+                        actionsRemaining={phaseActionsRemaining ?? 0}
+                      />
+                    </Suspense>
                   </div>
-                </Card>
+                )}
 
-                {/* F6: Pulsante Marina — nascosto se già andato a scuola o già marinato */}
-                {!schoolRecord.wentToSchoolToday && !marinatoOggi && (
-                <Card className="p-3 border-2 border-destructive bg-card">
-                  <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
-                    <GraduationCap size={24} weight="fill" />
-                    MARINA LA SCUOLA
-                  </h3>
-                  <ActionButton
-                    icon={<GraduationCap size={48} />}
-                    label="Marina!"
-                    onClick={handleMarina}
-                    disabled={
-                      phaseActionsLeft <= 0 ||
-                      dayType !== 'feriale' ||
-                      currentPhase !== 'mattina' ||
-                      !gameTime.schoolYear.isSchoolPeriod
-                    }
-                    blockedReason={
-                      phaseActionsLeft <= 0
-                        ? 'Nessuna azione per questa fascia oraria'
-                        : dayType !== 'feriale'
-                          ? 'Disponibile solo nei giorni feriali'
-                          : currentPhase !== 'mattina'
-                            ? 'Disponibile solo la mattina'
-                            : 'Non è periodo scolastico'
-                    }
-                    variant="destructive"
-                    ariaLabel="Marina la scuola. +1 Assenza conta per le soglie bocciatura, +5 Coattaggine, 1 azione extra."
-                    helpText="Non vai a scuola. Guadagni 1 azione extra ma accumuli 1 Assenza che conta verso le soglie 15/25/35. Oltre 35 assenze sei bocciato automaticamente!"
-                    announce={announce}
-                  />
-                  <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-                    <p className="font-semibold mb-1">Effetti:</p>
-                    <p>• +1 Assenza (conta verso le soglie 15 / 25 / 35)</p>
-                    <p>• +5 Coattaggine</p>
-                    <p>• +1 Azione extra</p>
-                    <p className="mt-2 text-destructive font-semibold">⚠️ Oltre 35 assenze = BOCCIATO automaticamente!</p>
+                {/* ── Vista home (SchoolHomePanel + azioni mattina) ── */}
+                {schoolSubPanel === 'home' && (
+                  <div className="space-y-4">
+                    {/* SchoolHomePanel — riepilogo avanzato */}
+                    <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Caricamento home...</div>}>
+                      <SchoolHomePanel
+                        schoolType={schoolType}
+                        schoolYear={gameTime.schoolYear.currentYear}
+                        schoolRecord={schoolRecord}
+                        timetable={timetable ?? null}
+                        schoolDayState={_schoolDayStateFromHook ?? null}
+                        teachers={teachers ?? []}
+                        classRoster={classRoster ?? []}
+                        currentDate={gameTime.currentDate}
+                        onGoToTeachers={() => setSchoolSubPanel('teachers')}
+                        onGoToClassmates={() => setSchoolSubPanel('home')}
+                        onPromoteToFriend={handlePromoteToFriend}
+                      />
+                    </Suspense>
+
+                    {/* Messaggio contestuale */}
+                    {(() => {
+                      if (schoolRecord.assenze >= 20) return (
+                        <Card className="p-3 border border-destructive bg-destructive/5">
+                          <p className="text-sm text-destructive font-medium">⚠️ Attenzione: stai accumulando troppe assenze.</p>
+                        </Card>
+                      )
+                      if (currentMedia < 6) return (
+                        <Card className="p-3 border border-destructive bg-destructive/5">
+                          <p className="text-sm text-destructive font-medium">⚠️ La tua media è insufficiente. Studia di più!</p>
+                        </Card>
+                      )
+                      if (currentMedia >= 8) return (
+                        <Card className="p-3 border border-secondary bg-secondary/5">
+                          <p className="text-sm text-secondary font-medium">⭐ Ottima media! Continua così.</p>
+                        </Card>
+                      )
+                      return (
+                        <Card className="p-3 border border-muted bg-muted/20">
+                          <p className="text-sm text-muted-foreground">📚 Settimana nella norma. Niente di urgente.</p>
+                        </Card>
+                      )
+                    })()}
+
+                    {/* Azioni scuola — solo mattina feriale nel periodo scolastico */}
+                    {currentPhase === 'mattina' && dayType === 'feriale' && gameTime.schoolYear.isSchoolPeriod && (
+                    <>
+                    <Card className="p-3 border-2 border-primary bg-card">
+                      <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+                        <GraduationCap size={24} weight="fill" />
+                        VAI A SCUOLA
+                      </h3>
+                      <ActionButton
+                        icon={<GraduationCap size={48} />}
+                        label="Vai a Scuola"
+                        onClick={handleVaiAScuola}
+                        disabled={
+                          phaseActionsLeft <= 0 ||
+                          dayType !== 'feriale' ||
+                          currentPhase !== 'mattina' ||
+                          !gameTime.schoolYear.isSchoolPeriod ||
+                          marinatoOggi
+                        }
+                        blockedReason={
+                          marinatoOggi
+                            ? 'Hai già marinato stamattina'
+                            : phaseActionsLeft <= 0
+                              ? 'Nessuna azione per questa fascia oraria'
+                              : dayType !== 'feriale'
+                                ? 'Disponibile solo nei giorni feriali'
+                                : currentPhase !== 'mattina'
+                                  ? 'Disponibile solo la mattina'
+                                  : 'Non è periodo scolastico'
+                        }
+                        variant="default"
+                        ariaLabel="Vai a scuola durante la mattina dei giorni feriali. +2 Intelligenza, +10 Stanchezza."
+                        helpText="Frequenta le lezioni a scuola. Disponibile solo la mattina dei giorni feriali durante il periodo scolastico. +2 Intelligenza, +10 Stanchezza."
+                        announce={announce}
+                      />
+                      <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
+                        <p className="font-semibold mb-1">Effetti:</p>
+                        <p>• +2 Intelligenza</p>
+                        <p>• +10 Stanchezza</p>
+                        <p className="mt-2 text-primary font-semibold">📅 Disponibile: Mattina dei giorni feriali (periodo scolastico)</p>
+                      </div>
+                    </Card>
+
+                    {/* F6: Pulsante Marina — nascosto se già andato a scuola o già marinato */}
+                    {!schoolRecord.wentToSchoolToday && !marinatoOggi && (
+                    <Card className="p-3 border-2 border-destructive bg-card">
+                      <h3 className="text-xl font-bold mb-4 text-destructive flex items-center gap-2">
+                        <GraduationCap size={24} weight="fill" />
+                        MARINA LA SCUOLA
+                      </h3>
+                      <ActionButton
+                        icon={<GraduationCap size={48} />}
+                        label="Marina!"
+                        onClick={handleMarina}
+                        disabled={
+                          phaseActionsLeft <= 0 ||
+                          dayType !== 'feriale' ||
+                          currentPhase !== 'mattina' ||
+                          !gameTime.schoolYear.isSchoolPeriod
+                        }
+                        blockedReason={
+                          phaseActionsLeft <= 0
+                            ? 'Nessuna azione per questa fascia oraria'
+                            : dayType !== 'feriale'
+                              ? 'Disponibile solo nei giorni feriali'
+                              : currentPhase !== 'mattina'
+                                ? 'Disponibile solo la mattina'
+                                : 'Non è periodo scolastico'
+                        }
+                        variant="destructive"
+                        ariaLabel="Marina la scuola. +1 Assenza conta per le soglie bocciatura, +5 Coattaggine, 1 azione extra."
+                        helpText="Non vai a scuola. Guadagni 1 azione extra ma accumuli 1 Assenza che conta verso le soglie 15/25/35. Oltre 35 assenze sei bocciato automaticamente!"
+                        announce={announce}
+                      />
+                      <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
+                        <p className="font-semibold mb-1">Effetti:</p>
+                        <p>• +1 Assenza (conta verso le soglie 15 / 25 / 35)</p>
+                        <p>• +5 Coattaggine</p>
+                        <p>• +1 Azione extra</p>
+                        <p className="mt-2 text-destructive font-semibold">⚠️ Oltre 35 assenze = BOCCIATO automaticamente!</p>
+                      </div>
+                    </Card>
+                    )}
+                    </>
+                    )}
+
+                    {/* SchoolBreakPanel — slot intervallo attivo */}
+                    {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && schoolRecord.wentToSchoolToday &&
+                     _schoolDayStateFromHook !== undefined &&
+                     _schoolDayStateFromHook.slots[_schoolDayStateFromHook.currentSlotIndex]?.type === 'break' && (
+                      <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento intervallo...</div>}>
+                        <SchoolBreakPanel
+                          schoolDayState={_schoolDayStateFromHook}
+                          teachers={teachers ?? []}
+                          classRoster={classRoster ?? []}
+                          stats={stats}
+                          schoolRecord={schoolRecord}
+                          onStatChange={setStats}
+                          onTeacherChange={(updater) => setTeachers(prev => updater(prev ?? []))}
+                          onClassmateChange={(updater) => setClassRoster(prev => updater(prev ?? []))}
+                          onBreakComplete={() => {
+                            setSchoolDayState((prev) => {
+                              if (!prev) return prev
+                              const next = prev.currentSlotIndex + 1
+                              return { ...prev, currentSlotIndex: next, isComplete: next >= prev.slots.length }
+                            })
+                          }}
+                          announce={announce}
+                          currentDate={gameTime.currentDate}
+                        />
+                      </Suspense>
+                    )}
+
+                    {/* SchoolMorningPanel — slot lezione attivo */}
+                    {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && schoolRecord.wentToSchoolToday &&
+                     _schoolDayStateFromHook?.slots[_schoolDayStateFromHook?.currentSlotIndex]?.type !== 'break' && (
+                      <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
+                        <SchoolMorningPanel
+                          context="school"
+                          events={schoolMorningEvents}
+                          stats={stats}
+                          onStatChange={setStats}
+                          onGainExtraAction={gainExtraAction}
+                          onConsumeAction={consumeAction}
+                          announce={announce}
+                          onNewFriend={(f) => setFriends((current) => [...current, f])}
+                          addLogEntry={addLogEntry}
+                          currentDate={gameTime.currentDate}
+                          schoolDayState={_schoolDayStateFromHook ?? undefined}
+                          onSlotComplete={(idx) => {
+                            setSchoolDayState((prev) => {
+                              if (!prev) return prev
+                              const next = idx + 1
+                              return {
+                                ...prev,
+                                currentSlotIndex: next,
+                                isComplete: next >= prev.slots.length,
+                              }
+                            })
+                          }}
+                        />
+                      </Suspense>
+                    )}
+
+                    {showStreetMorning && dayType === 'feriale' && currentPhase === 'mattina' && marinatoOggi && (
+                      <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina per strada...</div>}>
+                        <SchoolMorningPanel
+                          context="street"
+                          events={streetMorningEvents}
+                          stats={stats}
+                          onStatChange={setStats}
+                          onGainExtraAction={gainExtraAction}
+                          onConsumeAction={consumeAction}
+                          announce={announce}
+                          onNewFriend={(f) => setFriends((current) => [...current, f])}
+                          addLogEntry={addLogEntry}
+                          currentDate={gameTime.currentDate}
+                        />
+                      </Suspense>
+                    )}
+
+                    {afternoonEvent && (currentPhase === 'pomeriggio' || currentPhase === 'sera') && (
+                      <Suspense fallback={null}>
+                        <AfternoonEventPanel
+                          event={afternoonEvent}
+                          onChoice={handleAfternoonChoice}
+                        />
+                      </Suspense>
+                    )}
                   </div>
-                </Card>
-                )}
-                </>
-                )}
-
-                {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && gameTime.schoolYear.isSchoolPeriod && schoolRecord.wentToSchoolToday && (
-                  <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}>
-                    <SchoolMorningPanel
-                      context="school"
-                      events={schoolMorningEvents}
-                      stats={stats}
-                      onStatChange={setStats}
-                      onGainExtraAction={gainExtraAction}
-                      onConsumeAction={consumeAction}
-                      announce={announce}
-                      onNewFriend={(f) => setFriends((current) => [...current, f])}
-                      addLogEntry={addLogEntry}
-                      currentDate={gameTime.currentDate}
-                      schoolDayState={_schoolDayStateFromHook ?? undefined}
-                      onSlotComplete={(idx) => {
-                        setSchoolDayState((prev) => {
-                          if (!prev) return prev
-                          const next = idx + 1
-                          return {
-                            ...prev,
-                            currentSlotIndex: next,
-                            isComplete: next >= prev.slots.length,
-                          }
-                        })
-                      }}
-                    />
-                  </Suspense>
-                )}
-
-                {showStreetMorning && dayType === 'feriale' && currentPhase === 'mattina' && marinatoOggi && (
-                  <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina per strada...</div>}>
-                    <SchoolMorningPanel
-                      context="street"
-                      events={streetMorningEvents}
-                      stats={stats}
-                      onStatChange={setStats}
-                      onGainExtraAction={gainExtraAction}
-                      onConsumeAction={consumeAction}
-                      announce={announce}
-                      onNewFriend={(f) => setFriends((current) => [...current, f])}
-                      addLogEntry={addLogEntry}
-                      currentDate={gameTime.currentDate}
-                    />
-                  </Suspense>
-                )}
-
-                {afternoonEvent && (currentPhase === 'pomeriggio' || currentPhase === 'sera') && (
-                  <Suspense fallback={null}>
-                    <AfternoonEventPanel
-                      event={afternoonEvent}
-                      onChoice={handleAfternoonChoice}
-                    />
-                  </Suspense>
                 )}
               </TabsContent>
 
