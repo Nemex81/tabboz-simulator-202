@@ -45,7 +45,10 @@
 
 - [ ] Creare `src/lib/school-teachers.ts`
 - [ ] Implementare `generateTeachers(schoolType, schoolYear)` — 1 prof per materia
-- [ ] Attributi 1-10, relazione iniziale da simpatia, sogliaRottura da severita
+- [ ] Attributi 1-10 con distribuzione gaussiana centrata su 5
+- [ ] **C9** — Relazione iniziale: `(simpatia * 6 - 20) + Math.round((Math.random() - 0.5) * 16)` applicato una sola volta, persistito in KV (NON ricalcolato)
+- [ ] `sogliaRottura`: `-30 - (severita * 5)`
+- [ ] `isOstile`: derivato da `relazione < sogliaRottura`
 - [ ] `npx tsc --noEmit` zero errori
 
 ### [ ] Fase 1F — Hook `useSchoolSystem` e Init Partita
@@ -87,7 +90,9 @@
 
 ### [ ] Fase 2D — Refactor `handleVaiAScuola`
 
-- [ ] Sostituire draw random con generazione `SchoolDayState` via `generateSchoolDaySlots`
+- [ ] **C10** — Aggiungere `consumeAllMorningActions(): void` in `useGameTime` (imposta `phaseActionsRemaining = 0`) e includerlo nel return hook
+- [ ] Sostituire `drawSchoolMorningEvents(6)` con generazione `SchoolDayState` via `generateSchoolDaySlots`
+- [ ] Sostituire `consumeAction()` con `consumeAllMorningActions()` in `handleVaiAScuola`
 - [ ] Salvare `SchoolDayState` in KV
 - [ ] Mantenere fallback legacy se `timetable` e `null`
 - [ ] `npx tsc --noEmit` zero errori
@@ -141,6 +146,8 @@
 - [ ] Creare `src/lib/school-break-actions.ts`
 - [ ] 9 azioni divise in 3 categorie: compagno, professore, indipendente
 - [ ] Ogni azione con `available()` e `execute()` context-aware
+- [ ] **C11** — `BreakContext` deve includere `todayTeachers: Teacher[]` (filtro da `daySchedule`) e `completedSlots: HourSlot[]` (slot lesson gia completati); entrambi derivabili da `SchoolDayState` senza nuovi KV
+- [ ] L'azione `chiedi_revoca_voto` usa `completedSlots` per trovare un voto insufficiente recente; usare `todayTeachers` per limitare la lista prof disponibili all'intervallo
 - [ ] `npx tsc --noEmit` zero errori
 
 ### [ ] Fase 4B — UI Pannello Intervallo

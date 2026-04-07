@@ -84,6 +84,91 @@ dalla home scuola come i compagni.
 
 ---
 
+### 0.3 Tre correzioni aggiuntive (C9, C10, C11)
+
+Applicate prima dell'inizio del Blocco 1, a seguito di revisione del
+piano. Queste non cambiano l'architettura ma precisano formule,
+comportamenti e interfacce che altrimenti Copilot implementerebbe in
+modo arbitrario.
+
+**C9 — Formula relazione iniziale professore (addendum a Fase 1E).**
+La formula originale `simpatia * 8 - 30` produce valori deterministici
+(tutti i prof con stessa simpatia partono identici). La correzione
+aggiunge un rumore gaussiano per simulare la prima impressione:
+
+```
+relazione iniziale = (simpatia * 6 - 20) + Math.round((Math.random() - 0.5) * 16)
+```
+
+Range effettivo: da -22 (simpatia=1, rumore minimo) a +48 (simpatia=10,
+rumore massimo). Per simpatia=5 il range e [2, 18] — quasi sempre
+leggermente positivo, ma mai certo. Il rumore viene calcolato una
+sola volta alla generazione e persistito in KV: non viene mai
+ricalcolato. Nota: i valori `-28` e `[-18,+18] per simpatia=5`
+citati nella proposta originale sono inesatti — i valori corretti
+sono quelli sopra.
+
+**C10 — Consumo totale azioni mattutine a inizio scuola (addendum a Fase 2B).**
+Il piano originale specifica che "Vai a Scuola" consuma una sola
+azione. Il sistema ha `maxActions: 2` per la mattina feriale
+(confermato in `DAY_PHASE_CONFIG.feriale.mattina`). Consumare una
+sola azione lascia 1 azione sospesa inutilizzabile durante la
+mattinata scolastica.
+
+La correzione: al momento di premere "Vai a Scuola", vengono
+consumaste TUTTE le azioni mattutine rimanenti. La mattinata
+scolastica sostituisce completamente il tempo libero mattutino.
+Le azioni pomeridiane (2-3 in base al giorno) rimangono intatte.
+
+Implementazione in `useGameTime`:
+```typescript
+// Nuova funzione da aggiungere e restituire nell'oggetto return
+const consumeAllMorningActions = useCallback(() => {
+  setPhaseActionsRemaining(0)
+}, [setPhaseActionsRemaining])
+```
+
+In `handleVaiAScuola` (App.tsx): sostituire `consumeAction()` con
+`consumeAllMorningActions()`. Effetto collaterale positivo: il
+pulsante "Pronto ad avanzare" (condizione `phaseActionsRemaining === 0`)
+si sblocca immediatamente dopo aver scelto di andare a scuola,
+coerentemente con il fatto che la mattina e occupata.
+
+**C11 — `BreakContext` arricchito con `todayTeachers` e `completedSlots` (addendum a Fase 4A).**
+Il `BreakContext` originale include `teachers[]` (tutti i prof) ma
+non distingue chi e fisicamente presente quel giorno ne quali ore
+sono gia state svolte. Questo rende impossibile implementare
+correttamente l'azione "chiedi revoca voto".
+
+L'interfaccia corretta:
+```typescript
+interface BreakContext {
+  stats: GameStats
+  teachers: Teacher[]              // tutti i professori (per lookup)
+  todayTeachers: Teacher[]         // solo i prof presenti oggi (da daySchedule)
+  classRoster: Classmate[]
+  schoolRecord: SchoolRecord
+  completedSlots: HourSlot[]       // ore gia completate (per 'chiedi revoca voto')
+  selectedTarget?: string
+}
+```
+
+Derivazione dei due nuovi campi:
+```typescript
+// todayTeachers: filtro da daySchedule (gia in SchoolDayState)
+const todayTeachers = daySchedule
+  .map(slot => teachers.find(t => t.id === slot.teacherId))
+  .filter((t): t is Teacher => t !== undefined)
+
+// completedSlots: slot di tipo lesson gia completati oggi
+const completedSlots = schoolDayState.slots
+  .filter(s => s.completed && s.type === 'lesson')
+```
+
+Entrambi derivabili da dati gia presenti — nessun nuovo KV.
+
+---
+
 ## 1. Nuove Chiavi KV (C7)
 
 | Chiave KV | Tipo | Default | Descrizione |
@@ -277,7 +362,8 @@ generateTeachers(
 - Un professore per ogni materia attiva nell'anno
 - Nomi generati da pool maschile/femminile
 - Attributi 1-10 generati con distribuzione gaussiana centrata su 5
-- `relazione` iniziale: `simpatia * 8 - 30` (range circa -22 a +50)
+- `relazione` iniziale: `(simpatia * 6 - 20) + Math.round((Math.random() - 0.5) * 16)`
+  (range effettivo -22 a +48; rumore calcolato una sola volta, persistito in KV — vedi C9)
 - `sogliaRottura`: `-30 - (severita * 5)` (range -35 a -80)
 - `memoria`: vuota, `corruptionCount: 0`, `threatCount: 0`
 - `isOstile`: derivato da `relazione < sogliaRottura`
@@ -352,9 +438,13 @@ handleVaiAScuola →
   7. NON consuma le 3 azioni mattutine — la mattinata le consuma internamente
 ```
 
-L'azione mattutina "Vai a Scuola" consuma **una sola** azione di fase.
+"Vai a Scuola" consuma **tutte** le azioni mattutine rimanenti (C10).
+In pratica si chiama `consumeAllMorningActions()` invece di `consumeAction()`.
 Le 6 ore scorrono senza consumare ulteriori azioni — sono il contenuto
-della mattinata, non azioni separate.
+della mattinata, non azioni separate. Le azioni pomeridiane rimangono intatte.
+
+Nuova funzione da aggiungere in `useGameTime` e restituire nel suo oggetto
+`return`: `consumeAllMorningActions(): void` — imposta `phaseActionsRemaining` a 0.
 
 ### Fase 2C — Evoluzione `SchoolMorningPanel`
 
@@ -552,10 +642,12 @@ interface BreakAction {
 
 interface BreakContext {
   stats: GameStats
-  teachers: Teacher[]
+  teachers: Teacher[]              // tutti i professori (per lookup)
+  todayTeachers: Teacher[]         // solo i prof presenti oggi (da daySchedule) — C11
   classRoster: Classmate[]
   schoolRecord: SchoolRecord
-  selectedTarget?: string    // id compagno o professore
+  completedSlots: HourSlot[]       // ore gia completate — necessario per 'chiedi revoca voto' — C11
+  selectedTarget?: string          // id compagno o professore
 }
 
 interface BreakResult {
