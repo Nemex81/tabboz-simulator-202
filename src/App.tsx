@@ -140,10 +140,17 @@ function App() {
   const [morningChoicePending, setMorningChoicePending] = useState(false)
   // Blocco 4 — navigazione sotto-pannelli scolastici
   const [schoolSubPanel, setSchoolSubPanel] = useState<'home' | 'teachers' | 'break'>('home')
+  // Blocco 5 — tab principale attivo (controllato per navigazione da shortcut)
+  const [activeTab, setActiveTab] = useState<string>('school')
 
   const announce = useCallback((message: string) => {
     if (ariaLiveRef.current) {
-      ariaLiveRef.current.textContent = message
+      ariaLiveRef.current.textContent = ''
+      requestAnimationFrame(() => {
+        if (ariaLiveRef.current) {
+          ariaLiveRef.current.textContent = message
+        }
+      })
     }
     toast(message)
   }, [])
@@ -504,6 +511,7 @@ function App() {
     setShowResetDialog,
     advancePhaseOnly: handleAdvancePhaseGuarded,
     setShowKeyboardHelp,
+    setActiveTab,
     announce
   })
 
@@ -660,8 +668,6 @@ function App() {
         {morningChoicePending && (
           <div
             role="alert"
-            aria-live="assertive"
-            aria-atomic="true"
             className="mb-4 p-4 bg-destructive/20 border-2 border-destructive rounded-lg text-center animate-pulse"
           >
             <p className="text-destructive font-bold text-lg">
@@ -673,7 +679,7 @@ function App() {
           </div>
         )}
 
-        <Tabs defaultValue="school" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-muted/50 p-1 h-auto">
             <TabsTrigger value="school" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
               <GraduationCap size={20} className="mr-2" weight="fill" />

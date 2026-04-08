@@ -136,8 +136,8 @@ export function CityPanel({
             label="Centro Commerciale"
             shortcut="Ctrl+S"
             onClick={onShopping}
-            {...base({ condition: soldi < 50, reason: 'Servono almeno 50€' })}
-            ariaLabel="Vai al centro commerciale. Costa 50 euro. Aumenta molto la Figosità. Tasto rapido: Ctrl+S"
+            {...base({ condition: soldi < 100, reason: 'Servono almeno 100€' })}
+            ariaLabel="Vai al centro commerciale. Costa 100 euro. Aumenta molto la Figosità. Tasto rapido: Ctrl+S"
             variant="default"
           />
         </div>

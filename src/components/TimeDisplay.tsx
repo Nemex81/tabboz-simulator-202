@@ -12,7 +12,7 @@ interface TimeDisplayProps {
 
 export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPhase, dayType }: TimeDisplayProps) {
   return (
-    <div className="flex flex-wrap items-center gap-4 px-3 py-2 border border-border rounded-sm bg-card text-sm">
+    <div role="region" aria-label="Stato giornata corrente" className="flex flex-wrap items-center gap-4 px-3 py-2 border border-border rounded-sm bg-card text-sm">
 
       {/* Data */}
       <span className="flex items-center gap-1 text-muted-foreground">

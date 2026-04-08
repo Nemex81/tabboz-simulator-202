@@ -87,6 +87,7 @@ export function DailyControls({
             onClick={handleRiposa}
             disabled={phaseActionsRemaining <= 0}
             title="Recupera parte della stanchezza (consuma 1 azione)"
+            aria-label="Riposa: recupera parte della stanchezza, consuma un'azione"
             className="flex items-center gap-1"
           >
             😴 <span>Riposa</span>
@@ -98,6 +99,7 @@ export function DailyControls({
             size="sm"
             onClick={handleDormi}
             title="Vai a dormire: recupero totale, avanza al giorno dopo (sempre disponibile)"
+            aria-label="Vai a dormire: recupero totale della stanchezza e avanzamento al giorno successivo"
             className="flex items-center gap-1"
           >
             🌙 <span>Vai a dormire</span>

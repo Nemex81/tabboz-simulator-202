@@ -27,6 +27,7 @@ interface UseKeyboardShortcutsParams {
   setShowResetDialog: (show: boolean) => void
   advancePhaseOnly: () => void
   setShowKeyboardHelp: (show: boolean) => void
+  setActiveTab: (tab: string) => void
   announce: (message: string) => void
 }
 
@@ -57,6 +58,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     setShowResetDialog,
     advancePhaseOnly,
     setShowKeyboardHelp,
+    setActiveTab,
     announce
   } = params
 
@@ -126,6 +128,16 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
           e.preventDefault()
           handleShoppingMall()
           break
+        case 'f':
+          e.preventDefault()
+          setActiveTab('character')
+          announce('Scheda personaggio aperta. Naviga ai tab per trovare Amici e Relazioni.')
+          break
+        case 't':
+          e.preventDefault()
+          setActiveTab('character')
+          announce('Scheda personaggio aperta. Naviga al tab Relazioni per tipa e fidanzata.')
+          break
         case 'r':
           e.preventDefault()
           setShowResetDialog(true)
@@ -170,6 +182,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     setShowResetDialog,
     advancePhaseOnly,
     setShowKeyboardHelp,
+    setActiveTab,
     announce
   ])
 }

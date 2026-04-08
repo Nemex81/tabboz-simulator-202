@@ -483,6 +483,22 @@
 
 ---
 
+## [x] Audit Accessibilità — 08 Apr 2026
+
+**Analisi e revisione completa del sistema di accessibilità NVDA: feed vocali, markup, keyboard shortcuts.**
+
+### Anomalie rilevate e corrette
+
+- [x] **A1 — announce() non re-vocalizzava lo stesso messaggio**: aggiunto `clear + requestAnimationFrame` prima di impostare il testo (`App.tsx`)
+- [x] **A3 — DailyControls Riposa/Dormì senza aria-label**: aggiunti `aria-label` descrittivi (`DailyControls.tsx`)
+- [x] **A4 — TimeDisplay senza role semantico**: aggiunto `role="region" aria-label="Stato giornata corrente"` (`TimeDisplay.tsx`)
+- [x] **A5 — alert morningChoicePending aveva aria-live ridondante**: rimossi `aria-live="assertive"` e `aria-atomic` (già impliciti in `role="alert"`) (`App.tsx`)
+- [x] **A6 — emoji nelle stringhe announce lette da NVDA come descrizioni pittografiche**: rimossi 📋 ⚠️ 💬 🌟 dalle stringhe `announce()` in `useGameTime.ts`
+- [x] **B2 — Shopping ariaLabel e guard UI mostravano 50€ ma costo reale è 100€**: allineati a 100€ (`CityPanel.tsx`)
+- [x] **C1 — Ctrl+F e Ctrl+T documentati in KeyboardShortcutsDialog ma non implementati**: aggiunti i case 'f'/'t' in `useKeyboardShortcuts.ts`; aggiunto `setActiveTab` param; Tabs reso controllato in `App.tsx`
+
+---
+
 ## Note per Copilot
 
 - Consulta SEMPRE `docs/PIANO_IMPLEMENTATIVO_CORRETTIVO_v3.md` prima di implementare ogni step

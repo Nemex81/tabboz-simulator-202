@@ -138,7 +138,7 @@ export function useGameTime({
         setPhaseActionsRemaining(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
 
         if (!schoolRecord.wentToSchoolToday && newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
-          announce('📋 Non sei andato a scuola ieri! La giornata è contata come assenza.')
+          announce('Non sei andato a scuola ieri! La giornata è contata come assenza.')
           setSchoolRecord((prev): SchoolRecord => ({
             ...(prev ?? DEFAULT_SCHOOL_RECORD),
             assenze: (prev ?? DEFAULT_SCHOOL_RECORD).assenze + 1,
@@ -154,10 +154,10 @@ export function useGameTime({
             setGameOverReason('Troppe assenze! Non sei stato AMMESSO allo scrutinio. Bocciato per assenze!')
             playSound.gameOver()
           } else if (newAssenze === 25) {
-            announce('⚠️ ATTENZIONE: 25 assenze! Rischi di non essere ammesso allo scrutinio!')
+            announce('ATTENZIONE: 25 assenze! Rischi di non essere ammesso allo scrutinio!')
             playSound.eventTrigger()
           } else if (newAssenze === 15) {
-            announce('💬 I tuoi genitori hanno ricevuto una LETTERA dalla scuola! -50 Soldi (punizione)')
+            announce('I tuoi genitori hanno ricevuto una LETTERA dalla scuola! -50 Soldi (punizione)')
             setStats((s) => ({ ...(s!), soldi: clampStat(s!.soldi - 50, 0, 1000) }))
             playSound.moneySpent()
           }
@@ -171,7 +171,7 @@ export function useGameTime({
         wentToSchoolToday: false,
         isAtSchool: false
       }))
-          if (conductaBonus) announce(`🌟 ${newCGD} giorni di comportamento esemplare! +0.3 Condotta`)
+          if (conductaBonus) announce(`${newCGD} giorni di comportamento esemplare! +0.3 Condotta`)
         } else {
           setSchoolRecord((prev): SchoolRecord => ({
           ...(prev ?? DEFAULT_SCHOOL_RECORD),
