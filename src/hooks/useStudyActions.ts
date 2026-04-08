@@ -25,6 +25,7 @@ import {
   prepareForExam,
 } from '@/lib/exam-system'
 import { playSound } from '@/lib/sound-effects'
+import { STUDY } from '@/lib/game-balance.constants'
 
 interface UseStudyActionsParams {
   stats: GameStats
@@ -272,7 +273,7 @@ export function useStudyActions({
     addLogEntry('school', `Minacciato il prof di ${getSubjectDisplayName(subject)}`, `Hai MINACCIATO il prof di ${getSubjectDisplayName(subject)}! +1.5 al voto, +15 Coattaggine, -0.3 Condotta. Rischiosa ma ha funzionato!`, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
   }, [setGrades, setStats, setGameOver, setGameOverReason, consumeAction, announce, setSchoolRecord, addLogEntry])
 
-  // STEP 13.5-ext: studia_gruppo — handler azione studio di gruppo
+  // STEP 12 — studia_gruppo: handler azione studio di gruppo
   const handleStudiaGruppo = useCallback(() => {
     const gt = gameTimeRef.current
     const s = statsRef.current
@@ -299,8 +300,13 @@ export function useStudyActions({
     const hasFriendBonus = getFriendStudyBonus(friendsRef.current) > 0
     const mentalState = getMentalStateModifiers(s.stress ?? 0, s.morale ?? 60)
     const baseIncrease = calculateStudyGradeIncrease(s.intelligenza, true)
-    const groupBoost = Math.max(0.05, baseIncrease * mentalState.studyEfficiencyMultiplier)
-    const intelligenzaGain = Number((0.02 + (s.intelligenza / 100) * 0.05).toFixed(2))
+    const groupBoost = Math.max(
+      STUDY.GROUP_MIN_GRADE_BOOST,
+      baseIncrease * mentalState.studyEfficiencyMultiplier
+    )
+    const intelligenzaGain = Number(
+      (STUDY.GROUP_INTEL_BASE + (s.intelligenza / 100) * STUDY.GROUP_INTEL_SCALE).toFixed(2)
+    )
     setGrades((current) => {
       const updated: SubjectGrades = { ...current }
       for (const subject of Object.keys(current)) {
@@ -310,17 +316,17 @@ export function useStudyActions({
     })
     setStats((current) => ({
       ...current,
-      stanchezza: clampStat(current.stanchezza + 25),
-      stress: clampStat(current.stress + 10),
-      coattaggine: clampStat(current.coattaggine - 3),
+      stanchezza: clampStat(current.stanchezza + STUDY.GROUP_STANCHEZZA),
+      stress: clampStat(current.stress + STUDY.GROUP_STRESS),
+      coattaggine: clampStat(current.coattaggine - STUDY.GROUP_COATTAGGINE_PENALTY),
       intelligenza: clampStat(current.intelligenza + intelligenzaGain),
-      carisma: clampStat(current.carisma + 2),
+      carisma: clampStat(current.carisma + STUDY.GROUP_CARISMA_BONUS),
     }))
     consumeAction()
     playSound.statIncrease()
     const bonusText = hasFriendBonus ? ' (AMICO INTELLIGENTE: bonus attivo!)' : ''
     const stressText = mentalState.studyEfficiencyMultiplier < 1 ? ' (STRESS ALTO: efficacia ridotta!)' : ''
-    const msg = `Studio in gruppo! +${groupBoost.toFixed(2)} a tutti i voti, +${intelligenzaGain} Intelligenza, +2 Carisma${bonusText}${stressText}`
+    const msg = `Studio in gruppo! +${groupBoost.toFixed(2)} a tutti i voti, +${intelligenzaGain} Intelligenza, +${STUDY.GROUP_CARISMA_BONUS} Carisma${bonusText}${stressText}`
     announce(msg)
     addLogEntry(
       'school',

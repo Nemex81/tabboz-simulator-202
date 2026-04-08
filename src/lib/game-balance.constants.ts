@@ -66,3 +66,22 @@ export const BET = {
   DIFF_MULTIPLIER: 5,
   MAX_BET: 60,
 } as const
+
+// ── Studio ────────────────────────────────────────────────────────────────────
+
+export const STUDY = {
+  // Studio individuale (usato da handleStudySubject)
+  SOLO_STANCHEZZA: 20,
+  SOLO_STRESS: 15,
+  SOLO_COATTAGGINE_PENALTY: 5,
+  SOLO_INTEL_BASE: 0.01,
+  SOLO_INTEL_SCALE: 0.04,
+  // Studio di gruppo (usato da handleStudiaGruppo)
+  GROUP_STANCHEZZA: 25,
+  GROUP_STRESS: 10,
+  GROUP_COATTAGGINE_PENALTY: 3,
+  GROUP_CARISMA_BONUS: 2,
+  GROUP_INTEL_BASE: 0.02,
+  GROUP_INTEL_SCALE: 0.05,
+  GROUP_MIN_GRADE_BOOST: 0.05,
+} as const
