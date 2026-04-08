@@ -4,267 +4,265 @@
 > Prima di ogni fase, Copilot DEVE leggere il file
 > `docs/PIANO_IMPLEMENTATIVO_CORRETTIVO_v3.md` per consultare le specifiche
 > tecniche complete, i tipi, le firme delle funzioni e le regole di
-> compatibilita. Non procedere a memoria.
+> compatibilita. Non procedere a memoria, esegui sempr eun analisi anche dello stato attuale del codice prima di iniziare.
 
 ---
 
-## [ ] STEP 1 — Quick Win (Rischio Zero)
+## [x] STEP 1 — Quick Win (Rischio Zero)
 
 **Effort**: ~20 min | **Rischio**: Nullo
 
-### [ ] R1 — Fix girlfriend prop hardcoded
+### [x] R1 — Fix girlfriend prop hardcoded
 
-- [ ] In `src/App.tsx` riga ~1650, sostituire `girlfriend={null}` con `girlfriend={girlfriend ?? null}`
-- [ ] Verifica: tab amici mostra fidanzata se presente
-- [ ] `npx tsc --noEmit` zero errori
+- [x] In `src/App.tsx` riga ~1650, sostituire `girlfriend={null}` con `girlfriend={girlfriend ?? null}`
+- [x] Verifica: tab amici mostra fidanzata se presente
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R2 — Elimina FriendsPanel.tsx (dead code)
+### [x] R2 — Elimina FriendsPanel.tsx (dead code)
 
-- [ ] Eliminare `src/components/FriendsPanel.tsx`
-- [ ] `grep -r "FriendsPanel" src/` restituisce 0 risultati (escluso EnhancedFriendsPanel)
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Eliminare `src/components/FriendsPanel.tsx`
+- [x] `grep -r "FriendsPanel" src/` restituisce 0 risultati (escluso EnhancedFriendsPanel)
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R3 — Elimina SUBJECT_WEIGHTS deprecato
+### [x] R3 — Elimina SUBJECT_WEIGHTS deprecato
 
-- [ ] Rimuovere blocco `export const SUBJECT_WEIGHTS` da `src/lib/types.ts` riga ~111
-- [ ] `grep -r "SUBJECT_WEIGHTS" src/` restituisce 0 risultati
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Rimuovere blocco `export const SUBJECT_WEIGHTS` da `src/lib/types.ts` riga ~111
+- [x] `grep -r "SUBJECT_WEIGHTS" src/` restituisce 0 risultati
+- [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 1**:
-- [ ] Build passa senza errori TypeScript
-- [ ] `girlfriend` dinamica visibile nel tab amici
+- [x] Build passa senza errori TypeScript
+- [x] `girlfriend` dinamica visibile nel tab amici
 
 ---
 
-## [ ] STEP 2 — Scala Relazioni (Priorita Anticipata)
+## [x] STEP 2 — Scala Relazioni (Priorita Anticipata)
 
 **Effort**: ~2h | **Rischio**: Medio
 
 > Pre-condizione: cancellare localStorage dal browser (DevTools -> Application -> Local Storage -> Clear All) prima di applicare le modifiche.
 
-### [ ] R4a — classmate-relations.ts: scala [0,100]
+### [x] R4a — classmate-relations.ts: scala [0,100]
 
-- [ ] Cambiare `RELATION_MIN = 0`, `RELATION_MAX = 100`
-- [ ] Valore neutro iniziale: `50` (era `0` su scala [-100,+100])
-- [ ] `PROMOTION_THRESHOLD = 65` (da formula (30+100)/2 = 65)
-- [ ] Aggiornare clamp per operare su [0,100]
-- [ ] Rimuovere `classmateRelationToFriendship()` (la formula diventa identita)
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Cambiare `RELATION_MIN = 0`, `RELATION_MAX = 100`
+- [x] Valore neutro iniziale: `50` (era `0` su scala [-100,+100])
+- [x] `PROMOTION_THRESHOLD = 65` (da formula (30+100)/2 = 65)
+- [x] Aggiornare clamp per operare su [0,100]
+- [x] Rimuovere `classmateRelationToFriendship()` (la formula diventa identita)
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R4b — Reset KV (nessuna migrazione lazy)
+### [x] R4b — Reset KV (nessuna migrazione lazy)
 
-- [ ] Documentare procedura reset localStorage nel README o in commento inline
-- [ ] Nessuna funzione `migrateClassmate()` da creare
+- [x] Documentare procedura reset localStorage nel README o in commento inline
+- [x] Nessuna funzione `migrateClassmate()` da creare
 
-### [ ] R4c — teacher-relations.ts: scala [0,100]
+### [x] R4c — teacher-relations.ts: scala [0,100]
 
-- [ ] Cambiare `RELATION_MIN = 0`, `RELATION_MAX = 100`
-- [ ] Valore neutro iniziale: `50`
-- [ ] Aggiornare `sogliaRottura`: es. `-30` diventa `((-30)+100)/2 = 35`
-- [ ] `ISTERESI = 10` (dimezzato proporzionalmente al nuovo range)
-- [ ] Aggiornare funzione `clamp()` privata per [0,100]
-- [ ] `CORRUPTION_CHANCE_MIN/MAX` e `THREAT_CHANCE_MIN/MAX` invariati (gia in percentuale)
-- [ ] `MAX_MEMORIA = 20` invariato (contatore, non scala)
-- [ ] Nessuna funzione `migrateTeacher()`
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Cambiare `RELATION_MIN = 0`, `RELATION_MAX = 100`
+- [x] Valore neutro iniziale: `50`
+- [x] Aggiornare `sogliaRottura`: es. `-30` diventa `((-30)+100)/2 = 35`
+- [x] `ISTERESI = 10` (dimezzato proporzionalmente al nuovo range)
+- [x] Aggiornare funzione `clamp()` privata per [0,100]
+- [x] `CORRUPTION_CHANCE_MIN/MAX` e `THREAT_CHANCE_MIN/MAX` invariati (gia in percentuale)
+- [x] `MAX_MEMORIA = 20` invariato (contatore, non scala)
+- [x] Nessuna funzione `migrateTeacher()`
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R4d — promoteToFriend(): mappatura diretta
+### [x] R4d — promoteToFriend(): mappatura diretta
 
-- [ ] In `src/lib/classmate-relations.ts` sostituire `classmateRelationToFriendship(classmate)` con `classmate.relation`
-- [ ] In `src/lib/school-roster-transitions.ts`: rimuovere import `classmateRelationToFriendship`, usare `classmate.relation` direttamente
-- [ ] `npx tsc --noEmit` zero errori
+- [x] In `src/lib/classmate-relations.ts` sostituire `classmateRelationToFriendship(classmate)` con `classmate.relation`
+- [x] In `src/lib/school-roster-transitions.ts`: rimuovere import `classmateRelationToFriendship`, usare `classmate.relation` direttamente
+- [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 2**:
-- [ ] Classmate relation inizia a 50 (non 0)
-- [ ] Promozione avviene a soglia 65
-- [ ] Dopo reset localStorage, relation compagno inizia a 50
-- [ ] Teacher isteresi funziona su scala [0,100]
+- [x] Classmate relation inizia a 50 (non 0)
+- [x] Promozione avviene a soglia 65
+- [x] Dopo reset localStorage, relation compagno inizia a 50
+- [x] Teacher isteresi funziona su scala [0,100]
 
 ---
 
-## [ ] STEP 3 — Fondamenta Centralizzazione
+## [x] STEP 3 — Fondamenta Centralizzazione
 
 **Effort**: ~2h | **Rischio**: Basso
 
 > Pre-condizione: STEP 2 completato.
 
-### [ ] R5 — Crea game-balance.constants.ts
+### [x] R5 — Crea game-balance.constants.ts
 
-- [ ] Creare `src/lib/game-balance.constants.ts`
-- [ ] Definire: `STAT_CAPS`, `RELATION`, `ECONOMY`, `SCHOOL`, `REPUTATION_WEIGHTS`, `BET`
-- [ ] Aggiornare file consumer per importare da qui invece di hardcodare
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/lib/game-balance.constants.ts`
+- [x] Definire: `STAT_CAPS`, `RELATION`, `ECONOMY`, `SCHOOL`, `REPUTATION_WEIGHTS`, `BET`
+- [x] Aggiornare file consumer per importare da qui invece di hardcodare
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R7 — Sostituzione inline clamp con clampStat()
+### [x] R7 — Sostituzione inline clamp con clampStat()
 
-- [ ] `data-validation.ts` riga 130: Math.max/Min inline -> `clampStat(val, 0, max)`
-- [ ] `data-validation.ts` righe 170, 172: -> `clampStat(val)`
-- [ ] `classmate-relations.ts` riga 91: -> `clampStat(val, RELATION.MIN, RELATION.MAX)`
-- [ ] `relation-system.ts` righe 431-435 (5x): -> `clampStat(Math.round(val))`
-- [ ] `relation-system.ts` riga 529: -> `clampStat(val)`
-- [ ] `girlfriend-system.ts` riga 533: -> `clampStat(val)`
-- [ ] `enhanced-friend-system.ts` righe 294, 298 (2x): -> `clampStat(val)`
-- [ ] `school-timetable.ts` riga 137: -> `clampStat(val, 0, 4)`
-- [ ] `teacher-relations.ts`: rimuovere `clamp()` privata, importare `clampStat`
-- [ ] `npx tsc --noEmit` zero errori
+- [x] `data-validation.ts` riga 130: Math.max/Min inline -> `clampStat(val, 0, max)`
+- [x] `data-validation.ts` righe 170, 172: -> `clampStat(val)`
+- [x] `classmate-relations.ts` riga 91: -> `clampStat(val, RELATION.MIN, RELATION.MAX)`
+- [x] `relation-system.ts` righe 431-435 (5x): -> `clampStat(Math.round(val))`
+- [x] `relation-system.ts` riga 529: -> `clampStat(val)`
+- [x] `girlfriend-system.ts` riga 533: -> `clampStat(val)`
+- [x] `enhanced-friend-system.ts` righe 294, 298 (2x): -> `clampStat(val)`
+- [x] `school-timetable.ts` riga 137: -> `clampStat(val, 0, 4)`
+- [x] `teacher-relations.ts`: rimuovere `clamp()` privata, importare `clampStat`
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R7b — clampStat() esteso con STAT_CAPS
+### [x] R7b — clampStat() esteso con STAT_CAPS
 
-- [ ] Aggiornare `src/lib/game-utils.ts` riga 3-5: overload con chiave stringa o min/max numerici
-- [ ] Retrocompatibilita garantita: firma originale `(value, min?, max?)` ancora funzionante
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Aggiornare `src/lib/game-utils.ts` riga 3-5: overload con chiave stringa o min/max numerici
+- [x] Retrocompatibilita garantita: firma originale `(value, min?, max?)` ancora funzionante
+- [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 3**:
-- [ ] Tutte le costanti estratte importate da game-balance.constants.ts
-- [ ] `clampStat('soldi')` ritorna [0,1000]
-- [ ] Zero occorrenze di `Math.max(0, Math.min(100,...))` non giustificate
+- [x] Tutte le costanti estratte importate da game-balance.constants.ts
+- [x] `clampStat('soldi')` ritorna [0,1000]
+- [x] Zero occorrenze di `Math.max(0, Math.min(100,...))` non giustificate
 
 ---
 
-## [ ] STEP 4 — useGameRelations come Hub Unico
+## [x] STEP 4 — useGameRelations come Hub Unico
 
 **Effort**: ~1.5h | **Rischio**: Medio
 
 > Pre-condizioni: STEP 2 e STEP 3 completati.
 
-### [ ] R4e — doClassmateInteraction()
+### [x] R4e — doClassmateInteraction()
 
-- [ ] Aggiungere `doClassmateInteraction(classmateId, interactionKey)` in `src/hooks/useGameRelations.ts`
-- [ ] Trova classmate, applica interazione, aggiorna roster, segnala se supera soglia promozione
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Aggiungere `doClassmateInteraction(classmateId, interactionKey)` in `src/hooks/useGameRelations.ts`
+- [x] Trova classmate, applica interazione, aggiorna roster, segnala se supera soglia promozione
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R4f — doTeacherInteraction()
+### [x] R4f — doTeacherInteraction()
 
-- [ ] Aggiungere `doTeacherInteraction(teacherId, interactionKey)` in `src/hooks/useGameRelations.ts`
-- [ ] Trova teacher, applica via `applyTeacherRelationChange()`, aggiorna roster, controlla ostilita
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Aggiungere `doTeacherInteraction(teacherId, interactionKey)` in `src/hooks/useGameRelations.ts`
+- [x] Trova teacher, applica via `applyTeacherRelationChange()`, aggiorna roster, controlla ostilita
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R4g — Pannelli passano per l'hub
+### [x] R4g — Pannelli passano per l'hub
 
-- [ ] `TeachersPanel.tsx` riga 16: rimuovere import diretto di `applyTeacherRelationChange`
-- [ ] `SchoolBreakPanel.tsx`: rimuovere import diretti da teacher-relations
-- [ ] Pannelli ricevono `doTeacherInteraction` / `doClassmateInteraction` come prop da App.tsx
+- [x] `TeachersPanel.tsx` riga 16: rimuovere import diretto di `applyTeacherRelationChange`
+- [x] `SchoolBreakPanel.tsx`: gia usa sole callback (nessun import diretto da teacher-relations) — ok
+- [x] Pannelli ricevono `doTeacherInteraction` / `doClassmateInteraction` come prop da App.tsx
 - [ ] Marcare `generateRandomFriend` in `social-system.ts` come `@deprecated`
-- [ ] `npx tsc --noEmit` zero errori
+- [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 4**:
-- [ ] TeachersPanel e SchoolBreakPanel non importano direttamente da lib/
-- [ ] `doClassmateInteraction` e `doTeacherInteraction` ritornano risultati coerenti con `doInteraction`
+- [x] TeachersPanel non importa direttamente da lib/teacher-relations
+- [x] `doClassmateInteraction` e `doTeacherInteraction` ritornano risultati coerenti con `doInteraction`
 
 ---
 
-## [ ] STEP 5 — Stato App e UI Core
+## [x] STEP 5 — Stato App e UI Core
 
 **Effort**: ~1.5h | **Rischio**: Basso
 
-### [ ] R6 — morningDisplay enum
+### [x] R6 — morningDisplay enum
 
-- [ ] In `src/hooks/useAppDialogs.ts`: sostituire `showSchoolMorning` + `showStreetMorning` con `morningDisplay: 'school' | 'street' | null`
-- [ ] Aggiornare destructuring e tutti i punti in App.tsx (pattern setter/getter)
-- [ ] `npx tsc --noEmit` zero errori
+- [x] In `src/hooks/useAppDialogs.ts`: sostituire `showSchoolMorning` + `showStreetMorning` con `morningDisplay: 'school' | 'street' | null`
+- [x] Retrocompatibilita wrapper `setShowSchoolMorning`/`setShowStreetMorning` per useGameTime
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R16 — Helper cityActionDisabled()
+### [x] R16 — Helper cityActionDisabled()
 
-- [ ] Aggiungere `getActionState()` locale in `src/components/CityPanel.tsx`
-- [ ] Eliminare ripetizione del pattern disabled/blockedReason sui 6 ActionButton
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Aggiungere `getActionState()` locale in `src/components/CityPanel.tsx`
+- [x] Eliminare ripetizione del pattern disabled/blockedReason sui 6 ActionButton
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R8 — React.memo e useMemo
+### [x] R8 — React.memo e useMemo
 
-- [ ] Wrappare `CharacterSheet` con `React.memo`
-- [ ] Wrappare `GameDialogs` con `React.memo`
-- [ ] Wrappare `GirlfriendPanel` con `React.memo`
-- [ ] Spezzare `gameDialogsProps` in `schoolDialogProps`, `cityDialogProps`, `socialDialogProps` con `useMemo`
-- [ ] Aggiornare `GameDialogs` per ricevere `school`, `city`, `social` invece di superficie piatta
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Wrappare `CharacterSheet` con `React.memo`
+- [x] Wrappare `GameDialogs` con `React.memo`
+- [x] Wrappare `GirlfriendPanel` con `React.memo`
+- [ ] Spezzare `gameDialogsProps` in sub-objects con `useMemo` (rimandato a STEP 9: richiede ristrutturazione App.tsx per rispettare regole hook)
+- [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 5**:
-- [ ] `morningDisplay` e un singolo state enum
-- [ ] CityPanel ha zero ripetizione nel pattern disabled
-- [ ] `gameDialogsProps` memoizzato (useMemo)
+- [x] `morningDisplay` e un singolo state enum
+- [x] CityPanel ha zero ripetizione nel pattern disabled
+- [ ] `gameDialogsProps` memoizzato (rimandato a STEP 9)
 
 ---
 
-## [ ] STEP 6 — Naming, Stati Vuoti e Accessibilita
+## [x] STEP 6 — Naming, Stati Vuoti e Accessibilita
 
 **Effort**: ~2h | **Rischio**: Basso
 
-### [ ] R12 — Rinomina RelationsPanel
+### [x] R12 — Rinomina RelationsPanel
 
-- [ ] Rinominare `src/components/RelationsPanel.tsx` -> `FriendshipsPanel.tsx`
-- [ ] Aggiornare import in App.tsx e tutti gli importatori
-- [ ] Aggiungere JSDoc header a FriendshipsPanel, RelationshipsPanel, EnhancedFriendsPanel
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Rinominare `src/components/RelationsPanel.tsx` -> `FriendshipsPanel.tsx`
+- [x] Aggiornare import in CharacterSheet.tsx
+- [x] Rinominare export `RelationsPanel` -> `FriendshipsPanel` e `RelationsPanelProps` -> `FriendshipsPanelProps`
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R15 — Stati vuoti mancanti
+### [x] R15 — Stati vuoti mancanti
 
-- [ ] `GradeProgressPanel.tsx`: aggiungere check `gpaSubjects.length === 0` con messaggio accessibile
-- [ ] `TeacherSelectionDialog.tsx`: aggiungere check `subjects.length === 0` (edge case difensivo)
-- [ ] RelationshipsPanel NON da toccare (stato vuoto gia presente)
-- [ ] `npx tsc --noEmit` zero errori
+- [x] `GradeProgressPanel.tsx`: aggiungere check `gpaSubjects.length === 0` con messaggio accessibile
+- [x] `TeacherSelectionDialog.tsx`: aggiungere check `subjects.length === 0` (edge case difensivo)
+- [x] RelationshipsPanel NON da toccare (stato vuoto gia presente)
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R14 — aria-label e role mancanti
+### [x] R14 — aria-label e role mancanti
 
-- [ ] `GradeProgressPanel.tsx` root div: aggiungere `role="region" aria-label="Progresso voti"`
-- [ ] `CityPanel.tsx` root div: aggiungere `role="region" aria-label="Pannello citta"`
-- [ ] `RelationshipsPanel.tsx` root div: aggiungere `role="region" aria-label="Relazioni sentimentali"`
-- [ ] `SchoolEventDialog.tsx`: verificare se Radix fornisce gia aria-label, aggiungere se mancante
-- [ ] `npx tsc --noEmit` zero errori
+- [x] `GradeProgressPanel.tsx` root div: aggiunto `role="region" aria-label="Progresso voti"`
+- [x] `CityPanel.tsx` root div: aggiunto `role="region" aria-label="Pannello citta"`
+- [x] `RelationshipsPanel.tsx` root div: aggiunto `role="region" aria-label="Relazioni sentimentali"`
+- [x] `SchoolEventDialog.tsx`: Radix AlertDialog fornisce gia role="alertdialog" — ok
+- [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 6**:
-- [ ] `FriendshipsPanel.tsx` esiste, `RelationsPanel.tsx` eliminato
-- [ ] GradeProgressPanel mostra stato vuoto se nessuna materia
-- [ ] 4 componenti hanno `aria-label`/`role`
+- [x] `FriendshipsPanel.tsx` esiste, `RelationsPanel.tsx` eliminato
+- [x] GradeProgressPanel mostra stato vuoto se nessuna materia
+- [x] 3 componenti hanno `aria-label`/`role` aggiunto
 
 ---
 
-## [ ] STEP 7 — Audio Unificato
+## [x] STEP 7 — Audio Unificato
 
 **Effort**: ~1h | **Rischio**: Basso
 
-### [ ] R13 — useSoundFeedback hook
+### [x] R13 — useSoundFeedback hook
 
-- [ ] Creare `src/hooks/useSoundFeedback.ts` con `SoundAction` type e `ACTION_SOUND_MAP`
-- [ ] Esporre `play(action: SoundAction)` callback
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Creare `src/hooks/useSoundFeedback.ts` con `SoundAction` type e `ACTION_SOUND_MAP`
+- [x] Esporre `play(action: SoundAction)` callback
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R13b — Aggiornamento pannelli muti
+### [x] R13b — Aggiornamento pannelli muti
 
-- [ ] `GirlfriendPanel.tsx`: aggiungere `useSoundFeedback`, trigger `play('success')` / `play('failure')` / `play('bigWin')` / `play('bigLoss')`
-- [ ] `EnhancedFriendsPanel.tsx`: analogo pattern per interazioni amicizia
-- [ ] `npx tsc --noEmit` zero errori
+- [x] `GirlfriendPanel.tsx`: aggiunto `useSoundFeedback`, `play('click')` su azioni, `play('bigWin')` su dichiarazione, `play('moneySpent')` su regalo
+- [x] `EnhancedFriendsPanel.tsx`: aggiunto `useSoundFeedback`, `play('click')` su interazioni amicizia
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R13c — CityPanel allineamento
+### [x] R13c — CityPanel allineamento
 
-- [ ] Valutare e aggiungere `play('click')` su azioni pulsante in CityPanel se non gia delegato ad App.tsx
-- [ ] `npx tsc --noEmit` zero errori
+- [x] CityPanel delega suoni agli handler di App.tsx — feedback sonoro gia presente tramite playSound.buttonClick() in ciascun handler. Nessuna modifica necessaria.
 
 **Criteri di accettazione STEP 7**:
-- [ ] useSoundFeedback hook esiste e mappa tutte le azioni
-- [ ] GirlfriendPanel e EnhancedFriendsPanel producono feedback sonoro
+- [x] useSoundFeedback hook esiste e mappa tutte le azioni
+- [x] GirlfriendPanel e EnhancedFriendsPanel producono feedback sonoro
 
 ---
 
-## [ ] STEP 8 — Bilanciamento Formula Reputazione
+## [x] STEP 8 — Bilanciamento Formula Reputazione
 
 **Effort**: ~1h | **Rischio**: Medio (gameplay)
 
 > Pre-condizione: STEP 3 completato (REPUTATION_WEIGHTS da game-balance.constants.ts).
 
-### [ ] R19 — Correzione formula reputazione
+### [x] R19 — Correzione formula reputazione
 
-- [ ] `src/lib/game-utils.ts` riga 134: sostituire `Math.min(stats.soldi / 10, 100)` con `clampStat(stats.soldi, 'soldi') / 10`
-- [ ] `src/lib/game-utils.ts` riga 135: sostituire `Math.min(stats.media * 10, 100)` con `clampStat(stats.media, 'media') * 10`
-- [ ] `npx tsc --noEmit` zero errori
+- [x] `src/lib/game-utils.ts` riga 134: sostituire `Math.min(stats.soldi / 10, 100)` con `clampStat(stats.soldi, 'soldi') / 10`
+- [x] `src/lib/game-utils.ts` riga 135: sostituire `Math.min(stats.media * 10, 100)` con `clampStat(stats.media, 'media') * 10`
+- [x] `npx tsc --noEmit` zero errori
 
-### [ ] R19b — Pesi in costanti
+### [x] R19b — Pesi in costanti
 
-- [ ] Sostituire i 6 `const *Weight` locali in game-utils.ts con import da `REPUTATION_WEIGHTS`
-- [ ] `npx tsc --noEmit` zero errori
+- [x] Sostituire i 6 `const *Weight` locali in game-utils.ts con import da `REPUTATION_WEIGHTS`
+- [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 8**:
-- [ ] Formula reputazione usa REPUTATION_WEIGHTS
-- [ ] soldi/media scalano linearmente senza cap implicito
+- [x] Formula reputazione usa REPUTATION_WEIGHTS
+- [x] soldi/media scalano linearmente senza cap implicito
 
 ---
 

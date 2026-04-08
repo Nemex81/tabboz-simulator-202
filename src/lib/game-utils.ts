@@ -1,8 +1,20 @@
 import { GameStats, SubjectGrades, SchoolType } from '@/lib/types'
 import { getGradeWeight, getActiveSubjectsForYear, SubjectDefinition } from '@/lib/subjects'
+import { STAT_CAPS, REPUTATION_WEIGHTS } from '@/lib/game-balance.constants'
 
-export const clampStat = (value: number, min: number = 0, max: number = 100): number => {
-  return Math.max(min, Math.min(max, value))
+/**
+ * Clamp di un valore statistico.
+ * - clampStat(v)               → [0, 100]
+ * - clampStat(v, 0, 200)       → [0, 200]
+ * - clampStat(v, 'soldi')      → [0, 1000]  (legge STAT_CAPS)
+ * - clampStat(v, 'media')      → [0, 10]
+ */
+export function clampStat(value: number, minOrKey?: number | keyof typeof STAT_CAPS, max?: number): number {
+  if (typeof minOrKey === 'string') {
+    const caps = STAT_CAPS[minOrKey] ?? STAT_CAPS.default
+    return Math.max(caps.min, Math.min(caps.max, value))
+  }
+  return Math.max(minOrKey ?? 0, Math.min(max ?? 100, value))
 }
 
 // A1 — Guardia centralizzata per le spese
@@ -120,21 +132,14 @@ export const getReputationLevel = (reputazione: number): { label: string; descri
 }
 
 export const calculateReputationFromStats = (stats: GameStats): number => {
-  const coattaggineWeight = 0.25
-  const muscoliWeight = 0.15
-  const figositaWeight = 0.2
-  const soldiWeight = 0.1
-  const mediaWeight = 0.1
-  const carismaWeight = 0.2
-  
-  const reputationScore = 
-    (stats.coattaggine * coattaggineWeight) +
-    (stats.muscoli * muscoliWeight) +
-    (stats.figosita * figositaWeight) +
-    (Math.min(stats.soldi / 10, 100) * soldiWeight) +
-    (Math.min(stats.media * 10, 100) * mediaWeight) +
-    (stats.carisma * carismaWeight)
-  
+  const reputationScore =
+    (stats.coattaggine * REPUTATION_WEIGHTS.coattaggine) +
+    (stats.muscoli * REPUTATION_WEIGHTS.muscoli) +
+    (stats.figosita * REPUTATION_WEIGHTS.figosita) +
+    (clampStat(stats.soldi, 'soldi') / 10 * REPUTATION_WEIGHTS.soldi) +
+    (clampStat(stats.media, 'media') * 10 * REPUTATION_WEIGHTS.media) +
+    (stats.carisma * REPUTATION_WEIGHTS.carisma)
+
   return clampStat(reputationScore)
 }
 

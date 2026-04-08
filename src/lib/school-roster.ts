@@ -40,7 +40,7 @@ export function generateClassRoster(schoolYear: number): Classmate[] {
     name: generateUniqueName(usedNames),
     type: mapPersonalityToFriendType(personality),
     intelligenza: generateIntelligence(personality),
-    relation: randomInt(-10, 10),  // scalare -100/+100, NON RelationStats — vedi C3 del piano
+    relation: 50,  // scalare [0,100], neutro = 50
     personality,
     promotedToFriend: false,
     yearJoined: schoolYear,

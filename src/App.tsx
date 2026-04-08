@@ -107,6 +107,7 @@ import { useSchoolSystem } from '@/hooks/useSchoolSystem'
 import { generateSchoolDaySlots } from '@/lib/school-day-engine'
 import { applyYearTransition } from '@/lib/school-roster-transitions'
 import { promoteToFriend } from '@/lib/classmate-relations'
+import { applyTeacherRelationChange } from '@/lib/teacher-relations'
 import type { SchoolDayState } from '@/lib/types'
 import {
   generateScheduledExam,
@@ -1227,7 +1228,14 @@ function App() {
                       <TeachersPanel
                         teachers={teachers ?? []}
                         currentDate={gameTime.currentDate}
-                        onTeacherChange={(updater) => setTeachers(prev => updater(prev ?? []))}
+                        onTeacherInteraction={(teacherId, delta, reason, date) => {
+                          setTeachers(prev => {
+                            const teacher = prev.find(t => t.id === teacherId)
+                            if (!teacher) return prev
+                            const updated = applyTeacherRelationChange(teacher, delta, reason, date)
+                            return prev.map(t => t.id === teacherId ? updated : t)
+                          })
+                        }}
                         stats={stats}
                         announce={announce}
                         onConsumeAction={consumeAction}
@@ -1647,7 +1655,7 @@ function App() {
                   actionsRemaining={phaseActionsRemaining ?? 0}
                   onFriendAction={handleFriendAction}
                   onRelationInteraction={doInteraction}
-                  girlfriend={null}
+                  girlfriend={girlfriend ?? null}
                   onGirlfriendAction={handleGirlfriendAction}
                   onGirlfriendBreakup={handleGirlfriendBreakup}
                 />

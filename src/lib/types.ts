@@ -107,67 +107,6 @@ export type RelationshipTier =
 
 export type SocialBondType = 'amicizia' | 'romantico'
 
-/** @deprecated usare getGradeWeight() da subjects.ts */
-export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
-  liceoScientifico: {
-    matematica: 1.5,
-    fisica: 1.3,
-    italiano: 1.0,
-    inglese: 1.0,
-    storia: 1.0,
-    scienze: 1.0,
-    edFisica: 0.8
-  },
-  tecnico: {
-    fisica: 1.5,
-    matematica: 1.3,
-    inglese: 1.2,
-    italiano: 1.0,
-    storia: 0.8,
-    scienze: 1.0,
-    edFisica: 0.7
-  },
-  agraria: {
-    scienze: 1.5,
-    matematica: 1.0,
-    italiano: 1.0,
-    inglese: 0.9,
-    storia: 0.8,
-    fisica: 1.2,
-    edFisica: 0.9
-  },
-  artistico: {
-    disegno: 1.5,
-    storiaArte: 1.3,
-    matematica: 0.8,
-    italiano: 1.2,
-    inglese: 1.0,
-    storia: 1.5,
-    scienze: 0.8,
-    edFisica: 0.7
-  },
-  conservatorio: {
-    disegno: 1.5,
-    storiaArte: 1.3,
-    matematica: 0.8,
-    italiano: 1.2,
-    inglese: 1.0,
-    storia: 1.5,
-    scienze: 0.8,
-    edFisica: 0.7
-  },
-  alberghiero: {
-    disegno: 1.5,
-    storiaArte: 1.3,
-    matematica: 0.8,
-    italiano: 1.2,
-    inglese: 1.0,
-    storia: 1.5,
-    scienze: 0.8,
-    edFisica: 0.7
-  }
-}
-
 export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
   return Object.fromEntries(
     getActiveSubjectsForYear(schoolType, 1)

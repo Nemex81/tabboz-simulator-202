@@ -7,11 +7,11 @@ import type { RelationStats } from '@/lib/relation-system'
 
 // ── Costanti ──────────────────────────────────────────────────────────────────
 
-const RELATION_MIN = -100
+const RELATION_MIN = 0
 const RELATION_MAX = 100
 
 /** Soglia minima di relazione per promuovere un compagno ad amico. */
-export const PROMOTION_THRESHOLD = 30
+export const PROMOTION_THRESHOLD = 65
 
 // ── Tipi ──────────────────────────────────────────────────────────────────────
 
@@ -74,13 +74,6 @@ export const CLASSMATE_INTERACTIONS: Record<ClassmateInteractionKey, ClassmateIn
 // ── Funzioni pubbliche ────────────────────────────────────────────────────────
 
 /**
- * Mappa la relazione [-100, +100] all'asse `amicizia` di RelationStats [0, 100].
- */
-export function classmateRelationToFriendship(classmate: Classmate): number {
-  return Math.round((classmate.relation + RELATION_MAX) / 2)
-}
-
-/**
  * Applica un delta alla relazione del compagno, con clamping [-100, +100].
  *
  * @param classmate - Oggetto sorgente (NON mutato).
@@ -121,7 +114,7 @@ export function promoteToFriend(classmate: Classmate, schoolYear: number): Frien
     )
   }
 
-  const amicizia = classmateRelationToFriendship(classmate)
+  const amicizia = classmate.relation
 
   const rel: RelationStats = {
     amicizia,

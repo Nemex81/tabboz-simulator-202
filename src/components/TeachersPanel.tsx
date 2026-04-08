@@ -12,9 +12,6 @@ import type {
   GameDate,
   TeacherMemoryEntry,
 } from '@/lib/types'
-import {
-  applyTeacherRelationChange,
-} from '@/lib/teacher-relations'
 import { playSound } from '@/lib/sound-effects'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -69,7 +66,7 @@ const MEMORY_TYPE_LABELS: Record<TeacherMemoryEntry['type'], string> = {
 interface TeachersPanelProps {
   teachers: Teacher[]
   currentDate: GameDate
-  onTeacherChange: (updater: (prev: Teacher[]) => Teacher[]) => void
+  onTeacherInteraction: (teacherId: string, delta: number, reason: TeacherMemoryEntry['type'], date: GameDate) => void
   stats: GameStats
   announce: (msg: string) => void
   onConsumeAction: () => void
@@ -81,7 +78,7 @@ interface TeachersPanelProps {
 export const TeachersPanel = React.memo(function TeachersPanel({
   teachers,
   currentDate,
-  onTeacherChange,
+  onTeacherInteraction,
   announce,
   onConsumeAction,
   actionsRemaining,
@@ -98,8 +95,7 @@ export const TeachersPanel = React.memo(function TeachersPanel({
   function handleConversazione(teacher: Teacher) {
     if (actionsRemaining <= 0) return
     const delta = 3 + Math.round(Math.random() * 2) // +3 / +4 / +5
-    const updated = applyTeacherRelationChange(teacher, delta, 'conversazione', currentDate)
-    onTeacherChange(prev => prev.map(t => t.id === updated.id ? updated : t))
+    onTeacherInteraction(teacher.id, delta, 'conversazione', currentDate)
     onConsumeAction()
     playSound.buttonClick()
     const msg = `Hai avuto una breve conversazione con ${teacher.name}. Relazione +${delta}.`
@@ -109,8 +105,7 @@ export const TeachersPanel = React.memo(function TeachersPanel({
 
   function handleChiediSpiegazione(teacher: Teacher) {
     if (actionsRemaining <= 0) return
-    const updated = applyTeacherRelationChange(teacher, 2, 'richiesta_spiegazione', currentDate)
-    onTeacherChange(prev => prev.map(t => t.id === updated.id ? updated : t))
+    onTeacherInteraction(teacher.id, 2, 'richiesta_spiegazione', currentDate)
     onConsumeAction()
     playSound.buttonClick()
     const msg = `${teacher.name} ti ha dato ulteriori spiegazioni. Relazione +2.`

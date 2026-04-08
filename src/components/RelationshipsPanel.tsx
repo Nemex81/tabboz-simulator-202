@@ -18,7 +18,7 @@ export function RelationshipsPanel({ relationships, stats, onTryRelationship, ac
   const availableRelationships = relationships.filter(r => !r.isActive)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label="Relazioni sentimentali">
       {activeRelationships.length > 0 && (
         <Card className="p-6 border-2 border-accent bg-gradient-to-br from-accent/20 to-primary/10">
           <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">

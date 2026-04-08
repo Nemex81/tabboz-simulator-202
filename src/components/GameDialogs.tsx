@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, memo, Suspense } from 'react'
 import { Shield, ShieldWarning, HandCoins, HandFist, Flag } from '@phosphor-icons/react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { SubjectGrades } from '@/lib/types'
@@ -64,7 +64,7 @@ export interface GameDialogsProps {
   soldi: number
 }
 
-export function GameDialogs(props: GameDialogsProps) {
+export const GameDialogs = memo(function GameDialogs(props: GameDialogsProps) {
   const {
     showMetallariEvent,
     setShowMetallariEvent,
@@ -331,4 +331,4 @@ export function GameDialogs(props: GameDialogsProps) {
       </Suspense>
     </>
   )
-}
+})

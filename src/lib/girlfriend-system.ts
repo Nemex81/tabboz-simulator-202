@@ -1,6 +1,6 @@
 import { GameStats } from '@/lib/types'
 import { Relationship } from '@/lib/types'
-import { randomChance } from '@/lib/game-utils'
+import { randomChance, clampStat } from '@/lib/game-utils'
 
 export type AspettoType = 'carina' | 'bellissima' | 'normale' | 'alternativa'
 export type PersonalitaType = 'timida' | 'estroversa' | 'secchiona' | 'ribelle' | 'vanitosa'
@@ -530,7 +530,7 @@ export const calculateRelationshipHealth = (ragazza: Ragazza): {
     health += Math.min(20, ragazza.stats.totalDates * 2)
   }
   
-  health = Math.max(0, Math.min(100, health))
+  health = clampStat(health)
   
   if (ragazza.stats.jealousyLevel > 70) {
     warnings.push('È molto gelosa! Fai attenzione!')

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSoundFeedback } from '@/hooks/useSoundFeedback'
 import { User, Users, Barbell, Brain, Lightning, HandFist, HandCoins, XCircle, Crown } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   onGirlfriendAction,
   onGirlfriendBreakup,
 }: EnhancedFriendsPanelProps) {
+  const { play } = useSoundFeedback()
   // FIX-A: early-return rimosso — la sezione fidanzata deve renderizzarsi anche senza amici
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -190,7 +192,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
                   return (
                     <Button
                       key={action.id}
-                      onClick={() => onFriendAction(friend.id, action.id)}
+                      onClick={() => { play('click'); onFriendAction(friend.id, action.id) }}
                       disabled={isDisabled}
                       variant={action.id === 'litiga' ? 'destructive' : 'secondary'}
                       className="justify-start h-auto py-3"

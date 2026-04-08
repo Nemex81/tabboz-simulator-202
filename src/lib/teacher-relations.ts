@@ -7,13 +7,13 @@ import type { Teacher, TeacherMemoryEntry, GameDate } from '@/lib/types'
 // ── Costanti ──────────────────────────────────────────────────────────────────
 
 const MAX_MEMORIA = 20
-const RELATION_MIN = -100
+const RELATION_MIN = 0
 const RELATION_MAX = 100
 const CORRUPTION_CHANCE_MIN = 5
 const CORRUPTION_CHANCE_MAX = 85
 const THREAT_CHANCE_MIN = 5
 const THREAT_CHANCE_MAX = 70
-const ISTERESI = 20   // margine sopra sogliaRottura prima che isOstile torni false
+const ISTERESI = 10   // margine sopra sogliaRottura prima che isOstile torni false
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

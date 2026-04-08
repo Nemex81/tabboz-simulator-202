@@ -56,8 +56,16 @@ export function GradeProgressPanel({ grades, schoolType, schoolYear }: GradeProg
   const nonGpaSubjects = activeSubjects.filter(s => !s.countsForGPA)
   const weightedAvg = calculateWeightedAvg(grades, activeSubjects, schoolType)
 
+  if (gpaSubjects.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground text-center py-6" role="status">
+        Nessuna materia attiva per l’anno scolastico corrente.
+      </p>
+    )
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" role="region" aria-label="Progresso voti">
       {/* Media pesata */}
       <div className="flex items-center justify-between px-1">
         <span className="text-sm font-semibold text-muted-foreground">Media ponderata anno {schoolYear}</span>

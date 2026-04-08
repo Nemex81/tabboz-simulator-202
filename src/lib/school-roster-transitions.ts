@@ -5,7 +5,6 @@
 import type { Classmate, Teacher, Friend, SchoolType } from '@/lib/types'
 import { generateTeachers } from '@/lib/school-teachers'
 import { generateClassRoster } from '@/lib/school-roster'
-import { classmateRelationToFriendship } from '@/lib/classmate-relations'
 import type { RelationStats } from '@/lib/relation-system'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -78,11 +77,11 @@ export function applyYearTransition(
     return { ...f, originType: 'extrascolastico' as const }
   })
 
-  // Bocciati NON ancora promossi ma con relation >= 10 → aggiungi come extrascolastici
+  // Bocciati NON ancora promossi ma con relation >= 55 → aggiungi come extrascolastici
   const alreadyFriendIds = new Set(updatedFriends.map(f => f.id))
   for (const departed of departedClassmates) {
-    if (!departed.promotedToFriend && departed.relation >= 10 && !alreadyFriendIds.has(departed.id)) {
-      const amicizia = classmateRelationToFriendship(departed)
+    if (!departed.promotedToFriend && departed.relation >= 55 && !alreadyFriendIds.has(departed.id)) {
+      const amicizia = departed.relation
       const rel: RelationStats = {
         amicizia,
         romantico: 0,
@@ -152,7 +151,7 @@ function generateNewStudents(count: number, newYear: number): Classmate[] {
   const pool = generateClassRoster(newYear)
   return pool.slice(0, count).map(c => ({
     ...c,
-    relation: randomInt(5, 15),
+    relation: randomInt(50, 60),
     yearJoined: newYear,
   }))
 }

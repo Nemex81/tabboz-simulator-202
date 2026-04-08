@@ -127,7 +127,7 @@ export const validateGameTime = (gameTime: Partial<GameTime> | null | undefined)
 
   return {
     currentDate,
-    actionsRemaining: Math.max(0, Math.min(gameTime.actionsRemaining ?? 3, gameTime.maxActionsPerDay ?? 3)),
+    actionsRemaining: clampStat(gameTime.actionsRemaining ?? 3, 0, gameTime.maxActionsPerDay ?? 3),
     maxActionsPerDay: gameTime.maxActionsPerDay ?? 3,
     schoolYear,
     age: Math.max(14, Math.min(gameTime.age ?? 14, 25)),
@@ -167,9 +167,9 @@ export const validateFriends = (friends: unknown): Friend[] => {
       // Migrazione dati legacy: legameLevel (1-10) -> affinita (0-100)
       const affinita: number =
         typeof friend.affinita === 'number'
-          ? Math.min(100, Math.max(0, friend.affinita))
+          ? clampStat(friend.affinita)
           : typeof friend.legameLevel === 'number'
-          ? Math.min(100, Math.max(0, (friend.legameLevel as number) * 10))
+          ? clampStat((friend.legameLevel as number) * 10)
           : 50
 
       const type =

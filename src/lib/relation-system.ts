@@ -3,6 +3,7 @@
 // Compatibile con il sistema Friend legacy tramite migrateLegacyFriend().
 
 import type { Friend, FriendType, GameStats, GameDate } from '@/lib/types'
+import { clampStat } from '@/lib/game-utils'
 
 // ── Tipi ──────────────────────────────────────────────────────────────────────
 
@@ -428,11 +429,11 @@ export const INTERACTION_CATALOG: Record<string, InteractionDef> = {
 /** Clampa tutti i valori di RelationStats nell'intervallo 0-100 */
 export function clampRel(rel: RelationStats): RelationStats {
   return {
-    amicizia:  Math.max(0, Math.min(100, Math.round(rel.amicizia))),
-    romantico: Math.max(0, Math.min(100, Math.round(rel.romantico))),
-    amore:     Math.max(0, Math.min(100, Math.round(rel.amore))),
-    odio:      Math.max(0, Math.min(100, Math.round(rel.odio))),
-    rivalita:  Math.max(0, Math.min(100, Math.round(rel.rivalita ?? 0))),
+    amicizia:  clampStat(Math.round(rel.amicizia)),
+    romantico: clampStat(Math.round(rel.romantico)),
+    amore:     clampStat(Math.round(rel.amore)),
+    odio:      clampStat(Math.round(rel.odio)),
+    rivalita:  clampStat(Math.round(rel.rivalita ?? 0)),
   }
 }
 
@@ -526,7 +527,7 @@ export function migrateLegacyFriend(f: Friend): Friend {
     ...f,
     originType,
     rel: {
-      amicizia:  Math.max(0, Math.min(100, affinita)),
+      amicizia:  clampStat(affinita),
       romantico: 0,
       amore:     0,
       odio:      0,

@@ -1,5 +1,5 @@
 import { GameStats, Friend, FriendType } from '@/lib/types'
-import { randomChance } from '@/lib/game-utils'
+import { randomChance, clampStat } from '@/lib/game-utils'
 import { ORIGIN_INITIAL_STATS, MET_AT_TYPE_WEIGHTS } from '@/lib/relation-system'
 
 // Re-export per compatibilità con componenti che importano da qui
@@ -291,11 +291,11 @@ export const applyFriendActionEffects = (
       break
   }
   
-  newAffinita = Math.max(0, Math.min(100, newAffinita))
+  newAffinita = clampStat(newAffinita)
   
   // E1: sincronizza rel.amicizia con newAffinita se il friend usa il nuovo sistema
   const newRel = friend.rel
-    ? { ...friend.rel, amicizia: Math.max(0, Math.min(100, newAffinita)) }
+    ? { ...friend.rel, amicizia: clampStat(newAffinita) }
     : undefined
 
   return { newStats, newAffinita, message, newRel }

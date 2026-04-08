@@ -111,6 +111,14 @@ export function TeacherSelectionDialog({
         </DialogHeader>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+          {subjects.length === 0 && (
+            <p
+              className="col-span-3 text-center text-sm text-muted-foreground py-6"
+              role="status"
+            >
+              Nessuna materia disponibile.
+            </p>
+          )}
           {subjects.map(([subject, grade], index) => {
             const indicator = getGradeIndicator(grade)
             const isSelected = selectedSubject === subject

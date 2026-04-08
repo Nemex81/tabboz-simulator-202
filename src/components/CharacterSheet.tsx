@@ -7,7 +7,7 @@ import { getReputationLevel } from '@/lib/game-utils'
 import { DiaryPanel } from '@/components/DiaryPanel'
 import { HealthRecordPanel } from '@/components/HealthRecordPanel'
 import { GradeProgressPanel } from '@/components/GradeProgressPanel'
-import { RelationsPanel } from '@/components/RelationsPanel'
+import { FriendshipsPanel } from '@/components/FriendshipsPanel'
 import { RelationshipsPanel } from '@/components/RelationshipsPanel'
 import type { Ragazza } from '@/lib/girlfriend-system'
 
@@ -35,7 +35,7 @@ interface CharacterSheetProps {
   onTryRelationship: (relationshipId: string) => void
 }
 
-export function CharacterSheet({
+export const CharacterSheet = React.memo(function CharacterSheet({
   playerProfile,
   stats,
   schoolType,
@@ -253,7 +253,7 @@ export function CharacterSheet({
 
       <TabsContent value="relazioni">
         <div className="mt-2 space-y-6">
-          <RelationsPanel
+          <FriendshipsPanel
             friends={friends}
             stats={stats}
             actionsRemaining={actionsRemaining}
@@ -323,4 +323,4 @@ export function CharacterSheet({
       </TabsContent>
     </Tabs>
   )
-}
+})

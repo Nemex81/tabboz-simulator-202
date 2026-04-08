@@ -1,6 +1,7 @@
 import type { SchoolType, WeeklyTimetable, TimetableSlot, Teacher } from '@/lib/types'
 import { getActiveSubjectsForYear } from '@/lib/subjects'
 import type { SubjectDefinition } from '@/lib/subjects'
+import { clampStat } from '@/lib/game-utils'
 
 // ─── generateWeeklyTimetable ──────────────────────────────────────────────────
 //
@@ -134,6 +135,6 @@ export function getTodaySchedule(
   timetable: WeeklyTimetable,
   dayOfWeek: number   // 0=lunedi, 4=venerdi
 ): TimetableSlot[] {
-  const key = Math.max(0, Math.min(4, dayOfWeek)) as 0 | 1 | 2 | 3 | 4
+  const key = clampStat(dayOfWeek, 0, 4) as 0 | 1 | 2 | 3 | 4
   return timetable[key]
 }

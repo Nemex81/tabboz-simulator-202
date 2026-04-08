@@ -69,12 +69,12 @@ export function generateTeachers(
     const corruttibilita = gaussianInt(5, 1.5)
     const resistenzaMinacce = gaussianInt(5, 1.5)
 
-    // C9 — relazione calcolata UNA SOLA VOLTA al momento della generazione
+    // C9 — relazione calcolata UNA SOLA VOLTA al momento della generazione — scala [0,100]
     const relazione = clampRelazione(
-      (simpatia * 6 - 20) + Math.round((Math.random() - 0.5) * 16)
+      (simpatia * 3 + 40) + Math.round((Math.random() - 0.5) * 8)
     )
 
-    const sogliaRottura = -30 - (severita * 5)  // range -35 a -80
+    const sogliaRottura = Math.round(35 - severita * 2.5)  // range ~[10,33]
     const isOstile = relazione < sogliaRottura
 
     return {
@@ -108,7 +108,7 @@ export function getTeacherForSubject(
 // ─── Privati ──────────────────────────────────────────────────────────────────
 
 function clampRelazione(value: number): number {
-  return Math.max(-100, Math.min(100, value))
+  return Math.max(0, Math.min(100, value))
 }
 
 function buildUniqueName(

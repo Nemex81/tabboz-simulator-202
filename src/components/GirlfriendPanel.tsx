@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
+import { useSoundFeedback } from '@/hooks/useSoundFeedback'
 import { 
   Heart, 
   ChatCircle, 
@@ -37,13 +38,14 @@ interface GirlfriendPanelProps {
   onBreakup: () => void
 }
 
-export function GirlfriendPanel({
+export const GirlfriendPanel = memo(function GirlfriendPanel({
   girlfriend,
   stats,
   actionsRemaining,
   onAction,
   onBreakup
 }: GirlfriendPanelProps) {
+  const { play } = useSoundFeedback()
   // C3-1: guard null rimosso — il componente è sempre renderizzato dentro {girlfriend && ...}
   const interesseColor = girlfriend.interessePerTe < 30 
     ? 'bg-destructive'
@@ -247,7 +249,7 @@ export function GirlfriendPanel({
             <div className="space-y-3">
               {/* FIX-B: messaggio è gratuito (non consuma azione) — non va mai disabilitato per azioni esaurite */}
               <Button
-                onClick={() => onAction('messaggio')}
+                onClick={() => { play('click'); onAction('messaggio') }}
                 disabled={false}
                 className="w-full justify-start"
                 variant="secondary"
@@ -260,7 +262,7 @@ export function GirlfriendPanel({
               </Button>
               
               <Button
-                onClick={() => onAction('cinema')}
+                onClick={() => { play('click'); onAction('cinema') }}
                 disabled={actionsRemaining === 0 || !canInvitareCinema || stats.soldi < 40}
                 className="w-full justify-start"
                 variant="default"
@@ -275,7 +277,7 @@ export function GirlfriendPanel({
               </Button>
               
               <Button
-                onClick={() => onAction('motorino')}
+                onClick={() => { play('click'); onAction('motorino') }}
                 disabled={actionsRemaining === 0 || !canPortareMotorino || stats.soldi < 20}
                 className="w-full justify-start"
                 variant="default"
@@ -291,7 +293,7 @@ export function GirlfriendPanel({
               
               {girlfriend.personalita === 'secchiona' && (
                 <Button
-                  onClick={() => onAction('compiti')}
+                  onClick={() => { play('click'); onAction('compiti') }}
                   disabled={actionsRemaining === 0 || stats.intelligenza < 40}
                   className="w-full justify-start"
                   variant="secondary"
@@ -307,7 +309,7 @@ export function GirlfriendPanel({
               )}
               
               <Button
-                onClick={() => onAction('regalo')}
+                onClick={() => { play('moneySpent'); onAction('regalo') }}
                 disabled={actionsRemaining === 0 || stats.soldi < 60}
                 className="w-full justify-start bg-accent text-accent-foreground"
               >
@@ -322,7 +324,7 @@ export function GirlfriendPanel({
               
               {canDichiararti && (
                 <Button
-                  onClick={() => onAction('dichiarati')}
+                  onClick={() => { play('bigWin'); onAction('dichiarati') }}
                   disabled={actionsRemaining === 0}
                   className="w-full justify-start bg-primary text-primary-foreground animate-pulse"
                 >
@@ -406,4 +408,4 @@ export function GirlfriendPanel({
       </Tabs>
     </div>
   )
-}
+})

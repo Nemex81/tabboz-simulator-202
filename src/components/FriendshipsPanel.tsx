@@ -1,4 +1,4 @@
-// src/components/RelationsPanel.tsx
+// src/components/FriendshipsPanel.tsx
 // Wrapper con 3 tab (Tutti / Scuola / Extra) — il filtro vive qui, EnhancedFriendsPanel è passivo.
 
 import React, { lazy, Suspense } from 'react'
@@ -10,7 +10,7 @@ const EnhancedFriendsPanel = lazy(() =>
   import('@/components/EnhancedFriendsPanel').then(m => ({ default: m.EnhancedFriendsPanel }))
 )
 
-interface RelationsPanelProps {
+interface FriendshipsPanelProps {
   friends: Friend[]
   stats: GameStats
   actionsRemaining: number
@@ -21,7 +21,7 @@ interface RelationsPanelProps {
   onGirlfriendBreakup: () => void
 }
 
-export const RelationsPanel = React.memo(function RelationsPanel(props: RelationsPanelProps) {
+export const FriendshipsPanel = React.memo(function FriendshipsPanel(props: FriendshipsPanelProps) {
   const { friends, ...rest } = props
 
   // Il filtro vive qui — EnhancedFriendsPanel riceve solo l'array già filtrato

@@ -25,6 +25,29 @@ interface CityPanelProps {
   morningChoicePending?: boolean
 }
 
+// R16: helper per evitare ripetizione del pattern disabled/blockedReason
+interface ActionState {
+  disabled: boolean
+  blockedReason: string | undefined
+}
+
+function getActionState(
+  morningChoicePending: boolean,
+  actionsRemaining: number,
+  extraCheck?: { condition: boolean; reason: string }
+): ActionState {
+  if (morningChoicePending) {
+    return { disabled: true, blockedReason: '🏫 Scegli prima se andare a scuola o marinare!' }
+  }
+  if (actionsRemaining <= 0) {
+    return { disabled: true, blockedReason: 'Nessuna azione per questa fascia oraria' }
+  }
+  if (extraCheck?.condition) {
+    return { disabled: true, blockedReason: extraCheck.reason }
+  }
+  return { disabled: false, blockedReason: undefined }
+}
+
 export function CityPanel({
   onDisco,
   onCinema,
@@ -38,8 +61,11 @@ export function CityPanel({
   stanchezza,
   morningChoicePending = false
 }: CityPanelProps) {
+  const base = (extra?: { condition: boolean; reason: string }) =>
+    getActionState(morningChoicePending, actionsRemaining, extra)
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label="Pannello città">
       <Card className="p-6 border-2 border-primary bg-card">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-3 mb-2">
@@ -59,14 +85,7 @@ export function CityPanel({
             label="Discoteca"
             shortcut="Ctrl+D"
             onClick={onDisco}
-            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 30}
-            blockedReason={
-              morningChoicePending
-                ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : actionsRemaining <= 0
-                ? 'Nessuna azione per questa fascia oraria'
-                : 'Servono almeno 30€'
-            }
+            {...base({ condition: soldi < 30, reason: 'Servono almeno 30€' })}
             ariaLabel="Vai in discoteca. Costa 30 euro. Aumenta Figosità e Carisma. Tasto rapido: Ctrl+D"
             variant="default"
           />
@@ -75,14 +94,7 @@ export function CityPanel({
             label="Cinema"
             shortcut="Ctrl+C"
             onClick={onCinema}
-            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 15}
-            blockedReason={
-              morningChoicePending
-                ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : actionsRemaining <= 0
-                ? 'Nessuna azione per questa fascia oraria'
-                : 'Servono almeno 15€'
-            }
+            {...base({ condition: soldi < 15, reason: 'Servono almeno 15€' })}
             ariaLabel="Vai al cinema. Costa 15 euro. Aumenta Carisma e riduce Stanchezza. Tasto rapido: Ctrl+C"
             variant="default"
           />
@@ -91,14 +103,7 @@ export function CityPanel({
             label="Centro Commerciale"
             shortcut="Ctrl+S"
             onClick={onShopping}
-            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 50}
-            blockedReason={
-              morningChoicePending
-                ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : actionsRemaining <= 0
-                ? 'Nessuna azione per questa fascia oraria'
-                : 'Servono almeno 50€'
-            }
+            {...base({ condition: soldi < 50, reason: 'Servono almeno 50€' })}
             ariaLabel="Vai al centro commerciale. Costa 50 euro. Aumenta molto la Figosità. Tasto rapido: Ctrl+S"
             variant="default"
           />
@@ -116,16 +121,11 @@ export function CityPanel({
             label="Palestra"
             shortcut="Ctrl+1"
             onClick={onPalestra}
-            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 20 || stanchezza > 80}
-            blockedReason={
-              morningChoicePending
-                ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : actionsRemaining <= 0
-                ? 'Nessuna azione per questa fascia oraria'
-                : soldi < 20
-                ? 'Servono almeno 20€'
-                : 'Sei troppo stanco per allenarti!'
-            }
+            {...base(
+              soldi < 20
+                ? { condition: true, reason: 'Servono almeno 20€' }
+                : { condition: stanchezza > 80, reason: 'Sei troppo stanco per allenarti!' }
+            )}
             ariaLabel="Vai in palestra. Costa 20 euro. Aumenta Muscoli. Tasto rapido: Ctrl+1"
             variant="default"
           />
@@ -134,14 +134,7 @@ export function CityPanel({
             label="Lampada"
             shortcut="Ctrl+2"
             onClick={onLampada}
-            disabled={morningChoicePending || actionsRemaining <= 0 || soldi < 25}
-            blockedReason={
-              morningChoicePending
-                ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : actionsRemaining <= 0
-                ? 'Nessuna azione per questa fascia oraria'
-                : 'Servono almeno 25€'
-            }
+            {...base({ condition: soldi < 25, reason: 'Servono almeno 25€' })}
             ariaLabel="Vai alla lampada abbronzante. Costa 25 euro. Aumenta Figosità. Tasto rapido: Ctrl+2"
             variant="default"
           />
@@ -150,14 +143,7 @@ export function CityPanel({
             label="Lavoro"
             shortcut="Ctrl+3"
             onClick={onLavoro}
-            disabled={morningChoicePending || actionsRemaining <= 0 || muscoli < 40}
-            blockedReason={
-              morningChoicePending
-                ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : actionsRemaining <= 0
-                ? 'Nessuna azione per questa fascia oraria'
-                : 'Servono almeno 40 Muscoli per lavorare!'
-            }
+            {...base({ condition: muscoli < 40, reason: 'Servono almeno 40 Muscoli per lavorare!' })}
             ariaLabel="Lavora per guadagnare soldi. Richiede almeno 40 Muscoli. Tasto rapido: Ctrl+3"
             variant="default"
           />
