@@ -419,6 +419,7 @@
 
 - [x] Commento `// TODO STEP 12: studia_gruppo — handler non implementato` presente in ACTION_HANDLER_MAP
 - [x] `handleStudiaGruppo` implementato in `useStudyActions.ts` e collegato ad `ACTION_HANDLER_MAP` (completato post-STEP 12)
+- [x] Costanti `STUDY.GROUP_*` aggiunte a `game-balance.constants.ts`; valori hardcoded sostituiti con costanti (08 Apr 2026)
 
 **Criteri di accettazione STEP 12**:
 - [x] `getAvailableActions` viene chiamata da `useGameActions`
