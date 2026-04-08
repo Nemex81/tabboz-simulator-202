@@ -12,14 +12,26 @@ interface ErrorFallbackProps {
 export const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps) => {
   if (import.meta.env.DEV) throw error;
 
+  const isDynamicImportError = /Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError/i.test(error.message)
+
+  const handleRecovery = () => {
+    if (isDynamicImportError) {
+      window.location.reload()
+      return
+    }
+    resetErrorBoundary()
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Alert variant="destructive" className="mb-6">
           <AlertTriangleIcon />
-          <AlertTitle>This spark has encountered a runtime error</AlertTitle>
+          <AlertTitle>{isDynamicImportError ? 'Aggiornamento rilevato durante la sessione' : 'This spark has encountered a runtime error'}</AlertTitle>
           <AlertDescription>
-            Something unexpected happened while running the application. The error details are shown below. Contact the spark author and let them know about this issue.
+            {isDynamicImportError
+              ? 'L\'app ha provato a caricare un modulo generato da una build precedente. Ricarica la pagina per allinearti agli asset pubblicati piu recenti.'
+              : 'Something unexpected happened while running the application. The error details are shown below. Contact the spark author and let them know about this issue.'}
           </AlertDescription>
         </Alert>
         
@@ -31,12 +43,12 @@ export const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps)
         </div>
         
         <Button 
-          onClick={resetErrorBoundary} 
+          onClick={handleRecovery} 
           className="w-full"
           variant="outline"
         >
           <RefreshCwIcon />
-          Try Again
+          {isDynamicImportError ? 'Ricarica la pagina' : 'Try Again'}
         </Button>
       </div>
     </div>

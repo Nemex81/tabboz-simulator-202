@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ActionButton } from '@/components/ActionButton'
 import { EnhancedFriendsPanel } from '@/components/EnhancedFriendsPanel'
+import { SchoolBreakPanel } from '@/components/SchoolBreakPanel'
 import type {
   GameStats,
   SubjectGrades,
@@ -50,10 +51,6 @@ const SchoolHomePanel = lazy(() =>
 const TeachersPanel = lazy(() =>
   import('@/components/TeachersPanel').then(m => ({ default: m.TeachersPanel }))
 )
-const SchoolBreakPanel = lazy(() =>
-  import('@/components/SchoolBreakPanel').then(m => ({ default: m.SchoolBreakPanel }))
-)
-
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface SchoolTabProps {
@@ -371,21 +368,19 @@ export function SchoolTab({
             {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && isSchoolPeriod && schoolRecord.wentToSchoolToday &&
              schoolDayState !== undefined &&
              schoolDayState.slots[schoolDayState.currentSlotIndex]?.type === 'break' && (
-              <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento intervallo...</div>}>
-                <SchoolBreakPanel
-                  schoolDayState={schoolDayState}
-                  teachers={teachers ?? []}
-                  classRoster={classRoster ?? []}
-                  stats={stats}
-                  schoolRecord={schoolRecord}
-                  onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
-                  onTeacherChange={onTeacherChange}
-                  onClassmateChange={onClassmateChange}
-                  onBreakComplete={onBreakComplete}
-                  announce={announce}
-                  currentDate={currentDate}
-                />
-              </Suspense>
+              <SchoolBreakPanel
+                schoolDayState={schoolDayState}
+                teachers={teachers ?? []}
+                classRoster={classRoster ?? []}
+                stats={stats}
+                schoolRecord={schoolRecord}
+                onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
+                onTeacherChange={onTeacherChange}
+                onClassmateChange={onClassmateChange}
+                onBreakComplete={onBreakComplete}
+                announce={announce}
+                currentDate={currentDate}
+              />
             )}
 
             {/* SchoolMorningPanel — slot lezione attivo */}
