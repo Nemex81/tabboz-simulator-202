@@ -1,14 +1,11 @@
 // src/components/FriendshipsPanel.tsx
 // Wrapper con 3 tab (Tutti / Scuola / Extra) — il filtro vive qui, EnhancedFriendsPanel è passivo.
 
-import React, { lazy, Suspense } from 'react'
+import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Friend, GameStats } from '@/lib/types'
 import type { Ragazza } from '@/lib/girlfriend-system'
-
-const EnhancedFriendsPanel = lazy(() =>
-  import('@/components/EnhancedFriendsPanel').then(m => ({ default: m.EnhancedFriendsPanel }))
-)
+import { EnhancedFriendsPanel } from '@/components/EnhancedFriendsPanel'
 
 interface FriendshipsPanelProps {
   friends: Friend[]
@@ -45,21 +42,15 @@ export const FriendshipsPanel = React.memo(function FriendshipsPanel(props: Frie
       </TabsList>
 
       <TabsContent value="tutti">
-        <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Caricamento...</div>}>
-          <EnhancedFriendsPanel friends={friends} {...rest} />
-        </Suspense>
+        <EnhancedFriendsPanel friends={friends} {...rest} />
       </TabsContent>
 
       <TabsContent value="scuola">
-        <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Caricamento...</div>}>
-          <EnhancedFriendsPanel friends={schoolFriends} {...rest} />
-        </Suspense>
+        <EnhancedFriendsPanel friends={schoolFriends} {...rest} />
       </TabsContent>
 
       <TabsContent value="extra">
-        <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Caricamento...</div>}>
-          <EnhancedFriendsPanel friends={extraFriends} {...rest} />
-        </Suspense>
+        <EnhancedFriendsPanel friends={extraFriends} {...rest} />
       </TabsContent>
     </Tabs>
   )

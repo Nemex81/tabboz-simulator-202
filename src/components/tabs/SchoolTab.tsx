@@ -28,28 +28,17 @@ import type { SchoolMorningEvent } from '@/lib/school-morning-events'
 import type { Ragazza } from '@/lib/girlfriend-system'
 import { getSubjectDisplayName } from '@/lib/types'
 import { calculateStudyGradeIncrease } from '@/lib/game-utils'
+import { AfternoonEventPanel } from '@/components/AfternoonEventPanel'
+import { SchoolHomePanel } from '@/components/SchoolHomePanel'
+import { TeachersPanel } from '@/components/TeachersPanel'
+import { ExamsPanel } from '@/components/ExamsPanel'
+import { SchoolMorningPanel } from '@/components/SchoolMorningPanel'
+import { GradeProgressPanel } from '@/components/GradeProgressPanel'
+import ChunkErrorBoundary from '@/components/ChunkErrorBoundary'
 
-// ── Lazy components (caricati solo quando il tab scuola è attivo) ──────────
-const GradeProgressPanel = lazy(() =>
-  import('@/components/GradeProgressPanel').then(m => ({ default: m.GradeProgressPanel }))
-)
-const ExamsPanel = lazy(() =>
-  import('@/components/ExamsPanel').then(m => ({ default: m.ExamsPanel }))
-)
+// ── Lazy components (peso > 20 kB) ────────────────────────────────────────
 const StatsDashboard = lazy(() =>
   import('@/components/StatsDashboard').then(m => ({ default: m.StatsDashboard }))
-)
-const SchoolMorningPanel = lazy(() =>
-  import('@/components/SchoolMorningPanel').then(m => ({ default: m.SchoolMorningPanel }))
-)
-const AfternoonEventPanel = lazy(() =>
-  import('@/components/AfternoonEventPanel').then(m => ({ default: m.AfternoonEventPanel }))
-)
-const SchoolHomePanel = lazy(() =>
-  import('@/components/SchoolHomePanel').then(m => ({ default: m.SchoolHomePanel }))
-)
-const TeachersPanel = lazy(() =>
-  import('@/components/TeachersPanel').then(m => ({ default: m.TeachersPanel }))
 )
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -221,38 +210,34 @@ export function SchoolTab({
             >
               ← Scuola
             </Button>
-            <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Caricamento professori...</div>}>
-              <TeachersPanel
-                teachers={teachers ?? []}
-                currentDate={currentDate}
-                onTeacherInteraction={onTeacherInteraction}
-                stats={stats}
-                announce={announce}
-                onConsumeAction={consumeAction}
-                actionsRemaining={phaseActionsRemaining}
-              />
-            </Suspense>
+            <TeachersPanel
+              teachers={teachers ?? []}
+              currentDate={currentDate}
+              onTeacherInteraction={onTeacherInteraction}
+              stats={stats}
+              announce={announce}
+              onConsumeAction={consumeAction}
+              actionsRemaining={phaseActionsRemaining}
+            />
           </div>
         )}
 
         {/* Vista home (SchoolHomePanel + azioni mattina) */}
         {schoolSubPanel === 'home' && (
           <div className="space-y-4">
-            <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Caricamento home...</div>}>
-              <SchoolHomePanel
-                schoolType={schoolType as NonNullable<typeof schoolType>}
-                schoolYear={schoolYear}
-                schoolRecord={schoolRecord}
-                timetable={timetable ?? null}
-                schoolDayState={schoolDayState ?? null}
-                teachers={teachers ?? []}
-                classRoster={classRoster ?? []}
-                currentDate={currentDate}
-                onGoToTeachers={() => setSchoolSubPanel('teachers')}
-                onGoToClassmates={() => setSchoolSubPanel('home')}
-                onPromoteToFriend={handlePromoteToFriend}
-              />
-            </Suspense>
+            <SchoolHomePanel
+              schoolType={schoolType as NonNullable<typeof schoolType>}
+              schoolYear={schoolYear}
+              schoolRecord={schoolRecord}
+              timetable={timetable ?? null}
+              schoolDayState={schoolDayState ?? null}
+              teachers={teachers ?? []}
+              classRoster={classRoster ?? []}
+              currentDate={currentDate}
+              onGoToTeachers={() => setSchoolSubPanel('teachers')}
+              onGoToClassmates={() => setSchoolSubPanel('home')}
+              onPromoteToFriend={handlePromoteToFriend}
+            />
 
             {/* Messaggio contestuale */}
             {(() => {
@@ -386,53 +371,45 @@ export function SchoolTab({
             {/* SchoolMorningPanel — slot lezione attivo */}
             {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && isSchoolPeriod && schoolRecord.wentToSchoolToday &&
              schoolDayState?.slots[schoolDayState?.currentSlotIndex]?.type !== 'break' && (
-              <Suspense
+              <SchoolMorningPanel
                 key={`smp-${schoolDayState?.isComplete ? 'done' : 'live'}`}
-                fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina scolastica...</div>}
-              >
-                <SchoolMorningPanel
-                  context="school"
-                  events={schoolMorningEvents}
-                  stats={stats}
-                  onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
-                  onGainExtraAction={gainExtraAction}
-                  onConsumeAction={consumeAction}
-                  announce={announce}
-                  onNewFriend={onNewFriend}
-                  addLogEntry={addLogEntry}
-                  currentDate={currentDate}
-                  schoolDayState={schoolDayState ?? undefined}
-                  onSlotComplete={onSlotComplete}
-                />
-              </Suspense>
+                context="school"
+                events={schoolMorningEvents}
+                stats={stats}
+                onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
+                onGainExtraAction={gainExtraAction}
+                onConsumeAction={consumeAction}
+                announce={announce}
+                onNewFriend={onNewFriend}
+                addLogEntry={addLogEntry}
+                currentDate={currentDate}
+                schoolDayState={schoolDayState ?? undefined}
+                onSlotComplete={onSlotComplete}
+              />
             )}
 
             {/* SchoolMorningPanel — contesto strada (marinatori) */}
             {showStreetMorning && dayType === 'feriale' && currentPhase === 'mattina' && marinatoOggi && (
-              <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento mattina per strada...</div>}>
-                <SchoolMorningPanel
-                  context="street"
-                  events={streetMorningEvents}
-                  stats={stats}
-                  onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
-                  onGainExtraAction={gainExtraAction}
-                  onConsumeAction={consumeAction}
-                  announce={announce}
-                  onNewFriend={onNewFriend}
-                  addLogEntry={addLogEntry}
-                  currentDate={currentDate}
-                />
-              </Suspense>
+              <SchoolMorningPanel
+                context="street"
+                events={streetMorningEvents}
+                stats={stats}
+                onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
+                onGainExtraAction={gainExtraAction}
+                onConsumeAction={consumeAction}
+                announce={announce}
+                onNewFriend={onNewFriend}
+                addLogEntry={addLogEntry}
+                currentDate={currentDate}
+              />
             )}
 
             {/* AfternoonEventPanel */}
             {afternoonEvent && (currentPhase === 'pomeriggio' || currentPhase === 'sera') && (
-              <Suspense fallback={null}>
-                <AfternoonEventPanel
-                  event={afternoonEvent}
-                  onChoice={handleAfternoonChoice}
-                />
-              </Suspense>
+              <AfternoonEventPanel
+                event={afternoonEvent}
+                onChoice={handleAfternoonChoice}
+              />
             )}
           </div>
         )}
@@ -520,13 +497,11 @@ export function SchoolTab({
         {/* GradeProgressPanel + storico anni precedenti */}
         {schoolType ? (
           <>
-            <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Caricamento voti...</div>}>
-              <GradeProgressPanel
-                grades={grades}
-                schoolType={schoolType}
-                schoolYear={schoolYear}
-              />
-            </Suspense>
+            <GradeProgressPanel
+              grades={grades}
+              schoolType={schoolType}
+              schoolYear={schoolYear}
+            />
             {Object.keys(rawGradesHistory ?? {}).length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
@@ -594,14 +569,12 @@ export function SchoolTab({
 
       {/* ── Sotto-tab: Verifiche ─────────────────────────────────────────── */}
       <TabsContent value="verifiche" className="space-y-6 mt-6">
-        <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento...</div>}>
-          <ExamsPanel
-            exams={scheduledExams}
-            onPrepareExam={handlePrepareExam}
-            actionsRemaining={phaseActionsRemaining}
-            stanchezza={stats.stanchezza}
-          />
-        </Suspense>
+        <ExamsPanel
+          exams={scheduledExams}
+          onPrepareExam={handlePrepareExam}
+          actionsRemaining={phaseActionsRemaining}
+          stanchezza={stats.stanchezza}
+        />
         <Card className="p-3 border-2 border-accent bg-card">
           <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
             <Brain size={28} weight="fill" />
@@ -658,9 +631,11 @@ export function SchoolTab({
 
       {/* ── Sotto-tab: Dashboard ─────────────────────────────────────────── */}
       <TabsContent value="dashboard" className="space-y-6 mt-6">
-        <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Caricamento dashboard...</div>}>
-          <StatsDashboard stats={stats} grades={grades} />
-        </Suspense>
+        <ChunkErrorBoundary>
+          <Suspense fallback={<div className="flex items-center justify-center p-8 text-sm text-muted-foreground">Caricamento statistiche...</div>}>
+            <StatsDashboard stats={stats} grades={grades} />
+          </Suspense>
+        </ChunkErrorBoundary>
       </TabsContent>
     </Tabs>
   )

@@ -500,6 +500,18 @@
 
 ---
 
+## Fix Infrastruttura
+
+- [x] **Stale chunk fix** (08 Apr 2026) — rimossi 10 lazy() ingiustificati
+  (< 20 kB): 5 dialog in GameDialogs.tsx + 5 panel in SchoolTab.tsx + GradeProgressPanel.
+  ChunkErrorBoundary con auto-reload aggiunto su StatsDashboard (424 kB).
+  Chunk dialog-*.js eliminato (Radix ora bundlato nel main).
+  GameDialogs.tsx Suspense condiviso rimosso.
+  FriendshipsPanel.tsx EnhancedFriendsPanel convertito a statico.
+  Chunk JS da 12 a 2 (StatsDashboard-*.js + index-*.js).
+
+---
+
 ## Note per Copilot
 
 - Consulta SEMPRE `docs/PIANO_IMPLEMENTATIVO_CORRETTIVO_v3.md` prima di implementare ogni step
