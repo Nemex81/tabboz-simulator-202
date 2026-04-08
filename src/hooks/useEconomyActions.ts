@@ -75,7 +75,7 @@ export function useEconomyActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
@@ -83,17 +83,17 @@ export function useEconomyActions({
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Non puoi farlo adesso.')
+      announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
     if (s.muscoli < 40) {
       playSound.failure()
-      announce('Sei troppo SMILZO per fare il buttadifuori! Servono 40 Muscoli')
+      announce('Sei troppo SMILZO per fare il buttadifuori! Servono 40 Muscoli', 'assertive')
       return
     }
     if (s.stanchezza > 80) {
       playSound.failure()
-      announce('Sei troppo DISTRUTTO per lavorare! Riposa!')
+      announce('Sei troppo DISTRUTTO per lavorare! Riposa!', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -115,7 +115,7 @@ export function useEconomyActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
@@ -123,17 +123,17 @@ export function useEconomyActions({
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Non puoi farlo adesso.')
+      announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
     if (s.soldi < 50) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per truccare il motorino! Servono 50€')
+      announce('Non hai abbastanza GRANA per truccare il motorino! Servono 50€', 'assertive')
       return
     }
     if (s.stanchezza > 80) {
       playSound.failure()
-      announce('Sei troppo DISTRUTTO per trafficare col motorino! Riposa prima!')
+      announce('Sei troppo DISTRUTTO per trafficare col motorino! Riposa prima!', 'assertive')
       return
     }
     // STEP 13.5 — gara motorino sera/sabato
@@ -166,7 +166,7 @@ export function useEconomyActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
@@ -174,12 +174,12 @@ export function useEconomyActions({
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Non puoi farlo adesso.')
+      announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
     if (s.soldi < 100) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per fare shopping! Servono 100€')
+      announce('Non hai abbastanza GRANA per fare shopping! Servono 100€', 'assertive')
       return
     }
     playSound.buttonClick()

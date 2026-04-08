@@ -81,7 +81,7 @@ export function useLifestyleActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
@@ -89,12 +89,12 @@ export function useLifestyleActions({
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Non puoi farlo adesso.')
+      announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
     if (s.soldi < 20) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per la palestra! Servono 20€')
+      announce('Non hai abbastanza GRANA per la palestra! Servono 20€', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -126,18 +126,18 @@ export function useLifestyleActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // Fix2: lampada non disponibile la mattina feriale (sei a scuola)
     if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina') {
       playSound.failure()
-      announce('Vai a scuola! Non è ora di abbronzature.')
+      announce('Vai a scuola! Non è ora di abbronzature.', 'assertive')
       return
     }
     if (s.soldi < 30) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per la lampada! Servono 30€')
+      announce('Non hai abbastanza GRANA per la lampada! Servono 30€', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -157,7 +157,7 @@ export function useLifestyleActions({
   const handleRiposa = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // A1: riposa non disponibile durante la mattina scolastica feriale
@@ -166,7 +166,7 @@ export function useLifestyleActions({
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Non puoi riposare adesso.')
+      announce('Sei a scuola! Non puoi riposare adesso.', 'assertive')
       return
     }
     // A7: riposa disponibile solo in pomeriggio o mattina non-feriale
@@ -175,7 +175,7 @@ export function useLifestyleActions({
     const isRestAllowed = ph === 'pomeriggio' || (ph === 'mattina' && dt !== 'feriale')
     if (!isRestAllowed) {
       playSound.failure()
-      announce('Il riposo parziale è disponibile solo al pomeriggio (o la mattina nei giorni non scolastici)!')
+      announce('Il riposo parziale è disponibile solo al pomeriggio (o la mattina nei giorni non scolastici)!', 'assertive')
       return
     }
     // A7: recupero parziale 25-35%
@@ -196,12 +196,12 @@ export function useLifestyleActions({
     const gt = gameTimeRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     if (!(dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod)) {
       playSound.failure()
-      announce('Puoi marinare solo la mattina di un giorno scolastico!')
+      announce('Puoi marinare solo la mattina di un giorno scolastico!', 'assertive')
       return
     }
     setStats((current) => ({

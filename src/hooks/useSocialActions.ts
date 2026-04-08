@@ -98,28 +98,28 @@ export function useSocialActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // Fix2: discoteca non disponibile di mattina
     if (currentPhaseRef.current === 'mattina') {
       playSound.failure()
-      announce('La discoteca di mattina?! Ci vuoi andare a quest\'ora?!')
+      announce('La discoteca di mattina?! Ci vuoi andare a quest\'ora?!', 'assertive')
       return
     }
     if (s.soldi < 60) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per entrare in discoteca! Servono 60€')
+      announce('Non hai abbastanza GRANA per entrare in discoteca! Servono 60€', 'assertive')
       return
     }
     if (s.stanchezza > 70) {
       playSound.failure()
-      announce('Sei troppo DISTRUTTO per andare in disco! Riposa!')
+      announce('Sei troppo DISTRUTTO per andare in disco! Riposa!', 'assertive')
       return
     }
     if (getMentalStateModifiers(s.stress ?? 0, s.morale ?? 60).isDiscoBlocked) {
       playSound.failure()
-      announce('Sei troppo giù di morale per andare in disco!')
+      announce('Sei troppo giù di morale per andare in disco!', 'assertive')
       addLogEntry('action_failure', 'Troppo giù per il disco', 'Sei troppo giù di morale per andare in disco!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
       return
     }
@@ -175,7 +175,7 @@ export function useSocialActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
@@ -183,12 +183,12 @@ export function useSocialActions({
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Non puoi farlo adesso.')
+      announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
     if (s.soldi < 40) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per il cinema! Servono 40€')
+      announce('Non hai abbastanza GRANA per il cinema! Servono 40€', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -235,7 +235,7 @@ export function useSocialActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // C1-5: blocca durante ore scolastiche del mattino
@@ -243,12 +243,12 @@ export function useSocialActions({
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Non puoi farlo adesso.')
+      announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
     if (s.soldi < 80) {
       playSound.failure()
-      announce('Servono 80€ per uscire!')
+      announce('Servono 80€ per uscire!', 'assertive')
       return
     }
     const relationship = relationships.find(r => r.id === relationshipId)
@@ -295,7 +295,7 @@ export function useSocialActions({
   const handleChiacchiera = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     const gt = gameTimeRef.current
@@ -323,7 +323,7 @@ export function useSocialActions({
   const handleParco = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     const gt = gameTimeRef.current
@@ -331,7 +331,7 @@ export function useSocialActions({
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Concentrati sulle lezioni.')
+      announce('Sei a scuola! Concentrati sulle lezioni.', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -359,14 +359,14 @@ export function useSocialActions({
   const handleTelefona = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     const gt = gameTimeRef.current
     const isSchoolMorning = dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina' && gt.schoolYear.isSchoolPeriod
     if (friendsRef.current.length === 0) {
       playSound.failure()
-      announce('Non hai amici da chiamare! Esci e socializza prima.')
+      announce('Non hai amici da chiamare! Esci e socializza prima.', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -391,7 +391,7 @@ consumeAction()
     const req = action.requirements(s, friend)
     if (!req.canDo) {
       playSound.failure()
-      announce(req.reason || 'Non puoi fare questa azione')
+      announce(req.reason || 'Non puoi fare questa azione', 'assertive')
       return
     }
     const result = applyFriendActionEffects(actionId, s, friend)

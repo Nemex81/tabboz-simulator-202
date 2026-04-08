@@ -390,7 +390,7 @@ export function useGameTime({
     const phase = currentPhaseRef.current
     if (phase !== 'sera' && phase !== 'notte') {
       playSound.failure()
-      announce('Puoi dormire solo la sera o di notte!')
+      announce('Puoi dormire solo la sera o di notte!', 'assertive')
       return
     }
     playSound.buttonClick()

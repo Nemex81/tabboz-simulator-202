@@ -496,6 +496,7 @@
 - [x] **A6 — emoji nelle stringhe announce lette da NVDA come descrizioni pittografiche**: rimossi 📋 ⚠️ 💬 🌟 dalle stringhe `announce()` in `useGameTime.ts`
 - [x] **B2 — Shopping ariaLabel e guard UI mostravano 50€ ma costo reale è 100€**: allineati a 100€ (`CityPanel.tsx`)
 - [x] **C1 — Ctrl+F e Ctrl+T documentati in KeyboardShortcutsDialog ma non implementati**: aggiunti i case 'f'/'t' in `useKeyboardShortcuts.ts`; aggiunto `setActiveTab` param; Tabs reso controllato in `App.tsx`
+- [x] **A7 — Dual aria-live regions — 08 Apr 2026**: separata la regione `aria-live="assertive"` (errori/blocchi) da una nuova regione `aria-live="polite"` (successi/info). `announce()` ora accetta `priority: 'polite' | 'assertive'`, default `'polite'`. Aggiunti ~35 parametri `'assertive'` su ~50 chiamate totali nei 6 hook + `App.tsx`. Build: zero errori TypeScript.
 
 ---
 

@@ -35,7 +35,7 @@ export interface UseGameActionsParams {
   setGameOver: (v: boolean) => void
   setGameOverReason: (v: string) => void
   consumeAction: () => void
-  announce: (msg: string) => void
+  announce: (message: string, priority?: 'polite' | 'assertive') => void
   triggerRandomEvent: () => void
   checkForNewFriend: (location: string) => void
   checkForNewRelationship: () => void

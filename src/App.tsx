@@ -134,7 +134,8 @@ function App() {
     setShowStreetMorning,
   } = useAppDialogs()
 
-  const ariaLiveRef = useRef<HTMLDivElement>(null)
+  const ariaLiveAssertiveRef = useRef<HTMLDivElement>(null)
+  const ariaLivePoliteRef = useRef<HTMLDivElement>(null)
   // F6: stato locale per mutua esclusività Vai a Scuola / Marina (si resetta al cambio giorno)
   const [marinatoOggi, setMarinatoOggi] = useState(false)
   const [morningChoicePending, setMorningChoicePending] = useState(false)
@@ -143,16 +144,17 @@ function App() {
   // Blocco 5 — tab principale attivo (controllato per navigazione da shortcut)
   const [activeTab, setActiveTab] = useState<string>('school')
 
-  const announce = useCallback((message: string) => {
-    if (ariaLiveRef.current) {
-      ariaLiveRef.current.textContent = ''
-      requestAnimationFrame(() => {
-        if (ariaLiveRef.current) {
-          ariaLiveRef.current.textContent = message
-        }
-      })
-    }
-    toast(message)
+  const announce = useCallback((
+    message: string,
+    priority: 'polite' | 'assertive' = 'polite'
+  ) => {
+    const ref = priority === 'assertive' ? ariaLiveAssertiveRef : ariaLivePoliteRef
+    if (!ref.current) return
+    ref.current.textContent = ''
+    requestAnimationFrame(() => {
+      if (ref.current) ref.current.textContent = message
+    })
+    toast(message, { duration: 3000 })
   }, [])
 
   // --- Custom Hooks ---
@@ -347,12 +349,12 @@ function App() {
 
   const handleAdvancePhaseGuarded = useCallback(() => {
     if ((phaseActionsRemaining ?? 0) > 0) {
-      announce(`Devi consumare prima le ${phaseActionsRemaining ?? 0} azioni rimaste!`)
+      announce(`Devi consumare prima le ${phaseActionsRemaining ?? 0} azioni rimaste!`, 'assertive')
       return
     }
 
     if (isSchoolMorningSequenceInProgress) {
-      announce('Completa prima tutte le ore di scuola prima di avanzare alla fase successiva.')
+      announce('Completa prima tutte le ore di scuola prima di avanzare alla fase successiva.', 'assertive')
       return
     }
 
@@ -481,7 +483,7 @@ function App() {
       playSound.gameOver()
       setGameOver(true)
       setGameOverReason(checkStatus.reason)
-      announce(checkStatus.reason)
+      announce(checkStatus.reason, 'assertive')
     }
   }, [stats, grades])
 
@@ -605,10 +607,18 @@ function App() {
 
   return (
     <main className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      <div 
-        ref={ariaLiveRef}
-        role="status" 
-        aria-live="assertive" 
+      <div
+        ref={ariaLiveAssertiveRef}
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        className="sr-only"
+      />
+      {/* Regione polite — successi e notifiche routine */}
+      <div
+        ref={ariaLivePoliteRef}
+        role="status"
+        aria-live="polite"
         aria-atomic="true"
         className="sr-only"
       />

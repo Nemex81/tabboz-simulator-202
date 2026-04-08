@@ -360,7 +360,7 @@ export function useEventEngine({
   const handleProvarciConAtipa = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Nessuna azione rimasta per questa fascia oraria!')
+      announce('Nessuna azione rimasta per questa fascia oraria!', 'assertive')
       return
     }
     const s = statsRef.current

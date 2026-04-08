@@ -101,7 +101,7 @@ export function useStudyActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     // Fix2: studia non disponibile durante le ore scolastiche del mattino
@@ -109,17 +109,17 @@ export function useStudyActions({
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Non puoi studiare per conto tuo adesso.')
+      announce('Sei a scuola! Non puoi studiare per conto tuo adesso.', 'assertive')
       return
     }
     if (!gt.schoolYear.isSchoolPeriod) {
       playSound.failure()
-      announce('Non puoi studiare durante le VACANZE ESTIVE! Goditi l\'estate!')
+      announce('Non puoi studiare durante le VACANZE ESTIVE! Goditi l\'estate!', 'assertive')
       return
     }
     if (s.stanchezza > 80) {
       playSound.failure()
-      announce('Sei troppo DISTRUTTO per studiare! Riposa!')
+      announce('Sei troppo DISTRUTTO per studiare! Riposa!', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -176,12 +176,12 @@ export function useStudyActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     if (s.soldi < 100) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per la MAZZETTA! Servono 100€')
+      announce('Non hai abbastanza GRANA per la MAZZETTA! Servono 100€', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -192,7 +192,7 @@ export function useStudyActions({
     const s = statsRef.current
     if (s.soldi < 100) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per la MAZZETTA! Servono 100€')
+      announce('Non hai abbastanza GRANA per la MAZZETTA! Servono 100€', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -214,7 +214,7 @@ export function useStudyActions({
   const handleMinaccia = useCallback(() => {
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -279,22 +279,22 @@ export function useStudyActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     if (!gt.schoolYear.isSchoolPeriod) {
       playSound.failure()
-      announce('Non puoi studiare in gruppo durante le VACANZE ESTIVE!')
+      announce('Non puoi studiare in gruppo durante le VACANZE ESTIVE!', 'assertive')
       return
     }
     if (s.stanchezza > 80) {
       playSound.failure()
-      announce('Sei troppo DISTRUTTO per studiare in gruppo! Riposa prima.')
+      announce('Sei troppo DISTRUTTO per studiare in gruppo! Riposa prima.', 'assertive')
       return
     }
     if (friendsRef.current.length === 0) {
       playSound.failure()
-      announce('Non hai amici con cui studiare in gruppo! Fatti qualche amico prima.')
+      announce('Non hai amici con cui studiare in gruppo! Fatti qualche amico prima.', 'assertive')
       return
     }
     const hasFriendBonus = getFriendStudyBonus(friendsRef.current) > 0
@@ -343,12 +343,12 @@ export function useStudyActions({
     const s = statsRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     if (s.stanchezza > 80) {
       playSound.failure()
-      announce('Troppo stanco per studiare!')
+      announce('Troppo stanco per studiare!', 'assertive')
       return
     }
     const examIndex = scheduledExamsRef.current.findIndex(e => e.subject === examSubject)
