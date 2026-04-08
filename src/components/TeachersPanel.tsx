@@ -16,29 +16,29 @@ import { playSound } from '@/lib/sound-effects'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Colore barra relazione -100/+100. */
+/** Colore barra relazione [0,100]. */
 function relationColor(value: number): string {
-  if (value > 20) return 'bg-green-500'
-  if (value >= -20) return 'bg-yellow-500'
+  if (value > 60) return 'bg-green-500'
+  if (value >= 40) return 'bg-yellow-500'
   return 'bg-red-500'
 }
 
 /** Testo descrittivo relazione per screen reader. */
 function relationLabel(value: number): string {
-  if (value > 20) return 'Buona'
-  if (value >= -20) return 'Neutrale'
+  if (value > 60) return 'Buona'
+  if (value >= 40) return 'Neutrale'
   return 'Tesa'
 }
 
-/** Barra relazione -100/+100. */
+/** Barra relazione [0,100]. */
 function RelationBar({ value }: { value: number }) {
-  const pct = ((value + 100) / 200) * 100
+  const pct = value
   return (
     <div
       className="relative h-2 w-full rounded bg-muted overflow-hidden"
       role="meter"
       aria-valuenow={value}
-      aria-valuemin={-100}
+      aria-valuemin={0}
       aria-valuemax={100}
       aria-label={`Relazione: ${value} (${relationLabel(value)})`}
     >

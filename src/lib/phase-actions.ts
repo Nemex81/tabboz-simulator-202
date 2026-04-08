@@ -40,6 +40,7 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
     pomeriggio: [
       { id: 'palestra', label: 'Vai in palestra' },
       { id: 'studia', label: 'Studia a casa' },
+      { id: 'studia_gruppo', label: 'Studia in gruppo', requiresSchoolPeriod: true },
       { id: 'lavoro', label: 'Lavoro part-time', minSchoolYear: 3 },
       { id: 'motorino', label: 'Giro col motorino' },
       { id: 'shopping', label: 'Shopping in centro' },
@@ -93,6 +94,7 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
     ],
     pomeriggio: [
       { id: 'studia', label: 'Studia per la settimana', requiresSchoolPeriod: true },
+      { id: 'studia_gruppo', label: 'Studia in gruppo', requiresSchoolPeriod: true },
       { id: 'palestra', label: 'Sport domenicale' },
       { id: 'motorino', label: 'Giro domenicale' },
       { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
@@ -141,12 +143,14 @@ export const getAvailableActions = (
   phase: DayPhase,
   dayType: DayType,
   schoolYear: number,
-  isSchoolPeriod: boolean
+  isSchoolPeriod: boolean,
+  isExhausted: boolean = false
 ): PhaseActionEntry[] => {
   const pool = PHASE_ACTIONS[dayType][phase] ?? []
   return pool.filter(entry => {
     if (entry.minSchoolYear && schoolYear < entry.minSchoolYear) return false
     if (entry.requiresSchoolPeriod && !isSchoolPeriod) return false
+    if (isExhausted && entry.blockedWhenExhausted) return false
     return true
   })
 }

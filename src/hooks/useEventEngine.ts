@@ -7,10 +7,12 @@ import {
   getReputationEventModifier,
   canAvoidNegativeEventWithCharisma
 } from '@/lib/game-utils'
-import { generateRandomFriend, generateRandomRelationship } from '@/lib/social-system'
+import { generateRandomRelationship } from '@/lib/relationship-utils'
+import { generateExtraFriend } from '@/lib/enhanced-friend-system'
 import { getFriendGenChance, LOCATION_PROB_BONUS } from '@/lib/relation-system'
 import { playSound } from '@/lib/sound-effects'
 import { getAfternoonEvent, AfternoonLocation, AfternoonEvent } from '@/lib/afternoon-events'
+import { BetInfo, generateStreetRace } from '@/lib/bet-system'
 
 interface UseEventEngineParams {
   stats: GameStats
@@ -62,6 +64,7 @@ export function useEventEngine({
   const [raceWinChance, setRaceWinChance] = useState(0)
   const [currentEvent, setCurrentEvent] = useState('')
   const [afternoonEvent, setAfternoonEvent] = useState<AfternoonEvent | null>(null)
+  const [betInfo, setBetInfo] = useState<BetInfo | null>(null)
 
   // Refs per accesso stabile ai valori correnti negli useCallback
   const statsRef = useRef(stats)
@@ -84,6 +87,8 @@ export function useEventEngine({
   phaseActionsRemainingRef.current = phaseActionsRemaining
   const currentPhaseRef = useRef(currentPhase)
   currentPhaseRef.current = currentPhase
+  const betInfoRef = useRef<BetInfo | null>(betInfo)
+  betInfoRef.current = betInfo
 
   const checkForNewFriend = useCallback((location: string) => {
     // Tentativo evento narrativo pomeridiano/serale (priorità su generazione silenziosa)
@@ -102,7 +107,7 @@ export function useEventEngine({
     const rawChance = 15 + carismaBonus + locationBonus
     const adjustedChance = getFriendGenChance(rawChance, friendsRef.current.length)
     if (Math.random() * 100 < adjustedChance) {
-      const newFriend = generateRandomFriend(location)
+      const newFriend = generateExtraFriend(location)
       setFriends((current) => [...current, newFriend])
       playSound.success()
       announce(`Hai conosciuto ${newFriend.name} ${location}! Nuovo amico aggiunto alla RUBRICA! (${newFriend.type.toUpperCase()})`)
@@ -178,6 +183,8 @@ export function useEventEngine({
         (s.muscoli * 0.2) +
         reputationModifier.positiveOutcomeBonus
       ))
+      const race = generateStreetRace(s.reputazione)
+      setBetInfo(race)
       setRaceWinChance(Math.round(winChance))
       playSound.eventTrigger()
       setShowStreetRaceEvent(true)
@@ -283,13 +290,13 @@ export function useEventEngine({
         ...current,
         coattaggine: clampStat(current.coattaggine + 25),
         figosita: clampStat(current.figosita + 20),
-        soldi: clampStat(current.soldi + 150, 0, 1000)
+        soldi: clampStat(current.soldi + (betInfoRef.current?.vincitaPotenziale ?? 150), 0, 1000)
       }))
       announce('Hai VINTO la gara! Sei una LEGGENDA! +25 Coattaggine, +20 Figosità, +150 Soldi')
       addLogEntry('event_positive', 'Gara motorini — vinta', 'Hai VINTO la gara! Sei una LEGGENDA! +25 Coattaggine, +20 Figosità, +150 Soldi', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {
       playSound.bigLoss()
-      const actualLoss = Math.min(80, statsRef.current.soldi)
+      const actualLoss = Math.min(betInfoRef.current?.importo ?? 80, statsRef.current.soldi)
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita - 20),
@@ -427,8 +434,8 @@ export function useEventEngine({
         const updated = { ...prev }
         for (const [key, val] of Object.entries(result.delta)) {
           if (key in updated && typeof val === 'number') {
-            (updated as Record<string, number>)[key] = clampStat(
-              (prev as Record<string, number>)[key] + val
+            (prev as unknown as Record<string, number>)[key] = clampStat(
+              (prev as unknown as Record<string, number>)[key] + val
             )
           }
         }
@@ -497,5 +504,7 @@ export function useEventEngine({
     afternoonEvent,
     setAfternoonEvent,
     handleAfternoonChoice,
+    betInfo,
+    setBetInfo,
   }
 }

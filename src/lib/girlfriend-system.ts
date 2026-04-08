@@ -1,6 +1,7 @@
 import { GameStats } from '@/lib/types'
 import { Relationship } from '@/lib/types'
 import { randomChance, clampStat } from '@/lib/game-utils'
+import type { RelationStats } from '@/lib/relation-system'
 
 export type AspettoType = 'carina' | 'bellissima' | 'normale' | 'alternativa'
 export type PersonalitaType = 'timida' | 'estroversa' | 'secchiona' | 'ribelle' | 'vanitosa'
@@ -579,4 +580,20 @@ export const shouldGirlfriendBreakup = (ragazza: Ragazza): boolean => {
   if (ragazza.interessePerTe < 20) return true
   
   return false
+}
+
+// ── Adapter — Sistema 4-assi (R18) ───────────────────────────────────────────
+
+/**
+ * Converte una Ragazza nel formato RelationStats del sistema 4 assi.
+ * Usato per integrare la fidanzata con il sistema relazioni avanzato.
+ */
+export function girlfriendToRelation(girlfriend: Ragazza): RelationStats {
+  return {
+    amicizia:  girlfriend.stats.trustLevel ?? 30,
+    romantico: girlfriend.interessePerTe,
+    amore:     girlfriend.stats.happinessLevel ?? 0,
+    odio:      0,
+    rivalita:  0,
+  }
 }

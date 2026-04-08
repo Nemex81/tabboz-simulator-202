@@ -110,6 +110,11 @@ export const generateExtraFriend = (
   }
 }
 
+export const getFriendStudyBonus = (friends: Friend[]): number => {
+  const highIntFriends = friends.filter(friend => (friend.intelligenza || 0) > 60)
+  return highIntFriends.length > 0 ? 0.5 : 0
+}
+
 export const getFriendTypeDescription = (type: FriendType): string => {
   switch (type) {
     case 'coatto':

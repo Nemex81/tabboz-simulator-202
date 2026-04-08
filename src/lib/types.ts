@@ -517,7 +517,7 @@ export interface Classmate {
   name: string
   type: FriendType                    // coatto | secchione | sportivo | ribelle | generico
   intelligenza: number                // 20-100
-  relation: number                    // -100 a +100, parte da 0
+  relation: number                    // [0,100], valore neutro 50
   personality: ClassmatePersonality   // archetipo narrativo
   promotedToFriend: boolean           // true quando il giocatore lo aggiunge agli amici
   yearJoined: number                  // anno scolastico in cui e entrato nella classe
@@ -545,7 +545,7 @@ export interface Teacher {
   corruttibilita: number
   resistenzaMinacce: number
 
-  // Relazione col giocatore (-100 a +100) — C2
+  // Relazione col giocatore [0,100] — C2 (aggiornata da piano correttivo v3)
   relazione: number
   sogliaRottura: number           // sotto questo valore -> modalita ostile
   isOstile: boolean               // derivato da relazione < sogliaRottura

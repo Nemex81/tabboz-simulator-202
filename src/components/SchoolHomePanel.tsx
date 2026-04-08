@@ -33,17 +33,17 @@ function schoolDayOfWeek(date: GameDate): number {
   return (new Date(date.year, date.month - 1, date.day).getDay() + 6) % 7
 }
 
-/** Barra relazione -100/+100, colori condivisi con TeachersPanel. */
+/** Barra relazione [0,100], colori condivisi con TeachersPanel. */
 function RelationBar({ value }: { value: number }) {
-  const pct = ((value + 100) / 200) * 100
+  const pct = value
   const color =
-    value > 20 ? 'bg-green-500' : value >= -20 ? 'bg-yellow-500' : 'bg-red-500'
+    value > 60 ? 'bg-green-500' : value >= 40 ? 'bg-yellow-500' : 'bg-red-500'
   return (
     <div
       className="relative h-2 w-full rounded bg-muted overflow-hidden"
       role="meter"
       aria-valuenow={value}
-      aria-valuemin={-100}
+      aria-valuemin={0}
       aria-valuemax={100}
       aria-label={`Relazione: ${value}`}
     >
@@ -213,7 +213,7 @@ export const SchoolHomePanel = React.memo(function SchoolHomePanel({
           {getSchoolTypeName(schoolType)}
         </p>
         <p className="text-sm text-blue-700">
-          Anno {schoolYear}° — {schoolRecord.year} scolastico
+          Anno {schoolYear}° scolastico
         </p>
       </div>
 

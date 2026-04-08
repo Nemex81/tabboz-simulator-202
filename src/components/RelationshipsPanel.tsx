@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Heart, Sparkle, User } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
-import { getRelationshipPreferenceText, getDifficultyText, calculateRelationshipSuccess } from '@/lib/social-system'
+import { getRelationshipPreferenceText, getDifficultyText, calculateRelationshipSuccess } from '@/lib/relationship-utils'
 
 interface RelationshipsPanelProps {
   relationships: Relationship[]

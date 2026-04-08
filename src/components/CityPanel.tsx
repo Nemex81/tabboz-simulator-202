@@ -10,6 +10,7 @@ import {
 } from '@phosphor-icons/react'
 import { ActionButton } from '@/components/ActionButton'
 import { Card } from '@/components/ui/card'
+import type { PhaseActionEntry, ActionId } from '@/lib/phase-actions'
 
 interface CityPanelProps {
   onDisco: () => void
@@ -23,6 +24,8 @@ interface CityPanelProps {
   muscoli: number
   stanchezza: number
   morningChoicePending?: boolean
+  availableActions?: PhaseActionEntry[]
+  onAction?: (id: ActionId) => void
 }
 
 // R16: helper per evitare ripetizione del pattern disabled/blockedReason
@@ -59,13 +62,43 @@ export function CityPanel({
   soldi,
   muscoli,
   stanchezza,
-  morningChoicePending = false
+  morningChoicePending = false,
+  availableActions,
+  onAction,
 }: CityPanelProps) {
   const base = (extra?: { condition: boolean; reason: string }) =>
     getActionState(morningChoicePending, actionsRemaining, extra)
 
   return (
     <div className="space-y-6" role="region" aria-label="Pannello città">
+      {availableActions && availableActions.length > 0 && (
+        <Card className="p-4 border border-accent bg-card">
+          <h3
+            className="text-base font-bold mb-3 text-accent"
+            id="azioni-disponibili-heading"
+          >
+            Azioni disponibili ora
+          </h3>
+          <div
+            className="space-y-2"
+            role="list"
+            aria-labelledby="azioni-disponibili-heading"
+          >
+            {availableActions.map(entry => (
+              <button
+                key={entry.id}
+                role="listitem"
+                onClick={() => onAction?.(entry.id)}
+                disabled={!onAction}
+                className="w-full text-left px-4 py-2 rounded bg-muted/30 hover:bg-muted/60 transition-colors text-sm font-medium disabled:opacity-50"
+                aria-label={entry.label}
+              >
+                {entry.label}
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
       <Card className="p-6 border-2 border-primary bg-card">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-3 mb-2">

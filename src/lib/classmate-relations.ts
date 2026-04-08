@@ -74,7 +74,7 @@ export const CLASSMATE_INTERACTIONS: Record<ClassmateInteractionKey, ClassmateIn
 // ── Funzioni pubbliche ────────────────────────────────────────────────────────
 
 /**
- * Applica un delta alla relazione del compagno, con clamping [-100, +100].
+ * Applica un delta alla relazione del compagno, con clamping [0, 100].
  *
  * @param classmate - Oggetto sorgente (NON mutato).
  * @param delta     - Valore da aggiungere.
