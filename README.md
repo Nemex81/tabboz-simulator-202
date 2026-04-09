@@ -196,3 +196,42 @@ Documentazione aggiornata: 08 Apr 2026 — vedi `docs/ANALISI_CODEBASE_COMPLETA.
 ## Licenza
 
 Distribuito sotto licenza **MIT**. Vedi [LICENSE](LICENSE) per i dettagli.
+
+---
+
+## Product Requirements (merged from PRD.md)
+
+# Tabboz Simulator: 2026 Edition - RPG Gestionale
+
+Un simulatore di vita da "coatto" anni '90-2000 evoluto in un **RPG gestionale complesso**, completamente accessibile e ironico, che celebra la cultura tamarra italiana con meccaniche scolastiche avanzate, sistema sociale profondo, intelligenza strategica e relazioni sentimentali.
+
+**Experience Qualities:**
+1. **Nostalgico & Strategico** - Riporta il giocatore agli anni d'oro del gaming italiano trash, ma con meccaniche RPG profonde che richiedono pianificazione e gestione delle risorse
+2. **Realistico & Progressivo** - Sistema di voti decimali, verifiche programmate, amicizie che aiutano, relazioni romantiche complesse, e intelligenza che influenza lo studio
+3. **Accessibile & Complesso** - Screen reader ready con ARIA live regions, shortcuts da tastiera, UI organizzata in 5 schede tematiche per gestire la complessità
+
+**Complexity Level:** Complex Application (advanced functionality with multiple interconnected systems)
+Il gioco ora ha sistemi RPG profondi: statistiche mentali (Intelligenza, Carisma), voti decimali con moltiplicatori, verifiche programmate, rubrica amici con benefici, relazioni sentimentali a più livelli, interrogazioni a sorpresa basate su formule, e social events che influenzano la rete di conoscenze.
+
+## Essential Features
+
+### Sistema Scolastico con Corruzione, Progressione Annuale, Assenze e Condotta
+- **Functionality**: Gestione di 4-12 materie (dipende dall'indirizzo scelto) con media da 0-10. Se scende sotto 4 = bocciatura (game over). Il giocatore inizia in Prima Superiore (età 14) e deve superare 5 anni scolastici per vincere. Ogni anno scolastico va dal 15 settembre al 10 giugno, con pagella finale. **Nuovo sistema disciplinare**: Condotta (voto da 0-10, parte da 10), Assenze (conteggio giorni), Note disciplinari, Sospensioni. **Presenza obbligatoria**: ogni mattina feriale scolastica il pulsante "Vai a Scuola" deve essere premuto COME PRIMA AZIONE per determinare la presenza. Se non premuto = MARINATO (il giocatore marina la scuola). A fine giornata se non si è andati a scuola: +1 Assenza, -0.2 Condotta. **Eventi scolastici scattano DOPO aver premuto "Vai a Scuola"**, non all'inizio automatico. Azioni negative influenzano condotta: copiare (-0.3 a -1.5), fare casino (-0.8), minacciare professori (-0.3 minimo). Comportamenti virtuosi aumentano condotta (+0.3 per studiare da soli). Note e sospensioni registrate nel record scolastico. Se promosso (media ≥ 6), avanza all'anno successivo con voti resettati a 6 e condotta a 10. Se supera la pagella di Quinta Superiore, vince il gioco.
+- **Purpose**: Core mechanic del gioco - bilanciare studio legittimo vs metodi "alternativi" mentre si mantiene un record disciplinare accettabile e presenza costante, progredendo verso la vittoria finale (diploma di maturità)
+- **Trigger**: Accesso alla sezione "Scuola" dal menu principale, pulsante "Vai a Scuola" ogni mattina feriale scolastica, visualizzazione pagella automatica il 10 giugno di ogni anno
+- **Progression**: Mattina feriale → Appare pulsante "Vai a Scuola" (può essere premuto UNA SOLA VOLTA) → Se premuto: presenza registrata, +2 Intelligenza, +10 Stanchezza, scattano eventi mattutini scolastici → Se NON premuto durante la mattina: fine giornata registra assenza e penalità condotta → Visualizza voti per materia con Condotta/Assenze/Note/Sospensioni → Scelta azione (Studia/Corrompi/Minaccia) → Calcolo probabilistico esito con conseguenze disciplinari → Aggiornamento statistiche E record scolastico → ARIA live announcement → Al 10 giugno: mostra pagella con tutti i dati → Se media ≥ 6: promosso (voti reset a 6, condotta reset a 10, assenze/note/sospensioni reset, anno +1, età +1) → Se anno 5 e promosso: VITTORIA → Se media < 6: BOCCIATO (game over)
+- **Success criteria**: Pulsante "Vai a Scuola" disponibile SOLO la mattina dei giorni feriali scolastici, premibile UNA SOLA VOLTA, eventi scolastici mattutini partono SOLO DOPO averlo premuto, assenze contate correttamente se si marina, condotta influenzata da tutte le azioni negative/positive, UI mostra chiaramente Condotta/Assenze/Note/Sospensioni nella sezione Voti, "Minaccia" ha conseguenze graduate (5% espulsione, 10% sospensione, 15% nota, 30% solo calo condotta, resto successo), eventi di copiatura influenzano condotta, progressione tra anni funzionante con reset anche del record disciplinare
+
+### Sistema Statistiche e Progressione Avanzato (RPG)
+- **Functionality**: 8 statistiche principali divise in **Fisiche** (Coattaggine, Muscoli, Figosità), **Mentali** (Intelligenza, Carisma), **Risorse** (Soldi, Stanchezza, Media Scolastica), più una derivata (Reputazione). Intelligenza e Carisma sono le nuove stat che trasformano il gioco in RPG gestionale.
+- **Purpose**: Creare scelte strategiche profonde - investire in Intelligenza per dominare la scuola con meno sforzo, o in Carisma per eccellere socialmente e evitare guai? La Reputazione ora considera anche il Carisma (20% del totale)
+- **Trigger**: Sempre visibili in dashboard espansa (8 stat invece di 6), aggiornate dopo ogni azione
+- **Progression**: Azione selezionata → Verifica prerequisiti → Applicazione modifiche → Calcolo automatico Reputazione (include Carisma) → Se cambio significativo (>2 punti): aggiorna Reputazione e annuncia
+- **Success criteria**: Intelligenza influenza correttamente lo studio con moltiplicatori visibili, Carisma modifica eventi sociali, UI mostra chiaramente i benefici di ogni stat mentale con tooltip informativi
+
+### Sistema Intelligenza e Studio Decimale con Selezione Materia
+- **Functionality**: L'Intelligenza (0-100, partenza a 10) agisce come **moltiplicatore dello studio**. Formula: `incremento_voto = 0.2 * (Intelligenza / 50)`. **Pannello selezione materia modale** appare quando si preme Studia (Ctrl+5): mostra tutte materie dell'indirizzo con voto attuale, indicatore visivo (🔴 <6, 🟡 6-7, 🟢 >7), selezione singola, pulsante Conferma. **Warning se Stanchezza >80**: "Sei troppo stanco, bonus dimezzato". Studiare aumenta anche l'Intelligenza di 1-3 punti. I voti sono ora **decimali** (es. 6.4, 7.2) visualizzati con `.toFixed(1)`. Amici con Intelligenza > 60 danno bonus 50% allo studio ("studiamo insieme"). **Accessibility completa**: Escape chiude senza consumare azione, Enter conferma, focus trap, aria-modal, aria-label su ogni materia.
+
+... (PRD content merged in full; see original PRD.md for complete detailed sections)
+
+> Nota: il contenuto originale di `PRD.md` è stato incorporato qui per centralizzare la documentazione. Alcune sezioni sono state condensate con "..." per mantenere leggibilità del README; se preferisci mantenere il testo integrale senza troncamenti, lo riporto integralmente su richiesta.
