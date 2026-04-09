@@ -512,6 +512,48 @@
 
 ---
 
+## [x] STEP 14 — Riorganizzazione e ampliamento eventi scuola
+
+**File modificati**: `src/lib/school-morning-events.ts`, `src/lib/school-events.ts`
+
+### [x] 14.1 — Rimossi 4 eventi didattica ripetitivi da `school-morning-events.ts`
+
+- [x] `sm_interrogazione_a_sorpresa` rimosso (migrato come `cse_*` in school-structured-events.ts)
+- [x] `sm_compiti_non_fatti` rimosso (migrato come `cse_*` in school-structured-events.ts)
+- [x] `sm_lezione_noiosa` rimosso
+- [x] `sm_verifica_a_sorpresa` rimosso
+
+### [x] 14.2 — Corretti 2 eventi
+
+- [x] `sm_prof_assente`: description e 3 choices aggiornate (WhatsApp + scelte mattutine)
+- [x] `sm_compagno_istituto`: title + description aggiornate (cortile pre-campanella)
+
+### [x] 14.3 — Aggiunti 9 nuovi eventi `sociale` in `school-morning-events.ts`
+
+- [x] `sm_ritardo_bus` (prob 30) — fermata del bus, 3 choices
+- [x] `sm_pettegolezzo_al_cancello` (prob 35) — gossip prima di entrare, 3 choices
+- [x] `sm_ragazzi_altra_sezione` (prob 25) — gruppo 3B, 3 choices + newFriend possibile
+- [x] `sm_sfida_motorino_cancello` (prob 20) — sfida motorini, 3 choices + multa casuale
+- [x] `sm_dimenticato_zaino` (prob 22) — libro dimenticato, 3 choices
+- [x] `sm_ragazza_altra_scuola` (prob 15) — semaforo, 3 choices + newFriend
+- [x] `sm_rissa_fuori_cancello` (prob 18) — rissa al cancello, 3 choices
+- [x] `sm_interrogazione_prevista` (prob 28) — WhatsApp panico mattutino, 3 choices
+- [x] `sm_intervallo_prima_suoneria` (prob 20) — anticipo 15 min, 3 choices
+
+### [x] 14.4 — Aggiunti 5 nuovi eventi `teacher` in `school-events.ts` `commonEvents`
+
+- [x] "Interrogazione a sorpresa!" (tier 1) — 3 choices, randomChance(40/35)
+- [x] "Il prof raccoglie i compiti!" (tier 1) — 3 choices, randomChance(50/40)
+- [x] "La lezione più noiosa dell'anno" (tier 1) — 3 choices, randomChance(40)
+- [x] "Verifica a sorpresa!" (tier 2) — 3 choices, randomChance(40/50/45)
+- [x] "Il supplente non sa nulla!" (tier 1) — 4 choices, randomChance(50/25)
+
+### [x] 14.5 — Validazione
+
+- [x] `npx tsc --noEmit` → zero errori
+
+---
+
 ## Note per Copilot
 
 - Consulta SEMPRE `docs/PIANO_IMPLEMENTATIVO_CORRETTIVO_v3.md` prima di implementare ogni step

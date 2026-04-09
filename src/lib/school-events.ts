@@ -214,6 +214,174 @@ export const getTeacherEvent = (schoolType: SchoolType): SchoolEvent => {
           })
         }
       ]
+    },
+    {
+      type: 'teacher' as const,
+      tier: 1 as const,
+      title: 'Interrogazione a sorpresa!',
+      description: 'Il prof entra in classe col registro spalancato. "Oggi interrogo!" — silenzio tombale.',
+      choices: [
+        {
+          label: 'Rispondo come so',
+          action: () => {
+            if (randomChance(40)) {
+              return { message: 'Risposta accettata. +1.0 voto.', gradeChanges: { subject: 'random', change: 1.0 } }
+            } else {
+              return { message: 'Scena muta. -0.8 voto, -5 Coattaggine.', gradeChanges: { subject: 'random', change: -0.8 }, statChanges: { coattaggine: -5 } }
+            }
+          }
+        },
+        {
+          label: 'Mi alzo e chiedo di andare in bagno',
+          action: () => {
+            if (randomChance(35)) {
+              return { message: 'Ci ha creduto. Scampata. +8 Coattaggine.', statChanges: { coattaggine: 8 } }
+            } else {
+              return { message: 'Non ti ha creduto. Nota. -0.3 Condotta.', conductChange: -0.3, noteChange: 1 }
+            }
+          }
+        },
+        {
+          label: 'Balbetto e faccio scena muta',
+          action: () => ({
+            message: 'Figuraccia totale. -1.2 voto, -8 Coattaggine.',
+            gradeChanges: { subject: 'random', change: -1.2 },
+            statChanges: { coattaggine: -8, stanchezza: 10 }
+          })
+        }
+      ]
+    },
+    {
+      type: 'teacher' as const,
+      tier: 1 as const,
+      title: 'Il prof raccoglie i compiti!',
+      description: 'Il prof gira tra i banchi raccogliendo i quaderni. Hai fatto i compiti?',
+      choices: [
+        {
+          label: 'Copio dal compagno in extremis',
+          action: () => {
+            if (randomChance(50)) {
+              return { message: 'Copiato appena in tempo! +0.5 voto, +8 Coattaggine.', gradeChanges: { subject: 'random', change: 0.5 }, statChanges: { coattaggine: 8 } }
+            } else {
+              return { message: 'Beccato! Nota e -0.8 voto.', gradeChanges: { subject: 'random', change: -0.8 }, conductChange: -0.5, noteChange: 1 }
+            }
+          }
+        },
+        {
+          label: 'Ammetto di non averli fatti',
+          action: () => ({
+            message: 'Onestà apprezzata. Solo -0.3 voto. +2 Intelligenza.',
+            gradeChanges: { subject: 'random', change: -0.3 },
+            statChanges: { intelligenza: 2 }
+          })
+        },
+        {
+          label: 'Dico che li ho dimenticati a casa',
+          action: () => {
+            if (randomChance(40)) {
+              return { message: 'Ci ha creduto. Nessun voto.' }
+            } else {
+              return { message: 'Non ti ha creduto. -0.5 voto, -0.3 condotta.', gradeChanges: { subject: 'random', change: -0.5 }, conductChange: -0.3 }
+            }
+          }
+        }
+      ]
+    },
+    {
+      type: 'teacher' as const,
+      tier: 1 as const,
+      title: 'La lezione più noiosa dell\'anno',
+      description: 'Il prof di storia legge il libro ad alta voce da 40 minuti. Gli occhi si chiudono da soli.',
+      choices: [
+        {
+          label: 'Mi addormento (rischio calcolato)',
+          action: () => {
+            if (randomChance(40)) {
+              return { message: 'Non ti ha visto. -30 Stanchezza.', statChanges: { stanchezza: -30 } }
+            } else {
+              return { message: 'Svegliato di soprassalto. Nota.', conductChange: -0.5, noteChange: 1, statChanges: { coattaggine: 10 } }
+            }
+          }
+        },
+        {
+          label: 'Disegno sul banco',
+          action: () => ({ message: 'Ore passate senza danni. +5 Coattaggine.', statChanges: { stanchezza: -10, coattaggine: 5 } })
+        },
+        {
+          label: 'Ascolto e prendo appunti',
+          action: () => ({ message: 'Disciplinato. +0.3 voto, +2 Intelligenza.', gradeChanges: { subject: 'random', change: 0.3 }, statChanges: { intelligenza: 2 } })
+        }
+      ]
+    },
+    {
+      type: 'teacher' as const,
+      tier: 2 as const,
+      title: 'Verifica a sorpresa!',
+      description: 'Il prof distribuisce fogli bianchi senza preavviso. "Avete 45 minuti."',
+      choices: [
+        {
+          label: 'Faccio del mio meglio',
+          action: () => {
+            if (randomChance(40)) {
+              return { message: 'Ottima verifica! +2.0 voto.', gradeChanges: { subject: 'random', change: 2.0 }, statChanges: { stanchezza: 15 } }
+            } else if (randomChance(50)) {
+              return { message: 'Discreta verifica. +0.5 voto.', gradeChanges: { subject: 'random', change: 0.5 }, statChanges: { stanchezza: 15 } }
+            } else {
+              return { message: 'Verifica difficile. -0.5 voto.', gradeChanges: { subject: 'random', change: -0.5 }, statChanges: { stanchezza: 15 } }
+            }
+          }
+        },
+        {
+          label: 'Copio dal compagno',
+          action: () => {
+            if (randomChance(45)) {
+              return { message: 'Copiato senza essere visto. +1.5 voto.', gradeChanges: { subject: 'random', change: 1.5 }, conductChange: -0.5, statChanges: { coattaggine: 10 } }
+            } else {
+              return { message: 'Beccato! -2.5 voto e nota gravissima.', gradeChanges: { subject: 'random', change: -2.5 }, conductChange: -1.5, noteChange: 1 }
+            }
+          }
+        },
+        {
+          label: 'Consegno in bianco',
+          action: () => ({ message: 'Zero secco. -2.0 voto.', gradeChanges: { subject: 'random', change: -2.0 }, statChanges: { coattaggine: 3 } })
+        }
+      ]
+    },
+    {
+      type: 'teacher' as const,
+      tier: 1 as const,
+      title: 'Il supplente non sa nulla!',
+      description: 'Il prof è assente. Arriva un supplente giovane che non sa nulla della materia. La classe percepisce immediatamente la situazione.',
+      choices: [
+        {
+          label: 'Faccio casino con la classe',
+          action: () => ({ message: 'Ora di caos. -0.5 voto, -0.8 condotta.', gradeChanges: { subject: 'random', change: -0.5 }, conductChange: -0.8, statChanges: { coattaggine: 15 } })
+        },
+        {
+          label: 'Studio per conto mio tranquillo',
+          action: () => ({ message: 'Ora produttiva. +0.8 voto, +2 Intelligenza.', gradeChanges: { subject: 'random', change: 0.8 }, conductChange: 0.3, statChanges: { intelligenza: 2 } })
+        },
+        {
+          label: 'Convinco il supplente a fare un quiz',
+          action: () => {
+            if (randomChance(50)) {
+              return { message: 'Supplente convinto. +0.3 voto, +5 Carisma.', gradeChanges: { subject: 'random', change: 0.3 }, statChanges: { carisma: 5 } }
+            } else {
+              return { message: 'Supplente infastidito. -0.3 condotta.', conductChange: -0.3, statChanges: { coattaggine: 5 } }
+            }
+          }
+        },
+        {
+          label: 'Provo a uscire con un permesso inventato',
+          action: () => {
+            if (randomChance(25)) {
+              return { message: 'Libero! -20 Stanchezza, +15 Coattaggine.', statChanges: { stanchezza: -20, coattaggine: 15 } }
+            } else {
+              return { message: 'Non ci ha creduto. Nota.', conductChange: -0.5, noteChange: 1 }
+            }
+          }
+        }
+      ]
     }
   ]
 
