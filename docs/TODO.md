@@ -31,6 +31,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 1**:
+
 - [x] Build passa senza errori TypeScript
 - [x] `girlfriend` dinamica visibile nel tab amici
 
@@ -75,6 +76,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 2**:
+
 - [x] Classmate relation inizia a 50 (non 0)
 - [x] Promozione avviene a soglia 65
 - [x] Dopo reset localStorage, relation compagno inizia a 50
@@ -115,6 +117,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 3**:
+
 - [x] Tutte le costanti estratte importate da game-balance.constants.ts
 - [x] `clampStat('soldi')` ritorna [0,1000]
 - [x] Zero occorrenze di `Math.max(0, Math.min(100,...))` non giustificate
@@ -148,6 +151,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 4**:
+
 - [x] TeachersPanel non importa direttamente da lib/teacher-relations
 - [x] `doClassmateInteraction` e `doTeacherInteraction` ritornano risultati coerenti con `doInteraction`
 
@@ -178,6 +182,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 5**:
+
 - [x] `morningDisplay` e un singolo state enum
 - [x] CityPanel ha zero ripetizione nel pattern disabled
 - [ ] `gameDialogsProps` memoizzato (rimandato a STEP 9)
@@ -211,6 +216,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 6**:
+
 - [x] `FriendshipsPanel.tsx` esiste, `RelationsPanel.tsx` eliminato
 - [x] GradeProgressPanel mostra stato vuoto se nessuna materia
 - [x] 3 componenti hanno `aria-label`/`role` aggiunto
@@ -238,6 +244,7 @@
 - [x] CityPanel delega suoni agli handler di App.tsx — feedback sonoro gia presente tramite playSound.buttonClick() in ciascun handler. Nessuna modifica necessaria.
 
 **Criteri di accettazione STEP 7**:
+
 - [x] useSoundFeedback hook esiste e mappa tutte le azioni
 - [x] GirlfriendPanel e EnhancedFriendsPanel producono feedback sonoro
 
@@ -261,6 +268,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 8**:
+
 - [x] Formula reputazione usa REPUTATION_WEIGHTS
 - [x] soldi/media scalano linearmente senza cap implicito
 
@@ -311,6 +319,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 9**:
+
 - [x] App.tsx ridotto a 839 righe, accettato dall'utente come risultato finale di STEP 9
 - [ ] SchoolTab, CityTab, SocialTab, StatusTab funzionano come prima
 - [~] Handler estratti: wiring ridotto e funzioni pure avviate; test dedicati ancora da completare
@@ -349,6 +358,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 10**:
+
 - [x] useGameActions.ts < 200 righe (facciata)
 - [x] GameDialogs.tsx < 100 righe (orchestratore)
 - [x] Ogni sotto-hook e sotto-dialog ha singola responsabilita
@@ -372,6 +382,7 @@
 - [x] Eliminare `social-system.ts`
 
 **Accettazione criteri:**
+
 - [x] `src/lib/girlfriend-system.ts`: `girlfriendToRelation()` esportata
 - [x] `useEventEngine.ts` non importa più `generateRandomFriend` da `social-system`
 - [x] `App.tsx` non importa più da `social-system`
@@ -422,6 +433,7 @@
 - [x] Costanti `STUDY.GROUP_*` aggiunte a `game-balance.constants.ts`; valori hardcoded sostituiti con costanti (08 Apr 2026)
 
 **Criteri di accettazione STEP 12**:
+
 - [x] `getAvailableActions` viene chiamata da `useGameActions`
 - [x] Le azioni filtrate per fase/giorno arrivano a `CityTab` come lista dinamica
 - [x] Azioni con `aria-label` descrittivo per screen reader
@@ -474,6 +486,7 @@
 - [x] `npx tsc --noEmit` zero errori
 
 **Criteri di accettazione STEP 13** (13.1–13.4 soddisfatti):
+
 - [x] `generateStreetRace` viene chiamata da `useEventEngine` ad ogni sfida casuale
 - [x] `StreetRaceDialog` mostra nome avversario, difficoltà, importo scommessa e vincita potenziale
 - [x] Il risultato (vittoria/sconfitta) usa importo/vincita reale da `BetInfo`
@@ -506,6 +519,18 @@
 - [x] `CityPanel.tsx`: pulsante Lavoro convertito a selettore job senza requisiti hardcoded obsoleti
 - [x] Adattamento rispetto al piano: il gateway e visibile dal 1° anno per non bloccare `dogsitter` e `volantinaggio`; i vincoli reali sono applicati e mostrati nel dialog
 - [x] Adattamento rispetto al piano: `hasMotorino` viene sbloccato dalla prima azione motorino riuscita, in assenza di un sistema inventario dedicato
+- [x] `npx tsc --noEmit` zero errori
+
+### TASK-C — BaseCharacter · pool interazioni · fix amico [x]
+
+- [x] `types.ts`: aggiunto `BaseCharacter` compatibile e non distruttivo; `Friend`, `Teacher`, `Classmate`, `PlayerProfile` allineati senza migrare `gender` persistito né rinominare `relation`
+- [x] `enhanced-friend-system.ts` e `school-roster.ts`: factory aggiornate con campi base opzionali utili (`gender`, `carisma`, `relazione` alias dove sensato)
+- [x] `useGameTime.ts`: introdotto pool interazioni separato con KV dedicato (`tabboz-interazioni`, `tabboz-max-interazioni`) e reset per fase basato sul carisma
+- [x] `useSocialActions.ts`: `chiacchiera`, `telefona` e `friendAction` usano il nuovo consumo interazioni; azioni di spostamento restano sul pool normale
+- [x] `TimeDisplay.tsx`, `SocialTab.tsx`, `CharacterSheet.tsx` e pannelli amicizie: indicatore e wiring UI per le interazioni rimaste
+- [x] `useEventEngine.ts`: fix reale del bug nuovi amici tramite normalizzazione location, bonus coerenti e `addLogEntry` nel diario
+- [x] Adattamento rispetto al piano: la probabilità base era già al 15%; la correzione effettiva era nel mapping location e nella visibilità del risultato, non nel numero base
+- [x] Adattamento rispetto al piano: il pool interazioni è stato implementato con KV separato per evitare doppio stato su `GameTime` e preservare la retrocompatibilità dei salvataggi
 - [x] `npx tsc --noEmit` zero errori
 
 ---

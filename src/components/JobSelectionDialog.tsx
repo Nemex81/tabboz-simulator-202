@@ -41,10 +41,10 @@ export const JobSelectionDialog = memo(function JobSelectionDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl text-secondary flex items-center gap-2">
             <Briefcase size={32} weight="fill" />
-            SCEGLI IL LAVORO
+            Scegli il turno di lavoro
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Seleziona un lavoro disponibile per questa fascia oraria.
+            Vedi tutti i lavori compatibili con questa fascia oraria. Quelli non ancora disponibili restano visibili con il motivo del blocco.
           </AlertDialogDescription>
         </AlertDialogHeader>
 

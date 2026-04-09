@@ -183,8 +183,8 @@ function App() {
 
   const {
     gameTime, setGameTime, scheduledExams, setScheduledExams,
-    consumeAction, consumeAllMorningActions, advanceToNextDay, gainExtraAction, handleDormi,
-    currentPhase, dayType, phaseActionsRemaining, advancePhaseOnly,
+    consumeAction, consumeInterazione, consumeAllMorningActions, advanceToNextDay, gainExtraAction, handleDormi,
+    currentPhase, dayType, phaseActionsRemaining, interazioniRimaste, advancePhaseOnly, canInteract,
   } = useGameTime({
     grades,
     stats,
@@ -254,6 +254,7 @@ function App() {
     setGameOver,
     setGameOverReason,
     consumeAction,
+    consumeInterazione,
     announce,
     triggerRandomEvent: events.triggerRandomEvent,
     checkForNewFriend: events.checkForNewFriend,
@@ -263,6 +264,7 @@ function App() {
     currentPhase: currentPhase ?? 'mattina',
     dayType: dayType ?? 'feriale',
     phaseActionsRemaining: phaseActionsRemaining ?? 0,
+    canInteract,
     schoolRecord,
     setSchoolRecord,
     gainExtraAction,
@@ -686,6 +688,7 @@ function App() {
           currentPhase={currentPhase}
           dayType={dayType}
           phaseActionsRemaining={phaseActionsRemaining}
+          interazioniRimaste={interazioniRimaste}
         />
 
         {/* ── Controlli Giornata ────────────────────────────────────────────── */}
@@ -828,6 +831,7 @@ function App() {
               friends={friends}
               relationships={relationships}
               actionsRemaining={phaseActionsRemaining ?? 0}
+              interactionsRemaining={interazioniRimaste ?? 0}
               onFriendAction={handleFriendAction}
               onRelationInteraction={doInteraction}
               girlfriend={girlfriend ?? null}
@@ -841,6 +845,7 @@ function App() {
             <SocialTab
               morningChoicePending={morningChoicePending}
               phaseActionsLeft={phaseActionsLeft}
+              interactionsLeft={interazioniRimaste ?? 0}
               isSchoolPeriod={gameTime.schoolYear.isSchoolPeriod}
               stanchezza={stats.stanchezza}
               soldi={stats.soldi}

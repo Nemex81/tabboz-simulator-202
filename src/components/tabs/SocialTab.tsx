@@ -7,6 +7,7 @@ import { ECONOMY } from '@/lib/game-balance.constants'
 interface SocialTabProps {
   morningChoicePending: boolean
   phaseActionsLeft: number
+  interactionsLeft: number
   isSchoolPeriod: boolean
   stanchezza: number
   soldi: number
@@ -23,6 +24,7 @@ interface SocialTabProps {
 export function SocialTab({
   morningChoicePending,
   phaseActionsLeft,
+  interactionsLeft,
   isSchoolPeriod,
   stanchezza,
   soldi,
@@ -79,11 +81,11 @@ export function SocialTab({
             icon={<Chats size={48} />}
             label="Chiacchiera"
             onClick={handleChiacchiera}
-            disabled={morningChoicePending || phaseActionsLeft <= 0}
+            disabled={morningChoicePending || interactionsLeft <= 0}
             blockedReason={
               morningChoicePending
                 ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : 'Nessuna azione per questa fascia oraria'
+                : 'Nessuna interazione disponibile per questa fascia oraria'
             }
             variant="secondary"
             ariaLabel="Chiacchiera con qualcuno. Gratis. +5 Carisma, +3 Reputazione"
@@ -109,17 +111,20 @@ export function SocialTab({
             icon={<UserCircle size={48} />}
             label="Telefona"
             onClick={handleTelefona}
-            disabled={morningChoicePending || phaseActionsLeft <= 0}
+            disabled={morningChoicePending || interactionsLeft <= 0}
             blockedReason={
               morningChoicePending
                 ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : 'Nessuna azione per questa fascia oraria'
+                : 'Nessuna interazione disponibile per questa fascia oraria'
             }
             variant="secondary"
             ariaLabel="Telefona a un amico. Gratis. +3 Carisma (richiede almeno un amico)"
             helpText="Telefona a un amico. Gratis. Aumenta il Carisma di 3. Richiede almeno un amico sbloccato."
             announce={announce}
           />
+        </div>
+        <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
+          <p>Interazioni sociali rimaste in questa fase: {interactionsLeft}</p>
         </div>
       </Card>
 

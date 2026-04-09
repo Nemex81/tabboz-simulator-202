@@ -41,6 +41,9 @@ export function generateClassRoster(schoolYear: number): Classmate[] {
     type: mapPersonalityToFriendType(personality),
     intelligenza: generateIntelligence(personality),
     relation: 50,  // scalare [0,100], neutro = 50
+    relazione: 50,
+    gender: Math.random() < 0.5 ? 'M' : 'F',
+    carisma: randomInt(25, 75),
     personality,
     promotedToFriend: false,
     yearJoined: schoolYear,

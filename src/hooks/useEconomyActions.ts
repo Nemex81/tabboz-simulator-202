@@ -154,11 +154,11 @@ export function useEconomyActions({
       return next
     })
     consumeAction()
-    announce(`Hai lavorato come ${job.label}! +${job.payPerShift}€, ${job.description}`)
+    announce(`Turno completato: ${job.label}. +${job.payPerShift}€. ${job.description}.`)
     addLogEntry(
       'action_neutral',
       `Lavoro: ${job.label}`,
-      `Hai lavorato come ${job.label}. +${job.payPerShift}€; effetti applicati: ${Object.entries(job.statEffects).map(([key, value]) => `${key} ${value && value > 0 ? '+' : ''}${value}`).join(', ') || 'nessuno'}`,
+      `Turno completato come ${job.label}. +${job.payPerShift}€; effetti: ${Object.entries(job.statEffects).map(([key, value]) => `${key} ${value && value > 0 ? '+' : ''}${value}`).join(', ') || 'nessuno'}`,
       'positive',
       gameTimeRef.current.currentDate,
       currentPhaseRef.current

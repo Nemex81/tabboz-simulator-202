@@ -36,6 +36,7 @@ export interface UseGameActionsParams {
   setGameOver: (v: boolean) => void
   setGameOverReason: (v: string) => void
   consumeAction: () => void
+  consumeInterazione: () => void
   announce: (message: string, priority?: 'polite' | 'assertive') => void
   triggerRandomEvent: () => void
   checkForNewFriend: (location: string) => void
@@ -45,6 +46,7 @@ export interface UseGameActionsParams {
   currentPhase: DayPhase
   dayType: DayType
   phaseActionsRemaining: number
+  canInteract: boolean
   schoolRecord: SchoolRecord
   setSchoolRecord: (updater: ((prev: SchoolRecord) => SchoolRecord) | SchoolRecord) => void
   gainExtraAction: () => void

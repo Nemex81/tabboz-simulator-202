@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar } from '@phosphor-icons/react'
+import { Calendar, ChatsCircle } from '@phosphor-icons/react'
 import { GameTime, DayPhase, DayType } from '@/lib/types'
 import { formatDate, getDayOfWeekLabel, getSchoolYearName, getDaysUntilReportCard, DAY_PHASE_CONFIG } from '@/lib/time-utils'
 
@@ -8,9 +8,10 @@ interface TimeDisplayProps {
   currentPhase?: DayPhase
   dayType?: DayType
   phaseActionsRemaining?: number
+  interazioniRimaste?: number
 }
 
-export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPhase, dayType }: TimeDisplayProps) {
+export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPhase, dayType, interazioniRimaste }: TimeDisplayProps) {
   return (
     <div role="region" aria-label="Stato giornata corrente" className="flex flex-wrap items-center gap-4 px-3 py-2 border border-border rounded-sm bg-card text-sm">
 
@@ -45,6 +46,16 @@ export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPh
             <span className="ml-1 text-xs text-muted-foreground">
               {DAY_PHASE_CONFIG[dayType][currentPhase].timeRange}
             </span>
+          </span>
+        </>
+      )}
+
+      {typeof interazioniRimaste === 'number' && (
+        <>
+          <span className="text-border">|</span>
+          <span className="flex items-center gap-1 text-muted-foreground">
+            <ChatsCircle size={14} weight="fill" className="text-primary" />
+            Interazioni: <strong className="text-primary">{interazioniRimaste}</strong>
           </span>
         </>
       )}

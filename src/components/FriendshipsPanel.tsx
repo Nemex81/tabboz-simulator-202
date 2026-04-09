@@ -10,7 +10,7 @@ import { EnhancedFriendsPanel } from '@/components/EnhancedFriendsPanel'
 interface FriendshipsPanelProps {
   friends: Friend[]
   stats: GameStats
-  actionsRemaining: number
+  interactionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
   onRelationInteraction?: (friendId: string, interactionId: string) => void
   girlfriend: Ragazza | null

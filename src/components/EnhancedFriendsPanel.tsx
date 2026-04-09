@@ -18,7 +18,7 @@ import { GirlfriendPanel } from '@/components/GirlfriendPanel'
 interface EnhancedFriendsPanelProps {
   friends: Friend[]
   stats: GameStats
-  actionsRemaining: number
+  interactionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
   onRelationInteraction?: (friendId: string, interactionId: string) => void
   girlfriend: Ragazza | null
@@ -29,7 +29,7 @@ interface EnhancedFriendsPanelProps {
 export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   friends,
   stats,
-  actionsRemaining,
+  interactionsRemaining,
   onFriendAction,
   onRelationInteraction,
   girlfriend,
@@ -75,7 +75,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
         <GirlfriendPanel
           girlfriend={girlfriend}
           stats={stats}
-          actionsRemaining={actionsRemaining}
+          actionsRemaining={interactionsRemaining}
           onAction={onGirlfriendAction}
           onBreakup={onGirlfriendBreakup}
         />
@@ -187,7 +187,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {availableActions.map((action) => {
                   const check = action.requirements(stats, friend)
-                  const isDisabled = actionsRemaining < action.cost || !check.canDo
+                  const isDisabled = interactionsRemaining < action.cost || !check.canDo
                   
                   return (
                     <Button
@@ -223,7 +223,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
                 <RelationCard
                   friend={friend}
                   onInteraction={onRelationInteraction}
-                  actionsRemaining={actionsRemaining}
+                    actionsRemaining={interactionsRemaining}
                   maxInteractions={6}
                 />
               </div>

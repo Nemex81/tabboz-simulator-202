@@ -27,6 +27,7 @@ interface CharacterSheetProps {
   friends: Friend[]
   relationships: Relationship[]
   actionsRemaining: number
+  interactionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
   onRelationInteraction?: (friendId: string, interactionId: string) => void
   girlfriend: Ragazza | null
@@ -50,6 +51,7 @@ export const CharacterSheet = React.memo(function CharacterSheet({
   friends,
   relationships,
   actionsRemaining,
+  interactionsRemaining,
   onFriendAction,
   onRelationInteraction,
   girlfriend,
@@ -256,7 +258,7 @@ export const CharacterSheet = React.memo(function CharacterSheet({
           <FriendshipsPanel
             friends={friends}
             stats={stats}
-            actionsRemaining={actionsRemaining}
+            interactionsRemaining={interactionsRemaining}
             onFriendAction={onFriendAction}
             onRelationInteraction={onRelationInteraction}
             girlfriend={girlfriend}

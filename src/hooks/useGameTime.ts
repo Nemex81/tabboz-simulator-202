@@ -79,6 +79,8 @@ export function useGameTime({
   const [currentPhase, setCurrentPhase] = useKV<DayPhase>('tabboz-phase', 'mattina')
   const [dayType, setDayType] = useKV<DayType>('tabboz-day-type', 'feriale')
   const [phaseActionsRemaining, setPhaseActionsRemaining] = useKV<number>('tabboz-phase-actions', 2)
+  const [interazioniRimaste, setInterazioniRimaste] = useKV<number>('tabboz-interazioni', 3)
+  const [maxInterazioni, setMaxInterazioni] = useKV<number>('tabboz-max-interazioni', 3)
 
   const gameTime = validateGameTime(rawGameTime)
   const scheduledExams = validateScheduledExams(rawScheduledExams)
@@ -103,6 +105,17 @@ export function useGameTime({
     setPhaseActionsRemaining((n) => Math.max(0, (n ?? 0) - 1))
   }, [setPhaseActionsRemaining])
 
+  const consumeInterazione = useCallback(() => {
+    setInterazioniRimaste((current) => {
+      const next = current ?? 0
+      if (next <= 0) {
+        announce('Non hai più interazioni disponibili in questa fase.', 'assertive')
+        return 0
+      }
+      return next - 1
+    })
+  }, [announce, setInterazioniRimaste])
+
   // C10 — Consuma tutte le azioni mattutine rimanenti quando il giocatore va a scuola.
   // La mattinata scolastica sostituisce completamente il tempo libero della mattina.
   const consumeAllMorningActions = useCallback(() => {
@@ -122,6 +135,7 @@ export function useGameTime({
       gameTime.schoolYear.isSchoolPeriod &&
       nextPhase === 'mattina'
 
+    const newMaxInterazioni = Math.min(5, 3 + Math.floor((statsRef.current.carisma ?? 0) / 40))
     if (nextPhase === 'mattina') {
       const nightRecovery = DAY_PHASE_CONFIG[(dayType ?? 'feriale')]['notte'].nightRecovery
       if (nightRecovery !== 0) {
@@ -136,6 +150,8 @@ export function useGameTime({
         setDayType(newDayType)
         setCurrentPhase('mattina')
         setPhaseActionsRemaining(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
+        setMaxInterazioni(newMaxInterazioni)
+        setInterazioniRimaste(newMaxInterazioni)
 
         if (!schoolRecord.wentToSchoolToday && newDayType === 'feriale' && newGt.schoolYear.isSchoolPeriod) {
           announce('Non sei andato a scuola ieri! La giornata è contata come assenza.')
@@ -186,6 +202,8 @@ export function useGameTime({
       const cfg = DAY_PHASE_CONFIG[(dayType ?? 'feriale')][nextPhase]
       setCurrentPhase(nextPhase)
       setPhaseActionsRemaining(cfg.maxActions)
+      setMaxInterazioni(newMaxInterazioni)
+      setInterazioniRimaste(newMaxInterazioni)
     }
     playSound.buttonClick()
     announce(`Fascia oraria: ${nextPhase.charAt(0).toUpperCase() + nextPhase.slice(1)}`)
@@ -228,6 +246,9 @@ export function useGameTime({
       setDayType(newDayType)
       setCurrentPhase('mattina')
       setPhaseActionsRemaining(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
+      const newMaxInterazioni = Math.min(5, 3 + Math.floor((statsRef.current.carisma ?? 0) / 40))
+      setMaxInterazioni(newMaxInterazioni)
+      setInterazioniRimaste(newMaxInterazioni)
 
       const currentMedia = calculateMedia(gradesRef.current)
       const st = schoolTypeRef.current
@@ -388,6 +409,8 @@ export function useGameTime({
     announce('Hai guadagnato un\'AZIONE EXTRA! Usala saggiamente.')
   }, [setPhaseActionsRemaining, announce])
 
+  const canInteract = (interazioniRimaste ?? 0) > 0
+
   // A6 — Nuova azione dormi
   const handleDormi = useCallback(() => {
     const phase = currentPhaseRef.current
@@ -425,6 +448,7 @@ export function useGameTime({
     scheduledExams,
     setScheduledExams: setRawScheduledExams,
     consumeAction,
+    consumeInterazione,
     consumeAllMorningActions,
     advanceToNextDay,
     gainExtraAction,
@@ -436,6 +460,9 @@ export function useGameTime({
     setDayType,
     phaseActionsRemaining,
     setPhaseActionsRemaining,
+    interazioniRimaste,
+    maxInterazioni,
+    canInteract,
     advancePhaseOnly,
   }
 }

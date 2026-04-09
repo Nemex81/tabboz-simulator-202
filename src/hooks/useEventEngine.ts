@@ -14,6 +14,19 @@ import { playSound } from '@/lib/sound-effects'
 import { getAfternoonEvent, AfternoonLocation, AfternoonEvent } from '@/lib/afternoon-events'
 import { BetInfo, generateStreetRace } from '@/lib/bet-system'
 
+const LOCATION_NORMALIZATION: Record<string, keyof typeof LOCATION_PROB_BONUS> = {
+  quartiere: 'quartiere',
+  'in giro per il paese': 'quartiere',
+  'al parco': 'quartiere',
+  'al cinema': 'quartiere',
+  'in palestra': 'palestra',
+  palestra: 'palestra',
+  'al centro commerciale': 'lavoro',
+  lavoro: 'lavoro',
+  'in discoteca': 'festa',
+  festa: 'festa',
+}
+
 interface UseEventEngineParams {
   stats: GameStats
   setStats: (updater: ((prev: GameStats) => GameStats) | GameStats) => void
@@ -91,10 +104,11 @@ export function useEventEngine({
   betInfoRef.current = betInfo
 
   const checkForNewFriend = useCallback((location: string) => {
+    const normalizedLocation = LOCATION_NORMALIZATION[location] ?? 'quartiere'
     // Tentativo evento narrativo pomeridiano/serale (priorità su generazione silenziosa)
     const phase = currentPhaseRef.current
     if (phase === 'pomeriggio' || phase === 'sera') {
-      const evt = getAfternoonEvent(location as AfternoonLocation)
+      const evt = getAfternoonEvent(normalizedLocation as AfternoonLocation)
       if (evt) {
         setAfternoonEvent(evt)
         return  // evento narrativo trovato — non generare amico silenzioso
@@ -103,16 +117,18 @@ export function useEventEngine({
 
     // Fallback: generazione silenziosa (codice originale invariato)
     const carismaBonus = Math.floor(statsRef.current.carisma / 10)
-    const locationBonus = LOCATION_PROB_BONUS[location] ?? 0
+    const locationBonus = LOCATION_PROB_BONUS[normalizedLocation] ?? 0
     const rawChance = 15 + carismaBonus + locationBonus
     const adjustedChance = getFriendGenChance(rawChance, friendsRef.current.length)
     if (Math.random() * 100 < adjustedChance) {
-      const newFriend = generateExtraFriend(location)
+      const newFriend = generateExtraFriend(normalizedLocation)
       setFriends((current) => [...current, newFriend])
       playSound.success()
-      announce(`Hai conosciuto ${newFriend.name} ${location}! Nuovo amico aggiunto alla RUBRICA! (${newFriend.type.toUpperCase()})`)
+      const description = `Hai conosciuto ${newFriend.name} in zona ${normalizedLocation}! Nuovo amico aggiunto alla rubrica. (${newFriend.type.toUpperCase()})`
+      announce(description)
+      addLogEntry('social', `Nuovo amico: ${newFriend.name}`, description, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
-  }, [setFriends, announce])
+  }, [setFriends, announce, addLogEntry])
 
   const checkForNewRelationship = useCallback(() => {
     if (relationshipsRef.current.length < 6 && randomChance(20)) {

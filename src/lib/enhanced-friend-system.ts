@@ -15,6 +15,8 @@ export const generateRandomEnhancedFriend = (): Friend => {
   const name = ITALIAN_MALE_NAMES[Math.floor(Math.random() * ITALIAN_MALE_NAMES.length)]
   const types: FriendType[] = ['coatto', 'secchione', 'sportivo', 'ribelle']
   const type = types[Math.floor(Math.random() * types.length)]
+  const gender: 'M' | 'F' = Math.random() < 0.5 ? 'M' : 'F'
+  const carisma = Math.floor(Math.random() * 41) + 30
   
   let intelligenza = Math.floor(Math.random() * 60) + 20
   if (type === 'secchione') {
@@ -29,6 +31,9 @@ export const generateRandomEnhancedFriend = (): Friend => {
     type,
     affinita: 50,
     unlocked: true,
+    gender,
+    carisma,
+    relazione: 50,
     intelligenza,
     originType: 'compagno_classe' as const,
   }
@@ -45,6 +50,8 @@ export const generateSchoolFriend = (
   const name = ITALIAN_MALE_NAMES[Math.floor(Math.random() * ITALIAN_MALE_NAMES.length)]
   const types: FriendType[] = ['coatto', 'secchione', 'sportivo', 'ribelle']
   const type = types[Math.floor(Math.random() * types.length)]
+  const gender: 'M' | 'F' = Math.random() < 0.5 ? 'M' : 'F'
+  const carisma = Math.floor(Math.random() * 41) + 30
 
   let intelligenza = Math.floor(Math.random() * 60) + 20
   if (type === 'secchione') {
@@ -59,6 +66,9 @@ export const generateSchoolFriend = (
     type,
     affinita: ORIGIN_INITIAL_STATS[originType].amicizia,
     unlocked: true,
+    gender,
+    carisma,
+    relazione: ORIGIN_INITIAL_STATS[originType].amicizia,
     intelligenza,
     originType,
     metAt: 'classe',
@@ -75,6 +85,8 @@ export const generateExtraFriend = (
   location: keyof typeof MET_AT_TYPE_WEIGHTS = 'quartiere'
 ): Friend => {
   const name = ITALIAN_MALE_NAMES[Math.floor(Math.random() * ITALIAN_MALE_NAMES.length)]
+  const gender: 'M' | 'F' = Math.random() < 0.5 ? 'M' : 'F'
+  const carisma = Math.floor(Math.random() * 41) + 30
 
   // Selezione type pesata per location
   const weights = MET_AT_TYPE_WEIGHTS[location] ?? {}
@@ -103,6 +115,9 @@ export const generateExtraFriend = (
     type,
     affinita: originStats.amicizia,
     unlocked: true,
+    gender,
+    carisma,
+    relazione: originStats.amicizia,
     intelligenza,
     originType: 'extrascolastico',
     metAt: location as Friend['metAt'],

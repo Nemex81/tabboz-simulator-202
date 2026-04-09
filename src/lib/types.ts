@@ -229,12 +229,15 @@ export const DEFAULT_GAME_STATE: GameState = {
   }
 }
 
-export interface Friend {
+export interface Friend extends BaseCharacter {
   // ── campi esistenti (INVARIATI) ──────────────────────────────
   id:           string
   name:         string
   type:         FriendType
   intelligenza?: number
+  gender?:      'M' | 'F'
+  carisma?:     number
+  relazione?:   number
   unlocked:     boolean
 
   // ── NUOVO: contesto di origine ───────────────────────────────
@@ -253,6 +256,19 @@ export interface Friend {
   affinita?: number             // letto solo da migrateLegacyFriend()
   tier?:     RelationshipTier   // ora derivato, non stored
   bondType?: SocialBondType     // ora derivato, non stored
+}
+
+export interface BaseCharacter {
+  id?: string
+  name: string
+  gender?: 'M' | 'F' | 'maschio' | 'femmina'
+  age?: number
+  carisma?: number
+  intelligenza?: number
+  relazione?: number
+  originType?: 'compagno_classe' | 'compagno_istituto' | 'extrascolastico' | 'player'
+  metAt?: string
+  interazioniPerFase?: number
 }
 
 export interface Relationship {
@@ -274,7 +290,7 @@ export interface EventConstraint {
   blockedWhenExhausted?: boolean
 }
 
-export interface PlayerProfile {
+export interface PlayerProfile extends BaseCharacter {
   name: string
   gender: 'maschio' | 'femmina'
   selectedTraits?: TraitId[]
@@ -515,12 +531,15 @@ export type ClassmatePersonality =
   | 'sportivo' | 'ribelle' | 'nerd' | 'popolare'
   | 'timido' | 'leader'
 
-export interface Classmate {
+export interface Classmate extends BaseCharacter {
   id: string
   name: string
   type: FriendType                    // coatto | secchione | sportivo | ribelle | generico
   intelligenza: number                // 20-100
   relation: number                    // [0,100], valore neutro 50
+  relazione?: number                  // alias compatibile per BaseCharacter
+  gender?: 'M' | 'F'
+  carisma?: number
   personality: ClassmatePersonality   // archetipo narrativo
   promotedToFriend: boolean           // true quando il giocatore lo aggiunge agli amici
   yearJoined: number                  // anno scolastico in cui e entrato nella classe
@@ -536,7 +555,7 @@ export interface TeacherMemoryEntry {
   impactOnRelation: number   // quanto ha cambiato la relazione
 }
 
-export interface Teacher {
+export interface Teacher extends BaseCharacter {
   id: string
   name: string
   subjectKey: string              // materia insegnata
