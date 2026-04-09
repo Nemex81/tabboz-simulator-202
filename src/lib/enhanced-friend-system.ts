@@ -1,6 +1,7 @@
 import { GameStats, Friend, FriendType } from '@/lib/types'
 import { randomChance, clampStat } from '@/lib/game-utils'
 import { ORIGIN_INITIAL_STATS, MET_AT_TYPE_WEIGHTS } from '@/lib/relation-system'
+import { DEFAULT_SEXUAL_ORIENTATION } from '@/lib/gender-utils'
 
 // Re-export per compatibilità con componenti che importano da qui
 export type { FriendType, Friend as EnhancedFriend }
@@ -32,6 +33,7 @@ export const generateRandomEnhancedFriend = (): Friend => {
     affinita: 50,
     unlocked: true,
     gender,
+    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
     carisma,
     relazione: 50,
     intelligenza,
@@ -67,6 +69,7 @@ export const generateSchoolFriend = (
     affinita: ORIGIN_INITIAL_STATS[originType].amicizia,
     unlocked: true,
     gender,
+    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
     carisma,
     relazione: ORIGIN_INITIAL_STATS[originType].amicizia,
     intelligenza,
@@ -116,6 +119,7 @@ export const generateExtraFriend = (
     affinita: originStats.amicizia,
     unlocked: true,
     gender,
+    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
     carisma,
     relazione: originStats.amicizia,
     intelligenza,

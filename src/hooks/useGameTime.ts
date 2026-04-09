@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useHydratedKV'
 import { GameTime, SubjectGrades, GameStats, SchoolType, ScheduledExam, DayPhase, DayType, SchoolRecord } from '@/lib/types'
 import { DEFAULT_GAME_STATE, DEFAULT_SCHOOL_RECORD, getDefaultGradesForSchoolType, getSubjectDisplayName } from '@/lib/types'
 import { validateGameTime, validateScheduledExams } from '@/lib/data-validation'
@@ -31,7 +31,7 @@ interface UseGameTimeParams {
   setShowSchoolEvent: (v: boolean) => void
   setSchoolMorningEvents: (events: SchoolMorningEvent[]) => void
   setShowSchoolMorning: (v: boolean) => void
-  announce: (msg: string) => void
+  announce: (msg: string, priority?: 'polite' | 'assertive') => void
   setSchoolRecord: (updater: ((prev: SchoolRecord) => SchoolRecord) | SchoolRecord) => void
   schoolRecord: SchoolRecord
   setGameOver: (v: boolean) => void

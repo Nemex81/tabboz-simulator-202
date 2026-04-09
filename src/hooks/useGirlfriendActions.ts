@@ -21,7 +21,7 @@ interface UseGirlfriendActionsParams {
   girlfriend: Ragazza | null
   setGirlfriend: (v: Ragazza | null | ((prev: Ragazza | null) => Ragazza | null)) => void
   consumeAction: () => void
-  announce: (msg: string) => void
+  announce: (msg: string, priority?: 'polite' | 'assertive') => void
   addLogEntry: (
     type: LogEntryType,
     title: string,

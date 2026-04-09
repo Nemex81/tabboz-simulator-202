@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { GameStats, Friend, getRelationshipTier, getRelationshipTierLabel } from '@/lib/types'
+import { GameStats, Friend, PlayerProfile, getRelationshipTier } from '@/lib/types'
 import { getAffinita } from '@/lib/relation-system'
 import { RelationCard } from '@/components/RelationCard'
 import type { Ragazza } from '@/lib/girlfriend-system'
@@ -14,8 +14,10 @@ import {
   FRIEND_ACTIONS,
 } from '@/lib/enhanced-friend-system'
 import { GirlfriendPanel } from '@/components/GirlfriendPanel'
+import { getVisibleRelationshipTierLabel } from '@/lib/gender-utils'
 
 interface EnhancedFriendsPanelProps {
+  playerProfile?: PlayerProfile | null
   friends: Friend[]
   stats: GameStats
   interactionsRemaining: number
@@ -27,6 +29,7 @@ interface EnhancedFriendsPanelProps {
 }
 
 export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
+  playerProfile,
   friends,
   stats,
   interactionsRemaining,
@@ -74,6 +77,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
       {girlfriend && (
         <GirlfriendPanel
           girlfriend={girlfriend}
+          playerProfile={playerProfile}
           stats={stats}
           actionsRemaining={interactionsRemaining}
           onAction={onGirlfriendAction}
@@ -163,7 +167,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
               />
               <div className="mt-1 text-xs text-muted-foreground">
                 <span className="font-medium">
-                  {getRelationshipTierLabel(tier)}
+                  {getVisibleRelationshipTierLabel(tier, playerProfile?.gender ?? 'maschio')}
                 </span>
                 {tier === 'migliore_amico' && (
                   <span className="ml-2 text-xs text-primary">— Copertura genitori sbloccata!</span>
@@ -174,7 +178,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
                       ? 'bg-red-500 text-white'
                       : 'bg-pink-400 text-white'
                   }`}>
-                    {getRelationshipTierLabel(tier)}
+                    {getVisibleRelationshipTierLabel(tier, playerProfile?.gender ?? 'maschio')}
                   </Badge>
                 )}
               </div>

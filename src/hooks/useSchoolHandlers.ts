@@ -10,6 +10,7 @@ import {
   SubjectGrades,
   SchoolRecord,
   DEFAULT_SCHOOL_RECORD,
+  DEFAULT_SCHOOL_DAY_STATE,
   DEFAULT_GAME_STATE,
   DEFAULT_HEALTH_RECORD,
   SchoolType,
@@ -102,6 +103,7 @@ export interface UseSchoolHandlersParams {
   setPlayerProfile: SetState<PlayerProfile | null>
   setCurrentTheme: SetState<ThemeVariant>
   setSchoolDayState: SetState<SchoolDayState>
+  setTimetable: SetState<WeeklyTimetable | null>
   consumeAllMorningActions: () => void
   getTodaySchedule: (day: number) => TimetableSlot[]
   canAttendSchool: () => boolean
@@ -113,13 +115,31 @@ export interface UseSchoolHandlersParams {
   setMarinatoOggi: SetState<boolean>
   clearLog: () => void
   setHealthRecord: SetState<HealthRecord>
-  announce: (msg: string) => void
+  announce: (msg: string, priority?: 'polite' | 'assertive') => void
   addLogEntry: AddLogEntry
 }
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useSchoolHandlers(p: UseSchoolHandlersParams) {
+  const scheduleAcrossFrames = useCallback((tasks: Array<() => void>) => {
+    const runTask = (index: number) => {
+      if (index >= tasks.length) return
+
+      if (typeof window === 'undefined') {
+        tasks[index]()
+        runTask(index + 1)
+        return
+      }
+
+      window.requestAnimationFrame(() => {
+        tasks[index]()
+        runTask(index + 1)
+      })
+    }
+
+    runTask(0)
+  }, [])
 
   // ── handlePromoteToFriend ─────────────────────────────────────────────────
   const handlePromoteToFriend = useCallback((classmateId: string) => {
@@ -198,34 +218,41 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
       return
     }
     playSound.buttonClick()
-    p.setStats((current) => ({
-      ...current!,
-      intelligenza: clampStat(current!.intelligenza + 2),
-      stanchezza: clampStat(current!.stanchezza + 10)
-    }))
+
     p.setSchoolRecord((current): SchoolRecord => ({
       ...(current ?? DEFAULT_SCHOOL_RECORD),
       wentToSchoolToday: true,
       isAtSchool: true
     }))
-    p.consumeAllMorningActions()
     p.setMorningChoicePending(false)
     p.announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
     p.addLogEntry('school', 'Vai a scuola', 'Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!', 'positive', p.gameTime.currentDate, p.currentPhase ?? 'mattina')
 
     const schoolDay = buildSchoolDayState(p.timetable, p.gameTime.currentDate, p.teachers, p.stats, p.getTodaySchedule)
-    if (schoolDay.type === 'sequence') {
-      p.setSchoolDayState(schoolDay.state)
-    } else {
-      p.setSchoolMorningEvents(schoolDay.morningEvents)
-    }
-    p.setShowSchoolMorning(true)
+
+    scheduleAcrossFrames([
+      () => p.setStats((current) => ({
+        ...current!,
+        intelligenza: clampStat(current!.intelligenza + 2),
+        stanchezza: clampStat(current!.stanchezza + 10)
+      })),
+      () => p.consumeAllMorningActions(),
+      () => {
+        if (schoolDay.type === 'sequence') {
+          p.setSchoolDayState(schoolDay.state)
+        } else {
+          p.setSchoolMorningEvents(schoolDay.morningEvents)
+        }
+        p.setShowSchoolMorning(true)
+      },
+    ])
   }, [
     p.phaseActionsRemaining, p.dayType, p.currentPhase, p.gameTime,
     p.schoolRecord, p.canAttendSchool, p.setStats, p.setSchoolRecord,
     p.consumeAllMorningActions, p.setMorningChoicePending, p.announce,
     p.addLogEntry, p.timetable, p.teachers, p.stats, p.getTodaySchedule,
     p.setSchoolDayState, p.setSchoolMorningEvents, p.setShowSchoolMorning,
+    scheduleAcrossFrames,
   ])
 
   // ── handleMarina ──────────────────────────────────────────────────────────
@@ -400,30 +427,47 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
   // ── handleReset ───────────────────────────────────────────────────────────
   const handleReset = useCallback(() => {
     playSound.reset()
-    p.setStats(DEFAULT_GAME_STATE.stats)
-    p.setGrades(p.schoolType ? getDefaultGradesForSchoolType(p.schoolType) : DEFAULT_GAME_STATE.grades)
-    p.setGameTime(DEFAULT_GAME_STATE.gameTime)
-    p.setRawFriends([])
-    p.setRelationships([])
-    p.setScheduledExams([])
-    p.setGirlfriend(null)
     p.setGameOver(false)
     p.setGameOverReason('')
     p.setShowResetDialog(false)
     p.setGameWon(false)
-    p.setSchoolType(null)
-    p.setPlayerProfile(null)
-    p.setSchoolRecord(DEFAULT_SCHOOL_RECORD)
-    p.setRawGradesHistory({})
+    p.setShowSchoolMorning(false)
+    p.setSchoolMorningEvents([])
+    p.setShowStreetMorning(false)
+    p.setStreetMorningEvents([])
+    p.setMorningChoicePending(false)
+    p.setMarinatoOggi(false)
     p.clearLog()
-    p.setHealthRecord(DEFAULT_HEALTH_RECORD)
     p.announce('Gioco RESETTATO! Crea di nuovo il tuo personaggio!')
+
+    scheduleAcrossFrames([
+      () => p.setStats(DEFAULT_GAME_STATE.stats),
+      () => p.setGrades(p.schoolType ? getDefaultGradesForSchoolType(p.schoolType) : DEFAULT_GAME_STATE.grades),
+      () => p.setGameTime(DEFAULT_GAME_STATE.gameTime),
+      () => p.setRawFriends([]),
+      () => p.setRelationships([]),
+      () => p.setScheduledExams([]),
+      () => p.setGirlfriend(null),
+      () => p.setSchoolType(null),
+      () => p.setPlayerProfile(null),
+      () => p.setSchoolRecord(DEFAULT_SCHOOL_RECORD),
+      () => p.setRawGradesHistory({}),
+      () => p.setHealthRecord(DEFAULT_HEALTH_RECORD),
+      () => p.setTeachers([]),
+      () => p.setClassRoster([]),
+      () => p.setTimetable(null),
+      () => p.setSchoolDayState(DEFAULT_SCHOOL_DAY_STATE),
+    ])
   }, [
     p.setStats, p.setGrades, p.schoolType, p.setGameTime,
     p.setRawFriends, p.setRelationships, p.setScheduledExams, p.setGirlfriend,
     p.setGameOver, p.setGameOverReason, p.setShowResetDialog, p.setGameWon,
     p.setSchoolType, p.setPlayerProfile, p.setSchoolRecord,
     p.setRawGradesHistory, p.clearLog, p.setHealthRecord, p.announce,
+    p.setShowSchoolMorning, p.setSchoolMorningEvents, p.setShowStreetMorning,
+    p.setStreetMorningEvents, p.setMorningChoicePending, p.setMarinatoOggi,
+    p.setTeachers, p.setClassRoster, p.setTimetable, p.setSchoolDayState,
+    scheduleAcrossFrames,
   ])
 
   // ── Callback per SchoolTab ────────────────────────────────────────────────

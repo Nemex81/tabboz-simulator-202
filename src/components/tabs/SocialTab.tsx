@@ -3,8 +3,11 @@ import { Card } from '@/components/ui/card'
 import { ActionButton } from '@/components/ActionButton'
 import { calculateStudyGradeIncrease } from '@/lib/game-utils'
 import { ECONOMY } from '@/lib/game-balance.constants'
+import { renderPlayerForm } from '@/lib/gender-utils'
+import type { NarrativePlayerGender } from '@/lib/types'
 
 interface SocialTabProps {
+  playerGender: NarrativePlayerGender
   morningChoicePending: boolean
   phaseActionsLeft: number
   interactionsLeft: number
@@ -22,6 +25,7 @@ interface SocialTabProps {
 }
 
 export function SocialTab({
+  playerGender,
   morningChoicePending,
   phaseActionsLeft,
   interactionsLeft,
@@ -57,7 +61,7 @@ export function SocialTab({
                 : phaseActionsLeft <= 0
                   ? 'Nessuna azione per questa fascia oraria'
                   : stanchezza > 80
-                    ? 'Sei troppo stanco per studiare!'
+                    ? `Sei troppo ${renderPlayerForm(playerGender, 'stanco', 'stanca')} per studiare!`
                     : 'Non è periodo scolastico'
             }
             variant="secondary"
@@ -175,7 +179,7 @@ export function SocialTab({
                   ? 'Nessuna azione per questa fascia oraria'
                   : soldi < ECONOMY.MOTORINO_TRUCCO_COSTO
                     ? `Servono almeno ${ECONOMY.MOTORINO_TRUCCO_COSTO}€`
-                    : 'Sei troppo stanco per trafficare col motorino!'
+                      : `Sei troppo ${renderPlayerForm(playerGender, 'stanco', 'stanca')} per trafficare col motorino!`
             }
             ariaLabel={`Trucca il motorino per aumentare molto la coattaggine. Costa ${ECONOMY.MOTORINO_TRUCCO_COSTO} euro. Tasto rapido: Ctrl+4`}
           />

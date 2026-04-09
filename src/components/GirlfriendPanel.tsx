@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats } from '@/lib/types'
+import { GameStats, PlayerProfile } from '@/lib/types'
 import { 
   Ragazza, 
   getAspettoDescription, 
@@ -29,9 +29,11 @@ import {
   calculateMissingStats,
   calculateRelationshipHealth
 } from '@/lib/girlfriend-system'
+import { getRomanticStatusLabel } from '@/lib/gender-utils'
 
 interface GirlfriendPanelProps {
   girlfriend: Ragazza          // C3-1: non più nullable — il guard è nel padre
+  playerProfile?: PlayerProfile | null
   stats: GameStats
   actionsRemaining: number
   onAction: (action: string) => void
@@ -40,6 +42,7 @@ interface GirlfriendPanelProps {
 
 export const GirlfriendPanel = memo(function GirlfriendPanel({
   girlfriend,
+  playerProfile: _playerProfile,
   stats,
   actionsRemaining,
   onAction,
@@ -56,6 +59,9 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
   const likes = getWhatSheLikes(girlfriend.personalita, girlfriend.statPreferita)
   const missingStats = calculateMissingStats(stats, girlfriend)
   const relationshipHealth = calculateRelationshipHealth(girlfriend)
+  const messageLabel = girlfriend.gender === 'M' ? 'Mandagli un messaggio' : 'Mandale un messaggio'
+  const cinemaLabel = girlfriend.gender === 'M' ? 'Invitalo al cinema' : 'Invitala al cinema'
+  const motorinoLabel = girlfriend.gender === 'M' ? 'Portalo in giro col motorino' : 'Portala in giro col motorino'
   
   const canDichiararti = girlfriend.interessePerTe >= 70 && girlfriend.relationshipStatus !== 'fidanzata'
   const canInvitareCinema = girlfriend.interessePerTe >= 30
@@ -78,10 +84,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
                   {girlfriend.eta} anni • Classe {girlfriend.classe} • {girlfriend.scuola}
                 </p>
                 <Badge className="mt-1 bg-accent">
-                  {girlfriend.relationshipStatus === 'fidanzata' ? '💕 Fidanzata' :
-                   girlfriend.relationshipStatus === 'interessata' ? '😍 Interessata' :
-                   girlfriend.relationshipStatus === 'amica' ? '😊 Amica' :
-                   girlfriend.relationshipStatus === 'conoscente' ? '👋 Conoscente' : '❓ Sconosciuta'}
+                  {getRomanticStatusLabel(girlfriend.relationshipStatus, girlfriend.gender)}
                 </Badge>
               </div>
             </div>
@@ -256,8 +259,8 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
               >
                 <ChatCircle size={24} className="mr-3" weight="fill" />
                 <div className="flex-1 text-left">
-                  <div className="font-bold">Mandagli un messaggio</div>
-                  <div className="text-xs opacity-80">+5 Interesse, +2 Felicità • Gratis</div>
+                  <div className="font-bold">{messageLabel}</div>
+                    <div className="text-xs opacity-80">+5 Interesse, +2 Felicita • Gratis</div>
                 </div>
               </Button>
               
@@ -269,7 +272,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
               >
                 <FilmSlate size={24} className="mr-3" weight="fill" />
                 <div className="flex-1 text-left">
-                  <div className="font-bold">Invitala al cinema</div>
+                  <div className="font-bold">{cinemaLabel}</div>
                   <div className="text-xs opacity-80">
                     +15 Interesse, +5 Figosità, +10 Felicità • 40€ • Int. min: 30
                   </div>
@@ -284,7 +287,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
               >
                 <Motorcycle size={24} className="mr-3" weight="fill" />
                 <div className="flex-1 text-left">
-                  <div className="font-bold">Portala in giro col motorino</div>
+                  <div className="font-bold">{motorinoLabel}</div>
                   <div className="text-xs opacity-80">
                     +20 Interesse, +5 Coatt., +15 Felic., +5 Fiducia • 20€ • Int: 40, Coatt: 50
                   </div>
@@ -332,7 +335,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
                   <div className="flex-1 text-left">
                     <div className="font-bold">💕 DICHIARATI!</div>
                     <div className="text-xs opacity-80">
-                      Diventa la tua fidanzata ufficiale! Interesse min: 70
+                      Diventa il tuo partner ufficiale! Interesse min: 70
                     </div>
                   </div>
                 </Button>

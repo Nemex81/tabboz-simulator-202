@@ -1,7 +1,11 @@
-import { GameStats } from '@/lib/types'
-import { Relationship } from '@/lib/types'
+import { BinaryGenderCode, GameStats, Relationship, SexualOrientation } from '@/lib/types'
 import { randomChance, clampStat } from '@/lib/game-utils'
 import type { RelationStats } from '@/lib/relation-system'
+import {
+  DEFAULT_SEXUAL_ORIENTATION,
+  getPartnerAdjective,
+  getPartnerObjectPronoun,
+} from '@/lib/gender-utils'
 
 export type AspettoType = 'carina' | 'bellissima' | 'normale' | 'alternativa'
 export type PersonalitaType = 'timida' | 'estroversa' | 'secchiona' | 'ribelle' | 'vanitosa'
@@ -37,6 +41,8 @@ export interface Ragazza {
   id: string
   nome: string
   cognome: string
+  gender: BinaryGenderCode
+  orientamentoSessuale: SexualOrientation
   eta: number
   classe: string
   aspetto: AspettoType
@@ -54,10 +60,19 @@ export interface Ragazza {
   lastInteractionDate?: string
 }
 
+interface GenerateRomanticPartnerOptions {
+  targetGender?: BinaryGenderCode
+}
+
 const NOMI_FEMMINILI = [
   'Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer',
   'Melissa', 'Cristina', 'Nicole', 'Daniela', 'Federica', 'Valentina',
   'Alessia', 'Martina', 'Chiara', 'Elisa', 'Francesca', 'Giulia'
+]
+
+const NOMI_MASCHILI = [
+  'Davide', 'Mirko', 'Cristian', 'Fabio', 'Luca', 'Kevin', 'Daniele',
+  'Marco', 'Simone', 'Andrea', 'Alessandro', 'Matteo', 'Lorenzo', 'Federico'
 ]
 
 const COGNOMI = [
@@ -88,8 +103,12 @@ const COLORI_CAPELLI = [
   'Castano chiaro', 'Mogano', 'Ramati'
 ]
 
-export const generateRandomGirlfriend = (): Ragazza => {
-  const nome = NOMI_FEMMINILI[Math.floor(Math.random() * NOMI_FEMMINILI.length)]
+export const generateRandomGirlfriend = (
+  options: GenerateRomanticPartnerOptions = {}
+): Ragazza => {
+  const targetGender = options.targetGender ?? 'F'
+  const namePool = targetGender === 'M' ? NOMI_MASCHILI : NOMI_FEMMINILI
+  const nome = namePool[Math.floor(Math.random() * namePool.length)]
   const cognome = COGNOMI[Math.floor(Math.random() * COGNOMI.length)]
   const eta = Math.floor(Math.random() * 6) + 14
   const anno = Math.floor(Math.random() * 5) + 1
@@ -137,6 +156,8 @@ export const generateRandomGirlfriend = (): Ragazza => {
     id: `girl_${Date.now()}_${Math.random()}`,
     nome,
     cognome,
+    gender: targetGender,
+    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
     eta,
     classe: `${anno}${sezione}`,
     aspetto,
@@ -209,6 +230,8 @@ export const generateGirlfriendFromRelationship = (r: Relationship, currentDateS
     id: `girl_rel_${r.id}_${Date.now()}`,
     nome,
     cognome,
+    gender: r.gender ?? 'F',
+    orientamentoSessuale: r.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
     eta,
     classe: `${anno}${sezione}`,
     aspetto,
@@ -241,7 +264,7 @@ export const generateGirlfriendFromRelationship = (r: Relationship, currentDateS
 export const getAspettoDescription = (aspetto: AspettoType): string => {
   switch (aspetto) {
     case 'bellissima':
-      return 'Una BOMBA ATOMICA! Tutti se la girano a guardarla'
+      return 'Una BOMBA ATOMICA! Attira tutti gli sguardi'
     case 'carina':
       return 'Davvero carina, bella presenza'
     case 'normale':
@@ -260,7 +283,7 @@ export const getPersonalitaDescription = (personalita: PersonalitaType): string 
     case 'secchiona':
       return 'Secchiona DOC, passa le giornate sui libri'
     case 'ribelle':
-      return 'Ribelle e anticonformista, fa quello che le pare'
+      return 'Ribelle e anticonformista, fa quello che vuole'
     case 'vanitosa':
       return 'Vanitosa e attenta all\'immagine, pretende il meglio'
   }
@@ -272,23 +295,23 @@ export const getWhatSheLikes = (personalita: PersonalitaType, statPreferita: str
   switch (personalita) {
     case 'vanitosa':
       likes.push('Apprezza chi ha FIGOSITÀ alta')
-      likes.push('Vuole essere trattata da regina')
+      likes.push('Vuole sentirsi al centro dell\'attenzione')
       likes.push('Adora i complimenti e l\'attenzione')
       break
     case 'secchiona':
       likes.push('Apprezza chi ha INTELLIGENZA alta')
-      likes.push('Le piace parlare di scuola e cultura')
+      likes.push('Ama parlare di scuola e cultura')
       likes.push('Rispetta chi studia seriamente')
       break
     case 'ribelle':
       likes.push('Apprezza chi ha COATTAGGINE')
-      likes.push('Le piacciono i tipi tosti e decisi')
+      likes.push('Apprezza chi e tosto e deciso')
       likes.push('Odia le regole e la noia')
       break
     case 'estroversa':
       likes.push('Apprezza chi ha CARISMA alto')
       likes.push('Adora uscire e divertirsi')
-      likes.push('Le piace chi sa farla ridere')
+      likes.push('Apprezza chi sa far ridere')
       break
     case 'timida':
       likes.push('Apprezza la gentilezza e la pazienza')
@@ -298,13 +321,13 @@ export const getWhatSheLikes = (personalita: PersonalitaType, statPreferita: str
   }
   
   if (statPreferita === 'muscoli') {
-    likes.push('😍 Le piacciono i MUSCOLOSI')
+    likes.push('😍 Apprezza chi ha un fisico atletico')
   } else if (statPreferita === 'figosita') {
-    likes.push('😍 Le piacciono i FIGHI')
+    likes.push('😍 Apprezza chi ha stile e presenza')
   } else if (statPreferita === 'intelligenza') {
-    likes.push('😍 Le piacciono gli INTELLIGENTI')
+    likes.push('😍 Apprezza chi e intelligente')
   } else if (statPreferita === 'carisma') {
-    likes.push('😍 Le piace chi sa PARLARE BENE')
+    likes.push('😍 Apprezza chi sa parlare bene')
   }
   
   return likes
@@ -413,13 +436,16 @@ export const performGirlfriendAction = (
   const statChanges: Partial<GameStats> = {}
   let message = ''
   let gradeChange: number | undefined = undefined
+  const partnerPronoun = getPartnerObjectPronoun(ragazza.gender)
+  const gratefulAdjective = getPartnerAdjective(ragazza.gender, 'grato', 'grata')
+  const happyAdjective = getPartnerAdjective(ragazza.gender, 'felicissimo', 'felicissima')
 
   switch (action) {
     case 'messaggio':
       updatedGirlfriend.stats.messagesExchanged += 1
       updatedGirlfriend.interessePerTe = Math.min(100, updatedGirlfriend.interessePerTe + 5)
       updatedGirlfriend.stats.happinessLevel = Math.min(100, updatedGirlfriend.stats.happinessLevel + 2)
-      message = `Hai mandato un messaggio a ${ragazza.nome}. Le è piaciuto! +5 Interesse`
+      message = `Hai mandato un messaggio a ${ragazza.nome}. ${partnerPronoun === 'gli' ? 'Gli' : 'Le'} e piaciuto! +5 Interesse`
       break
 
     case 'cinema':
@@ -452,7 +478,7 @@ export const performGirlfriendAction = (
       updatedGirlfriend.stats.trustLevel = Math.min(100, updatedGirlfriend.stats.trustLevel + 5)
       statChanges.coattaggine = 5
       statChanges.soldi = -20
-      message = `Hai portato ${ragazza.nome} a fare un giro col motorino! Si è divertita un sacco! +20 Interesse, +5 Coattaggine, -20 Soldi`
+      message = `Hai portato ${ragazza.nome} a fare un giro col motorino! Si e divertit${ragazza.gender === 'M' ? 'o' : 'a'} un sacco! +20 Interesse, +5 Coattaggine, -20 Soldi`
       break
 
     case 'compiti':
@@ -461,7 +487,7 @@ export const performGirlfriendAction = (
       updatedGirlfriend.stats.trustLevel = Math.min(100, updatedGirlfriend.stats.trustLevel + 10)
       statChanges.coattaggine = -10
       gradeChange = 0.3
-      message = `Hai fatto i compiti a ${ragazza.nome}! È molto grata! +10 Interesse, +0.3 Media, -10 Coattaggine`
+      message = `Hai fatto i compiti a ${ragazza.nome}! E molto ${gratefulAdjective}! +10 Interesse, +0.3 Media, -10 Coattaggine`
       break
 
     case 'regalo':
@@ -470,7 +496,7 @@ export const performGirlfriendAction = (
       updatedGirlfriend.interessePerTe = Math.min(100, updatedGirlfriend.interessePerTe + interesseGain)
       updatedGirlfriend.stats.happinessLevel = Math.min(100, updatedGirlfriend.stats.happinessLevel + 20)
       statChanges.soldi = -60
-      message = `Hai fatto un regalo a ${ragazza.nome}! È felicissima! +${interesseGain} Interesse, -60 Soldi`
+      message = `Hai fatto un regalo a ${ragazza.nome}! E ${happyAdjective}! +${interesseGain} Interesse, -60 Soldi`
       break
 
     case 'dichiarati':
@@ -481,7 +507,7 @@ export const performGirlfriendAction = (
         updatedGirlfriend.stats.trustLevel = Math.min(100, updatedGirlfriend.stats.trustLevel + 20)
         statChanges.figosita = 30
         statChanges.carisma = 15
-        message = `${ragazza.nome} ha detto SÌ! Siete FIDANZATI! +30 Figosità, +15 Carisma`
+        message = `${ragazza.nome} ha detto SI! Ora sei FIDANZATO! +30 Figosita, +15 Carisma`
       } else {
         updatedGirlfriend.interessePerTe = Math.max(0, updatedGirlfriend.interessePerTe - 20)
         statChanges.figosita = -20
@@ -554,7 +580,7 @@ export const calculateRelationshipHealth = (ragazza: Ragazza): {
     : 0
   
   if (daysSinceLastInteraction > 7) {
-    warnings.push(`Non la vedi da ${daysSinceLastInteraction} giorni!`)
+    warnings.push(`Non vedi ${ragazza.nome} da ${daysSinceLastInteraction} giorni!`)
   }
   
   let status = 'Eccellente'

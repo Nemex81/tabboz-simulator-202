@@ -12,8 +12,11 @@ import { ActionButton } from '@/components/ActionButton'
 import { Card } from '@/components/ui/card'
 import type { PhaseActionEntry, ActionId } from '@/lib/phase-actions'
 import { ECONOMY } from '@/lib/game-balance.constants'
+import { renderPlayerForm } from '@/lib/gender-utils'
+import type { NarrativePlayerGender } from '@/lib/types'
 
 interface CityPanelProps {
+  playerGender: NarrativePlayerGender
   onDisco: () => void
   onCinema: () => void
   onShopping: () => void
@@ -53,6 +56,7 @@ function getActionState(
 }
 
 export function CityPanel({
+  playerGender,
   onDisco,
   onCinema,
   onShopping,
@@ -158,7 +162,7 @@ export function CityPanel({
             {...base(
               soldi < ECONOMY.PALESTRA_COSTO
                 ? { condition: true, reason: `Servono almeno ${ECONOMY.PALESTRA_COSTO}€` }
-                : { condition: stanchezza > 80, reason: 'Sei troppo stanco per allenarti!' }
+                : { condition: stanchezza > 80, reason: `Sei troppo ${renderPlayerForm(playerGender, 'stanco', 'stanca')} per allenarti!` }
             )}
             ariaLabel={`Vai in palestra. Costa ${ECONOMY.PALESTRA_COSTO} euro. Aumenta Muscoli. Tasto rapido: Ctrl+1`}
             variant="default"

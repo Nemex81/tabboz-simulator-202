@@ -62,6 +62,7 @@ export interface SchoolTabProps {
   // Fase / timing
   phaseActionsLeft: number
   phaseActionsRemaining: number
+  interactionsRemaining: number
   dayType: string | null | undefined
   currentPhase: string | null | undefined
   currentDate: GameDate
@@ -133,6 +134,7 @@ export function SchoolTab({
   girlfriend,
   phaseActionsLeft,
   phaseActionsRemaining,
+  interactionsRemaining,
   dayType,
   currentPhase,
   currentDate,
@@ -171,6 +173,15 @@ export function SchoolTab({
   announce,
   addLogEntry,
 }: SchoolTabProps) {
+  const hasActiveSchoolSequence =
+    dayType === 'feriale' &&
+    currentPhase === 'mattina' &&
+    isSchoolPeriod &&
+    schoolRecord.wentToSchoolToday &&
+    schoolDayState !== undefined &&
+    schoolDayState.slots.length > 0 &&
+    !schoolDayState.isComplete
+
   return (
     <Tabs defaultValue="home" className="w-full">
       <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
@@ -234,6 +245,7 @@ export function SchoolTab({
               teachers={teachers ?? []}
               classRoster={classRoster ?? []}
               currentDate={currentDate}
+              currentPhase={(currentPhase as DayPhase | null) ?? null}
               onGoToTeachers={() => setSchoolSubPanel('teachers')}
               onGoToClassmates={() => setSchoolSubPanel('home')}
               onPromoteToFriend={handlePromoteToFriend}
@@ -350,7 +362,7 @@ export function SchoolTab({
             )}
 
             {/* SchoolBreakPanel — slot intervallo attivo */}
-            {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && isSchoolPeriod && schoolRecord.wentToSchoolToday &&
+            {hasActiveSchoolSequence &&
              schoolDayState !== undefined &&
              schoolDayState.slots[schoolDayState.currentSlotIndex]?.type === 'break' && (
               <SchoolBreakPanel
@@ -369,7 +381,7 @@ export function SchoolTab({
             )}
 
             {/* SchoolMorningPanel — slot lezione attivo */}
-            {showSchoolMorning && dayType === 'feriale' && currentPhase === 'mattina' && isSchoolPeriod && schoolRecord.wentToSchoolToday &&
+            {hasActiveSchoolSequence &&
              schoolDayState?.slots[schoolDayState?.currentSlotIndex]?.type !== 'break' && (
               <SchoolMorningPanel
                 key={`smp-${schoolDayState?.isComplete ? 'done' : 'live'}`}
@@ -602,7 +614,7 @@ export function SchoolTab({
             f.originType === 'compagno_classe' || f.originType === 'compagno_istituto'
           )}
           stats={stats}
-          actionsRemaining={phaseActionsRemaining}
+          interactionsRemaining={interactionsRemaining}
           onFriendAction={handleFriendAction}
           onRelationInteraction={doInteraction}
           girlfriend={girlfriend ?? null}
@@ -622,7 +634,7 @@ export function SchoolTab({
               <li>Influenza TUTTE le interazioni sociali (Disco, Cinema, Rimorchio)</li>
               <li>Con Carisma {'>'} 70 hai 20% di evitare eventi negativi con la PARLANTINA!</li>
               <li>Aumenta le probabilità di fare nuove amicizie (base 15% + bonus Carisma)</li>
-              <li>Migliora le chance con le ragazze (ogni tipo ha preferenze diverse!)</li>
+              <li>Migliora le chance romantiche con i potenziali partner (ogni tipo ha preferenze diverse!)</li>
               <li>Contribuisce al 20% della tua REPUTAZIONE totale!</li>
             </ul>
           </div>

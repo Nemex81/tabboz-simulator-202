@@ -27,7 +27,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       { keys: 'Ctrl + C', action: 'Vai al cinema' },
       { keys: 'Ctrl + S', action: 'Vai allo shopping' },
       { keys: 'Ctrl + F', action: 'Apri pannello Amici' },
-      { keys: 'Ctrl + T', action: 'Apri scheda Tipa/Fidanzata' }
+      { keys: 'Ctrl + T', action: 'Apri scheda Relazioni/Partner' }
     ]},
     { category: 'Lavoro & Riposo', shortcuts: [
       { keys: 'Ctrl + 3', action: 'Lavora da buttadifuori' },

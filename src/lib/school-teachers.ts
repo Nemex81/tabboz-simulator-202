@@ -1,5 +1,6 @@
 import type { SchoolType, Teacher } from '@/lib/types'
 import { getActiveSubjectsForYear } from '@/lib/subjects'
+import { DEFAULT_SEXUAL_ORIENTATION } from '@/lib/gender-utils'
 
 // ─── Pool nomi ────────────────────────────────────────────────────────────────
 
@@ -82,6 +83,7 @@ export function generateTeachers(
       name,
       subjectKey: subject.key,
       gender,
+      orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
       severita,
       simpatia,
       corruttibilita,

@@ -1,4 +1,5 @@
 import type { Classmate, ClassmatePersonality, FriendType } from '@/lib/types'
+import { DEFAULT_SEXUAL_ORIENTATION } from '@/lib/gender-utils'
 
 const MALE_NAMES = [
   'Davide', 'Mirko', 'Cristian', 'Fabio', 'Luca', 'Kevin', 'Daniele',
@@ -43,6 +44,7 @@ export function generateClassRoster(schoolYear: number): Classmate[] {
     relation: 50,  // scalare [0,100], neutro = 50
     relazione: 50,
     gender: Math.random() < 0.5 ? 'M' : 'F',
+    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
     carisma: randomInt(25, 75),
     personality,
     promotedToFriend: false,

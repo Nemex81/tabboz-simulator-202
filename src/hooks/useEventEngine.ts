@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
-import { GameStats, Friend, Relationship, GameTime } from '@/lib/types'
+import { GameStats, Friend, Relationship, GameTime, PlayerProfile } from '@/lib/types'
 import { Ragazza, generateRandomGirlfriend } from '@/lib/girlfriend-system'
 import {
   randomChance,
@@ -13,6 +13,7 @@ import { getFriendGenChance, LOCATION_PROB_BONUS } from '@/lib/relation-system'
 import { playSound } from '@/lib/sound-effects'
 import { getAfternoonEvent, AfternoonLocation, AfternoonEvent } from '@/lib/afternoon-events'
 import { BetInfo, generateStreetRace } from '@/lib/bet-system'
+import { getPreferredPartnerGender } from '@/lib/gender-utils'
 
 const LOCATION_NORMALIZATION: Record<string, keyof typeof LOCATION_PROB_BONUS> = {
   quartiere: 'quartiere',
@@ -38,7 +39,7 @@ interface UseEventEngineParams {
   setGirlfriend: (v: Ragazza | null | ((prev: Ragazza | null) => Ragazza | null)) => void
   gameTime: GameTime
   consumeAction: () => void
-  announce: (msg: string) => void
+  announce: (msg: string, priority?: 'polite' | 'assertive') => void
   phaseActionsRemaining: number
   addLogEntry: (
     type: import('@/lib/types').LogEntryType,
@@ -49,6 +50,7 @@ interface UseEventEngineParams {
     phase: import('@/lib/types').DayPhase
   ) => void
   currentPhase: import('@/lib/types').DayPhase
+  playerProfile: PlayerProfile | null
 }
 
 export function useEventEngine({
@@ -65,7 +67,8 @@ export function useEventEngine({
   announce,
   phaseActionsRemaining,
   addLogEntry,
-  currentPhase
+  currentPhase,
+  playerProfile,
 }: UseEventEngineParams) {
   const [showMetallariEvent, setShowMetallariEvent] = useState(false)
   const [showAtipaEvent, setShowAtipaEvent] = useState(false)
@@ -102,6 +105,8 @@ export function useEventEngine({
   currentPhaseRef.current = currentPhase
   const betInfoRef = useRef<BetInfo | null>(betInfo)
   betInfoRef.current = betInfo
+  const playerProfileRef = useRef(playerProfile)
+  playerProfileRef.current = playerProfile
 
   const checkForNewFriend = useCallback((location: string) => {
     const normalizedLocation = LOCATION_NORMALIZATION[location] ?? 'quartiere'
@@ -132,17 +137,27 @@ export function useEventEngine({
 
   const checkForNewRelationship = useCallback(() => {
     if (relationshipsRef.current.length < 6 && randomChance(20)) {
-      const newRelationship = generateRandomRelationship()
+      const currentPlayer = playerProfileRef.current
+      const targetGender = getPreferredPartnerGender(
+        currentPlayer?.gender ?? 'maschio',
+        currentPlayer?.orientamentoSessuale ?? 'eterosessuale',
+      ) ?? 'F'
+      const newRelationship = generateRandomRelationship(targetGender)
       setRelationships((current) => [...current, newRelationship])
       playSound.eventTrigger()
-      announce(`Hai notato ${newRelationship.name}! Aggiunta alle ragazze disponibili!`)
+      announce(`Hai notato ${newRelationship.name}! Nuovo interesse romantico disponibile.`)
     }
   }, [setRelationships, announce])
 
   const checkForNewGirlfriend = useCallback(() => {
     if (girlfriendRef.current) return
     if (randomChance(10)) {
-      const newGirl = generateRandomGirlfriend()
+      const currentPlayer = playerProfileRef.current
+      const targetGender = getPreferredPartnerGender(
+        currentPlayer?.gender ?? 'maschio',
+        currentPlayer?.orientamentoSessuale ?? 'eterosessuale',
+      ) ?? 'F'
+      const newGirl = generateRandomGirlfriend({ targetGender })
       setGirlfriend(newGirl)
       playSound.eventTrigger()
       announce(`Hai notato ${newGirl.nome} ${newGirl.cognome}! Sembra interessante...`)

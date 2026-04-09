@@ -144,7 +144,7 @@ export function useEconomyActions({
       // Applica effetti numerici delle statistiche
       for (const [k, v] of Object.entries(job.statEffects as Record<string, unknown>)) {
         if (typeof v !== 'number') continue
-        const cur = (next as Record<string, unknown>)[k]
+        const cur = (next as unknown as Record<string, unknown>)[k]
         if (typeof cur !== 'number') continue
         const maxVal = k === 'soldi' ? 1000 : k === 'media' ? 10 : 100
         next = { ...next, [k]: clampStat(cur + v, 0, maxVal) } as GameStats
@@ -158,7 +158,10 @@ export function useEconomyActions({
     addLogEntry(
       'action_neutral',
       `Lavoro: ${job.label}`,
-      `Turno completato come ${job.label}. +${job.payPerShift}€; effetti: ${Object.entries(job.statEffects).map(([key, value]) => `${key} ${value && value > 0 ? '+' : ''}${value}`).join(', ') || 'nessuno'}`,
+      `Turno completato come ${job.label}. +${job.payPerShift}€; effetti: ${Object.entries(job.statEffects)
+        .filter(([, value]) => typeof value === 'number')
+        .map(([key, value]) => `${key} ${value > 0 ? '+' : ''}${value}`)
+        .join(', ') || 'nessuno'}`,
       'positive',
       gameTimeRef.current.currentDate,
       currentPhaseRef.current

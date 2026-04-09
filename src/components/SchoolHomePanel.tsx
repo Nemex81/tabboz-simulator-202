@@ -15,6 +15,7 @@ import type {
   SchoolRecord,
   GameDate,
   ClassmatePersonality,
+  DayPhase,
 } from '@/lib/types'
 import { getSchoolTypeName } from '@/lib/types'
 import { COMMON_SUBJECTS, SPECIFIC_SUBJECTS } from '@/lib/subjects'
@@ -80,6 +81,7 @@ interface SchoolHomePanelProps {
   teachers: Teacher[]
   classRoster: Classmate[]
   currentDate: GameDate
+  currentPhase: DayPhase | null
   onGoToTeachers: () => void
   /** Chiamato solo come fallback se `onPromoteToFriend` NON è fornito. */
   onGoToClassmates: () => void
@@ -98,6 +100,7 @@ export const SchoolHomePanel = React.memo(function SchoolHomePanel({
   teachers,
   classRoster,
   currentDate,
+  currentPhase,
   onGoToTeachers,
   onGoToClassmates,
   onPromoteToFriend,
@@ -116,6 +119,7 @@ export const SchoolHomePanel = React.memo(function SchoolHomePanel({
 
   // Ora corrente (da schoolDayState se attivo)
   const isSchoolActive =
+    currentPhase === 'mattina' &&
     schoolDayState !== null &&
     !schoolDayState.isComplete &&
     schoolDayState.slots.length > 0

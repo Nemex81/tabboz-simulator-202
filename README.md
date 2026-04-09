@@ -160,6 +160,9 @@ Per una descrizione completa, consulta la [documentazione tecnica](#documentazio
 
 ---
 
+Nota: per i dettagli sull'implementazione della persistenza e sulle mitigazioni usate contro i rate-limit KV (snapshot di bootstrap `tabboz-bootstrap-state`, retry/backoff sul fetch e coalescing delle scritture) consulta la sezione "Entry Point e Bootstrap" in [docs/architecture.md](docs/architecture.md#entry-point-e-bootstrap).
+
+
 ## Accessibilità
 
 Il progetto è progettato per essere **completamente accessibile**:

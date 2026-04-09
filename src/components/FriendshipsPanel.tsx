@@ -3,11 +3,12 @@
 
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Friend, GameStats } from '@/lib/types'
+import { Friend, GameStats, PlayerProfile } from '@/lib/types'
 import type { Ragazza } from '@/lib/girlfriend-system'
 import { EnhancedFriendsPanel } from '@/components/EnhancedFriendsPanel'
 
 interface FriendshipsPanelProps {
+  playerProfile?: PlayerProfile | null
   friends: Friend[]
   stats: GameStats
   interactionsRemaining: number

@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useHydratedKV'
 import {
   GameStats,
   GameDate,

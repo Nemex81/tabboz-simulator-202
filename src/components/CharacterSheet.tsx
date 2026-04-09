@@ -10,9 +10,10 @@ import { GradeProgressPanel } from '@/components/GradeProgressPanel'
 import { FriendshipsPanel } from '@/components/FriendshipsPanel'
 import { RelationshipsPanel } from '@/components/RelationshipsPanel'
 import type { Ragazza } from '@/lib/girlfriend-system'
+import { getCharacterGenderLabel, getSexualOrientationLabel } from '@/lib/gender-utils'
 
 interface CharacterSheetProps {
-  playerProfile: { name: string; gender: 'maschio' | 'femmina' } | null
+  playerProfile: import('@/lib/types').PlayerProfile | null
   stats: GameStats
   schoolType: SchoolType | null
   schoolYear: number
@@ -106,7 +107,8 @@ export const CharacterSheet = React.memo(function CharacterSheet({
           <dl className="grid grid-cols-2 gap-3 text-sm">
             <div><dt className="text-muted-foreground">Nome</dt><dd className="font-bold text-foreground">{playerProfile?.name ?? '—'}</dd></div>
             <div><dt className="text-muted-foreground">Età</dt><dd className="font-bold text-foreground">{age} anni</dd></div>
-            <div><dt className="text-muted-foreground">Genere</dt><dd className="font-bold text-foreground">{playerProfile?.gender === 'maschio' ? 'Maschio' : 'Femmina'}</dd></div>
+            <div><dt className="text-muted-foreground">Genere</dt><dd className="font-bold text-foreground">{playerProfile ? getCharacterGenderLabel(playerProfile.gender) : '—'}</dd></div>
+            <div><dt className="text-muted-foreground">Orientamento</dt><dd className="font-bold text-foreground">{playerProfile ? getSexualOrientationLabel(playerProfile.orientamentoSessuale) : '—'}</dd></div>
             <div><dt className="text-muted-foreground">Indirizzo</dt><dd className="font-bold text-foreground">{schoolType?.toUpperCase() ?? '—'}</dd></div>
             <div><dt className="text-muted-foreground">Anno scolastico</dt><dd className="font-bold text-foreground">{schoolYear}° superiore</dd></div>
             <div><dt className="text-muted-foreground">Media voti</dt><dd className={`font-bold ${currentMedia < 6 ? 'text-destructive' : 'text-secondary'}`}>{currentMedia.toFixed(1)} su 10</dd></div>
@@ -256,6 +258,7 @@ export const CharacterSheet = React.memo(function CharacterSheet({
       <TabsContent value="relazioni">
         <div className="mt-2 space-y-6">
           <FriendshipsPanel
+              playerProfile={playerProfile}
             friends={friends}
             stats={stats}
             interactionsRemaining={interactionsRemaining}
@@ -266,6 +269,7 @@ export const CharacterSheet = React.memo(function CharacterSheet({
             onGirlfriendBreakup={onGirlfriendBreakup}
           />
           <RelationshipsPanel
+              playerProfile={playerProfile}
             relationships={relationships}
             stats={stats}
             onTryRelationship={onTryRelationship}

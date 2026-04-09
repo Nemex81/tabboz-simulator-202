@@ -1,19 +1,21 @@
 import React from 'react'
-import { Relationship, GameStats } from '@/lib/types'
+import { Relationship, GameStats, PlayerProfile } from '@/lib/types'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Heart, Sparkle, User } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { getRelationshipPreferenceText, getDifficultyText, calculateRelationshipSuccess } from '@/lib/relationship-utils'
+import { getPotentialPartnersEmptyLabel, getPotentialPartnersHeading, getPartnerSubjectPronoun } from '@/lib/gender-utils'
 
 interface RelationshipsPanelProps {
+  playerProfile: PlayerProfile | null
   relationships: Relationship[]
   stats: GameStats
   onTryRelationship: (relationshipId: string) => void
   actionsRemaining: number
 }
 
-export function RelationshipsPanel({ relationships, stats, onTryRelationship, actionsRemaining }: RelationshipsPanelProps) {
+export function RelationshipsPanel({ playerProfile, relationships, stats, onTryRelationship, actionsRemaining }: RelationshipsPanelProps) {
   const activeRelationships = relationships.filter(r => r.isActive)
   const availableRelationships = relationships.filter(r => !r.isActive)
 
@@ -43,7 +45,7 @@ export function RelationshipsPanel({ relationships, stats, onTryRelationship, ac
                     <div className="flex items-center gap-2 mt-2">
                       <Sparkle size={16} weight="fill" className="text-primary" />
                       <span className="text-sm text-muted-foreground">
-                        State insieme! Continua a uscire con lei!
+                        State insieme! Continua a uscire con {getPartnerSubjectPronoun(rel.gender ?? 'F')}!
                       </span>
                     </div>
                   </div>
@@ -58,7 +60,7 @@ export function RelationshipsPanel({ relationships, stats, onTryRelationship, ac
         <Card className="p-6 border-2 border-secondary bg-card">
           <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
             <User size={28} weight="fill" />
-            RAGAZZE DA CONQUISTARE ({availableRelationships.length})
+            {getPotentialPartnersHeading(playerProfile?.gender ?? 'maschio')} ({availableRelationships.length})
           </h3>
           <div className="grid gap-3">
             {availableRelationships.map((rel) => {
@@ -116,7 +118,7 @@ export function RelationshipsPanel({ relationships, stats, onTryRelationship, ac
         <Card className="p-6 border-2 border-muted bg-card/50">
           <div className="text-center text-muted-foreground">
             <Heart size={64} className="mx-auto mb-4 opacity-50" />
-            <p className="text-lg">Nessuna ragazza disponibile!</p>
+            <p className="text-lg">{getPotentialPartnersEmptyLabel(playerProfile?.gender ?? 'maschio')}</p>
             <p className="text-sm mt-2">Esci di più per incontrare nuove persone!</p>
           </div>
         </Card>

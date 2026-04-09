@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useHydratedKV'
 import { GameStats } from '@/lib/types'
 import { DEFAULT_GAME_STATE } from '@/lib/types'
 import { validateStats } from '@/lib/data-validation'

@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useCallback, useEffect, useMemo } from 'react'
+import { useKV } from '@/hooks/useHydratedKV'
 import type {
   SchoolType,
   Teacher,
@@ -12,6 +12,7 @@ import { DEFAULT_SCHOOL_DAY_STATE } from '@/lib/types'
 import { generateTeachers } from '@/lib/school-teachers'
 import { generateClassRoster } from '@/lib/school-roster'
 import { generateWeeklyTimetable, getTodaySchedule as getTodayScheduleFromLib } from '@/lib/school-timetable'
+import { DEFAULT_SEXUAL_ORIENTATION } from '@/lib/gender-utils'
 
 // ─── Costanti KV ─────────────────────────────────────────────────────────────
 
@@ -53,10 +54,38 @@ export function useSchoolSystem(): UseSchoolSystemReturn {
   const [rawSchoolDayState, setSchoolDayState] = useKV<SchoolDayState>(KV_SCHOOL_DAY_STATE, DEFAULT_SCHOOL_DAY_STATE)
 
   // Backward compatibility: valori null/undefined → vuoti o default
-  const teachers: Teacher[] = rawTeachers ?? []
-  const classRoster: Classmate[] = rawClassRoster ?? []
+  const teachers: Teacher[] = useMemo(() => (
+    (rawTeachers ?? []).map(teacher => ({
+      ...teacher,
+      orientamentoSessuale: teacher.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
+    }))
+  ), [rawTeachers])
+  const classRoster: Classmate[] = useMemo(() => (
+    (rawClassRoster ?? []).map(classmate => ({
+      ...classmate,
+      orientamentoSessuale: classmate.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
+    }))
+  ), [rawClassRoster])
   const timetable: WeeklyTimetable | null = rawTimetable ?? null
   const schoolDayState: SchoolDayState = rawSchoolDayState ?? DEFAULT_SCHOOL_DAY_STATE
+
+  useEffect(() => {
+    if ((rawTeachers ?? []).some(teacher => !teacher.orientamentoSessuale)) {
+      setTeachers(prev => (prev ?? []).map(teacher => ({
+        ...teacher,
+        orientamentoSessuale: teacher.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
+      })))
+    }
+  }, [rawTeachers, setTeachers])
+
+  useEffect(() => {
+    if ((rawClassRoster ?? []).some(classmate => !classmate.orientamentoSessuale)) {
+      setClassRoster(prev => (prev ?? []).map(classmate => ({
+        ...classmate,
+        orientamentoSessuale: classmate.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
+      })))
+    }
+  }, [rawClassRoster, setClassRoster])
 
   // Genera le 3 strutture nell'ordine corretto e le persiste in KV.
   // Teachers vengono generati prima perché servono come input a generateWeeklyTimetable.

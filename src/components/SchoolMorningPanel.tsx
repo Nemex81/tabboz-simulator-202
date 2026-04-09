@@ -132,13 +132,14 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
 
       onStatChange((prev) => {
         const updated = { ...prev }
+        const numericUpdated = updated as unknown as Record<string, number>
         for (const [key, value] of Object.entries(result.delta)) {
-          if (value === undefined) continue
+          if (typeof value !== 'number') continue
           const k = key as keyof GameStats
           if (k === 'soldi') {
-            updated[k] = clampStat((updated[k] as number) + value, 0, 1000)
+            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
           } else {
-            updated[k] = clampStat((updated[k] as number) + value)
+            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
           }
         }
         return updated
@@ -151,8 +152,8 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
       if (result.newFriend && onNewFriend) onNewFriend(result.newFriend)
 
       const deltaSum = Object.entries(result.delta)
-        .filter(([k]) => k !== 'soldi')
-        .reduce((acc, [, v]) => acc + (v ?? 0), 0)
+        .filter(([k, v]) => k !== 'soldi' && typeof v === 'number')
+        .reduce((acc, [, v]) => acc + v, 0)
       const logResult: import('@/lib/types').GameLogEntry['result'] =
         deltaSum > 0 ? 'positive' : deltaSum < 0 ? 'negative' : 'neutral'
       addLogEntry('school', 'Evento scolastico', result.message, logResult, currentDate, 'mattina')
@@ -259,13 +260,14 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
                   if (Object.keys(delta).length > 0) {
                     onStatChange((prev) => {
                       const updated = { ...prev }
+                      const numericUpdated = updated as unknown as Record<string, number>
                       for (const [key, value] of Object.entries(delta)) {
-                        if (value === undefined) continue
+                        if (typeof value !== 'number') continue
                         const k = key as keyof GameStats
                         if (k === 'soldi') {
-                          updated[k] = clampStat((updated[k] as number) + value, 0, 1000)
+                          numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
                         } else {
-                          updated[k] = clampStat((updated[k] as number) + value)
+                          numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
                         }
                       }
                       return updated
@@ -353,13 +355,14 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
                   if (Object.keys(delta).length > 0) {
                     onStatChange((prev) => {
                       const updated = { ...prev }
+                      const numericUpdated = updated as unknown as Record<string, number>
                       for (const [key, value] of Object.entries(delta)) {
-                        if (value === undefined) continue
+                        if (typeof value !== 'number') continue
                         const k = key as keyof GameStats
                         if (k === 'soldi') {
-                          updated[k] = clampStat((updated[k] as number) + value, 0, 1000)
+                          numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
                         } else {
-                          updated[k] = clampStat((updated[k] as number) + value)
+                          numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
                         }
                       }
                       return updated
@@ -392,13 +395,14 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
       // Applica delta alle statistiche
       onStatChange((prev) => {
         const updated = { ...prev }
+        const numericUpdated = updated as unknown as Record<string, number>
         for (const [key, value] of Object.entries(result.delta)) {
-          if (value === undefined) continue
+          if (typeof value !== 'number') continue
           const k = key as keyof GameStats
           if (k === 'soldi') {
-            updated[k] = clampStat((updated[k] as number) + value, 0, 1000)
+            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
           } else {
-            updated[k] = clampStat((updated[k] as number) + value)
+            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
           }
         }
         return updated
@@ -416,8 +420,8 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
         onNewFriend(result.newFriend)
       }
       const deltaSum = Object.entries(result.delta)
-        .filter(([k]) => k !== 'soldi')
-        .reduce((acc, [, v]) => acc + (v ?? 0), 0)
+        .filter(([k, v]) => k !== 'soldi' && typeof v === 'number')
+        .reduce((acc, [, v]) => acc + v, 0)
       const logResult: import('@/lib/types').GameLogEntry['result'] =
         deltaSum > 0 ? 'positive' : deltaSum < 0 ? 'negative' : 'neutral'
       addLogEntry(

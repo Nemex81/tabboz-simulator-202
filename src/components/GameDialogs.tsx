@@ -26,7 +26,7 @@ export const GameDialogs = memo(function GameDialogs(p: GameDialogsProps) {
       <PoliceDialog open={p.showPoliceEvent} onOpenChange={p.setShowPoliceEvent}
         currentEvent={p.currentEvent} onScappa={p.handlePoliceScappa} onCollabora={p.handlePoliceCollabora} />
       <StreetRaceDialog open={p.showStreetRaceEvent} onOpenChange={p.setShowStreetRaceEvent}
-        raceWinChance={p.raceWinChance} onRifiuta={p.handleStreetRaceRifiuta} onAccetta={p.handleStreetRaceAccetta} betInfo={p.betInfo} />
+        raceWinChance={p.raceWinChance} onRifiuta={p.handleStreetRaceRifiuta} onAccetta={p.handleStreetRaceAccetta} betInfo={p.betInfo ?? undefined} />
       <BulliDialog open={p.showBulliEvent} onOpenChange={p.setShowBulliEvent}
         currentEvent={p.currentEvent} onCedi={p.handleBulliCedi} onResisti={p.handleBulliResisti} />
       <GameOverDialog open={p.gameOver} gameOverReason={p.gameOverReason} onReset={p.handleReset} />
@@ -47,7 +47,7 @@ export const GameDialogs = memo(function GameDialogs(p: GameDialogsProps) {
       )}
       {p.showSubjectDialog && (
         <SubjectSelectionDialog open={p.showSubjectDialog} onSelectSubject={p.handleStudySubject}
-          onClose={() => p.setShowSubjectDialog(false)} stanchezza={p.stanchezza} grades={p.grades} />
+          onClose={() => p.setShowSubjectDialog(false)} stanchezza={p.stanchezza} grades={p.grades} playerGender={p.playerGender} />
       )}
       {p.showTeacherDialog && (
         <TeacherSelectionDialog open={p.showTeacherDialog} onSelectTeacher={p.handleTeacherSelection}

@@ -211,11 +211,11 @@ index.html
 
 ### Pattern: KV Storage + Validazione + Hook
 
-Lo stato persistente vive in **KV Storage** (`useKV` di Spark).
+Lo stato persistente vive in **KV Storage** tramite il wrapper locale `useHydratedKV`, compatibile con `useKV` di Spark ma con hardening specifico per questo progetto.
 Ogni valore KV passa attraverso un layer di **validazione** prima di essere usato.
 
 ```
-useKV('tabboz-stats', defaults)      ← Storage persistente
+useHydratedKV('tabboz-stats', defaults) ← Storage persistente + cache locale
     ↓
 validateStats(rawStats)              ← Sanitizzazione + type safety
     ↓
@@ -223,6 +223,17 @@ useGameStats(validatedStats)         ← Hook business logic
     ↓
 <StatDisplay value={stats.muscoli}>  ← Componente UI
 ```
+
+### Bootstrap Snapshot e Backoff
+
+Per ridurre la pressione sul KV all'avvio, le chiavi applicative principali vengono hydrate da uno snapshot condiviso (`tabboz-bootstrap-state`) invece che da molte GET separate.
+
+- Cache locale: il wrapper legge prima uno snapshot locale dal browser per partire senza bloccare il rendering.
+- Snapshot remoto condiviso: le chiavi principali vengono riallineate con una singola GET verso `tabboz-bootstrap-state`.
+- Retry/backoff: se il fetch dello snapshot remoto risponde `403`, `429` o `5xx`, il wrapper ritenta con backoff esponenziale breve prima di ripiegare sulla cache locale o sugli initial value.
+- Fallback controllato: per le chiavi coperte dallo snapshot non viene più riaperto automaticamente un ventaglio di GET per-chiave quando lo snapshot fallisce.
+
+Questo rende l'avvio più robusto sotto rate limit, soprattutto con più tab o ricariche ravvicinate.
 
 ### Chiavi KV Principali
 
@@ -250,6 +261,15 @@ Azione utente → callback dal componente
     → addLogEntry() → diario aggiornato
     → announce() → toast + ARIA live
 ```
+
+### Write Path e Burst Control
+
+Il write path usa ancora scritture per chiave verso KV, ma con due mitigazioni leggere:
+
+- Coalescing per chiave: scritture ravvicinate sulla stessa chiave vengono fuse nel wrapper prima del flush remoto.
+- Sync snapshot debounced: per le chiavi del bootstrap, lo snapshot condiviso viene aggiornato con una scrittura debounced separata.
+
+I burst principali rimasti nel dominio sono multi-chiave, per esempio reset completo, cambio giorno/fase e bootstrap scolastico. Per questi casi non è stato introdotto batching cross-key, perché richiederebbe un contratto backend diverso o l'abbandono della compatibilità con le chiavi KV singole già esistenti.
 
 ---
 

@@ -21,7 +21,7 @@ interface UseLifestyleActionsParams {
   schoolRecord: SchoolRecord
   setSchoolRecord: (updater: ((prev: SchoolRecord) => SchoolRecord) | SchoolRecord) => void
   consumeAction: () => void
-  announce: (msg: string) => void
+  announce: (msg: string, priority?: 'polite' | 'assertive') => void
   triggerRandomEvent: () => void
   checkForNewFriend: (location: string) => void
   checkForNewRelationship: () => void

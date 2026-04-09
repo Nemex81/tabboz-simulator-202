@@ -39,7 +39,7 @@ interface UseStudyActionsParams {
   setGameOver: (v: boolean) => void
   setGameOverReason: (v: string) => void
   consumeAction: () => void
-  announce: (msg: string) => void
+  announce: (msg: string, priority?: 'polite' | 'assertive') => void
   setShowSubjectDialog: (v: boolean) => void
   currentPhase: DayPhase
   dayType: DayType

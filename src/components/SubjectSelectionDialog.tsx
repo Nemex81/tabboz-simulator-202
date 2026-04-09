@@ -9,7 +9,8 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { SubjectGrades, getSubjectDisplayName } from '@/lib/types'
+import { NarrativePlayerGender, SubjectGrades, getSubjectDisplayName } from '@/lib/types'
+import { renderPlayerForm } from '@/lib/gender-utils'
 
 interface SubjectSelectionDialogProps {
   open: boolean
@@ -17,6 +18,7 @@ interface SubjectSelectionDialogProps {
   grades: SubjectGrades
   onSelectSubject: (subject: string) => void
   stanchezza: number
+  playerGender?: NarrativePlayerGender
 }
 
 export function SubjectSelectionDialog({
@@ -24,7 +26,8 @@ export function SubjectSelectionDialog({
   onClose,
   grades,
   onSelectSubject,
-  stanchezza
+  stanchezza,
+  playerGender = 'maschio'
 }: SubjectSelectionDialogProps) {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null)
   const firstButtonRef = useRef<HTMLButtonElement>(null)
@@ -89,7 +92,7 @@ export function SubjectSelectionDialog({
             Seleziona una materia e premi Conferma per studiare. Escape per annullare.
             {isTired && (
               <div className="mt-2 p-3 bg-destructive/20 border border-destructive rounded text-destructive font-bold">
-                ⚠️ SEI TROPPO STANCO! Il bonus studio sarà DIMEZZATO!
+                ⚠️ SEI TROPPO {renderPlayerForm(playerGender, 'STANCO', 'STANCA')}! Il bonus studio sarà DIMEZZATO!
               </div>
             )}
           </DialogDescription>

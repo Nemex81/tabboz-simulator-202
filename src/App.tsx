@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useHydratedKV'
 import { 
   GraduationCap, 
   Buildings,
@@ -72,6 +72,14 @@ import {
   getDifficultyText,
   getDifficultyAnnouncement
 } from '@/lib/exam-system'
+import {
+  adaptNarrativeText,
+  DEFAULT_SEXUAL_ORIENTATION,
+  normalizePlayerProfile,
+  normalizePlayerProfileNullable,
+  normalizeRelationshipCandidate,
+  normalizeRomanticPartner,
+} from '@/lib/gender-utils'
 
 function App() {
   const [rawSchoolType, setRawSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
@@ -85,11 +93,14 @@ function App() {
   const [rawGradesHistory, setRawGradesHistory] = useKV<Record<number, SubjectGrades>>('tabboz-grades-history', {})
 
   const schoolType = validateSchoolType(rawSchoolType)
-  const playerProfile = rawPlayerProfile
+  const playerProfile = useMemo(() => normalizePlayerProfileNullable(rawPlayerProfile), [rawPlayerProfile])
   const grades = validateGrades(rawGrades, schoolType)
   const friends = validateFriends(rawFriends).map(migrateLegacyFriend)
-  const relationships = validateRelationships(rawRelationships)
-  const girlfriend = rawGirlfriend
+  const relationships = useMemo(
+    () => validateRelationships(rawRelationships).map(normalizeRelationshipCandidate),
+    [rawRelationships]
+  )
+  const girlfriend = useMemo(() => normalizeRomanticPartner(rawGirlfriend ?? null), [rawGirlfriend])
   const schoolRecord = rawSchoolRecord || DEFAULT_SCHOOL_RECORD
 
   const setSchoolType = setRawSchoolType
@@ -149,23 +160,42 @@ function App() {
   const [schoolSubPanel, setSchoolSubPanel] = useState<'home' | 'teachers' | 'break'>('home')
   // Blocco 5 — tab principale attivo (controllato per navigazione da shortcut)
   const [activeTab, setActiveTab] = useState<string>('school')
+  const schoolBootstrapStartedRef = useRef(false)
 
   const announce = useCallback((
     message: string,
     priority: 'polite' | 'assertive' = 'polite'
   ) => {
+    const adaptedMessage = adaptNarrativeText(message, playerProfile?.gender)
     const ref = priority === 'assertive' ? ariaLiveAssertiveRef : ariaLivePoliteRef
     if (!ref.current) return
     ref.current.textContent = ''
     requestAnimationFrame(() => {
-      if (ref.current) ref.current.textContent = message
+      if (ref.current) ref.current.textContent = adaptedMessage
     })
-    toast(message, { duration: 3000 })
-  }, [])
+    toast(adaptedMessage, { duration: 3000 })
+  }, [playerProfile?.gender])
 
   // --- Custom Hooks ---
   const { stats, setStats } = useGameStats(announce)
-  const { gameLog, addLogEntry, clearLog } = useGameLog()
+  const { gameLog, addLogEntry: rawAddLogEntry, clearLog } = useGameLog()
+  const addLogEntry = useCallback((
+    type: import('@/lib/types').LogEntryType,
+    title: string,
+    description: string,
+    result: import('@/lib/types').GameLogEntry['result'],
+    date: import('@/lib/types').GameDate,
+    phase: import('@/lib/types').DayPhase,
+  ) => {
+    rawAddLogEntry(
+      type,
+      adaptNarrativeText(title, playerProfile?.gender),
+      adaptNarrativeText(description, playerProfile?.gender),
+      result,
+      date,
+      phase,
+    )
+  }, [playerProfile?.gender, rawAddLogEntry])
 
   const {
     healthRecord,
@@ -233,7 +263,8 @@ function App() {
     announce,
     phaseActionsRemaining: phaseActionsRemaining ?? 0,
     addLogEntry,
-    currentPhase: currentPhase ?? 'mattina'
+    currentPhase: currentPhase ?? 'mattina',
+    playerProfile,
   })
 
   const actions = useGameActions({
@@ -349,6 +380,7 @@ function App() {
   // Sistema scolastico avanzato (Fase 1F / Blocco 2)
   const {
     timetable,
+    setTimetable,
     teachers,
     setTeachers,
     classRoster,
@@ -359,9 +391,34 @@ function App() {
     initSchoolYear,
   } = useSchoolSystem()
 
+  useEffect(() => {
+    if (!schoolType) {
+      schoolBootstrapStartedRef.current = false
+      return
+    }
+
+    const needsSchoolBootstrap =
+      !timetable &&
+      teachers.length === 0 &&
+      classRoster.length === 0
+
+    if (!needsSchoolBootstrap || schoolBootstrapStartedRef.current) {
+      return
+    }
+
+    schoolBootstrapStartedRef.current = true
+    initSchoolYear(schoolType, gameTime.schoolYear.currentYear)
+  }, [
+    classRoster.length,
+    gameTime.schoolYear.currentYear,
+    initSchoolYear,
+    schoolType,
+    teachers.length,
+    timetable,
+  ])
+
   const isSchoolMorningSequenceInProgress =
     currentPhase === 'mattina' &&
-    showSchoolMorning &&
     schoolRecord.wentToSchoolToday &&
     ((_schoolDayStateFromHook?.slots.length ?? 0) > 0) &&
     !_schoolDayStateFromHook?.isComplete
@@ -448,6 +505,7 @@ function App() {
     setPlayerProfile,
     setCurrentTheme,
     setSchoolDayState,
+    setTimetable,
     consumeAllMorningActions,
     getTodaySchedule,
     canAttendSchool,
@@ -470,6 +528,33 @@ function App() {
       htmlElement.setAttribute('data-theme', currentTheme ?? 'default')
     }
   }, [currentTheme])
+
+  useEffect(() => {
+    if (rawPlayerProfile && !rawPlayerProfile.orientamentoSessuale) {
+      setRawPlayerProfile(prev => prev ? normalizePlayerProfile(prev) : null)
+    }
+  }, [rawPlayerProfile, setRawPlayerProfile])
+
+  useEffect(() => {
+    if ((rawRelationships ?? []).some(relationship => !relationship.orientamentoSessuale || !relationship.gender)) {
+      setRawRelationships(prev => (prev ?? []).map(normalizeRelationshipCandidate))
+    }
+  }, [rawRelationships, setRawRelationships])
+
+  useEffect(() => {
+    if (rawGirlfriend && (!rawGirlfriend.orientamentoSessuale || !rawGirlfriend.gender)) {
+      setRawGirlfriend(prev => normalizeRomanticPartner(prev ?? null))
+    }
+  }, [rawGirlfriend, setRawGirlfriend])
+
+  useEffect(() => {
+    if ((rawFriends ?? []).some(friend => !friend.orientamentoSessuale)) {
+      setRawFriends(prev => (prev ?? []).map(friend => ({
+        ...friend,
+        orientamentoSessuale: friend.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
+      })))
+    }
+  }, [rawFriends, setRawFriends])
 
   // ── useSchoolEffects — 4 useEffect scolastici ─────────────────────────────
   useSchoolEffects({
@@ -562,12 +647,13 @@ function App() {
     setShowTeacherDialog,
     handleTeacherSelection,
     teacherActionType,
+     playerGender: playerProfile?.gender ?? 'maschio',
   }), [showReportCard, grades, currentMedia, reportCardPassed,
        gameTime.schoolYear.currentYear, handleReportCardContinue,
        schoolRecord.condotta, schoolRecord.assenze, showSchoolEvent,
        schoolEvent, handleSchoolEventChoice, showSubjectDialog,
        handleStudySubject, showTeacherDialog, handleTeacherSelection,
-       teacherActionType])
+       teacherActionType, playerProfile?.gender])
 
   const cityDialogProps = useMemo(() => ({
     showMetallariEvent,
@@ -628,7 +714,6 @@ function App() {
     return (
       <SchoolSelection
         onSelectSchool={handleSchoolSelection}
-        onSchoolSelected={(st) => initSchoolYear(st, gameTime.schoolYear.currentYear)}
       />
     )
   }
@@ -775,6 +860,7 @@ function App() {
               girlfriend={girlfriend ?? null}
               phaseActionsLeft={phaseActionsLeft}
               phaseActionsRemaining={phaseActionsRemaining ?? 0}
+              interactionsRemaining={interazioniRimaste ?? 0}
               dayType={dayType}
               currentPhase={currentPhase}
               currentDate={gameTime.currentDate}
@@ -843,6 +929,7 @@ function App() {
 
           <TabsContent value="social" className="space-y-6 mt-6">
             <SocialTab
+              playerGender={playerProfile?.gender ?? 'maschio'}
               morningChoicePending={morningChoicePending}
               phaseActionsLeft={phaseActionsLeft}
               interactionsLeft={interazioniRimaste ?? 0}
@@ -862,6 +949,7 @@ function App() {
 
           <TabsContent value="city" className="space-y-6 mt-6">
             <CityTab
+              playerGender={playerProfile?.gender ?? 'maschio'}
               onDisco={handleDisco}
               onCinema={handleCinema}
               onShopping={handleShoppingMall}

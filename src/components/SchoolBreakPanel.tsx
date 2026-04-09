@@ -130,13 +130,14 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
       if (Object.keys(result.statDelta).length > 0) {
         onStatChange((prev) => {
           const updated = { ...prev }
+          const numericUpdated = updated as unknown as Record<string, number>
           for (const [key, value] of Object.entries(result.statDelta)) {
-            if (value === undefined) continue
+            if (typeof value !== 'number') continue
             const k = key as keyof GameStats
             if (k === 'soldi') {
-              updated[k] = clampStat((updated[k] as number) + value, 0, 1000)
+              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
             } else {
-              updated[k] = clampStat((updated[k] as number) + value)
+              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
             }
           }
           return updated
@@ -194,7 +195,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
               {Object.keys(actionResult.statDelta).length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {Object.entries(actionResult.statDelta).map(([k, v]) =>
-                    v !== undefined && v !== 0 ? (
+                    typeof v === 'number' && v !== 0 ? (
                       <Badge
                         key={k}
                         className={v > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}

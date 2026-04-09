@@ -1,7 +1,9 @@
 import { CityPanel } from '@/components/CityPanel'
 import type { PhaseActionEntry, ActionId } from '@/lib/phase-actions'
+import type { NarrativePlayerGender } from '@/lib/types'
 
 interface CityTabProps {
+  playerGender: NarrativePlayerGender
   onDisco: () => void
   onCinema: () => void
   onShopping: () => void
@@ -20,6 +22,7 @@ interface CityTabProps {
 export function CityTab(props: CityTabProps) {
   return (
     <CityPanel
+      playerGender={props.playerGender}
       onDisco={props.onDisco}
       onCinema={props.onCinema}
       onShopping={props.onShopping}

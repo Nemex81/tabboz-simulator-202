@@ -136,7 +136,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
         case 't':
           e.preventDefault()
           setActiveTab('character')
-          announce('Scheda personaggio aperta. Naviga al tab Relazioni per tipa e fidanzata.')
+          announce('Scheda personaggio aperta. Naviga al tab Relazioni per interesse romantico e partner.')
           break
         case 'r':
           e.preventDefault()

@@ -34,7 +34,7 @@ interface UseSocialActionsParams {
   setGirlfriend: (v: Ragazza | null | ((prev: Ragazza | null) => Ragazza | null)) => void
   consumeAction: () => void
   consumeInterazione: () => void
-  announce: (msg: string) => void
+  announce: (msg: string, priority?: 'polite' | 'assertive') => void
   triggerRandomEvent: () => void
   checkForNewFriend: (location: string) => void
   checkForNewRelationship: () => void

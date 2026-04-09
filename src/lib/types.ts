@@ -96,6 +96,19 @@ export interface GameTimeV2 extends GameTime {
 
 export type ThemeVariant = 'default' | 'dark' | 'green'
 
+export type NarrativePlayerGender = 'maschio' | 'femmina'
+
+export type BinaryGenderCode = 'M' | 'F'
+
+export type CharacterGender = BinaryGenderCode | NarrativePlayerGender
+
+export type SexualOrientation =
+  | 'eterosessuale'
+  | 'omosessuale'
+  | 'bisessuale'
+  | 'pansessuale'
+  | 'asessuale'
+
 export type ReputationLevel = 'sfigato' | 'normale' | 'popolare' | 'leggenda'
 
 export type RelationshipTier =
@@ -235,7 +248,7 @@ export interface Friend extends BaseCharacter {
   name:         string
   type:         FriendType
   intelligenza?: number
-  gender?:      'M' | 'F'
+  gender?:      BinaryGenderCode
   carisma?:     number
   relazione?:   number
   unlocked:     boolean
@@ -261,7 +274,8 @@ export interface Friend extends BaseCharacter {
 export interface BaseCharacter {
   id?: string
   name: string
-  gender?: 'M' | 'F' | 'maschio' | 'femmina'
+  gender?: CharacterGender
+  orientamentoSessuale?: SexualOrientation
   age?: number
   carisma?: number
   intelligenza?: number
@@ -274,6 +288,8 @@ export interface BaseCharacter {
 export interface Relationship {
   id: string
   name: string
+  gender?: BinaryGenderCode
+  orientamentoSessuale?: SexualOrientation
   difficulty: 'facile' | 'media' | 'difficile'
   preference: 'muscoli' | 'figosita' | 'intelligenza'
   relationshipLevel: number
@@ -292,7 +308,8 @@ export interface EventConstraint {
 
 export interface PlayerProfile extends BaseCharacter {
   name: string
-  gender: 'maschio' | 'femmina'
+  gender: NarrativePlayerGender
+  orientamentoSessuale: SexualOrientation
   selectedTraits?: TraitId[]
   traits?: string[]
 }
@@ -538,7 +555,7 @@ export interface Classmate extends BaseCharacter {
   intelligenza: number                // 20-100
   relation: number                    // [0,100], valore neutro 50
   relazione?: number                  // alias compatibile per BaseCharacter
-  gender?: 'M' | 'F'
+  gender?: BinaryGenderCode
   carisma?: number
   personality: ClassmatePersonality   // archetipo narrativo
   promotedToFriend: boolean           // true quando il giocatore lo aggiunge agli amici
@@ -559,7 +576,7 @@ export interface Teacher extends BaseCharacter {
   id: string
   name: string
   subjectKey: string              // materia insegnata
-  gender: 'M' | 'F'
+  gender: BinaryGenderCode
 
   // Attributi (1-10)
   severita: number

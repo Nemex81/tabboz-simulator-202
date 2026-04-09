@@ -1,5 +1,6 @@
 import { GameStats, SubjectGrades, GameTime, Friend, Relationship, ScheduledExam, SchoolType, getDefaultGradesForSchoolType } from '@/lib/types'
 import { clampStat } from '@/lib/game-utils'
+import { DEFAULT_SEXUAL_ORIENTATION, normalizeCharacterGenderCode } from '@/lib/gender-utils'
 
 export const validateStats = (stats: Partial<GameStats> | null | undefined): GameStats => {
   if (!stats || typeof stats !== 'object') {
@@ -184,6 +185,8 @@ export const validateFriends = (friends: unknown): Friend[] => {
         name: friend.name as string,
         type,
         affinita,
+        gender: normalizeCharacterGenderCode(friend.gender as Friend['gender'] | undefined, 'F'),
+        orientamentoSessuale: (friend.orientamentoSessuale as Friend['orientamentoSessuale']) ?? DEFAULT_SEXUAL_ORIENTATION,
         intelligenza: typeof friend.intelligenza === 'number' ? (friend.intelligenza as number) : undefined,
         unlocked: typeof friend.unlocked === 'boolean' ? (friend.unlocked as boolean) : true,
         // Preserva i nuovi campi se presenti nel KV (dati già migrati)

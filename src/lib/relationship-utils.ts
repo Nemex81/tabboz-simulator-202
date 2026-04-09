@@ -1,12 +1,19 @@
-import type { GameStats, Relationship } from '@/lib/types'
+import type { BinaryGenderCode, GameStats, Relationship } from '@/lib/types'
+import { DEFAULT_SEXUAL_ORIENTATION } from '@/lib/gender-utils'
 
-export const GIRL_NAMES = [
+export const FEMALE_PARTNER_NAMES = [
   'Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer',
   'Melissa', 'Cristina', 'Nicole', 'Daniela', 'Federica', 'Valentina'
 ]
 
-export const generateRandomRelationship = (): Relationship => {
-  const name = GIRL_NAMES[Math.floor(Math.random() * GIRL_NAMES.length)]
+export const MALE_PARTNER_NAMES = [
+  'Davide', 'Mirko', 'Cristian', 'Fabio', 'Luca', 'Kevin',
+  'Daniele', 'Marco', 'Simone', 'Andrea', 'Alessandro', 'Matteo'
+]
+
+export const generateRandomRelationship = (targetGender: BinaryGenderCode = 'F'): Relationship => {
+  const namePool = targetGender === 'M' ? MALE_PARTNER_NAMES : FEMALE_PARTNER_NAMES
+  const name = namePool[Math.floor(Math.random() * namePool.length)]
   const difficulties: Relationship['difficulty'][] = ['facile', 'media', 'difficile']
   const difficulty = difficulties[Math.floor(Math.random() * difficulties.length)]
   const preferences: Relationship['preference'][] = ['muscoli', 'figosita', 'intelligenza']
@@ -15,6 +22,8 @@ export const generateRandomRelationship = (): Relationship => {
   return {
     id: `relationship_${Date.now()}_${Math.random()}`,
     name,
+    gender: targetGender,
+    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
     difficulty,
     preference,
     relationshipLevel: 0,
@@ -57,11 +66,11 @@ export const getRelationshipPreferenceText = (
 ): string => {
   switch (preference) {
     case 'muscoli':
-      return 'Le piacciono i MUSCOLOSI'
+      return 'Apprezza chi ha un fisico atletico'
     case 'figosita':
-      return 'Le piacciono i FIGHI'
+      return 'Apprezza chi ha stile e presenza'
     case 'intelligenza':
-      return 'Le piacciono gli INTELLIGENTI'
+      return 'Apprezza chi e intelligente'
   }
 }
 

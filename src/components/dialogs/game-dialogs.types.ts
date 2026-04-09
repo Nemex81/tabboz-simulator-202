@@ -1,4 +1,4 @@
-import type { SubjectGrades, GameStats } from '@/lib/types'
+import type { SubjectGrades, GameStats, NarrativePlayerGender } from '@/lib/types'
 import type { SchoolEvent } from '@/lib/school-events'
 import type { BetInfo } from '@/lib/bet-system'
 import type { JobDefinition, JobId } from '@/lib/job-system'
@@ -50,6 +50,7 @@ export interface GameDialogsProps {
   setShowSubjectDialog: (value: boolean) => void
   handleStudySubject: (subject: string) => void
   stanchezza: number
+  playerGender: NarrativePlayerGender
   showTeacherDialog: boolean
   setShowTeacherDialog: (value: boolean) => void
   handleTeacherSelection: (subject: string) => void
