@@ -1,13 +1,13 @@
 import { useState, useCallback, useRef } from 'react'
 import { GameStats, Friend, Relationship, GameTime, PlayerProfile } from '@/lib/types'
-import { Ragazza, generateRandomGirlfriend } from '@/lib/girlfriend-system'
+import { Ragazza, generateGirlfriendFromRelationship } from '@/lib/girlfriend-system'
 import {
   randomChance,
   clampStat,
   getReputationEventModifier,
   canAvoidNegativeEventWithCharisma
 } from '@/lib/game-utils'
-import { generateRandomRelationship } from '@/lib/relationship-utils'
+import { createRelationshipSourceKey, generateRandomRelationship } from '@/lib/relationship-utils'
 import { generateExtraFriend } from '@/lib/enhanced-friend-system'
 import { getFriendGenChance, LOCATION_PROB_BONUS } from '@/lib/relation-system'
 import { playSound } from '@/lib/sound-effects'
@@ -26,6 +26,26 @@ const LOCATION_NORMALIZATION: Record<string, keyof typeof LOCATION_PROB_BONUS> =
   lavoro: 'lavoro',
   'in discoteca': 'festa',
   festa: 'festa',
+}
+
+function buildPickupRelationship(
+  name: string,
+  gender: Relationship['gender'],
+  sourceKey: string,
+  preference: Relationship['preference'] = 'figosita',
+  difficulty: Relationship['difficulty'] = 'media',
+): Relationship {
+  return {
+    id: `relationship_pickup_${Date.now()}_${Math.random()}`,
+    name,
+    sourceKey,
+    sourceType: 'pickup',
+    gender,
+    difficulty,
+    preference,
+    relationshipLevel: 1,
+    isActive: true,
+  }
 }
 
 interface UseEventEngineParams {
@@ -73,6 +93,7 @@ export function useEventEngine({
   const [showMetallariEvent, setShowMetallariEvent] = useState(false)
   const [showAtipaEvent, setShowAtipaEvent] = useState(false)
   const [atipaName, setAtipaName] = useState('')
+  const [atipaEncounterKey, setAtipaEncounterKey] = useState('')
   const [atipaSuccessChance, setAtipaSuccessChance] = useState(0)
   const [showPoliceEvent, setShowPoliceEvent] = useState(false)
   const [showStreetRaceEvent, setShowStreetRaceEvent] = useState(false)
@@ -97,6 +118,8 @@ export function useEventEngine({
   raceWinChanceRef.current = raceWinChance
   const atipaNameRef = useRef(atipaName)
   atipaNameRef.current = atipaName
+  const atipaEncounterKeyRef = useRef(atipaEncounterKey)
+  atipaEncounterKeyRef.current = atipaEncounterKey
   const atipaSuccessChanceRef = useRef(atipaSuccessChance)
   atipaSuccessChanceRef.current = atipaSuccessChance
   const phaseActionsRemainingRef = useRef(phaseActionsRemaining)
@@ -107,6 +130,47 @@ export function useEventEngine({
   betInfoRef.current = betInfo
   const playerProfileRef = useRef(playerProfile)
   playerProfileRef.current = playerProfile
+
+  const upsertRelationship = useCallback((relationship: Relationship) => {
+    setRelationships((current) => {
+      const existingRelationship = current.find((entry) => {
+        if (relationship.sourceKey && entry.sourceKey) {
+          return entry.sourceKey === relationship.sourceKey
+        }
+
+        if (entry.id === relationship.id) {
+          return true
+        }
+
+        return (
+          !entry.sourceKey &&
+          !relationship.sourceKey &&
+          entry.name === relationship.name &&
+          (entry.gender ?? relationship.gender) === (relationship.gender ?? entry.gender)
+        )
+      })
+
+      if (!existingRelationship) {
+        return [...current, relationship]
+      }
+
+      return current.map((entry) => (
+        entry.id !== existingRelationship.id
+          ? entry
+          : {
+              ...entry,
+              sourceKey: entry.sourceKey ?? relationship.sourceKey,
+              sourceType: entry.sourceType ?? relationship.sourceType,
+              gender: entry.gender ?? relationship.gender,
+              orientamentoSessuale: entry.orientamentoSessuale ?? relationship.orientamentoSessuale,
+              difficulty: relationship.difficulty,
+              preference: relationship.preference,
+              relationshipLevel: Math.max(entry.relationshipLevel, relationship.relationshipLevel),
+              isActive: entry.isActive || relationship.isActive,
+            }
+      ))
+    })
+  }, [setRelationships])
 
   const checkForNewFriend = useCallback((location: string) => {
     const normalizedLocation = LOCATION_NORMALIZATION[location] ?? 'quartiere'
@@ -143,11 +207,11 @@ export function useEventEngine({
         currentPlayer?.orientamentoSessuale ?? 'eterosessuale',
       ) ?? 'F'
       const newRelationship = generateRandomRelationship(targetGender)
-      setRelationships((current) => [...current, newRelationship])
+      upsertRelationship(newRelationship)
       playSound.eventTrigger()
       announce(`Hai notato ${newRelationship.name}! Nuovo interesse romantico disponibile.`)
     }
-  }, [setRelationships, announce])
+  }, [announce, upsertRelationship])
 
   const checkForNewGirlfriend = useCallback(() => {
     if (girlfriendRef.current) return
@@ -157,12 +221,22 @@ export function useEventEngine({
         currentPlayer?.gender ?? 'maschio',
         currentPlayer?.orientamentoSessuale ?? 'eterosessuale',
       ) ?? 'F'
-      const newGirl = generateRandomGirlfriend({ targetGender })
+      const newRelationship = {
+        ...generateRandomRelationship(targetGender),
+        sourceKey: createRelationshipSourceKey('direct-girlfriend'),
+        sourceType: 'direct_girlfriend' as const,
+        relationshipLevel: 1,
+        isActive: true,
+      }
+      const currentDate = gameTimeRef.current.currentDate
+      const currentDateString = `${currentDate.day}/${currentDate.month}/${currentDate.year}`
+      const newGirl = generateGirlfriendFromRelationship(newRelationship, currentDateString)
+      upsertRelationship(newRelationship)
       setGirlfriend(newGirl)
       playSound.eventTrigger()
-      announce(`Hai notato ${newGirl.nome} ${newGirl.cognome}! Sembra interessante...`)
+      announce(`Hai fatto colpo su ${newRelationship.name}! Nuova relazione attiva.`)
     }
-  }, [setGirlfriend, announce])
+  }, [setGirlfriend, announce, upsertRelationship])
 
   const triggerRandomEvent = useCallback(() => {
     const s = statsRef.current
@@ -409,6 +483,7 @@ export function useEventEngine({
       (s.soldi / 10) +
       reputationModifier.positiveOutcomeBonus
     ))
+    setAtipaEncounterKey(createRelationshipSourceKey('pickup'))
     setAtipaSuccessChance(Math.round(successChance))
     setCurrentEvent(`Hai adocchiato ${randomName} al centro commerciale! Ti vuoi provare?`)
     setShowAtipaEvent(true)
@@ -430,7 +505,17 @@ export function useEventEngine({
     setShowAtipaEvent(false)
     const name = atipaNameRef.current
     if (randomChance(atipaSuccessChanceRef.current)) {
+      const newRelationship = buildPickupRelationship(
+        name,
+        'F',
+        atipaEncounterKeyRef.current || `pickup:fallback:${name}`,
+      )
+      const currentDate = gameTimeRef.current.currentDate
+      const currentDateString = `${currentDate.day}/${currentDate.month}/${currentDate.year}`
+
       playSound.bigWin()
+      upsertRelationship(newRelationship)
+      setGirlfriend(generateGirlfriendFromRelationship(newRelationship, currentDateString))
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita + 20),
@@ -450,7 +535,7 @@ export function useEventEngine({
       addLogEntry('social', `Palo da ${name}`, `${name} ti ha dato il PALO! Bruciata DEVASTANTE! -15 Figosità, -10 Coattaggine`, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
     // consumeAction() rimossa — già chiamata in handleProvarciConAtipa
-  }, [setStats, announce, addLogEntry])
+  }, [setStats, announce, addLogEntry, setGirlfriend, upsertRelationship])
 
   const handleAfternoonChoice = useCallback((choiceId: string) => {
     if (!afternoonEvent) return

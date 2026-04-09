@@ -7,6 +7,10 @@ import type {
   NarrativePlayerGender,
 } from '@/lib/types'
 
+function buildLegacyRelationshipSourceKey(relationship: Relationship): string {
+  return `legacy-relationship:${relationship.id}`
+}
+
 export const DEFAULT_SEXUAL_ORIENTATION: SexualOrientation = 'eterosessuale'
 
 const SELF_WORD_REPLACEMENTS: Array<[string, string]> = [
@@ -123,6 +127,8 @@ export function normalizePlayerProfileNullable(profile: PlayerProfile | null | u
 export function normalizeRelationshipCandidate(relationship: Relationship): Relationship {
   return {
     ...relationship,
+    sourceKey: relationship.sourceKey ?? buildLegacyRelationshipSourceKey(relationship),
+    sourceType: relationship.sourceType ?? 'generated_interest',
     gender: normalizeCharacterGenderCode(relationship.gender, 'F'),
     orientamentoSessuale: relationship.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
   }

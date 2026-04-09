@@ -89,6 +89,8 @@ export function useSocialActions({
   gameTimeRef.current = gameTime
   const friendsRef = useRef(friends)
   friendsRef.current = friends
+  const relationshipsRef = useRef(relationships)
+  relationshipsRef.current = relationships
   const phaseActionsRemainingRef = useRef(phaseActionsRemaining)
   phaseActionsRemainingRef.current = phaseActionsRemaining
   const canInteractRef = useRef(canInteract)
@@ -258,7 +260,7 @@ export function useSocialActions({
       announce('Servono 80€ per uscire!', 'assertive')
       return
     }
-    const relationship = relationships.find(r => r.id === relationshipId)
+    const relationship = relationshipsRef.current.find(r => r.id === relationshipId)
     if (!relationship) return
     const successChance = calculateRelationshipSuccess(s, relationship)
     if (randomChance(successChance)) {
@@ -295,7 +297,7 @@ export function useSocialActions({
       announce(`${relationship.name} ti ha dato il PALO! RIFIUTATO! -20 Figosità, -10 Carisma, -40 Soldi`)
       addLogEntry('social', `Palo da ${relationship.name}`, `${relationship.name} ti ha dato il PALO! RIFIUTATO! -20 Figosità, -10 Carisma, -40 Soldi`, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
-  }, [relationships, setRelationships, setStats, setGirlfriend, consumeAction, announce, addLogEntry])
+  }, [setRelationships, setStats, setGirlfriend, consumeAction, announce, addLogEntry])
 
   // A8 — Nuove azioni sociali gratuite
   // B1-FIX-5 applicato

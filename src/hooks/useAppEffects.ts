@@ -82,7 +82,7 @@ export function useAppEffects({
   }, [rawPlayerProfile, setRawPlayerProfile])
 
   useEffect(() => {
-    if ((rawRelationships ?? []).some(relationship => !relationship.orientamentoSessuale || !relationship.gender)) {
+    if ((rawRelationships ?? []).some(relationship => !relationship.orientamentoSessuale || !relationship.gender || !relationship.sourceKey)) {
       setRawRelationships(prev => (prev ?? []).map(normalizeRelationshipCandidate))
     }
   }, [rawRelationships, setRawRelationships])

@@ -288,6 +288,8 @@ export interface BaseCharacter {
 export interface Relationship {
   id: string
   name: string
+  sourceKey?: string
+  sourceType?: 'generated_interest' | 'pickup' | 'direct_girlfriend'
   gender?: BinaryGenderCode
   orientamentoSessuale?: SexualOrientation
   difficulty: 'facile' | 'media' | 'difficile'

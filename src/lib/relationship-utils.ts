@@ -1,6 +1,16 @@
 import type { BinaryGenderCode, GameStats, Relationship } from '@/lib/types'
 import { DEFAULT_SEXUAL_ORIENTATION } from '@/lib/gender-utils'
 
+export const createRelationshipSourceKey = (prefix: string = 'relationship'): string => {
+  const randomUuid = globalThis.crypto?.randomUUID?.()
+  if (randomUuid) {
+    return `${prefix}:${randomUuid}`
+  }
+
+  const randomPart = `${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`
+  return `${prefix}:${Date.now()}_${randomPart}`
+}
+
 export const FEMALE_PARTNER_NAMES = [
   'Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer',
   'Melissa', 'Cristina', 'Nicole', 'Daniela', 'Federica', 'Valentina'
@@ -18,10 +28,13 @@ export const generateRandomRelationship = (targetGender: BinaryGenderCode = 'F')
   const difficulty = difficulties[Math.floor(Math.random() * difficulties.length)]
   const preferences: Relationship['preference'][] = ['muscoli', 'figosita', 'intelligenza']
   const preference = preferences[Math.floor(Math.random() * preferences.length)]
+  const relationshipId = `relationship_${Date.now()}_${Math.random()}`
 
   return {
-    id: `relationship_${Date.now()}_${Math.random()}`,
+    id: relationshipId,
     name,
+    sourceKey: createRelationshipSourceKey('relationship'),
+    sourceType: 'generated_interest',
     gender: targetGender,
     orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
     difficulty,
