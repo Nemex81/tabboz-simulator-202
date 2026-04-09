@@ -41,8 +41,9 @@ export function useGameActions({
   marinatoOggi,
   handleDormi,
   onOpenStreetRace,
+  onOpenJobSelection,
 }: UseGameActionsParams) {
-  const { handleLavoro, handleMotorino, handleShoppingMall } = useEconomyActions({
+  const { handleLavoro, handleJobSelection, handleMotorino, handleShoppingMall } = useEconomyActions({
     stats,
     setStats,
     gameTime,
@@ -58,6 +59,7 @@ export function useGameActions({
     phaseActionsRemaining,
     marinatoOggi,
     onOpenStreetRace,
+    onOpenJobSelection,
   })
 
   const {
@@ -160,8 +162,7 @@ export function useGameActions({
   const ACTION_HANDLER_MAP: Partial<Record<ActionId, () => void>> = {
     palestra: handlePalestra,
     lampada: handleLampada,
-    lavoro: handleLavoro,
-    motorino: handleMotorino,
+    lavoro: handleLavoro,    motorino: handleMotorino,
     studia: handleStudia,
     corrompi: handleCorrompi,
     minaccia: handleMinaccia,
@@ -191,6 +192,7 @@ export function useGameActions({
     handlePalestra,
     handleLampada,
     handleLavoro,
+    handleJobSelection,
     handleMotorino,
     handleStudia,
     handleStudySubject,

@@ -496,6 +496,18 @@
 - [x] `CityPanel.tsx` e `tabs/SocialTab.tsx`: messaggi/guard UI riallineati ai costi canonici
 - [x] `npx tsc --noEmit` zero errori
 
+### TASK-B — Job system [x]
+
+- [x] Creato `src/lib/job-system.ts` con `JobId`, `JobDefinition`, `JOBS` e helper di availability/block reason
+- [x] Aggiunto `hasMotorino: boolean` a `GameStats`, `DEFAULT_GAME_STATE` e validazione runtime
+- [x] `phase-actions.ts`: gateway `lavoro` esteso alle fasce orarie compatibili con i 6 job
+- [x] `useEconomyActions.ts`: separati gateway `handleLavoro()` ed executor `handleJobSelection(jobId)`
+- [x] `JobSelectionDialog.tsx` integrato in `GameDialogs` e wiring completato in `App.tsx` / `useAppDialogs.ts`
+- [x] `CityPanel.tsx`: pulsante Lavoro convertito a selettore job senza requisiti hardcoded obsoleti
+- [x] Adattamento rispetto al piano: il gateway e visibile dal 1° anno per non bloccare `dogsitter` e `volantinaggio`; i vincoli reali sono applicati e mostrati nel dialog
+- [x] Adattamento rispetto al piano: `hasMotorino` viene sbloccato dalla prima azione motorino riuscita, in assenza di un sistema inventario dedicato
+- [x] `npx tsc --noEmit` zero errori
+
 ---
 
 ## [x] Audit Accessibilità — 08 Apr 2026

@@ -177,15 +177,17 @@ export function CityPanel({
             label="Lavoro"
             shortcut="Ctrl+3"
             onClick={onLavoro}
-            {...base({ condition: muscoli < 40, reason: 'Servono almeno 40 Muscoli per lavorare!' })}
-            ariaLabel="Lavora per guadagnare soldi. Richiede almeno 40 Muscoli. Tasto rapido: Ctrl+3"
+            {...base()}
+            ariaLabel="Scegli un lavoro part-time. Apre il selettore lavori disponibili per questa fascia oraria. Tasto rapido: Ctrl+3"
             variant="default"
           />
         </div>
         <div className="mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
-          <p className="font-semibold mb-2">Requisiti Lavoro:</p>
-          <p>• Muscoli ≥ 40</p>
-          <p className="mt-2 text-secondary font-semibold">Guadagno: +60€</p>
+          <p className="font-semibold mb-2">Lavori disponibili:</p>
+          <p>• Dogsitter, Volantinaggio (dal 1° anno)</p>
+          <p>• Fattorino, Cameriere, Rider (dal 2° anno)</p>
+          <p>• Buttafuori (dal 3° anno, Muscoli ≥ 70)</p>
+          <p className="mt-2 text-secondary font-semibold">Apre il selettore lavori</p>
         </div>
       </Card>
 

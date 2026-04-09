@@ -1,4 +1,5 @@
 import type { BetInfo } from '@/lib/bet-system'
+import type { JobDefinition } from '@/lib/job-system'
 import type {
   GameStats,
   SubjectGrades,
@@ -52,4 +53,5 @@ export interface UseGameActionsParams {
   marinatoOggi: boolean
   handleDormi: () => void
   onOpenStreetRace?: (betInfo: BetInfo) => void
+  onOpenJobSelection?: (jobs: JobDefinition[]) => void
 }

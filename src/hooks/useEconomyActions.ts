@@ -1,4 +1,5 @@
 // STEP 13.5 — wiring onOpenStreetRace
+// TASK-B — job system gateway + executor
 import { useCallback, useRef } from 'react'
 import { BetInfo, generateStreetRace } from '@/lib/bet-system'
 import {
@@ -13,13 +14,20 @@ import {
 import { clampStat } from '@/lib/game-utils'
 import { ECONOMY } from '@/lib/game-balance.constants'
 import { playSound } from '@/lib/sound-effects'
+import {
+  JOBS,
+  JobId,
+  JobDefinition,
+  getJobsForContext,
+  getJobBlockedReason,
+} from '@/lib/job-system'
 
 interface UseEconomyActionsParams {
   stats: GameStats
   setStats: (updater: ((prev: GameStats) => GameStats) | GameStats) => void
   gameTime: GameTime
   consumeAction: () => void
-  announce: (msg: string) => void
+  announce: (msg: string, priority?: 'polite' | 'assertive') => void
   triggerRandomEvent: () => void
   checkForNewFriend: (location: string) => void
   checkForNewRelationship: () => void
@@ -37,6 +45,7 @@ interface UseEconomyActionsParams {
   phaseActionsRemaining: number
   marinatoOggi: boolean
   onOpenStreetRace?: (betInfo: BetInfo) => void
+  onOpenJobSelection?: (jobs: JobDefinition[]) => void
 }
 
 export function useEconomyActions({
@@ -55,6 +64,7 @@ export function useEconomyActions({
   phaseActionsRemaining,
   marinatoOggi,
   onOpenStreetRace,
+  onOpenJobSelection,
 }: UseEconomyActionsParams) {
   const statsRef = useRef(stats)
   statsRef.current = stats
@@ -70,44 +80,89 @@ export function useEconomyActions({
   marinatoOggiRef.current = marinatoOggi
   const onOpenStreetRaceRef = useRef(onOpenStreetRace)
   onOpenStreetRaceRef.current = onOpenStreetRace
+  const onOpenJobSelectionRef = useRef(onOpenJobSelection)
+  onOpenJobSelectionRef.current = onOpenJobSelection
 
+  // TASK-B: gateway — apre il dialog di selezione lavoro
   const handleLavoro = useCallback(() => {
     const gt = gameTimeRef.current
-    const s = statsRef.current
+    const phase = currentPhaseRef.current
+    const dayTypeVal = dayTypeRef.current
     if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
       announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
-    // C1-5: blocca durante ore scolastiche del mattino
-    if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
+    // Blocca durante ore scolastiche del mattino
+    if (dayTypeVal === 'feriale' && phase === 'mattina'
       && gt.schoolYear.isSchoolPeriod
       && !marinatoOggiRef.current) {
       playSound.failure()
-      announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
+      announce('Sei a scuola! Non puoi lavorare adesso.', 'assertive')
       return
     }
-    if (s.muscoli < 40) {
+    const jobs = getJobsForContext(phase, dayTypeVal)
+    if (jobs.length === 0) {
       playSound.failure()
-      announce('Sei troppo SMILZO per fare il buttadifuori! Servono 40 Muscoli', 'assertive')
+      announce('Non ci sono lavori disponibili in questa fascia oraria.', 'assertive')
       return
     }
+    playSound.buttonClick()
+    onOpenJobSelectionRef.current?.(jobs)
+  }, [announce])
+
+  // TASK-B: executor — esegue il lavoro selezionato dal dialog
+  const handleJobSelection = useCallback((jobId: JobId) => {
+    const s = statsRef.current
+    const job = JOBS[jobId]
+    if (!job) return
     if (s.stanchezza > 80) {
       playSound.failure()
-      announce('Sei troppo DISTRUTTO per lavorare! Riposa!', 'assertive')
+      announce('Sei troppo stanco per lavorare! Riposa prima.', 'assertive')
+      return
+    }
+    if (gameTimeRef.current.schoolYear.currentYear < job.minSchoolYear) {
+      playSound.failure()
+      announce(`Non puoi fare questo lavoro: richiede almeno il ${job.minSchoolYear}° anno.`, 'assertive')
+      return
+    }
+    if (!job.allowedPhases.includes(currentPhaseRef.current) || !job.allowedDayTypes.includes(dayTypeRef.current)) {
+      playSound.failure()
+      announce('Questo lavoro non è disponibile in questa fascia oraria.', 'assertive')
+      return
+    }
+    const reason = getJobBlockedReason(job, s, { schoolYear: gameTimeRef.current.schoolYear.currentYear })
+    if (reason) {
+      playSound.failure()
+      announce(`Non puoi fare questo lavoro: ${reason}`, 'assertive')
       return
     }
     playSound.buttonClick()
     playSound.moneyEarned()
-    setStats((current) => ({
-      ...current,
-      soldi: clampStat(current.soldi + 80, 0, 1000),
-      stanchezza: clampStat(current.stanchezza + 20),
-      coattaggine: clampStat(current.coattaggine + 5)
-    }))
+    setStats((current) => {
+      let next: GameStats = { ...current }
+      // Applica effetti numerici delle statistiche
+      for (const [k, v] of Object.entries(job.statEffects as Record<string, unknown>)) {
+        if (typeof v !== 'number') continue
+        const cur = (next as Record<string, unknown>)[k]
+        if (typeof cur !== 'number') continue
+        const maxVal = k === 'soldi' ? 1000 : k === 'media' ? 10 : 100
+        next = { ...next, [k]: clampStat(cur + v, 0, maxVal) } as GameStats
+      }
+      // Aggiungi la paga del turno
+      next = { ...next, soldi: clampStat(next.soldi + job.payPerShift, 0, 1000) }
+      return next
+    })
     consumeAction()
-    announce('Hai lavorato come BUTTADIFUORI! +80 Soldi, +5 Coattaggine, +20 Stanchezza')
-    addLogEntry('action_neutral', 'Lavoro come buttafuori', 'Hai lavorato come BUTTADIFUORI! +80 Soldi, +5 Coattaggine, +20 Stanchezza', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    announce(`Hai lavorato come ${job.label}! +${job.payPerShift}€, ${job.description}`)
+    addLogEntry(
+      'action_neutral',
+      `Lavoro: ${job.label}`,
+      `Hai lavorato come ${job.label}. +${job.payPerShift}€; effetti applicati: ${Object.entries(job.statEffects).map(([key, value]) => `${key} ${value && value > 0 ? '+' : ''}${value}`).join(', ') || 'nessuno'}`,
+      'positive',
+      gameTimeRef.current.currentDate,
+      currentPhaseRef.current
+    )
     triggerRandomEvent()
   }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
 
@@ -154,7 +209,8 @@ export function useEconomyActions({
       ...current,
       coattaggine: clampStat(current.coattaggine + 20),
       figosita: clampStat(current.figosita + 15),
-      soldi: clampStat(current.soldi - ECONOMY.MOTORINO_TRUCCO_COSTO, 0, 1000)
+      soldi: clampStat(current.soldi - ECONOMY.MOTORINO_TRUCCO_COSTO, 0, 1000),
+      hasMotorino: true,
     }))
     consumeAction()
     announce(`Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -${ECONOMY.MOTORINO_TRUCCO_COSTO} Soldi`)
@@ -203,6 +259,7 @@ export function useEconomyActions({
 
   return {
     handleLavoro,
+    handleJobSelection,
     handleMotorino,
     handleShoppingMall,
   }

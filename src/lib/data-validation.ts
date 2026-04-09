@@ -16,6 +16,7 @@ export const validateStats = (stats: Partial<GameStats> | null | undefined): Gam
       stress: 0,
       morale: 60,
       salute: 100,
+      hasMotorino: false,
     }
   }
 
@@ -32,6 +33,7 @@ export const validateStats = (stats: Partial<GameStats> | null | undefined): Gam
     stress: clampStat(stats.stress ?? 0),
     morale: clampStat(stats.morale ?? 60),
     salute: clampStat(stats.salute ?? 100),
+    hasMotorino: typeof stats.hasMotorino === 'boolean' ? stats.hasMotorino : false,
   }
 }
 

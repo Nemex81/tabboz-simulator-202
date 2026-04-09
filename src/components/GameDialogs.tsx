@@ -12,6 +12,7 @@ import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { SchoolEventDialog } from '@/components/SchoolEventDialog'
 import { SubjectSelectionDialog } from '@/components/SubjectSelectionDialog'
 import { TeacherSelectionDialog } from '@/components/TeacherSelectionDialog'
+import { JobSelectionDialog } from '@/components/JobSelectionDialog'
 
 export type { GameDialogsProps }
 
@@ -52,6 +53,16 @@ export const GameDialogs = memo(function GameDialogs(p: GameDialogsProps) {
         <TeacherSelectionDialog open={p.showTeacherDialog} onSelectTeacher={p.handleTeacherSelection}
           onClose={() => p.setShowTeacherDialog(false)} actionType={p.teacherActionType}
           soldi={p.soldi} grades={p.grades} />
+      )}
+      {p.showJobSelectionDialog && (
+        <JobSelectionDialog
+          open={p.showJobSelectionDialog}
+          onOpenChange={p.setShowJobSelectionDialog}
+          availableJobs={p.availableJobsForDialog}
+          stats={p.playerStats}
+          schoolYear={p.playerSchoolYear}
+          onSelectJob={p.onSelectJob}
+        />
       )}
     </>
   )

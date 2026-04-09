@@ -60,6 +60,7 @@ import { useGameRelations } from '@/hooks/useGameRelations'
 import { useSchoolSystem } from '@/hooks/useSchoolSystem'
 import type { SchoolDayState, Teacher, Classmate } from '@/lib/types'
 import type { BetInfo } from '@/lib/bet-system'
+import type { JobDefinition, JobId } from '@/lib/job-system'
 import { useSchoolHandlers } from '@/hooks/useSchoolHandlers'
 import { useSchoolEffects } from '@/hooks/useSchoolEffects'
 import {
@@ -132,6 +133,11 @@ function App() {
     setStreetMorningEvents,
     showStreetMorning,
     setShowStreetMorning,
+    // TASK-B: job selection dialog
+    showJobSelectionDialog,
+    setShowJobSelectionDialog,
+    availableJobsForDialog,
+    setAvailableJobsForDialog,
   } = useAppDialogs()
 
   const ariaLiveAssertiveRef = useRef<HTMLDivElement>(null)
@@ -268,6 +274,10 @@ function App() {
       events.setBetInfo(race)
       setShowStreetRaceEvent(true)
     },
+    onOpenJobSelection: (jobs: JobDefinition[]) => {
+      setAvailableJobsForDialog(jobs)
+      setShowJobSelectionDialog(true)
+    },
   })
 
   // Destructure event engine results per compatibilità con JSX esistente
@@ -297,6 +307,7 @@ function App() {
     handlePalestra,
     handleLampada,
     handleLavoro,
+    handleJobSelection,
     handleMotorino,
     handleStudia,
     handleStudySubject,
@@ -317,6 +328,12 @@ function App() {
     handleTelefona,
     handleMarina: handleMarinaFromHook,
   } = actions
+
+  // TASK-B: callback eseguita quando il giocatore conferma un lavoro dal dialog
+  const handleSelectJob = useCallback((jobId: JobId) => {
+    handleJobSelection(jobId)
+    setShowJobSelectionDialog(false)
+  }, [handleJobSelection, setShowJobSelectionDialog])
 
   const { doInteraction } = useGameRelations({
     friends,
@@ -567,10 +584,19 @@ function App() {
     handleStreetRaceAccetta,
     soldi: stats.soldi,
     betInfo: events.betInfo,
+    // TASK-B: job selection dialog
+    showJobSelectionDialog,
+    setShowJobSelectionDialog,
+    availableJobsForDialog,
+    onSelectJob: handleSelectJob,
+    playerStats: stats,
+     playerSchoolYear: gameTime.schoolYear.currentYear,
   }), [showMetallariEvent, currentEvent, handleMetallariScappa,
        handleMetallariCombatti, showPoliceEvent, handlePoliceScappa,
        handlePoliceCollabora, showStreetRaceEvent, raceWinChance,
-       handleStreetRaceRifiuta, handleStreetRaceAccetta, stats.soldi, events.betInfo])
+       handleStreetRaceRifiuta, handleStreetRaceAccetta, stats.soldi,
+       events.betInfo, showJobSelectionDialog, availableJobsForDialog,
+       handleSelectJob, stats, gameTime.schoolYear.currentYear])
 
   const socialDialogProps = useMemo(() => ({
     showAtipaEvent,

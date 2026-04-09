@@ -36,12 +36,14 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
   feriale: {
     mattina: [
       // A1: mattina scolastica feriale — nessuna azione libera, gestita da SchoolMorningPanel
+      // Il lavoro è visibile per chi marina o fuori periodo scolastico
+      { id: 'lavoro', label: 'Lavoro part-time' },
     ],
     pomeriggio: [
       { id: 'palestra', label: 'Vai in palestra' },
       { id: 'studia', label: 'Studia a casa' },
       { id: 'studia_gruppo', label: 'Studia in gruppo', requiresSchoolPeriod: true },
-      { id: 'lavoro', label: 'Lavoro part-time', minSchoolYear: 3 },
+      { id: 'lavoro', label: 'Lavoro part-time' },
       { id: 'motorino', label: 'Giro col motorino' },
       { id: 'shopping', label: 'Shopping in centro' },
       { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
@@ -52,11 +54,13 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'cinema', label: 'Vai al cinema' },
       { id: 'studia', label: 'Studia la sera' },
       { id: 'motorino', label: 'Giro serale col motorino' },
+      { id: 'lavoro', label: 'Lavoro serale' },
       { id: 'telefona', label: 'Telefona a qualcuno' },
       { id: 'chiacchiera', label: 'Chiacchiera col vicino' },
       { id: 'dormi', label: 'Vai a dormire (recupero totale)' },
     ],
     notte: [
+      { id: 'lavoro', label: 'Lavoro notturno' },
       { id: 'dormi', label: 'Dormi (recupero 80%)' },
     ],
   },
@@ -65,6 +69,7 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'palestra', label: 'Allenamento mattutino' },
       { id: 'lampada', label: 'Lampada UV' },
       { id: 'shopping', label: 'Shopping al mercato' },
+      { id: 'lavoro', label: 'Lavoro mattutino' },
       { id: 'riposa', label: 'Dormi fino a tardi' },
       { id: 'parco', label: 'Giro al parco' },
     ],
@@ -72,7 +77,7 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'palestra', label: 'Vai in palestra' },
       { id: 'motorino', label: 'Giro motorini' },
       { id: 'shopping', label: 'Shopping in centro' },
-      { id: 'lavoro', label: 'Lavoro part-time', minSchoolYear: 3 },
+      { id: 'lavoro', label: 'Lavoro part-time' },
       { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
       { id: 'parco', label: 'Giro al parco' },
       { id: 'chiacchiera', label: 'Chiacchiera in giro' },
@@ -81,9 +86,11 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'disco', label: 'Discoteca' },
       { id: 'cinema', label: 'Cinema con amici' },
       { id: 'motorino', label: 'Gara di motorini' },
+      { id: 'lavoro', label: 'Lavoro serale' },
       { id: 'dormi', label: 'Vai a dormire (recupero totale)' },
     ],
     notte: [
+      { id: 'lavoro', label: 'Lavoro notturno' },
       { id: 'dormi', label: 'Dormi (recupero 80%)' },
     ],
   },
@@ -91,12 +98,14 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
     mattina: [
       { id: 'riposa', label: 'Dormi fino a tardissimo' },
       { id: 'palestra', label: 'Sport domenicale' },
+      { id: 'lavoro', label: 'Lavoro mattutino' },
     ],
     pomeriggio: [
       { id: 'studia', label: 'Studia per la settimana', requiresSchoolPeriod: true },
       { id: 'studia_gruppo', label: 'Studia in gruppo', requiresSchoolPeriod: true },
       { id: 'palestra', label: 'Sport domenicale' },
       { id: 'motorino', label: 'Giro domenicale' },
+      { id: 'lavoro', label: 'Lavoro pomeridiano' },
       { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
       { id: 'chiacchiera', label: 'Chiacchiera in giro' },
       { id: 'telefona', label: 'Telefona agli amici' },
@@ -127,9 +136,11 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
     sera: [
       { id: 'disco', label: 'Discoteca festiva' },
       { id: 'cinema', label: 'Cinema serale' },
+      { id: 'lavoro', label: 'Lavoro serale' },
       { id: 'dormi', label: 'Vai a dormire (recupero totale)' },
     ],
     notte: [
+      { id: 'lavoro', label: 'Lavoro notturno' },
       { id: 'dormi', label: 'Dormi (recupero 80%)' },
     ],
   },

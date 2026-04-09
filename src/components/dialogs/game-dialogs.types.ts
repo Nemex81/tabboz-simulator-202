@@ -1,6 +1,7 @@
-import type { SubjectGrades } from '@/lib/types'
+import type { SubjectGrades, GameStats } from '@/lib/types'
 import type { SchoolEvent } from '@/lib/school-events'
 import type { BetInfo } from '@/lib/bet-system'
+import type { JobDefinition, JobId } from '@/lib/job-system'
 
 export interface GameDialogsProps {
   showMetallariEvent: boolean
@@ -55,4 +56,11 @@ export interface GameDialogsProps {
   teacherActionType: 'corrompi' | 'minaccia'
   soldi: number
   betInfo: BetInfo | null
+  // TASK-B: job selection dialog
+  showJobSelectionDialog: boolean
+  setShowJobSelectionDialog: (value: boolean) => void
+  availableJobsForDialog: JobDefinition[]
+  onSelectJob: (jobId: JobId) => void
+  playerStats: GameStats
+  playerSchoolYear: number
 }
