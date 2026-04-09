@@ -1,7 +1,7 @@
 import React from 'react'
 import { Calendar } from '@phosphor-icons/react'
 import { GameTime, DayPhase, DayType } from '@/lib/types'
-import { formatDate, getSchoolYearName, getDaysUntilReportCard, DAY_PHASE_CONFIG } from '@/lib/time-utils'
+import { formatDate, getDayOfWeekLabel, getSchoolYearName, getDaysUntilReportCard, DAY_PHASE_CONFIG } from '@/lib/time-utils'
 
 interface TimeDisplayProps {
   gameTime: GameTime
@@ -17,7 +17,7 @@ export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPh
       {/* Data */}
       <span className="flex items-center gap-1 text-muted-foreground">
         <Calendar size={14} weight="fill" className="text-accent" />
-        <strong className="text-foreground">{formatDate(gameTime.currentDate)}</strong>
+        <strong className="text-foreground">{`${getDayOfWeekLabel(gameTime.currentDate)} — ${formatDate(gameTime.currentDate)}`}</strong>
       </span>
 
       <span className="text-border">|</span>

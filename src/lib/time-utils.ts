@@ -20,6 +20,12 @@ export const formatDate = (date: GameDate): string => {
   return `${date.day} ${MONTHS[date.month - 1]} ${date.year}`
 }
 
+export const getDayOfWeekLabel = (date: GameDate): string => {
+  const jsDate = new Date(date.year, date.month - 1, date.day)
+  const label = jsDate.toLocaleDateString('it-IT', { weekday: 'long' })
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
 export const advanceDay = (date: GameDate): GameDate => {
   const daysInMonth = getDaysInMonth(date.month, date.year)
   let newDay = date.day + 1

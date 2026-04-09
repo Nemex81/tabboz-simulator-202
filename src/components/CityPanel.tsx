@@ -11,6 +11,7 @@ import {
 import { ActionButton } from '@/components/ActionButton'
 import { Card } from '@/components/ui/card'
 import type { PhaseActionEntry, ActionId } from '@/lib/phase-actions'
+import { ECONOMY } from '@/lib/game-balance.constants'
 
 interface CityPanelProps {
   onDisco: () => void
@@ -118,8 +119,8 @@ export function CityPanel({
             label="Discoteca"
             shortcut="Ctrl+D"
             onClick={onDisco}
-            {...base({ condition: soldi < 30, reason: 'Servono almeno 30€' })}
-            ariaLabel="Vai in discoteca. Costa 30 euro. Aumenta Figosità e Carisma. Tasto rapido: Ctrl+D"
+            {...base({ condition: soldi < ECONOMY.DISCO_COSTO, reason: `Servono almeno ${ECONOMY.DISCO_COSTO}€` })}
+            ariaLabel={`Vai in discoteca. Costa ${ECONOMY.DISCO_COSTO} euro. Aumenta Figosità e Carisma. Tasto rapido: Ctrl+D`}
             variant="default"
           />
           <ActionButton
@@ -127,8 +128,8 @@ export function CityPanel({
             label="Cinema"
             shortcut="Ctrl+C"
             onClick={onCinema}
-            {...base({ condition: soldi < 15, reason: 'Servono almeno 15€' })}
-            ariaLabel="Vai al cinema. Costa 15 euro. Aumenta Carisma e riduce Stanchezza. Tasto rapido: Ctrl+C"
+            {...base({ condition: soldi < ECONOMY.CINEMA_COSTO, reason: `Servono almeno ${ECONOMY.CINEMA_COSTO}€` })}
+            ariaLabel={`Vai al cinema. Costa ${ECONOMY.CINEMA_COSTO} euro. Aumenta Carisma e riduce Stanchezza. Tasto rapido: Ctrl+C`}
             variant="default"
           />
           <ActionButton
@@ -136,8 +137,8 @@ export function CityPanel({
             label="Centro Commerciale"
             shortcut="Ctrl+S"
             onClick={onShopping}
-            {...base({ condition: soldi < 100, reason: 'Servono almeno 100€' })}
-            ariaLabel="Vai al centro commerciale. Costa 100 euro. Aumenta molto la Figosità. Tasto rapido: Ctrl+S"
+            {...base({ condition: soldi < ECONOMY.SHOPPING_COSTO, reason: `Servono almeno ${ECONOMY.SHOPPING_COSTO}€` })}
+            ariaLabel={`Vai al centro commerciale. Costa ${ECONOMY.SHOPPING_COSTO} euro. Aumenta molto la Figosità. Tasto rapido: Ctrl+S`}
             variant="default"
           />
         </div>
@@ -155,11 +156,11 @@ export function CityPanel({
             shortcut="Ctrl+1"
             onClick={onPalestra}
             {...base(
-              soldi < 20
-                ? { condition: true, reason: 'Servono almeno 20€' }
+              soldi < ECONOMY.PALESTRA_COSTO
+                ? { condition: true, reason: `Servono almeno ${ECONOMY.PALESTRA_COSTO}€` }
                 : { condition: stanchezza > 80, reason: 'Sei troppo stanco per allenarti!' }
             )}
-            ariaLabel="Vai in palestra. Costa 20 euro. Aumenta Muscoli. Tasto rapido: Ctrl+1"
+            ariaLabel={`Vai in palestra. Costa ${ECONOMY.PALESTRA_COSTO} euro. Aumenta Muscoli. Tasto rapido: Ctrl+1`}
             variant="default"
           />
           <ActionButton
@@ -167,8 +168,8 @@ export function CityPanel({
             label="Lampada"
             shortcut="Ctrl+2"
             onClick={onLampada}
-            {...base({ condition: soldi < 25, reason: 'Servono almeno 25€' })}
-            ariaLabel="Vai alla lampada abbronzante. Costa 25 euro. Aumenta Figosità. Tasto rapido: Ctrl+2"
+            {...base({ condition: soldi < ECONOMY.LAMPADA_COSTO, reason: `Servono almeno ${ECONOMY.LAMPADA_COSTO}€` })}
+            ariaLabel={`Vai alla lampada abbronzante. Costa ${ECONOMY.LAMPADA_COSTO} euro. Aumenta Figosità. Tasto rapido: Ctrl+2`}
             variant="default"
           />
           <ActionButton

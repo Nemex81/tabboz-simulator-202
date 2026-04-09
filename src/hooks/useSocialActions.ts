@@ -17,6 +17,7 @@ import {
   getReputationEventModifier,
   getMentalStateModifiers,
 } from '@/lib/game-utils'
+import { ECONOMY } from '@/lib/game-balance.constants'
 import { applyFriendActionEffects, FRIEND_ACTIONS } from '@/lib/enhanced-friend-system'
 import { calculateRelationshipSuccess } from '@/lib/relationship-utils'
 import { Ragazza, generateGirlfriendFromRelationship } from '@/lib/girlfriend-system'
@@ -107,9 +108,9 @@ export function useSocialActions({
       announce('La discoteca di mattina?! Ci vuoi andare a quest\'ora?!', 'assertive')
       return
     }
-    if (s.soldi < 60) {
+    if (s.soldi < ECONOMY.DISCO_COSTO) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per entrare in discoteca! Servono 60€', 'assertive')
+      announce(`Non hai abbastanza GRANA per entrare in discoteca! Servono ${ECONOMY.DISCO_COSTO}€`, 'assertive')
       return
     }
     if (s.stanchezza > 70) {
@@ -139,25 +140,25 @@ export function useSocialActions({
         figosita: clampStat(current.figosita + 25),
         coattaggine: clampStat(current.coattaggine + 15),
         carisma: clampStat(current.carisma + 10),
-        soldi: clampStat(current.soldi - 60, 0, 1000),
+        soldi: clampStat(current.soldi - ECONOMY.DISCO_COSTO, 0, 1000),
         stanchezza: clampStat(current.stanchezza + 25),
         stress: clampStat(current.stress - 20),
         morale: clampStat(current.morale + 15)
       }))
-      announce('Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, +10 Carisma, -60 Soldi, +25 Stanchezza')
-      addLogEntry('action_success', 'Serata epica in disco', 'Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, +10 Carisma, -60 Soldi, +25 Stanchezza', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+      announce(`Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, +10 Carisma, -${ECONOMY.DISCO_COSTO} Soldi, +25 Stanchezza`)
+      addLogEntry('action_success', 'Serata epica in disco', `Serata EPICA in disco! Hai fatto STRAGE! +25 Figosità, +15 Coattaggine, +10 Carisma, -${ECONOMY.DISCO_COSTO} Soldi, +25 Stanchezza`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {
       playSound.failure()
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita - 10),
-        soldi: clampStat(current.soldi - 60, 0, 1000),
+        soldi: clampStat(current.soldi - ECONOMY.DISCO_COSTO, 0, 1000),
         stanchezza: clampStat(current.stanchezza + 20),
         stress: clampStat(current.stress - 5),
         morale: clampStat(current.morale - 10)
       }))
-      announce('Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -60 Soldi, +20 Stanchezza')
-      addLogEntry('action_failure', 'Serata scarsa in disco', 'Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -60 Soldi, +20 Stanchezza', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
+      announce(`Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -${ECONOMY.DISCO_COSTO} Soldi, +20 Stanchezza`)
+      addLogEntry('action_failure', 'Serata scarsa in disco', `Serata SCARSA in disco! Nessuno ti ha filato! -10 Figosità, -${ECONOMY.DISCO_COSTO} Soldi, +20 Stanchezza`, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
     consumeAction()
     checkForNewFriend('in discoteca')
@@ -186,9 +187,9 @@ export function useSocialActions({
       announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
-    if (s.soldi < 40) {
+    if (s.soldi < ECONOMY.CINEMA_COSTO) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per il cinema! Servono 40€', 'assertive')
+      announce(`Non hai abbastanza GRANA per il cinema! Servono ${ECONOMY.CINEMA_COSTO}€`, 'assertive')
       return
     }
     playSound.buttonClick()
@@ -204,24 +205,24 @@ export function useSocialActions({
         ...current,
         figosita: clampStat(current.figosita + 10),
         carisma: clampStat(current.carisma + 10),
-        soldi: clampStat(current.soldi - 40, 0, 1000),
+        soldi: clampStat(current.soldi - ECONOMY.CINEMA_COSTO, 0, 1000),
         stanchezza: clampStat(current.stanchezza - 10),
         stress: clampStat(current.stress - 10),
         morale: clampStat(current.morale + 10)
       }))
-      announce('Film SPETTACOLARE! Serata fantastica! +10 Figosità, +10 Carisma, -40 Soldi, -10 Stanchezza')
-      addLogEntry('action_success', 'Film spettacolare', 'Film SPETTACOLARE! Serata fantastica! +10 Figosità, +10 Carisma, -40 Soldi, -10 Stanchezza', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+      announce(`Film SPETTACOLARE! Serata fantastica! +10 Figosità, +10 Carisma, -${ECONOMY.CINEMA_COSTO} Soldi, -10 Stanchezza`)
+      addLogEntry('action_success', 'Film spettacolare', `Film SPETTACOLARE! Serata fantastica! +10 Figosità, +10 Carisma, -${ECONOMY.CINEMA_COSTO} Soldi, -10 Stanchezza`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {
       playSound.failure()
       setStats((current) => ({
         ...current,
-        soldi: clampStat(current.soldi - 40, 0, 1000),
+        soldi: clampStat(current.soldi - ECONOMY.CINEMA_COSTO, 0, 1000),
         stanchezza: clampStat(current.stanchezza - 15),
         stress: clampStat(current.stress - 10),
         morale: clampStat(current.morale + 10)
       }))
-      announce('Hai visto un bel film! Serata tranquilla. -40 Soldi, -15 Stanchezza')
-      addLogEntry('action_neutral', 'Serata al cinema', 'Hai visto un bel film! Serata tranquilla. -40 Soldi, -15 Stanchezza', 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
+      announce(`Hai visto un bel film! Serata tranquilla. -${ECONOMY.CINEMA_COSTO} Soldi, -15 Stanchezza`)
+      addLogEntry('action_neutral', 'Serata al cinema', `Hai visto un bel film! Serata tranquilla. -${ECONOMY.CINEMA_COSTO} Soldi, -15 Stanchezza`, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
     consumeAction()
     checkForNewFriend('al cinema')

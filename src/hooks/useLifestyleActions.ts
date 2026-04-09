@@ -11,6 +11,7 @@ import {
   HealthConditionId,
 } from '@/lib/types'
 import { clampStat } from '@/lib/game-utils'
+import { ECONOMY } from '@/lib/game-balance.constants'
 import { playSound } from '@/lib/sound-effects'
 
 interface UseLifestyleActionsParams {
@@ -92,9 +93,9 @@ export function useLifestyleActions({
       announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
-    if (s.soldi < 20) {
+    if (s.soldi < ECONOMY.PALESTRA_COSTO) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per la palestra! Servono 20€', 'assertive')
+      announce(`Non hai abbastanza GRANA per la palestra! Servono ${ECONOMY.PALESTRA_COSTO}€`, 'assertive')
       return
     }
     playSound.buttonClick()
@@ -103,13 +104,13 @@ export function useLifestyleActions({
       ...current,
       muscoli: clampStat(current.muscoli + 10),
       figosita: clampStat(current.figosita + 5),
-      soldi: clampStat(current.soldi - 20, 0, 1000),
+      soldi: clampStat(current.soldi - ECONOMY.PALESTRA_COSTO, 0, 1000),
       stanchezza: clampStat(current.stanchezza + 15),
       morale: clampStat(current.morale + 5)
     }))
     consumeAction()
-    announce('Hai pompato FERRO! +10 Muscoli, +5 Figosità, -20 Soldi, +15 Stanchezza')
-    addLogEntry('action_neutral', 'Sessione in palestra', 'Hai pompato FERRO! +10 Muscoli, +5 Figosità, -20 Soldi, +15 Stanchezza', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    announce(`Hai pompato FERRO! +10 Muscoli, +5 Figosità, -${ECONOMY.PALESTRA_COSTO} Soldi, +15 Stanchezza`)
+    addLogEntry('action_neutral', 'Sessione in palestra', `Hai pompato FERRO! +10 Muscoli, +5 Figosità, -${ECONOMY.PALESTRA_COSTO} Soldi, +15 Stanchezza`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('in palestra')
     checkForNewRelationship()
     triggerRandomEvent()
@@ -135,9 +136,9 @@ export function useLifestyleActions({
       announce('Vai a scuola! Non è ora di abbronzature.', 'assertive')
       return
     }
-    if (s.soldi < 30) {
+    if (s.soldi < ECONOMY.LAMPADA_COSTO) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per la lampada! Servono 30€', 'assertive')
+      announce(`Non hai abbastanza GRANA per la lampada! Servono ${ECONOMY.LAMPADA_COSTO}€`, 'assertive')
       return
     }
     playSound.buttonClick()
@@ -146,11 +147,11 @@ export function useLifestyleActions({
       ...current,
       coattaggine: clampStat(current.coattaggine + 15),
       figosita: clampStat(current.figosita + 10),
-      soldi: clampStat(current.soldi - 30, 0, 1000)
+      soldi: clampStat(current.soldi - ECONOMY.LAMPADA_COSTO, 0, 1000)
     }))
     consumeAction()
-    announce('Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -30 Soldi')
-    addLogEntry('action_neutral', 'Lampada abbronzante', 'Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -30 Soldi', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    announce(`Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -${ECONOMY.LAMPADA_COSTO} Soldi`)
+    addLogEntry('action_neutral', 'Lampada abbronzante', `Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -${ECONOMY.LAMPADA_COSTO} Soldi`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     triggerRandomEvent()
   }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
 

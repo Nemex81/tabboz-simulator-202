@@ -487,6 +487,15 @@
 - [x] `sm_interrogazione_prevista` rinominato `sm_ansia_interrogazione` (disambiguazione `commonEvents`)
 - [x] `school-structured-events`: tipo `orale|'scritto'` + `createScheduledOralExam()`
 
+### TASK-A — Data UI + costi canonici [x]
+
+- [x] `TimeDisplay.tsx`: aggiunto giorno della settimana in italiano tramite helper `getDayOfWeekLabel()`
+- [x] `useGameTime.ts`: validato modello azioni corrente; `gainExtraAction()` e `consumeAction()` operano gia su `phaseActionsRemaining`, quindi nessun doppio stato da introdurre
+- [x] `useSocialActions.ts`, `useEconomyActions.ts`, `useLifestyleActions.ts`: sostituiti costi hardcoded con `ECONOMY.*`
+- [x] `game-balance.constants.ts`: aggiunta costante canonica `ECONOMY.MOTORINO_TRUCCO_COSTO`
+- [x] `CityPanel.tsx` e `tabs/SocialTab.tsx`: messaggi/guard UI riallineati ai costi canonici
+- [x] `npx tsc --noEmit` zero errori
+
 ---
 
 ## [x] Audit Accessibilità — 08 Apr 2026

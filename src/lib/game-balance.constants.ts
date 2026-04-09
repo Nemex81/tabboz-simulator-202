@@ -31,6 +31,7 @@ export const ECONOMY = {
   DISCO_COSTO: 30,
   CINEMA_COSTO: 15,
   SHOPPING_COSTO: 40,
+  MOTORINO_TRUCCO_COSTO: 50,
 } as const
 
 // ── Scuola ────────────────────────────────────────────────────────────────────

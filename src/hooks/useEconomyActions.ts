@@ -11,6 +11,7 @@ import {
   DayType,
 } from '@/lib/types'
 import { clampStat } from '@/lib/game-utils'
+import { ECONOMY } from '@/lib/game-balance.constants'
 import { playSound } from '@/lib/sound-effects'
 
 interface UseEconomyActionsParams {
@@ -126,9 +127,9 @@ export function useEconomyActions({
       announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
-    if (s.soldi < 50) {
+    if (s.soldi < ECONOMY.MOTORINO_TRUCCO_COSTO) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per truccare il motorino! Servono 50€', 'assertive')
+      announce(`Non hai abbastanza GRANA per truccare il motorino! Servono ${ECONOMY.MOTORINO_TRUCCO_COSTO}€`, 'assertive')
       return
     }
     if (s.stanchezza > 80) {
@@ -153,11 +154,11 @@ export function useEconomyActions({
       ...current,
       coattaggine: clampStat(current.coattaggine + 20),
       figosita: clampStat(current.figosita + 15),
-      soldi: clampStat(current.soldi - 50, 0, 1000)
+      soldi: clampStat(current.soldi - ECONOMY.MOTORINO_TRUCCO_COSTO, 0, 1000)
     }))
     consumeAction()
-    announce('Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -50 Soldi')
-    addLogEntry('action_neutral', 'Motorino truccato', 'Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -50 Soldi', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    announce(`Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -${ECONOMY.MOTORINO_TRUCCO_COSTO} Soldi`)
+    addLogEntry('action_neutral', 'Motorino truccato', `Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -${ECONOMY.MOTORINO_TRUCCO_COSTO} Soldi`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     triggerRandomEvent()
   }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
 
@@ -177,9 +178,9 @@ export function useEconomyActions({
       announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
-    if (s.soldi < 100) {
+    if (s.soldi < ECONOMY.SHOPPING_COSTO) {
       playSound.failure()
-      announce('Non hai abbastanza GRANA per fare shopping! Servono 100€', 'assertive')
+      announce(`Non hai abbastanza GRANA per fare shopping! Servono ${ECONOMY.SHOPPING_COSTO}€`, 'assertive')
       return
     }
     playSound.buttonClick()
@@ -189,15 +190,15 @@ export function useEconomyActions({
       figosita: clampStat(current.figosita + 20),
       coattaggine: clampStat(current.coattaggine + 10),
       carisma: clampStat(current.carisma + 5),
-      soldi: clampStat(current.soldi - 100, 0, 1000)
+      soldi: clampStat(current.soldi - ECONOMY.SHOPPING_COSTO, 0, 1000)
     }))
     consumeAction()
-    announce('Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -100 Soldi')
+    announce(`Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -${ECONOMY.SHOPPING_COSTO} Soldi`)
     checkForNewFriend('al centro commerciale')
     checkForNewRelationship()
     checkForNewGirlfriend()
     triggerRandomEvent()
-    addLogEntry('action_neutral', 'Shopping al centro commerciale', 'Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -100 Soldi', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    addLogEntry('action_neutral', 'Shopping al centro commerciale', `Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -${ECONOMY.SHOPPING_COSTO} Soldi`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
   }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
 
   return {
