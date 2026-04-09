@@ -13,6 +13,7 @@
 - Aggiunta logica di guard per il comando "Avanza fase" (UI + scorciatoia): viene bloccato durante la sequenza mattutina scolastica attiva.
 - Report di analisi codice completo: `docs/ANALISI_CODEBASE_COMPLETA.md` (vedi sezione Documentazione).
 - Le prove programmate supportano ora il discriminante opzionale `type?: 'scritto' | 'orale'` nel flusso `ScheduledExam`; la generazione è centralizzata in `exam-system.ts` con builder strutturati in `school-structured-events.ts`, e `ExamsPanel.tsx` espone il tipo nel pannello UI.
+- Configurata la suite unit test con Vitest in `vite.config.ts` (`jsdom` + `src/test-setup.ts`) e coperti i principali orchestratori UI/hook introdotti nel refactor (`useAppDialogs`, `useGameActions`, `GameDialogs` e dialog group).
 
 
 ## Indice
@@ -281,13 +282,13 @@ Gli hook incapsulano la logica di gioco e separano le responsabilità:
 | ------------------------ | --------------------------------------------------------- |
 | `useGameStats`           | Gestione 12 statistiche, calcolo reputazione automatico   |
 | `useGameTime`            | Avanzamento data/fase/azioni, pagella, promozione/bocciatura |
-| `useGameActions`         | Esecuzione azioni (palestra, studia, lavoro, disco, ecc.) |
+| `useGameActions`         | Facciata delle azioni: compone sotto-hook tematici e instrada `ActionId` → handler |
 | `useEventEngine`         | Generazione eventi casuali (metallari, polizia, bulli, gare) |
 | `useGameRelations`       | Interazioni relazionali 4 assi con prerequisiti ed effetti |
 | `useHealthSystem`        | Condizioni di salute (influenza, infortunio, ecc.)         |
 | `useGameLog`             | Diario giornaliero con entry tipizzate                     |
-| `useAppDialogs`          | Stato on/off di tutti i dialog modali                      |
-|                         | Include ora stati specifici per gli eventi mattutini: `schoolMorningEvents`, `showSchoolMorning`, `streetMorningEvents`, `showStreetMorning` |
+| `useAppDialogs`          | Stato on/off di tutti i dialog modali e dei flussi mattutini / job dialog |
+|                         | Include `schoolMorningEvents`, `streetMorningEvents`, `morningDisplay`, `teacherActionType` e stato del `JobSelectionDialog` |
 | `useKeyboardShortcuts`   | Binding tastiera per a11y e power user                     |
 
 ### Orchestrazione
@@ -371,7 +372,7 @@ Organizzati per area funzionale:
 
 | Componente                | Descrizione                                      |
 | ------------------------- | ------------------------------------------------ |
-| `GameDialogs`             | Container di tutti i dialog di gioco              |
+| `GameDialogs`             | Orchestratore minimo dei dialog di gioco, delegato ai gruppi `SchoolDialogsGroup`, `CityDialogsGroup`, `SocialDialogsGroup` |
 | `SchoolEventDialog`       | Evento scolastico con scelte                      |
 | `ReportCardDialog`        | Visualizzazione pagella (promosso/bocciato)       |
 | `SubjectSelectionDialog`  | Selezione materia per azione "Studia"             |
@@ -388,6 +389,15 @@ Tutti i primitivi seguono le convenzioni shadcn/ui:
 - Composizione tramite slot pattern
 - Varianti via `class-variance-authority`
 - Merge classi con `clsx` + `tailwind-merge`
+
+### Test unitari
+
+La suite gira con `npm run test` e usa Vitest con ambiente `jsdom`.
+
+- `src/hooks/useAppDialogs.test.ts`: stato iniziale e transizioni base dei dialog.
+- `src/hooks/useGameActions.test.ts`: contratto pubblico della facciata e routing `ActionId`.
+- `src/components/GameDialogs.test.tsx`: composizione dei gruppi per dominio.
+- `src/components/dialogs/*Group.test.tsx`: rendering condizionale dei dialog di `school`, `city` e `social`.
 
 ---
 

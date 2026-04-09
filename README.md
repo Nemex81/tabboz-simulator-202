@@ -101,6 +101,17 @@ npm run preview
 | **build** | `npm run build` | Build TypeScript + Vite per produzione |
 | **preview** | `npm run preview` | Anteprima della build di produzione |
 | **lint** | `npm run lint` | Analisi statica con ESLint |
+| **test** | `npm run test` | Esegue la suite unit test con Vitest |
+| **test:watch** | `npm run test:watch` | Avvia Vitest in watch mode |
+
+### Test e Validazione
+
+```bash
+npm run test
+npx tsc --noEmit
+```
+
+La suite usa Vitest con ambiente `jsdom` configurato in `vite.config.ts` e setup condiviso in `src/test-setup.ts`.
 
 ---
 
@@ -161,6 +172,8 @@ Per una descrizione completa, consulta la [documentazione tecnica](#documentazio
 ---
 
 Nota: per i dettagli sull'implementazione della persistenza e sulle mitigazioni usate contro i rate-limit KV (snapshot di bootstrap `tabboz-bootstrap-state`, retry/backoff sul fetch e coalescing delle scritture) consulta la sezione "Entry Point e Bootstrap" in [docs/architecture.md](docs/architecture.md#entry-point-e-bootstrap).
+
+La copertura unitaria introdotta al momento include `useAppDialogs`, `useGameActions`, `GameDialogs` e i gruppi dialog per dominio (`SchoolDialogsGroup`, `CityDialogsGroup`, `SocialDialogsGroup`).
 
 
 ## Accessibilità

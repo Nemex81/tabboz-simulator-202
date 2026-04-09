@@ -11,6 +11,7 @@
 - Nota implementativa: per evitare problemi di reconciliaton DOM durante la sequenza `SchoolMorningPanel`, alcune chiamate di aggiornamento parent vengono deferrate al prossimo tick (pattern `setTimeout(..., 0)`) — vedi `src/components/SchoolMorningPanel.tsx`.
 - Il report di analisi codice completo è disponibile in `docs/ANALISI_CODEBASE_COMPLETA.md`.
 - `ScheduledExam` supporta ora `type?: 'scritto' | 'orale'`; `generateScheduledExam()` può generare sia compiti scritti sia interrogazioni orali programmate.
+- Configurata la suite unit test con Vitest + `jsdom`; il setup condiviso vive in `src/test-setup.ts`.
 
 
 ## Indice
@@ -651,7 +652,7 @@ function useGameTime(config: {
 
 **File:** `src/hooks/useGameActions.ts`
 
-Handler per ogni tipo di azione di gioco.
+Facciata/orchestratore delle azioni di gioco: compone i sotto-hook tematici (`useEconomyActions`, `useStudyActions`, `useSocialActions`, `useGirlfriendActions`, `useLifestyleActions`) ed espone un contratto pubblico stabile verso `App.tsx`.
 
 ```typescript
 function useGameActions(config: {
@@ -675,9 +676,12 @@ function useGameActions(config: {
   handleParco: () => void;          // Relax all'aperto
   handleTelefona: () => void;       // Contatta amici
   handleStudiaGruppo: () => void;   // Studio con bonus amico
-  handleVaiAScuola: () => void;     // Presenza scolastica (mattina feriale)
+  availableActions: PhaseActionEntry[];
+  getHandlerForAction: (id: ActionId) => (() => void) | undefined;
 }
 ```
+
+`availableActions` deriva da `getAvailableActions()` in `src/lib/phase-actions.ts`, mentre `getHandlerForAction()` instrada gli `ActionId` verso l'handler effettivo esposto dai sotto-hook.
 
 **Pattern comune:** Ogni handler → `consumeAction()` → calcolo logica pura → `setStats()` → `addLogEntry()` → `triggerRandomEvent()` → `announce()`
 
@@ -839,15 +843,24 @@ function useAppDialogs(): {
   showKeyboardHelp: boolean;        setShowKeyboardHelp: Setter<boolean>;
   showSubjectDialog: boolean;       setShowSubjectDialog: Setter<boolean>;
   showTeacherDialog: boolean;       setShowTeacherDialog: Setter<boolean>;
-  teacherActionType: string;        setTeacherActionType: Setter<string>;
+  teacherActionType: 'corrompi' | 'minaccia';
+  setTeacherActionType: Setter<'corrompi' | 'minaccia'>;
   schoolMorningEvents: SchoolMorningEvent[];
   setSchoolMorningEvents: Setter<SchoolMorningEvent[]>;
-  showSchoolMorning: boolean;       setShowSchoolMorning: Setter<boolean>;
-  showStreetMorning: boolean;       setShowStreetMorning: Setter<boolean>;
   streetMorningEvents: SchoolMorningEvent[];
   setStreetMorningEvents: Setter<SchoolMorningEvent[]>;
+  morningDisplay: 'school' | 'street' | null;
+  setMorningDisplay: Setter<'school' | 'street' | null>;
+  showJobSelectionDialog: boolean;
+  setShowJobSelectionDialog: Setter<boolean>;
+  availableJobsForDialog: JobDefinition[];
+  setAvailableJobsForDialog: Setter<JobDefinition[]>;
 }
 ```
+
+Note:
+- `morningDisplay` sostituisce i precedenti boolean `showSchoolMorning` e `showStreetMorning` come singola source of truth per il rendering mattutino.
+- Lo stato del job dialog viene usato dal flusso lavoro part-time per aprire `JobSelectionDialog` con il pool già filtrato di lavori disponibili.
 
 ---
 

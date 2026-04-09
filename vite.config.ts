@@ -7,17 +7,18 @@ import createIconImportProxy from "@github/spark/vitePhosphorIconProxyPlugin";
 import { resolve } from 'path'
 
 const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
+const isTest = process.env.VITEST === 'true'
 
 // https://vite.dev/config/
 export default defineConfig({
   base: '/tabboz-simulator-202/',
   plugins: [
-    react(),
+    !isTest && react(),
     tailwindcss(),
     // DO NOT REMOVE
     createIconImportProxy() as PluginOption,
     sparkPlugin() as PluginOption,
-  ],
+  ].filter(Boolean) as PluginOption[],
   resolve: {
     alias: {
       '@': resolve(projectRoot, 'src')
@@ -27,5 +28,10 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5000,
     strictPort: false,
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test-setup.ts'],
   },
 });
