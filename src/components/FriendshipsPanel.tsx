@@ -1,6 +1,10 @@
 // src/components/FriendshipsPanel.tsx
 // Wrapper con 3 tab (Tutti / Scuola / Extra) — il filtro vive qui, EnhancedFriendsPanel è passivo.
 
+/**
+ * FriendshipsPanel: gestione delle amicizie filtrate per origine.
+ */
+
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Friend, GameStats, PlayerProfile } from '@/lib/types'

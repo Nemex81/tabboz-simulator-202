@@ -9,6 +9,7 @@ import { SchoolBreakPanel } from '@/components/SchoolBreakPanel'
 import type {
   GameStats,
   SubjectGrades,
+  BreakActionType,
   Friend,
   ScheduledExam,
   SchoolRecord,
@@ -18,7 +19,6 @@ import type {
   Classmate,
   WeeklyTimetable,
   GameDate,
-  TeacherMemoryEntry,
   LogEntryType,
   GameLogEntry,
   DayPhase,
@@ -35,6 +35,8 @@ import { ExamsPanel } from '@/components/ExamsPanel'
 import { SchoolMorningPanel } from '@/components/SchoolMorningPanel'
 import { GradeProgressPanel } from '@/components/GradeProgressPanel'
 import ChunkErrorBoundary from '@/components/ChunkErrorBoundary'
+import type { ClassmateInteractionKey } from '@/lib/classmate-relations'
+import type { DoInteractionResult, TeacherInteractionKey } from '@/hooks/useGameRelations'
 
 // ── Lazy components (peso > 20 kB) ────────────────────────────────────────
 const StatsDashboard = lazy(() =>
@@ -73,9 +75,8 @@ export interface SchoolTabProps {
   setSchoolSubPanel: (v: 'home' | 'teachers' | 'break') => void
   schoolDayState: SchoolDayState | undefined
   timetable: WeeklyTimetable | null
-  showSchoolMorning: boolean
   schoolMorningEvents: SchoolMorningEvent[]
-  showStreetMorning: boolean
+  morningDisplay: 'school' | 'street' | null
   streetMorningEvents: SchoolMorningEvent[]
   morningChoicePending: boolean
   marinatoOggi: boolean
@@ -93,12 +94,11 @@ export interface SchoolTabProps {
   handleAfternoonChoice: (choiceId: string) => void
   handlePromoteToFriend: (classmateId: string) => void
   doInteraction: (friendId: string, interactionId: string) => void
+  doClassmateInteraction: (classmateId: string, interactionKey: ClassmateInteractionKey) => DoInteractionResult
+  doTeacherInteraction: (teacherId: string, interactionKey: TeacherInteractionKey) => DoInteractionResult
 
   // Callback che wrappano i setter (App.tsx gestisce la mutazione KV)
-  onTeacherInteraction: (teacherId: string, delta: number, reason: TeacherMemoryEntry['type'], date: GameDate) => void
   onStatChange: React.Dispatch<React.SetStateAction<GameStats | undefined>>
-  onTeacherChange: (updater: (prev: Teacher[]) => Teacher[]) => void
-  onClassmateChange: (updater: (prev: Classmate[]) => Classmate[]) => void
   onNewFriend: (f: Friend) => void
   onSlotComplete: (idx: number) => void
   onBreakComplete: () => void
@@ -143,9 +143,8 @@ export function SchoolTab({
   setSchoolSubPanel,
   schoolDayState,
   timetable,
-  showSchoolMorning,
   schoolMorningEvents,
-  showStreetMorning,
+  morningDisplay,
   streetMorningEvents,
   morningChoicePending,
   marinatoOggi,
@@ -161,10 +160,9 @@ export function SchoolTab({
   handleAfternoonChoice,
   handlePromoteToFriend,
   doInteraction,
-  onTeacherInteraction,
+  doClassmateInteraction,
+  doTeacherInteraction,
   onStatChange,
-  onTeacherChange,
-  onClassmateChange,
   onNewFriend,
   onSlotComplete,
   onBreakComplete,
@@ -224,9 +222,7 @@ export function SchoolTab({
             <TeachersPanel
               teachers={teachers ?? []}
               currentDate={currentDate}
-              onTeacherInteraction={onTeacherInteraction}
-              stats={stats}
-              announce={announce}
+              onTeacherInteraction={doTeacherInteraction}
               onConsumeAction={consumeAction}
               actionsRemaining={phaseActionsRemaining}
             />
@@ -372,8 +368,8 @@ export function SchoolTab({
                 stats={stats}
                 schoolRecord={schoolRecord}
                 onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
-                onTeacherChange={onTeacherChange}
-                onClassmateChange={onClassmateChange}
+                onTeacherInteraction={doTeacherInteraction}
+                onClassmateInteraction={doClassmateInteraction}
                 onBreakComplete={onBreakComplete}
                 announce={announce}
                 currentDate={currentDate}
@@ -401,7 +397,7 @@ export function SchoolTab({
             )}
 
             {/* SchoolMorningPanel — contesto strada (marinatori) */}
-            {showStreetMorning && dayType === 'feriale' && currentPhase === 'mattina' && marinatoOggi && (
+            {morningDisplay === 'street' && dayType === 'feriale' && currentPhase === 'mattina' && marinatoOggi && (
               <SchoolMorningPanel
                 context="street"
                 events={streetMorningEvents}

@@ -27,12 +27,6 @@ export function useAppDialogs() {
   const [showJobSelectionDialog, setShowJobSelectionDialog] = useState(false)
   const [availableJobsForDialog, setAvailableJobsForDialog] = useState<JobDefinition[]>([])
 
-  // Wrapper retrocompatibili per useGameTime e App.tsx
-  const setShowSchoolMorning = (v: boolean) => setMorningDisplay(v ? 'school' : null)
-  const setShowStreetMorning = (v: boolean) => setMorningDisplay(v ? 'street' : null)
-  const showSchoolMorning = morningDisplay === 'school'
-  const showStreetMorning = morningDisplay === 'street'
-
   return {
     gameOver,
     setGameOver,
@@ -62,14 +56,8 @@ export function useAppDialogs() {
     setSchoolMorningEvents,
     streetMorningEvents,
     setStreetMorningEvents,
-    // R6: enum principale
     morningDisplay,
     setMorningDisplay,
-    // wrapper retrocompatibili (consumati da useGameTime e App.tsx legacy)
-    showSchoolMorning,
-    setShowSchoolMorning,
-    showStreetMorning,
-    setShowStreetMorning,
     // TASK-B: job selection dialog
     showJobSelectionDialog,
     setShowJobSelectionDialog,

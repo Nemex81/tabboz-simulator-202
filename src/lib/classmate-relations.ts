@@ -18,6 +18,7 @@ export const PROMOTION_THRESHOLD = 65
 export type ClassmateInteractionKey =
   | 'chiacchiera'
   | 'studia_insieme'
+  | 'risolvi_conflitto'
   | 'litiga'
   | 'promuovi_amico'
 
@@ -51,6 +52,14 @@ export const CLASSMATE_INTERACTIONS: Record<ClassmateInteractionKey, ClassmateIn
     description: 'Ripetete assieme: aumenta la relazione e la concentrazione.',
     relationDelta: [2, 5],
     intelligenzaDelta: 1,
+    requiresPromotion: false,
+  },
+  risolvi_conflitto: {
+    key: 'risolvi_conflitto',
+    label: 'Risolvi conflitto',
+    description: 'Provate a chiarirvi dopo una tensione in classe.',
+    relationDelta: [10, 20],
+    intelligenzaDelta: 0,
     requiresPromotion: false,
   },
   litiga: {

@@ -1,28 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useKV } from '@/hooks/useHydratedKV'
-import { 
-  GraduationCap, 
-  Buildings,
-  Chats,
-  Keyboard,
-  ChartBar,
-  User,
-  IdentificationCard
-} from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { TimeDisplay } from '@/components/TimeDisplay'
-import { ThemeSelector } from '@/components/ThemeSelector'
+import { AppHeader } from '@/components/AppHeader'
 import { GameDialogs } from '@/components/GameDialogs'
+import { MainGameTabs } from '@/components/MainGameTabs'
 import { SchoolSelection } from '@/components/SchoolSelection'
-import { StatusTab } from '@/components/tabs/StatusTab'
-import { CityTab } from '@/components/tabs/CityTab'
-import { SocialTab } from '@/components/tabs/SocialTab'
-import { SchoolTab } from '@/components/tabs/SchoolTab'
 import { CharacterSheet } from '@/components/CharacterSheet'
-import { DailyControls } from '@/components/DailyControls'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, getDefaultGradesForSchoolType, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant, SchoolRecord, DEFAULT_SCHOOL_RECORD, DEFAULT_HEALTH_RECORD } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant, SchoolRecord, DEFAULT_SCHOOL_RECORD, DEFAULT_HEALTH_RECORD } from '@/lib/types'
 import { useGameStats } from '@/hooks/useGameStats'
 import { useGameTime } from '@/hooks/useGameTime'
 import { useEventEngine } from '@/hooks/useEventEngine'
@@ -31,7 +15,7 @@ import { useAppDialogs } from '@/hooks/useAppDialogs'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useGameLog } from '@/hooks/useGameLog'
 import { useHealthSystem } from '@/hooks/useHealthSystem'
-import { Ragazza, generateRandomGirlfriend, performGirlfriendAction, shouldGirlfriendBreakup } from '@/lib/girlfriend-system'
+import { Ragazza } from '@/lib/girlfriend-system'
 import { 
   validateGrades, 
   validateFriends, 
@@ -42,36 +26,18 @@ import {
   clampStat, 
   calculateMedia, 
   calculateWeightedMedia,
-  checkGameOver,
-  calculateReputationFromStats,
-  getReputationLevel,
-  getReputationEventModifier
+  checkGameOver
 } from '@/lib/game-utils'
-import { 
-  advanceGameTime, 
-  shouldShowReportCard, 
-  shouldReceivePaghetta
-} from '@/lib/time-utils'
 import { playSound } from '@/lib/sound-effects'
-import type { SchoolEvent } from '@/lib/school-events'
-import type { SchoolMorningEvent } from '@/lib/school-morning-events'
 import { migrateLegacyFriend, applyDailyErosion, dateToDayIndex } from '@/lib/relation-system'
 import { useGameRelations } from '@/hooks/useGameRelations'
 import { useSchoolSystem } from '@/hooks/useSchoolSystem'
-import type { SchoolDayState, Teacher, Classmate } from '@/lib/types'
 import type { BetInfo } from '@/lib/bet-system'
 import type { JobDefinition, JobId } from '@/lib/job-system'
 import { useSchoolHandlers } from '@/hooks/useSchoolHandlers'
 import { useSchoolEffects } from '@/hooks/useSchoolEffects'
-import {
-  generateScheduledExam,
-  calculateExamGrade,
-  calculateSurpriseQuizGrade,
-  shouldTriggerSurpriseQuiz,
-  prepareForExam,
-  getDifficultyText,
-  getDifficultyAnnouncement
-} from '@/lib/exam-system'
+import { useAppEffects } from '@/hooks/useAppEffects'
+import { useAppViewModels } from '@/hooks/useAppViewModels'
 import {
   adaptNarrativeText,
   DEFAULT_SEXUAL_ORIENTATION,
@@ -138,27 +104,30 @@ function App() {
     setTeacherActionType,
     schoolMorningEvents,
     setSchoolMorningEvents,
-    showSchoolMorning,
-    setShowSchoolMorning,
     streetMorningEvents,
     setStreetMorningEvents,
-    showStreetMorning,
-    setShowStreetMorning,
-    // TASK-B: job selection dialog
+    morningDisplay,
+    setMorningDisplay,
     showJobSelectionDialog,
     setShowJobSelectionDialog,
     availableJobsForDialog,
     setAvailableJobsForDialog,
   } = useAppDialogs()
 
+  const showSchoolMorning = morningDisplay === 'school'
+  const showStreetMorning = morningDisplay === 'street'
+  const setShowSchoolMorning = useCallback((value: boolean) => {
+    setMorningDisplay(value ? 'school' : null)
+  }, [setMorningDisplay])
+  const setShowStreetMorning = useCallback((value: boolean) => {
+    setMorningDisplay(value ? 'street' : null)
+  }, [setMorningDisplay])
+
   const ariaLiveAssertiveRef = useRef<HTMLDivElement>(null)
   const ariaLivePoliteRef = useRef<HTMLDivElement>(null)
-  // F6: stato locale per mutua esclusività Vai a Scuola / Marina (si resetta al cambio giorno)
   const [marinatoOggi, setMarinatoOggi] = useState(false)
   const [morningChoicePending, setMorningChoicePending] = useState(false)
-  // Blocco 4 — navigazione sotto-pannelli scolastici
   const [schoolSubPanel, setSchoolSubPanel] = useState<'home' | 'teachers' | 'break'>('home')
-  // Blocco 5 — tab principale attivo (controllato per navigazione da shortcut)
   const [activeTab, setActiveTab] = useState<string>('school')
   const schoolBootstrapStartedRef = useRef(false)
 
@@ -176,7 +145,6 @@ function App() {
     toast(adaptedMessage, { duration: 3000 })
   }, [playerProfile?.gender])
 
-  // --- Custom Hooks ---
   const { stats, setStats } = useGameStats(announce)
   const { gameLog, addLogEntry: rawAddLogEntry, clearLog } = useGameLog()
   const addLogEntry = useCallback((
@@ -236,7 +204,6 @@ function App() {
     tickConditions,
     checkAutoConditions,
     onDayAdvanced: (newDate) => {
-      // C2: erosione giornaliera relazioni
       setRawFriends(prev =>
         applyDailyErosion(
           (prev ?? []).map(migrateLegacyFriend),
@@ -246,7 +213,6 @@ function App() {
     },
   })
 
-  // Alias non-undefined per compatibilità JSX
   const phaseActionsLeft = phaseActionsRemaining ?? 0
 
   const events = useEventEngine({
@@ -313,7 +279,6 @@ function App() {
     },
   })
 
-  // Destructure event engine results per compatibilità con JSX esistente
   const {
     showMetallariEvent, setShowMetallariEvent,
     showAtipaEvent, setShowAtipaEvent,
@@ -335,7 +300,6 @@ function App() {
     afternoonEvent, handleAfternoonChoice,
   } = events
 
-  // Destructure game actions per compatibilità con JSX esistente
   const {
     handlePalestra,
     handleLampada,
@@ -362,22 +326,11 @@ function App() {
     handleMarina: handleMarinaFromHook,
   } = actions
 
-  // TASK-B: callback eseguita quando il giocatore conferma un lavoro dal dialog
   const handleSelectJob = useCallback((jobId: JobId) => {
     handleJobSelection(jobId)
     setShowJobSelectionDialog(false)
   }, [handleJobSelection, setShowJobSelectionDialog])
 
-  const { doInteraction } = useGameRelations({
-    friends,
-    setFriends: setRawFriends,
-    stats,
-    setStats,
-    gameDate: gameTime.currentDate,
-    announce,
-  })
-
-  // Sistema scolastico avanzato (Fase 1F / Blocco 2)
   const {
     timetable,
     setTimetable,
@@ -391,31 +344,18 @@ function App() {
     initSchoolYear,
   } = useSchoolSystem()
 
-  useEffect(() => {
-    if (!schoolType) {
-      schoolBootstrapStartedRef.current = false
-      return
-    }
-
-    const needsSchoolBootstrap =
-      !timetable &&
-      teachers.length === 0 &&
-      classRoster.length === 0
-
-    if (!needsSchoolBootstrap || schoolBootstrapStartedRef.current) {
-      return
-    }
-
-    schoolBootstrapStartedRef.current = true
-    initSchoolYear(schoolType, gameTime.schoolYear.currentYear)
-  }, [
-    classRoster.length,
-    gameTime.schoolYear.currentYear,
-    initSchoolYear,
-    schoolType,
-    teachers.length,
-    timetable,
-  ])
+  const { doInteraction, doClassmateInteraction, doTeacherInteraction } = useGameRelations({
+    friends,
+    setFriends: setRawFriends,
+    stats,
+    setStats,
+    gameDate: gameTime.currentDate,
+    announce,
+    classRoster,
+    setClassRoster,
+    teachers,
+    setTeachers,
+  })
 
   const isSchoolMorningSequenceInProgress =
     currentPhase === 'mattina' &&
@@ -439,8 +379,6 @@ function App() {
 
   const handleRiposa = () => actions.handleRiposa()
 
-  // Blocco 4 \u2014 Promozione compagno ad amico dall'elenco classe
-  // ── useSchoolHandlers ──────────────────────────────────────────────────────
   const {
     handlePromoteToFriend,
     handleOpenCorrompiDialog,
@@ -453,11 +391,8 @@ function App() {
     handleSchoolSelection,
     handleThemeChange,
     handleReset,
-    onTeacherInteraction,
     onSlotComplete,
     onBreakComplete,
-    onTeacherChange,
-    onClassmateChange,
     onNewFriend,
   } = useSchoolHandlers({
     stats,
@@ -520,43 +455,32 @@ function App() {
     announce,
     addLogEntry,
   })
-  // ─────────────────────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    const htmlElement = document.querySelector('html')
-    if (htmlElement) {
-      htmlElement.setAttribute('data-theme', currentTheme ?? 'default')
-    }
-  }, [currentTheme])
+  useAppEffects({
+    currentTheme,
+    rawPlayerProfile,
+    setRawPlayerProfile,
+    rawRelationships,
+    setRawRelationships,
+    rawGirlfriend,
+    setRawGirlfriend,
+    rawFriends,
+    setRawFriends,
+    schoolType,
+    gameYear: gameTime.schoolYear.currentYear,
+    timetable,
+    teachersLength: teachers.length,
+    classRosterLength: classRoster.length,
+    initSchoolYear,
+    schoolBootstrapStartedRef,
+    gameOver,
+    stats,
+    grades,
+    setGameOver,
+    setGameOverReason,
+    announce,
+  })
 
-  useEffect(() => {
-    if (rawPlayerProfile && !rawPlayerProfile.orientamentoSessuale) {
-      setRawPlayerProfile(prev => prev ? normalizePlayerProfile(prev) : null)
-    }
-  }, [rawPlayerProfile, setRawPlayerProfile])
-
-  useEffect(() => {
-    if ((rawRelationships ?? []).some(relationship => !relationship.orientamentoSessuale || !relationship.gender)) {
-      setRawRelationships(prev => (prev ?? []).map(normalizeRelationshipCandidate))
-    }
-  }, [rawRelationships, setRawRelationships])
-
-  useEffect(() => {
-    if (rawGirlfriend && (!rawGirlfriend.orientamentoSessuale || !rawGirlfriend.gender)) {
-      setRawGirlfriend(prev => normalizeRomanticPartner(prev ?? null))
-    }
-  }, [rawGirlfriend, setRawGirlfriend])
-
-  useEffect(() => {
-    if ((rawFriends ?? []).some(friend => !friend.orientamentoSessuale)) {
-      setRawFriends(prev => (prev ?? []).map(friend => ({
-        ...friend,
-        orientamentoSessuale: friend.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
-      })))
-    }
-  }, [rawFriends, setRawFriends])
-
-  // ── useSchoolEffects — 4 useEffect scolastici ─────────────────────────────
   useSchoolEffects({
     currentPhase: currentPhase ?? null,
     dayType: dayType ?? null,
@@ -579,17 +503,6 @@ function App() {
     setGameOverReason,
     announce,
   })
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    const checkStatus = checkGameOver({ ...stats, media: calculateMedia(grades) })
-    if (checkStatus.isOver) {
-      playSound.gameOver()
-      setGameOver(true)
-      setGameOverReason(checkStatus.reason)
-      announce(checkStatus.reason, 'assertive')
-    }
-  }, [stats, grades])
 
   useKeyboardShortcuts({
     gameOver,
@@ -621,93 +534,203 @@ function App() {
     announce
   })
 
-  // ── Derivati memoizzati (devono stare prima del return condizionale) ──────────
   const currentMedia = useMemo(
     () => schoolType ? calculateWeightedMedia(grades, schoolType) : 0,
     [grades, schoolType]
   )
 
-  const schoolDialogProps = useMemo(() => ({
-    showReportCard,
-    grades,
-    currentMedia,
-    reportCardPassed,
+  const {
+    statusTabProps,
+    schoolTabProps,
+    characterTabProps,
+    socialTabProps,
+    cityTabProps,
+    schoolDialogProps,
+    cityDialogProps,
+    socialDialogProps,
+  } = useAppViewModels({
+    currentTheme,
+    handleThemeChange,
     schoolYear: gameTime.schoolYear.currentYear,
-    handleReportCardContinue,
-    condotta: schoolRecord.condotta,
-    assenze: schoolRecord.assenze,
-    showSchoolEvent,
-    schoolEvent,
-    handleSchoolEventChoice,
-    setShowSchoolEvent,
-    showSubjectDialog,
-    setShowSubjectDialog,
-    handleStudySubject,
-    showTeacherDialog,
-    setShowTeacherDialog,
-    handleTeacherSelection,
-    teacherActionType,
-     playerGender: playerProfile?.gender ?? 'maschio',
-  }), [showReportCard, grades, currentMedia, reportCardPassed,
-       gameTime.schoolYear.currentYear, handleReportCardContinue,
-       schoolRecord.condotta, schoolRecord.assenze, showSchoolEvent,
-       schoolEvent, handleSchoolEventChoice, showSubjectDialog,
-       handleStudySubject, showTeacherDialog, handleTeacherSelection,
-       teacherActionType, playerProfile?.gender])
-
-  const cityDialogProps = useMemo(() => ({
-    showMetallariEvent,
-    setShowMetallariEvent,
-    currentEvent,
-    handleMetallariScappa,
-    handleMetallariCombatti,
-    showPoliceEvent,
-    setShowPoliceEvent,
-    handlePoliceScappa,
-    handlePoliceCollabora,
-    showStreetRaceEvent,
-    setShowStreetRaceEvent,
-    raceWinChance,
-    handleStreetRaceRifiuta,
-    handleStreetRaceAccetta,
-    soldi: stats.soldi,
-    betInfo: events.betInfo,
-    // TASK-B: job selection dialog
-    showJobSelectionDialog,
-    setShowJobSelectionDialog,
-    availableJobsForDialog,
-    onSelectJob: handleSelectJob,
-    playerStats: stats,
-     playerSchoolYear: gameTime.schoolYear.currentYear,
-  }), [showMetallariEvent, currentEvent, handleMetallariScappa,
-       handleMetallariCombatti, showPoliceEvent, handlePoliceScappa,
-       handlePoliceCollabora, showStreetRaceEvent, raceWinChance,
-       handleStreetRaceRifiuta, handleStreetRaceAccetta, stats.soldi,
-       events.betInfo, showJobSelectionDialog, availableJobsForDialog,
-       handleSelectJob, stats, gameTime.schoolYear.currentYear])
-
-  const socialDialogProps = useMemo(() => ({
-    showAtipaEvent,
-    setShowAtipaEvent,
-    atipaSuccessChance,
-    handleAtipaRinuncia,
-    handleAtipaProva,
-    showBulliEvent,
-    setShowBulliEvent,
-    handleBulliCedi,
-    handleBulliResisti,
-    showKeyboardHelp,
-    setShowKeyboardHelp,
-    stanchezza: stats.stanchezza,
-    gameOver,
-    gameOverReason,
-    handleReset,
-    showResetDialog,
-    setShowResetDialog,
-  }), [showAtipaEvent, atipaSuccessChance, handleAtipaRinuncia, handleAtipaProva,
-       showBulliEvent, handleBulliCedi, handleBulliResisti,
-       showKeyboardHelp, stats.stanchezza, gameOver, gameOverReason,
-       handleReset, showResetDialog])
+    playerProfile: playerProfile ?? null,
+    schoolType,
+    age: gameTime.age,
+    onResetRequest: () => setShowResetDialog(true),
+    schoolTabInput: {
+      schoolType,
+      schoolYear: gameTime.schoolYear.currentYear,
+      grades,
+      currentMedia,
+      rawGradesHistory: rawGradesHistory ?? {},
+      scheduledExams,
+      stats,
+      friends,
+      teachers: teachers ?? [],
+      classRoster: classRoster ?? [],
+      schoolRecord,
+      girlfriend: girlfriend ?? null,
+      phaseActionsLeft,
+      phaseActionsRemaining: phaseActionsRemaining ?? 0,
+      interactionsRemaining: interazioniRimaste ?? 0,
+      dayType,
+      currentPhase,
+      currentDate: gameTime.currentDate,
+      isSchoolPeriod: gameTime.schoolYear.isSchoolPeriod,
+      schoolSubPanel,
+      setSchoolSubPanel,
+      schoolDayState: _schoolDayStateFromHook,
+      timetable: timetable ?? null,
+      schoolMorningEvents,
+      morningDisplay,
+      streetMorningEvents,
+      morningChoicePending,
+      marinatoOggi,
+      afternoonEvent,
+      handleVaiAScuola,
+      handleMarina,
+      handleOpenCorrompiDialog,
+      handleOpenMinacciaDialog,
+      handleFriendAction,
+      handleGirlfriendAction,
+      handleGirlfriendBreakup,
+      handlePrepareExam,
+      handleAfternoonChoice,
+      handlePromoteToFriend,
+      doInteraction,
+      doClassmateInteraction,
+      doTeacherInteraction,
+      onStatChange: setStats,
+      onNewFriend,
+      onSlotComplete,
+      onBreakComplete,
+      gainExtraAction,
+      consumeAction,
+      announce,
+      addLogEntry,
+    },
+    characterTabInput: {
+      playerProfile: playerProfile ?? null,
+      stats,
+      schoolType,
+      schoolYear: gameTime.schoolYear.currentYear,
+      age: gameTime.age,
+      schoolRecord,
+      currentMedia,
+      gameLog,
+      healthRecord: healthRecord ?? DEFAULT_HEALTH_RECORD,
+      grades,
+      gradesHistory: rawGradesHistory ?? {},
+      friends,
+      relationships,
+      actionsRemaining: phaseActionsRemaining ?? 0,
+      interactionsRemaining: interazioniRimaste ?? 0,
+      onFriendAction: handleFriendAction,
+      onRelationInteraction: doInteraction,
+      girlfriend: girlfriend ?? null,
+      onGirlfriendAction: handleGirlfriendAction,
+      onGirlfriendBreakup: handleGirlfriendBreakup,
+      onTryRelationship: handleTryRelationship,
+    },
+    socialTabInput: {
+      playerGender: playerProfile?.gender ?? 'maschio',
+      morningChoicePending,
+      phaseActionsLeft,
+      interactionsLeft: interazioniRimaste ?? 0,
+      isSchoolPeriod: gameTime.schoolYear.isSchoolPeriod,
+      stanchezza: stats.stanchezza,
+      soldi: stats.soldi,
+      intelligenza: stats.intelligenza,
+      handleStudia,
+      handleChiacchiera,
+      handleParco,
+      handleTelefona,
+      handleProvarciConAtipa,
+      handleMotorino,
+      announce,
+    },
+    cityTabInput: {
+      playerGender: playerProfile?.gender ?? 'maschio',
+      onDisco: handleDisco,
+      onCinema: handleCinema,
+      onShopping: handleShoppingMall,
+      onPalestra: handlePalestra,
+      onLampada: handleLampada,
+      onLavoro: handleLavoro,
+      morningChoicePending,
+      actionsRemaining: phaseActionsRemaining ?? 0,
+      soldi: stats.soldi,
+      muscoli: stats.muscoli,
+      stanchezza: stats.stanchezza,
+      availableActions: actions.availableActions,
+      onAction: actions.getHandlerForAction,
+    },
+    schoolDialogsInput: {
+      showReportCard,
+      grades,
+      currentMedia,
+      reportCardPassed,
+      schoolYear: gameTime.schoolYear.currentYear,
+      handleReportCardContinue,
+      condotta: schoolRecord.condotta,
+      assenze: schoolRecord.assenze,
+      showSchoolEvent,
+      schoolEvent,
+      handleSchoolEventChoice,
+      setShowSchoolEvent,
+      showSubjectDialog,
+      setShowSubjectDialog,
+      handleStudySubject,
+      stanchezza: stats.stanchezza,
+      playerGender: playerProfile?.gender ?? 'maschio',
+      showTeacherDialog,
+      setShowTeacherDialog,
+      handleTeacherSelection,
+      teacherActionType,
+      soldi: stats.soldi,
+    },
+    cityDialogsInput: {
+      showMetallariEvent,
+      setShowMetallariEvent,
+      currentEvent,
+      handleMetallariScappa,
+      handleMetallariCombatti,
+      showPoliceEvent,
+      setShowPoliceEvent,
+      handlePoliceScappa,
+      handlePoliceCollabora,
+      showStreetRaceEvent,
+      setShowStreetRaceEvent,
+      raceWinChance,
+      handleStreetRaceRifiuta,
+      handleStreetRaceAccetta,
+      betInfo: events.betInfo,
+      showJobSelectionDialog,
+      setShowJobSelectionDialog,
+      availableJobsForDialog,
+      onSelectJob: handleSelectJob,
+      playerStats: stats,
+      playerSchoolYear: gameTime.schoolYear.currentYear,
+    },
+    socialDialogsInput: {
+      showAtipaEvent,
+      setShowAtipaEvent,
+      atipaSuccessChance,
+      handleAtipaRinuncia,
+      handleAtipaProva,
+      showBulliEvent,
+      setShowBulliEvent,
+      handleBulliCedi,
+      handleBulliResisti,
+      gameOver,
+      gameOverReason,
+      handleReset,
+      showResetDialog,
+      setShowResetDialog,
+      showKeyboardHelp,
+      setShowKeyboardHelp,
+      stanchezza: stats.stanchezza,
+    },
+  })
   // ─────────────────────────────────────────────────────────────────────────────
 
   if (!schoolType) {
@@ -737,238 +760,32 @@ function App() {
       />
 
       <div className="max-w-6xl mx-auto space-y-6">
-        <header className="text-center">
-          <h1 className="text-4xl md:text-6xl font-black text-primary neon-text-glow mb-2 tracking-wider">
-            TABBOZ SIMULATOR
-          </h1>
-          <p className="text-xl md:text-2xl text-secondary font-bold">2026 EDITION - VITA DA COATTO</p>
-          {playerProfile && (
-            <div className="mt-3 flex items-center justify-center gap-3 text-lg text-accent">
-              <User size={24} weight="fill" />
-              <span className="font-bold">{playerProfile.name}</span>
-              <span className="text-muted-foreground">•</span>
-              <span>{playerProfile.gender === 'maschio' ? '♂ Maschio' : '♀ Femmina'}</span>
-              <span className="text-muted-foreground">•</span>
-              <span>{gameTime.age} anni</span>
-            </div>
-          )}
-          <div className="flex items-center justify-center gap-4 mt-4">
-            <p className="text-sm text-muted-foreground">
-              Usa <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+numero</kbd> o <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+lettera</kbd> per le scorciatoie.
-            </p>
-            <Button 
-              onClick={() => setShowKeyboardHelp(true)}
-              variant="outline"
-              size="sm"
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-            >
-              <Keyboard size={20} className="mr-2" weight="fill" />
-              Aiuto Tasti (Alt+H)
-            </Button>
-          </div>
-        </header>
-
-        <TimeDisplay
+        <AppHeader
+          playerProfile={playerProfile ?? null}
           gameTime={gameTime}
           currentPhase={currentPhase}
           dayType={dayType}
           phaseActionsRemaining={phaseActionsRemaining}
           interazioniRimaste={interazioniRimaste}
-        />
-
-        {/* ── Controlli Giornata ────────────────────────────────────────────── */}
-        <DailyControls
-          currentPhase={currentPhase ?? null}
-          dayType={dayType ?? null}
-          phaseActionsRemaining={phaseActionsRemaining ?? 0}
           isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
-          isSchoolPeriod={gameTime.schoolYear.isSchoolPeriod}
+          morningChoicePending={morningChoicePending}
+          onOpenKeyboardHelp={() => setShowKeyboardHelp(true)}
           handleRiposa={handleRiposa}
           handleDormi={handleDormi}
           handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
         />
-        {/* ──────────────────────────────────────────────────────────────────── */}
-
-        {morningChoicePending && (
-          <div
-            role="alert"
-            className="mb-4 p-4 bg-destructive/20 border-2 border-destructive rounded-lg text-center animate-pulse"
-          >
-            <p className="text-destructive font-bold text-lg">
-              🏫 È mattina! Prima devi scegliere: vai a scuola o la marini?
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Vai al tab <strong>Scuola → Voti</strong> e fai la tua scelta per sbloccare tutte le altre attività.
-            </p>
-          </div>
-        )}
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-muted/50 p-1 h-auto">
-            <TabsTrigger value="school" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-              <GraduationCap size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Scuola</span>
-              <span className="sm:hidden">Scuola</span>
-            </TabsTrigger>
-            <TabsTrigger value="city" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Buildings size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Città</span>
-              <span className="sm:hidden">Roma</span>
-            </TabsTrigger>
-            <TabsTrigger value="character" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-              <IdentificationCard size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Personaggio</span>
-              <span className="sm:hidden">👤</span>
-            </TabsTrigger>
-            <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-              <Chats size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Attività</span>
-              <span className="sm:hidden">Attività</span>
-            </TabsTrigger>
-            <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <ChartBar size={20} className="mr-2" weight="fill" />
-              <span className="hidden sm:inline">Controllo</span>
-              <span className="sm:hidden">⚙️</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="status" className="space-y-6 mt-6">
-            <StatusTab
-              currentTheme={(currentTheme ?? 'default') as ThemeVariant}
-              onThemeChange={handleThemeChange}
-              schoolYear={gameTime.schoolYear.currentYear}
-              playerProfile={playerProfile ?? null}
-              schoolType={schoolType}
-              age={gameTime.age}
-              onResetRequest={() => setShowResetDialog(true)}
-            />
-          </TabsContent>
-
-          <TabsContent value="school" className="space-y-6 mt-6">
-            <SchoolTab
-              schoolType={schoolType}
-              schoolYear={gameTime.schoolYear.currentYear}
-              grades={grades}
-              currentMedia={currentMedia}
-              rawGradesHistory={rawGradesHistory ?? {}}
-              scheduledExams={scheduledExams}
-              stats={stats}
-              friends={friends}
-              teachers={teachers ?? []}
-              classRoster={classRoster ?? []}
-              schoolRecord={schoolRecord}
-              girlfriend={girlfriend ?? null}
-              phaseActionsLeft={phaseActionsLeft}
-              phaseActionsRemaining={phaseActionsRemaining ?? 0}
-              interactionsRemaining={interazioniRimaste ?? 0}
-              dayType={dayType}
-              currentPhase={currentPhase}
-              currentDate={gameTime.currentDate}
-              isSchoolPeriod={gameTime.schoolYear.isSchoolPeriod}
-              schoolSubPanel={schoolSubPanel}
-              setSchoolSubPanel={setSchoolSubPanel}
-              schoolDayState={_schoolDayStateFromHook}
-              timetable={timetable ?? null}
-              showSchoolMorning={showSchoolMorning}
-              schoolMorningEvents={schoolMorningEvents}
-              showStreetMorning={showStreetMorning}
-              streetMorningEvents={streetMorningEvents}
-              morningChoicePending={morningChoicePending}
-              marinatoOggi={marinatoOggi}
-              afternoonEvent={afternoonEvent}
-              handleVaiAScuola={handleVaiAScuola}
-              handleMarina={handleMarina}
-              handleOpenCorrompiDialog={handleOpenCorrompiDialog}
-              handleOpenMinacciaDialog={handleOpenMinacciaDialog}
-              handleFriendAction={handleFriendAction}
-              handleGirlfriendAction={handleGirlfriendAction}
-              handleGirlfriendBreakup={handleGirlfriendBreakup}
-              handlePrepareExam={handlePrepareExam}
-              handleAfternoonChoice={handleAfternoonChoice}
-              handlePromoteToFriend={handlePromoteToFriend}
-              doInteraction={doInteraction}
-              onTeacherInteraction={onTeacherInteraction}
-              onStatChange={setStats}
-              onTeacherChange={onTeacherChange}
-              onClassmateChange={onClassmateChange}
-              onNewFriend={onNewFriend}
-              onSlotComplete={onSlotComplete}
-              onBreakComplete={onBreakComplete}
-              gainExtraAction={gainExtraAction}
-              consumeAction={consumeAction}
-              announce={announce}
-              addLogEntry={addLogEntry}
-            />
-          </TabsContent>
-
-          <TabsContent value="character">
-            <CharacterSheet
-              playerProfile={playerProfile ?? null}
-              stats={stats}
-              schoolType={schoolType}
-              schoolYear={gameTime.schoolYear.currentYear}
-              age={gameTime.age}
-              schoolRecord={schoolRecord}
-              currentMedia={currentMedia}
-              gameLog={gameLog}
-              healthRecord={healthRecord ?? DEFAULT_HEALTH_RECORD}
-              grades={grades}
-              gradesHistory={rawGradesHistory ?? {}}
-              friends={friends}
-              relationships={relationships}
-              actionsRemaining={phaseActionsRemaining ?? 0}
-              interactionsRemaining={interazioniRimaste ?? 0}
-              onFriendAction={handleFriendAction}
-              onRelationInteraction={doInteraction}
-              girlfriend={girlfriend ?? null}
-              onGirlfriendAction={handleGirlfriendAction}
-              onGirlfriendBreakup={handleGirlfriendBreakup}
-              onTryRelationship={handleTryRelationship}
-            />
-          </TabsContent>
-
-          <TabsContent value="social" className="space-y-6 mt-6">
-            <SocialTab
-              playerGender={playerProfile?.gender ?? 'maschio'}
-              morningChoicePending={morningChoicePending}
-              phaseActionsLeft={phaseActionsLeft}
-              interactionsLeft={interazioniRimaste ?? 0}
-              isSchoolPeriod={gameTime.schoolYear.isSchoolPeriod}
-              stanchezza={stats.stanchezza}
-              soldi={stats.soldi}
-              intelligenza={stats.intelligenza}
-              handleStudia={handleStudia}
-              handleChiacchiera={handleChiacchiera}
-              handleParco={handleParco}
-              handleTelefona={handleTelefona}
-              handleProvarciConAtipa={handleProvarciConAtipa}
-              handleMotorino={handleMotorino}
-              announce={announce}
-            />
-          </TabsContent>
-
-          <TabsContent value="city" className="space-y-6 mt-6">
-            <CityTab
-              playerGender={playerProfile?.gender ?? 'maschio'}
-              onDisco={handleDisco}
-              onCinema={handleCinema}
-              onShopping={handleShoppingMall}
-              onPalestra={handlePalestra}
-              onLampada={handleLampada}
-              onLavoro={handleLavoro}
-              morningChoicePending={morningChoicePending}
-              actionsRemaining={phaseActionsRemaining ?? 0}
-              soldi={stats.soldi}
-              muscoli={stats.muscoli}
-              stanchezza={stats.stanchezza}
-              availableActions={actions.availableActions}
-              onAction={actions.getHandlerForAction}
-            />
-          </TabsContent>
-        </Tabs>
+        <MainGameTabs
+          activeTab={activeTab}
+          onValueChange={setActiveTab}
+          statusTab={statusTabProps}
+          schoolTab={schoolTabProps}
+          characterTab={characterTabProps}
+          socialTab={socialTabProps}
+          cityTab={cityTabProps}
+        />
       </div>
 
-      <GameDialogs {...schoolDialogProps} {...cityDialogProps} {...socialDialogProps} />
+      <GameDialogs school={schoolDialogProps} city={cityDialogProps} social={socialDialogProps} />
     </main>
   )
 }

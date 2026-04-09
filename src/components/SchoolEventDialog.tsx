@@ -49,7 +49,7 @@ export function SchoolEventDialog({ open, event, onChoice, onClose }: SchoolEven
 
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
-      <AlertDialogContent className={`border-2 ${getColorClass()}`}>
+      <AlertDialogContent className={`border-2 ${getColorClass()}`} aria-label="Evento scolastico">
         <AlertDialogHeader>
           <AlertDialogTitle className={`text-2xl ${getTitleColorClass()}`}>
             {event.title}

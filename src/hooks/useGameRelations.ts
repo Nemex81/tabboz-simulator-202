@@ -13,11 +13,16 @@ import {
 } from '@/lib/relation-system'
 import {
   applyClassmateRelation,
+  CLASSMATE_INTERACTIONS,
   sampleInteractionDelta,
   PROMOTION_THRESHOLD,
   type ClassmateInteractionKey,
 } from '@/lib/classmate-relations'
-import { applyTeacherRelationChange } from '@/lib/teacher-relations'
+import {
+  applyTeacherRelationChange,
+  getCorruptionChance,
+  getThreatSuccess,
+} from '@/lib/teacher-relations'
 
 interface UseGameRelationsParams {
   friends: Friend[]
@@ -37,7 +42,15 @@ export interface DoInteractionResult {
   success: boolean
   message: string
   newTierLabel?: string
+  statDelta?: Partial<GameStats>
 }
+
+export type TeacherInteractionKey =
+  | 'conversazione'
+  | 'richiesta_spiegazione'
+  | 'richiesta_revoca_voto'
+  | 'corruzione'
+  | 'minaccia'
 
 export function useGameRelations({
   friends,
@@ -131,9 +144,22 @@ export function useGameRelations({
       if (!classmate) {
         return { success: false, message: 'Compagno non trovato.' }
       }
+      const interaction = CLASSMATE_INTERACTIONS[interactionKey]
+      if (interaction.requiresPromotion && classmate.relation < PROMOTION_THRESHOLD) {
+        return {
+          success: false,
+          message: `${classmate.name} non si fida ancora abbastanza di te.`,
+        }
+      }
       const delta = sampleInteractionDelta(interactionKey)
       const updated = applyClassmateRelation(classmate, delta)
       setClassRoster(prev => prev.map(c => c.id === classmateId ? updated : c))
+      if (interaction.intelligenzaDelta !== 0) {
+        setStats(prev => ({
+          ...prev,
+          intelligenza: Math.max(0, prev.intelligenza + interaction.intelligenzaDelta),
+        }))
+      }
       const promoted = updated.relation >= PROMOTION_THRESHOLD
       const message = `Interazione con ${classmate.name}: ${delta >= 0 ? '+' : ''}${delta} relazione.`
       announce(message)
@@ -141,9 +167,10 @@ export function useGameRelations({
         success: true,
         message,
         newTierLabel: promoted ? 'amicizia' : undefined,
+        statDelta: interaction.intelligenzaDelta !== 0 ? { intelligenza: interaction.intelligenzaDelta } : undefined,
       }
     },
-    [classRoster, setClassRoster, announce]
+    [announce, classRoster, setClassRoster, setStats]
   )
 
   /**
@@ -153,17 +180,83 @@ export function useGameRelations({
   const doTeacherInteraction = useCallback(
     (
       teacherId: string,
-      delta: number,
-      reason: TeacherMemoryEntry['type'],
-      date: GameDate
-    ): void => {
-      if (!teachers || !setTeachers) return
+      interactionKey: TeacherInteractionKey
+    ): DoInteractionResult => {
+      if (!teachers || !setTeachers) {
+        return { success: false, message: 'Docenti non disponibili.' }
+      }
       const teacher = teachers.find(t => t.id === teacherId)
-      if (!teacher) return
-      const updated = applyTeacherRelationChange(teacher, delta, reason, date)
+      if (!teacher) {
+        return { success: false, message: 'Professore non trovato.' }
+      }
+
+      let relationDelta = 0
+      let statDelta: Partial<GameStats> | undefined
+      let success = true
+      let message = ''
+
+      switch (interactionKey) {
+        case 'conversazione': {
+          relationDelta = 3 + Math.round(Math.random() * 2)
+          message = `Hai avuto una breve conversazione con ${teacher.name}. Relazione +${relationDelta}.`
+          break
+        }
+        case 'richiesta_spiegazione': {
+          relationDelta = 2
+          statDelta = { intelligenza: 1 }
+          message = `${teacher.name} ti ha spiegato meglio la lezione. Relazione +2, intelligenza +1.`
+          break
+        }
+        case 'richiesta_revoca_voto': {
+          const accepted = Math.random() * 100 < getCorruptionChance(teacher, 0)
+          success = accepted
+          relationDelta = accepted
+            ? -(5 + Math.round(Math.random() * 5))
+            : -(5 + Math.round(Math.random() * 10))
+          message = accepted
+            ? `${teacher.name} ha accettato di rivedere il voto. Relazione ${relationDelta}.`
+            : `${teacher.name} ha rifiutato la richiesta di revoca. Relazione ${relationDelta}.`
+          break
+        }
+        case 'corruzione': {
+          const amount = 50
+          const accepted = Math.random() * 100 < getCorruptionChance(teacher, amount)
+          success = accepted
+          relationDelta = accepted ? -10 : -20
+          statDelta = { soldi: -amount }
+          message = accepted
+            ? `${teacher.name} ha accettato. Hai speso ${amount}€. Relazione -10.`
+            : `${teacher.name} ha rifiutato con indignazione. Hai perso ${amount}€. Relazione -20.`
+          break
+        }
+        case 'minaccia': {
+          const threat = getThreatSuccess(teacher)
+          success = threat.success
+          message = threat.consequence
+          break
+        }
+        default: {
+          return { success: false, message: 'Interazione insegnante non supportata.' }
+        }
+      }
+
+      const updated = applyTeacherRelationChange(teacher, relationDelta, interactionKey as TeacherMemoryEntry['type'], gameDate)
       setTeachers(prev => prev.map(t => t.id === teacherId ? updated : t))
+      if (statDelta && Object.keys(statDelta).length > 0) {
+        setStats(prev => {
+          const next = { ...prev }
+          for (const [key, value] of Object.entries(statDelta)) {
+            if (typeof value !== 'number') continue
+            const statKey = key as keyof GameStats
+            next[statKey] = Math.max(0, (next[statKey] as number) + value) as never
+          }
+          return next
+        })
+      }
+      announce(message)
+      return { success, message, statDelta }
     },
-    [teachers, setTeachers]
+    [announce, gameDate, setStats, setTeachers, teachers]
   )
 
   return { doInteraction, doClassmateInteraction, doTeacherInteraction }

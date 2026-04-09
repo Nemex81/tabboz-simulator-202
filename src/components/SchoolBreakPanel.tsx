@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type {
+  BreakActionType,
   GameStats,
-  Teacher,
   Classmate,
   SchoolDayState,
   SchoolRecord,
   GameDate,
+  Teacher,
 } from '@/lib/types'
 import {
   type BreakContext,
@@ -23,6 +24,8 @@ import {
 } from '@/lib/school-break-actions'
 import { clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
+import type { ClassmateInteractionKey } from '@/lib/classmate-relations'
+import type { DoInteractionResult, TeacherInteractionKey } from '@/hooks/useGameRelations'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -33,8 +36,8 @@ interface SchoolBreakPanelProps {
   stats: GameStats
   schoolRecord: SchoolRecord
   onStatChange: (updater: (prev: GameStats) => GameStats) => void
-  onTeacherChange: (updater: (prev: Teacher[]) => Teacher[]) => void
-  onClassmateChange: (updater: (prev: Classmate[]) => Classmate[]) => void
+  onTeacherInteraction: (teacherId: string, interactionKey: TeacherInteractionKey) => DoInteractionResult
+  onClassmateInteraction: (classmateId: string, interactionKey: ClassmateInteractionKey) => DoInteractionResult
   onBreakComplete: () => void
   announce: (msg: string) => void
   currentDate: GameDate
@@ -66,8 +69,8 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
   stats,
   schoolRecord,
   onStatChange,
-  onTeacherChange,
-  onClassmateChange,
+  onTeacherInteraction,
+  onClassmateInteraction,
   onBreakComplete,
   announce,
   currentDate,
@@ -113,25 +116,15 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
 
   // ── Esecuzione azione ─────────────────────────────────────────────────────
   const handleAction = useCallback(
-    (actionKey: string) => {
+    (actionKey: BreakActionType) => {
       if (actionDone) return
 
-      const allActions = [
-        ...getAvailableActions(buildCtx(selectedTarget), 'compagno'),
-        ...getAvailableActions(buildCtx(selectedTarget), 'professore'),
-        ...getAvailableActions(buildCtx(selectedTarget), 'indipendente'),
-      ]
-      const action = allActions.find(a => a.type === actionKey || a.label === actionKey)
-      if (!action) return
-
-      const result = action.execute(buildCtx(selectedTarget))
-
-      // Applica statDelta
-      if (Object.keys(result.statDelta).length > 0) {
+      const applyStatDelta = (statDelta: Partial<GameStats>) => {
+        if (Object.keys(statDelta).length === 0) return
         onStatChange((prev) => {
           const updated = { ...prev }
           const numericUpdated = updated as unknown as Record<string, number>
-          for (const [key, value] of Object.entries(result.statDelta)) {
+          for (const [key, value] of Object.entries(statDelta)) {
             if (typeof value !== 'number') continue
             const k = key as keyof GameStats
             if (k === 'soldi') {
@@ -144,28 +137,94 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
         })
       }
 
-      // Aggiorna teacher se necessario
-      if (result.updatedTeacher) {
-        const updated = result.updatedTeacher
-        onTeacherChange((prev) =>
-          prev.map(t => t.id === updated.id ? updated : t)
-        )
+      let result: BreakResult | null = null
+
+      switch (actionKey) {
+        case 'chiacchiera_compagno': {
+          if (!selectedTarget) return
+          const interaction = onClassmateInteraction(selectedTarget, 'chiacchiera')
+          if (!interaction.success) return
+          result = {
+            message: interaction.message,
+            statDelta: { ...(interaction.statDelta ?? {}), stanchezza: -2 },
+          }
+          break
+        }
+        case 'studia_insieme': {
+          if (!selectedTarget) return
+          const interaction = onClassmateInteraction(selectedTarget, 'studia_insieme')
+          if (!interaction.success) return
+          result = {
+            message: interaction.message,
+            statDelta: interaction.statDelta ?? {},
+          }
+          break
+        }
+        case 'risolvi_conflitto': {
+          if (!selectedTarget) return
+          const interaction = onClassmateInteraction(selectedTarget, 'risolvi_conflitto')
+          if (!interaction.success) return
+          result = {
+            message: interaction.message,
+            statDelta: interaction.statDelta ?? {},
+          }
+          break
+        }
+        case 'conversazione_prof':
+        case 'chiedi_spiegazione':
+        case 'chiedi_revoca_voto':
+        case 'corruzione_prof':
+        case 'minaccia_prof': {
+          if (!selectedTarget) return
+          const teacherActionMap: Record<
+            'conversazione_prof' | 'chiedi_spiegazione' | 'chiedi_revoca_voto' | 'corruzione_prof' | 'minaccia_prof',
+            TeacherInteractionKey
+          > = {
+            conversazione_prof: 'conversazione',
+            chiedi_spiegazione: 'richiesta_spiegazione',
+            chiedi_revoca_voto: 'richiesta_revoca_voto',
+            corruzione_prof: 'corruzione',
+            minaccia_prof: 'minaccia',
+          }
+          const interaction = onTeacherInteraction(selectedTarget, teacherActionMap[actionKey])
+          if (!interaction.success && actionKey !== 'minaccia_prof' && actionKey !== 'chiedi_revoca_voto' && actionKey !== 'corruzione_prof') {
+            return
+          }
+          result = {
+            message: interaction.message,
+            statDelta: interaction.statDelta ?? {},
+          }
+          break
+        }
+        case 'bar_scolastico': {
+          result = {
+            message: 'Ti sei concesso qualcosa al bar. Stanchezza -5, umore +3.',
+            statDelta: { soldi: -2, stanchezza: -5, morale: 3 },
+          }
+          break
+        }
+        case 'riposa': {
+          result = {
+            message: 'Hai riposato durante l\'intervallo. Stanchezza -8.',
+            statDelta: { stanchezza: -8 },
+          }
+          break
+        }
+        default:
+          return
       }
 
-      // Aggiorna classmate se necessario
-      if (result.updatedClassmate) {
-        const updated = result.updatedClassmate
-        onClassmateChange((prev) =>
-          prev.map(c => c.id === updated.id ? updated : c)
-        )
-      }
+      if (!result) return
+      applyStatDelta(result.statDelta)
 
       playSound.buttonClick()
-      announce(result.message)
+      if (actionKey === 'bar_scolastico' || actionKey === 'riposa') {
+        announce(result.message)
+      }
       setActionResult(result)
       setActionDone(true)
     },
-    [actionDone, selectedTarget, buildCtx, onStatChange, onTeacherChange, onClassmateChange, announce]
+    [actionDone, announce, onClassmateInteraction, onStatChange, onTeacherInteraction, selectedTarget]
   )
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -395,7 +454,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
 
 interface ActionButtonsProps {
   actions: ReturnType<typeof getAvailableActions>
-  onAction: (key: string) => void
+  onAction: (key: BreakActionType) => void
   disabled: boolean
 }
 

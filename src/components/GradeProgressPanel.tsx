@@ -1,4 +1,5 @@
 import React from 'react'
+import { GraduationCap } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { SchoolType, SubjectGrades, getSubjectDisplayName } from '@/lib/types'
@@ -58,9 +59,13 @@ export function GradeProgressPanel({ grades, schoolType, schoolYear }: GradeProg
 
   if (gpaSubjects.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground text-center py-6" role="status">
-        Nessuna materia attiva per l’anno scolastico corrente.
-      </p>
+      <Card className="p-6 border border-dashed border-muted bg-card/50">
+        <div className="text-center text-muted-foreground" role="status" aria-live="polite">
+          <GraduationCap size={40} className="mx-auto mb-3 opacity-60" aria-hidden="true" />
+          <p className="text-sm font-medium">Nessuna materia disponibile</p>
+          <p className="text-xs mt-1">Non ci sono materie valutabili per l’anno scolastico corrente.</p>
+        </div>
+      </Card>
     )
   }
 

@@ -1,3 +1,7 @@
+/**
+ * RelationshipsPanel: pannello del sistema romantico e dei potenziali partner.
+ */
+
 import React from 'react'
 import { Relationship, GameStats, PlayerProfile } from '@/lib/types'
 import { Card } from '@/components/ui/card'

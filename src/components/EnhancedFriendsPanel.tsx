@@ -1,3 +1,7 @@
+/**
+ * EnhancedFriendsPanel: dettaglio amicizie con azioni e sistema relazionale a 4 assi.
+ */
+
 import React from 'react'
 import { useSoundFeedback } from '@/hooks/useSoundFeedback'
 import { User, Users, Barbell, Brain, Lightning, HandFist, HandCoins, XCircle, Crown } from '@phosphor-icons/react'

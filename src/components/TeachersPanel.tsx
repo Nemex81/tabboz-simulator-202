@@ -8,11 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type {
   Teacher,
-  GameStats,
   GameDate,
-  TeacherMemoryEntry,
 } from '@/lib/types'
 import { playSound } from '@/lib/sound-effects'
+import type { DoInteractionResult, TeacherInteractionKey } from '@/hooks/useGameRelations'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -66,9 +65,7 @@ const MEMORY_TYPE_LABELS: Record<TeacherMemoryEntry['type'], string> = {
 interface TeachersPanelProps {
   teachers: Teacher[]
   currentDate: GameDate
-  onTeacherInteraction: (teacherId: string, delta: number, reason: TeacherMemoryEntry['type'], date: GameDate) => void
-  stats: GameStats
-  announce: (msg: string) => void
+  onTeacherInteraction: (teacherId: string, interactionKey: TeacherInteractionKey) => DoInteractionResult
   onConsumeAction: () => void
   actionsRemaining: number
 }
@@ -77,9 +74,7 @@ interface TeachersPanelProps {
 
 export const TeachersPanel = React.memo(function TeachersPanel({
   teachers,
-  currentDate,
   onTeacherInteraction,
-  announce,
   onConsumeAction,
   actionsRemaining,
 }: TeachersPanelProps) {
@@ -94,23 +89,20 @@ export const TeachersPanel = React.memo(function TeachersPanel({
 
   function handleConversazione(teacher: Teacher) {
     if (actionsRemaining <= 0) return
-    const delta = 3 + Math.round(Math.random() * 2) // +3 / +4 / +5
-    onTeacherInteraction(teacher.id, delta, 'conversazione', currentDate)
+    const result = onTeacherInteraction(teacher.id, 'conversazione')
+    if (!result.success) return
     onConsumeAction()
     playSound.buttonClick()
-    const msg = `Hai avuto una breve conversazione con ${teacher.name}. Relazione +${delta}.`
-    announce(msg)
-    setLastAction({ teacherId: teacher.id, message: msg })
+    setLastAction({ teacherId: teacher.id, message: result.message })
   }
 
   function handleChiediSpiegazione(teacher: Teacher) {
     if (actionsRemaining <= 0) return
-    onTeacherInteraction(teacher.id, 2, 'richiesta_spiegazione', currentDate)
+    const result = onTeacherInteraction(teacher.id, 'richiesta_spiegazione')
+    if (!result.success) return
     onConsumeAction()
     playSound.buttonClick()
-    const msg = `${teacher.name} ti ha dato ulteriori spiegazioni. Relazione +2.`
-    announce(msg)
-    setLastAction({ teacherId: teacher.id, message: msg })
+    setLastAction({ teacherId: teacher.id, message: result.message })
   }
 
   if (teachers.length === 0) {

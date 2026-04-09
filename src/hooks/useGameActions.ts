@@ -1,4 +1,5 @@
-﻿import { useEconomyActions } from './useEconomyActions'
+﻿import { useCallback, useMemo } from 'react'
+import { useEconomyActions } from './useEconomyActions'
 import { useGirlfriendActions } from './useGirlfriendActions'
 import { useSocialActions } from './useSocialActions'
 import { useStudyActions } from './useStudyActions'
@@ -163,10 +164,11 @@ export function useGameActions({
     applyCondition,
   })
 
-  const ACTION_HANDLER_MAP: Partial<Record<ActionId, () => void>> = {
+  const actionHandlerMap = useMemo<Partial<Record<ActionId, () => void>>>(() => ({
     palestra: handlePalestra,
     lampada: handleLampada,
-    lavoro: handleLavoro,    motorino: handleMotorino,
+    lavoro: handleLavoro,
+    motorino: handleMotorino,
     studia: handleStudia,
     corrompi: handleCorrompi,
     minaccia: handleMinaccia,
@@ -179,18 +181,42 @@ export function useGameActions({
     parco: handleParco,
     telefona: handleTelefona,
     studia_gruppo: handleStudiaGruppo,
-  }
+  }), [
+    handlePalestra,
+    handleLampada,
+    handleLavoro,
+    handleMotorino,
+    handleStudia,
+    handleCorrompi,
+    handleMinaccia,
+    handleRiposa,
+    handleDormi,
+    handleDisco,
+    handleCinema,
+    handleShoppingMall,
+    handleChiacchiera,
+    handleParco,
+    handleTelefona,
+    handleStudiaGruppo,
+  ])
 
-  const availableActions: PhaseActionEntry[] = getAvailableActions(
+  const availableActions: PhaseActionEntry[] = useMemo(() => getAvailableActions(
     currentPhase,
     dayType,
     gameTime.schoolYear.currentYear,
     gameTime.schoolYear.isSchoolPeriod,
     phaseActionsRemaining <= 0
-  )
+  ), [
+    currentPhase,
+    dayType,
+    gameTime.schoolYear.currentYear,
+    gameTime.schoolYear.isSchoolPeriod,
+    phaseActionsRemaining,
+  ])
 
-  const getHandlerForAction = (id: ActionId): (() => void) | undefined =>
-    ACTION_HANDLER_MAP[id]
+  const getHandlerForAction = useCallback((id: ActionId): (() => void) | undefined => {
+    return actionHandlerMap[id]
+  }, [actionHandlerMap])
 
   return {
     handlePalestra,

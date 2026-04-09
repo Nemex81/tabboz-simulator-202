@@ -116,7 +116,7 @@ export function TeacherSelectionDialog({
               className="col-span-3 text-center text-sm text-muted-foreground py-6"
               role="status"
             >
-              Nessuna materia disponibile.
+              Nessuna materia disponibile per questa azione.
             </p>
           )}
           {subjects.map(([subject, grade], index) => {
