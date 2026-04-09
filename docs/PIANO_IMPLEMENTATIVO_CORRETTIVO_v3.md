@@ -6,6 +6,12 @@
 
 > Aggiornamento validazione patch: 08 Apr 2026
 
+> Aggiornamento implementativo: 09 Apr 2026
+
+- STEP 13.6 completato: ribilanciati tre eventi di `school-morning-events.ts` (`sm_ritardo_bus`, `sm_pettegolezzo_al_cancello`, `sm_ansia_interrogazione`) per ridurre collisioni narrative nello stesso draw.
+- Disambiguato il dominio “interrogazione”: `sm_ansia_interrogazione` resta evento pre-scuola, mentre gli eventi teacher/structured gestiscono l'evento in aula.
+- Le prove programmate ora supportano anche il tipo opzionale `orale` nel flusso persistito `ScheduledExam`, con builder strutturati in `school-structured-events.ts` e annunci/UI coerenti.
+
 Patch review successiva al piano:
 - PATCH 1: respinta. `migrateLegacyFriend()` non usa `schemaVersion`; il discriminante `relation < 0` resta sufficiente per distinguere il legacy `[-100,+100]` dalla nuova scala `[0,100]`.
 - PATCH 2: respinta. `ISTERESI` e' un delta proporzionale al range; nella migrazione tecnica va mantenuta l'equivalenza di comportamento, quindi `20 -> 10` resta corretto.

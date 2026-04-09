@@ -39,13 +39,15 @@ Il giocatore interpreta uno studente delle superiori e deve:
 
 Il gioco è completamente client-side, con persistenza locale via KV storage e **zero backend**.
 
+Le prove scolastiche programmate distinguono ora tra compiti scritti e interrogazioni orali, mentre gli eventi della mattina prima di entrare a scuola sono separati dagli eventi che avvengono già in aula.
+
 ---
 
 ## Feature Principali
 
 | Area | Funzionalità |
 | --- | --- |
-| **Scuola** | 6 indirizzi scolastici, materie con pesi, verifiche programmate, interrogazioni a sorpresa, condotta e assenze |
+| **Scuola** | 6 indirizzi scolastici, materie con pesi, prove programmate scritte/orali, interrogazioni a sorpresa, condotta e assenze |
 | **Statistiche RPG** | 12 stat (muscoli, coattaggine, figosità, intelligenza, carisma, salute, ecc.) con reputazione derivata |
 | **Relazioni 4 Assi** | Sistema relazionale amicizia/romantico/amore/odio con catalogo interazioni e prerequisiti |
 | **Fidanzata** | Generazione procedurale con personalità, hobby, aspetto e sistema romantico progressivo |

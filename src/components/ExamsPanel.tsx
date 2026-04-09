@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { CalendarCheck, Brain, CheckCircle, Warning } from '@phosphor-icons/react'
 import { Badge } from '@/components/ui/badge'
 import { getSubjectDisplayName } from '@/lib/types'
-import { getDifficultyText } from '@/lib/exam-system'
+import { getDifficultyText, getScheduledExamTypeText } from '@/lib/exam-system'
 
 interface ExamsPanelProps {
   exams: ScheduledExam[]
@@ -20,7 +20,7 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
       <Card className="p-6 border-2 border-muted bg-card/50">
         <div className="text-center text-muted-foreground">
           <CalendarCheck size={64} className="mx-auto mb-4 opacity-50" />
-          <p className="text-lg">Nessuna verifica programmata!</p>
+          <p className="text-lg">Nessuna prova programmata!</p>
           <p className="text-sm mt-2">Goditi questo momento di pace!</p>
         </div>
       </Card>
@@ -31,7 +31,7 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
     <Card className="p-6 border-2 border-primary bg-card">
       <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
         <CalendarCheck size={28} weight="fill" />
-        VERIFICHE PROGRAMMATE ({exams.length})
+        PROVE PROGRAMMATE ({exams.length})
       </h3>
       <div className="grid gap-3">
         {exams.map((exam, index) => (
@@ -75,6 +75,9 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
                   >
                     {getDifficultyText(exam.difficulty)}
                   </Badge>
+                  <Badge variant="secondary" className="ml-2">
+                    {getScheduledExamTypeText(exam.type)}
+                  </Badge>
                 </div>
                 <div className="text-sm space-y-1">
                   {exam.isPrepared ? (
@@ -98,7 +101,7 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
                   className="bg-primary hover:bg-primary/80"
                 >
                   <Brain size={20} weight="fill" className="mr-2" />
-                  Prepara
+                  {exam.type === 'orale' ? 'Ripassa' : 'Prepara'}
                 </Button>
               )}
             </div>
@@ -106,7 +109,7 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
         ))}
       </div>
       <div className="mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
-        <p>💡 Preparati per le verifiche studiando in anticipo! Se arrivi preparato, l'Intelligenza moltiplica il voto!</p>
+        <p>💡 Studia in anticipo: il pannello ora include verifiche scritte e interrogazioni orali programmate.</p>
       </div>
     </Card>
   )

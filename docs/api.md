@@ -10,6 +10,7 @@
 - `SchoolRecord` ora include `isAtSchool: boolean` (flag persistente usato nelle routine mattutine).
 - Nota implementativa: per evitare problemi di reconciliaton DOM durante la sequenza `SchoolMorningPanel`, alcune chiamate di aggiornamento parent vengono deferrate al prossimo tick (pattern `setTimeout(..., 0)`) — vedi `src/components/SchoolMorningPanel.tsx`.
 - Il report di analisi codice completo è disponibile in `docs/ANALISI_CODEBASE_COMPLETA.md`.
+- `ScheduledExam` supporta ora `type?: 'scritto' | 'orale'`; `generateScheduledExam()` può generare sia compiti scritti sia interrogazioni orali programmate.
 
 
 ## Indice
@@ -146,7 +147,9 @@ type RelationshipStatus =
 interface ScheduledExam {
   id?: string;
   subject: string;
+  date?: { day: number; month: number; year: number };
   daysUntil?: number;
+  type?: 'scritto' | 'orale';
   isPrepared: boolean;
   difficulty: 'facile' | 'normale' | 'difficile' | 'brutale';
   announced?: boolean;
@@ -275,14 +278,16 @@ Generazione e valutazione verifiche ed interrogazioni.
 
 | Funzione | Firma | Descrizione |
 | --- | --- | --- |
-| `generateScheduledExam` | `(subjects: string[]) → ScheduledExam` | Genera verifica casuale |
+| `generateScheduledExam` | `(subjects: string[]) → ScheduledExam` | Genera una prova programmata casuale, scritta o orale |
 | `getDifficultyMultiplier` | `(difficulty) → number` | Moltiplicatore: facile=1.5, normale=1.0, difficile=0.7, brutale=0.5 |
 | `getDifficultyText` | `(difficulty) → string` | Label testuale della difficoltà |
-| `getDifficultyAnnouncement` | `(subject, difficulty) → string` | Testo narrativo per l'annuncio |
+| `getDifficultyAnnouncement` | `(subject, difficulty) → string` | Compat wrapper per annunci di verifiche scritte |
+| `getScheduledExamTypeText` | `(type?) → string` | Restituisce `SCRITTO` o `ORALE` per la UI |
+| `getScheduledExamAnnouncement` | `(subject, difficulty, type?) → string` | Testo narrativo coerente con prova scritta/orale |
 | `calculateExamGrade` | `(currentGrade, intel, isPrepared, media, difficulty) → number` | Calcolo voto verifica |
 | `calculateSurpriseQuizGrade` | `(intel, media, currentGrade) → number` | Calcolo voto interrogazione a sorpresa |
 | `shouldTriggerSurpriseQuiz` | `(absentDays, media) → boolean` | Probabilità interrogazione (10% base) |
-| `prepareForExam` | `(exam: ScheduledExam) → ScheduledExam` | Segna esame come preparato |
+| `prepareForExam` | `(exam: ScheduledExam, intelligenza: number) → { newIsPrepared, intelligenceGain, message }` | Marca la prova come preparata e restituisce il messaggio di studio |
 
 ---
 
@@ -456,9 +461,24 @@ interface SchoolEvent {
 
 Eventi narrativi della mattina scolastica.
 
+Nota: il pool pre-scuola disambigua ora l'ansia del tragitto (`sm_ansia_interrogazione`) dagli eventi che avvengono già in aula.
+
 | Funzione | Firma | Descrizione |
 | --- | --- | --- |
 | `drawSchoolMorningEvents` | `(stats: GameStats, count?: number) → SchoolMorningEvent[]` | Pesca 1-2 eventi mattutini casuali |
+
+### school-structured-events.ts
+
+Eventi contestuali in aula e builder per prove programmate strutturate.
+
+| Export | Firma | Descrizione |
+| --- | --- | --- |
+| `ContextualSchoolEvent` | `interface` | Estende `SchoolMorningEvent` con filtri `subjectFilter`, `severityRange`, `relationRange` |
+| `StructuredScheduledExam` | `interface` | Estende `ScheduledExam` con `title`, `description` e `type?: 'scritto' | 'orale'` |
+| `createScheduledWrittenExam` | `(subject, difficulty, daysUntil) → StructuredScheduledExam` | Builder per compiti scritti programmati |
+| `createScheduledOralExam` | `(subject, difficulty, daysUntil) → StructuredScheduledExam` | Builder per interrogazioni orali programmate |
+| `STRUCTURED_SCHEDULED_EXAMS` | `StructuredScheduledExam[]` | Pool di esempi strutturati, inclusi Storia, Italiano e Scienze orali |
+| `getContextualEvents` | `(subjectKey, teacherSeverita, teacherRelazione) → ContextualSchoolEvent[]` | Filtra il pool contestuale della mattinata scolastica sequenziale |
 
 ---
 

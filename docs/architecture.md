@@ -12,6 +12,7 @@
 - Per garantire remount puliti del pannello mattutino, `SchoolMorningPanel` viene ora renderizzato con keying/Suspense controllata quando `isComplete` cambia.
 - Aggiunta logica di guard per il comando "Avanza fase" (UI + scorciatoia): viene bloccato durante la sequenza mattutina scolastica attiva.
 - Report di analisi codice completo: `docs/ANALISI_CODEBASE_COMPLETA.md` (vedi sezione Documentazione).
+- Le prove programmate supportano ora il discriminante opzionale `type?: 'scritto' | 'orale'` nel flusso `ScheduledExam`; la generazione è centralizzata in `exam-system.ts` con builder strutturati in `school-structured-events.ts`, e `ExamsPanel.tsx` espone il tipo nel pannello UI.
 
 
 ## Indice
@@ -89,14 +90,15 @@ tabboz-simulator-202/
     │   ├── game-utils.ts       # Utility stat, calcoli, probabilità
     │   ├── time-utils.ts       # Calendario, fasi giornata, avanzamento tempo
     │   ├── subjects.ts         # Definizioni materie per indirizzo/anno
-    │   ├── exam-system.ts      # Generazione e valutazione verifiche
+    │   ├── exam-system.ts      # Generazione e valutazione prove scritte/orali
     │   ├── social-system.ts    # Generazione amici/relazioni, probabilità incontri
     │   ├── relation-system.ts  # Sistema relazionale 4 assi (amicizia/romantico/amore/odio)
     │   ├── girlfriend-system.ts# Generazione e gestione fidanzata
     │   ├── enhanced-friend-system.ts # Azioni amicizia avanzate
     │   ├── character-traits.ts # Tratti caratteriali (ispirazione CK3)
     │   ├── school-events.ts    # Eventi scolastici (professore, genitori)
-    │   ├── school-morning-events.ts  # Eventi narrativi mattutini
+    │   ├── school-morning-events.ts  # Eventi narrativi mattutini pre-scuola
+    │   ├── school-structured-events.ts # Eventi contestuali in aula + builder prove strutturate
     │   ├── street-morning-events.ts  # Eventi narrativi mattutini (strada/marina)
     │   ├── afternoon-events.ts # Eventi narrativi pomeridiani
     │   ├── phase-actions.ts    # Azioni disponibili per fase/giorno
@@ -297,14 +299,15 @@ Sono testabili in isolamento e riutilizzabili.
 | `game-utils.ts`               | Utility generiche: clamp, probabilità, calcolo media    |
 | `time-utils.ts`               | Calendario, fasi giornata, avanzamento tempo            |
 | `subjects.ts`                 | Definizioni materie con pesi e disponibilità per indirizzo |
-| `exam-system.ts`              | Generazione e valutazione verifiche/interrogazioni      |
+| `exam-system.ts`              | Generazione e valutazione prove programmate/interrogazioni |
 | `social-system.ts`            | Generazione amici/relazioni, probabilità incontri       |
 | `relation-system.ts`          | Sistema relazionale 4 assi + catalogo interazioni       |
 | `girlfriend-system.ts`        | Generazione e gestione fidanzata                        |
 | `enhanced-friend-system.ts`   | Azioni amicizia avanzate con effetti                    |
 | `character-traits.ts`         | Tratti caratteriali (CK3-style) con bonus/malus         |
 | `school-events.ts`            | Eventi scolastici (professore, genitori, condotta)      |
-| `school-morning-events.ts`    | Eventi narrativi mattutini                              |
+| `school-morning-events.ts`    | Eventi narrativi mattutini pre-scuola                   |
+| `school-structured-events.ts` | Eventi contestuali in aula e builder per prove strutturate |
 | `afternoon-events.ts`         | Eventi narrativi pomeridiani per location               |
 | `phase-actions.ts`            | Mappa azioni disponibili per fase e tipo di giorno      |
 | `bet-system.ts`               | Scommesse e gare motorini con importi dinamici          |

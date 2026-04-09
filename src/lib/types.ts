@@ -24,6 +24,7 @@ export interface ScheduledExam {
   subject: string
   date?: { day: number; month: number; year: number }
   daysUntil?: number
+  type?: 'scritto' | 'orale'
   isPrepared: boolean
   difficulty: ExamDifficulty
   announced?: boolean

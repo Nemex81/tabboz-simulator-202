@@ -481,6 +481,12 @@
 - [x] `aria-live` presente sul blocco informativo del dialog
 - [x] Build TypeScript pulita — zero errori tsc
 
+### STEP 13.6 — Bilanciamento eventi mattina + interrogazioni programmate [x]
+
+- [x] `sm_ritardo_bus` 30→18, `sm_pettegolezzo_al_cancello` 35→20
+- [x] `sm_interrogazione_prevista` rinominato `sm_ansia_interrogazione` (disambiguazione `commonEvents`)
+- [x] `school-structured-events`: tipo `orale|'scritto'` + `createScheduledOralExam()`
+
 ---
 
 ## [x] Audit Accessibilità — 08 Apr 2026

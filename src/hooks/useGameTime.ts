@@ -12,7 +12,7 @@ import {
   DAY_PHASE_CONFIG,
   PHASE_SEQUENCE,
 } from '@/lib/time-utils'
-import { generateScheduledExam, calculateExamGrade, getDifficultyText, getDifficultyAnnouncement } from '@/lib/exam-system'
+import { generateScheduledExam, calculateExamGrade, getDifficultyText, getScheduledExamAnnouncement } from '@/lib/exam-system'
 import { getParentEventByMedia, getConductEvent, getScaledTeacherEvent } from '@/lib/school-events'
 import { calculateMedia, clampStat, getGPASubjectsForYear } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
@@ -275,9 +275,10 @@ export function useGameTime({
             const newDaysUntil = (exam.daysUntil ?? 0) - 1
 
             if (newDaysUntil === 3 && !exam.announced) {
-              const announcementText = getDifficultyAnnouncement(
+              const announcementText = getScheduledExamAnnouncement(
                 getSubjectDisplayName(exam.subject),
-                exam.difficulty
+                exam.difficulty,
+                exam.type
               )
               playSound.eventTrigger()
               announce(announcementText)
@@ -296,9 +297,10 @@ export function useGameTime({
               setRawGameTime((gt) => gt!) // no-op to flush; grade set separately
               // setGrades must be called from outside — return exam data via side effect
               const diffText = getDifficultyText(exam.difficulty)
+              const examLabel = exam.type === 'orale' ? 'INTERROGAZIONE' : 'VERIFICA'
               const resultText = exam.isPrepared
-                ? `VERIFICA ${diffText} di ${getSubjectDisplayName(exam.subject)}! Eri PREPARATO! Voto: ${examGrade.toFixed(1)}`
-                : `VERIFICA ${diffText} di ${getSubjectDisplayName(exam.subject)}! Non eri preparato... Voto: ${examGrade.toFixed(1)}`
+                ? `${examLabel} ${diffText} di ${getSubjectDisplayName(exam.subject)}! Eri PREPARATO! Voto: ${examGrade.toFixed(1)}`
+                : `${examLabel} ${diffText} di ${getSubjectDisplayName(exam.subject)}! Non eri preparato... Voto: ${examGrade.toFixed(1)}`
               announce(resultText)
               return null
             }
@@ -311,8 +313,9 @@ export function useGameTime({
           const examSubjects = getGPASubjectsForYear(st, currentYear).map(s => s.key)
           const subjects = examSubjects.length > 0 ? examSubjects : Object.keys(gradesRef.current)
           const newExam = generateScheduledExam(subjects)
+          const examLabel = newExam.type === 'orale' ? 'INTERROGAZIONE' : 'VERIFICA'
           announce(
-            `NUOVA VERIFICA programmata di ${getSubjectDisplayName(newExam.subject)} tra ${newExam.daysUntil} giorni! Difficoltà: ${getDifficultyText(newExam.difficulty)}`
+            `NUOVA ${examLabel} programmata di ${getSubjectDisplayName(newExam.subject)} tra ${newExam.daysUntil} giorni! Difficoltà: ${getDifficultyText(newExam.difficulty)}`
           )
           return [...updatedExams, newExam]
         }

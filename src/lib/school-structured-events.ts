@@ -7,7 +7,7 @@
 //   - 5 migrati/adattati da school-morning-events.ts
 //   - 13 nuovi specifici per il contesto mattinata sequenziale
 
-import type { GameStats, Friend } from '@/lib/types'
+import type { GameStats, Friend, ExamDifficulty, ScheduledExam } from '@/lib/types'
 import type { SchoolMorningEvent, SchoolMorningChoice } from '@/lib/school-morning-events'
 import { generateSchoolFriend } from '@/lib/enhanced-friend-system'
 
@@ -19,6 +19,53 @@ export interface ContextualSchoolEvent extends SchoolMorningEvent {
   /** [min, max] relazione col professore per attivare l'evento. */
   relationRange?: [number, number]
 }
+
+export interface StructuredScheduledExam extends ScheduledExam {
+  title: string
+  description: string
+  type?: 'scritto' | 'orale'
+}
+
+export function createScheduledWrittenExam(
+  subject: string,
+  difficulty: ExamDifficulty,
+  daysUntil: number
+): StructuredScheduledExam {
+  return {
+    type: 'scritto',
+    subject,
+    daysUntil,
+    isPrepared: false,
+    difficulty,
+    announced: false,
+    title: `Verifica programmata: ${subject}`,
+    description: 'Il prof ha programmato un compito scritto. Hai ancora qualche giorno per prepararti.',
+  }
+}
+
+export function createScheduledOralExam(
+  subject: string,
+  difficulty: ExamDifficulty,
+  daysUntil: number
+): StructuredScheduledExam {
+  return {
+    type: 'orale',
+    subject,
+    daysUntil,
+    isPrepared: false,
+    difficulty,
+    announced: false,
+    title: `Interrogazione programmata: ${subject}`,
+    description: 'Il prof ha comunicato in anticipo che interrogherà oggi. Preparati.',
+  }
+}
+
+export const STRUCTURED_SCHEDULED_EXAMS: StructuredScheduledExam[] = [
+  createScheduledWrittenExam('matematica', 'difficile', 3),
+  createScheduledOralExam('storia', 'normale', 2),
+  createScheduledOralExam('italiano', 'difficile', 4),
+  createScheduledOralExam('scienzeInt', 'normale', 3),
+]
 
 // ─── EVENTI CONTESTUALI ───────────────────────────────────────────────────────
 

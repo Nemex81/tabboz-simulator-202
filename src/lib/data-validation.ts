@@ -230,10 +230,12 @@ export const validateScheduledExams = (exams: unknown): ScheduledExam[] => {
       const difficulty = ['facile', 'normale', 'difficile', 'brutale'].includes(exam.difficulty as string)
         ? (exam.difficulty as 'facile' | 'normale' | 'difficile' | 'brutale')
         : 'normale'
+      const type = exam.type === 'orale' ? 'orale' : 'scritto'
       
       return {
         subject: exam.subject,
         daysUntil: exam.daysUntil,
+        type,
         isPrepared: exam.isPrepared,
         difficulty,
         announced: typeof exam.announced === 'boolean' ? exam.announced : false
@@ -242,6 +244,7 @@ export const validateScheduledExams = (exams: unknown): ScheduledExam[] => {
     return {
       subject: 'matematica',
       daysUntil: 5,
+      type: 'scritto',
       isPrepared: false,
       difficulty: 'normale',
       announced: false

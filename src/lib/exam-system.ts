@@ -1,5 +1,6 @@
 import { ScheduledExam, SubjectGrades, GameStats, ExamDifficulty } from '@/lib/types'
 import { randomChance, clampStat } from '@/lib/game-utils'
+import { createScheduledOralExam, createScheduledWrittenExam } from '@/lib/school-structured-events'
 
 // A3 — Moltiplicatori corretti: brutale ora dà ~1.0 di guadagno netto con int=50 e preparazione
 const DIFFICULTY_MULTIPLIERS: Record<ExamDifficulty, number> = {
@@ -18,14 +19,10 @@ export const generateScheduledExam = (subjects: string[]): ScheduledExam => {
     rand < 0.30 ? 'facile' :
     rand < 0.70 ? 'normale' :
     rand < 0.90 ? 'difficile' : 'brutale'
-  
-  return {
-    subject: randomSubject,
-    daysUntil,
-    isPrepared: false,
-    difficulty,
-    announced: false
-  }
+
+  return Math.random() < 0.35
+    ? createScheduledOralExam(randomSubject, difficulty, daysUntil)
+    : createScheduledWrittenExam(randomSubject, difficulty, daysUntil)
 }
 
 export const getDifficultyMultiplier = (difficulty: ExamDifficulty): number => {
@@ -48,15 +45,29 @@ export const getDifficultyText = (difficulty: ExamDifficulty): string => {
 }
 
 export const getDifficultyAnnouncement = (subject: string, difficulty: ExamDifficulty): string => {
+  return getScheduledExamAnnouncement(subject, difficulty, 'scritto')
+}
+
+export const getScheduledExamTypeText = (type: ScheduledExam['type'] = 'scritto'): string => {
+  return type === 'orale' ? 'ORALE' : 'SCRITTO'
+}
+
+export const getScheduledExamAnnouncement = (
+  subject: string,
+  difficulty: ExamDifficulty,
+  type: ScheduledExam['type'] = 'scritto'
+): string => {
+  const examLabel = type === 'orale' ? 'interrogazione' : 'verifica'
+
   switch (difficulty) {
     case 'facile':
-      return `Il prof di ${subject} ha detto che la verifica sarà una passeggiata. Forse studia un po' per sicurezza.`
+      return `Il prof di ${subject} ha detto che la ${examLabel} sarà una passeggiata. Forse studia un po' per sicurezza.`
     case 'normale':
-      return `Verifica di ${subject} tra 3 giorni. Mettiti sotto.`
+      return `${type === 'orale' ? 'Interrogazione' : 'Verifica'} di ${subject} tra 3 giorni. Mettiti sotto.`
     case 'difficile':
-      return `Il prof di ${subject} ha fatto vedere la verifica a un collega e quello ha pianto. Preparati bene.`
+      return `Il prof di ${subject} ha fatto vedere la ${examLabel} a un collega e quello ha pianto. Preparati bene.`
     case 'brutale':
-      return `Si vocifera che l'ultima volta che il prof di ${subject} ha fatto questa verifica, metà classe è stata bocciata. STUDIA ORA.`
+      return `Si vocifera che l'ultima volta che il prof di ${subject} ha fatto questa ${examLabel}, metà classe è stata bocciata. STUDIA ORA.`
     default:
       return ''
   }
@@ -140,10 +151,11 @@ export const prepareForExam = (exam: ScheduledExam, intelligenza: number): {
 } => {
   const studyEfficiency = 0.5 + (intelligenza / 100)
   const intelligenceGain = Number((2 * studyEfficiency).toFixed(0))
+  const examLabel = exam.type === 'orale' ? 'l\'interrogazione' : 'la verifica'
   
   return {
     newIsPrepared: true,
     intelligenceGain,
-    message: `Hai studiato per la verifica di ${exam.subject}! +${intelligenceGain} Intelligenza, Preparazione al 100%!`
+    message: `Hai studiato per ${examLabel} di ${exam.subject}! +${intelligenceGain} Intelligenza, Preparazione al 100%!`
   }
 }

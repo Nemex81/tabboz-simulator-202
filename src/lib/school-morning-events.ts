@@ -240,7 +240,7 @@ export const SCHOOL_MORNING_EVENTS: SchoolMorningEvent[] = [
     category: 'sociale',
     title: 'Il bus è in ritardo',
     description: 'Il bus scolastico è in ritardo di venti minuti. Siete in dieci ad aspettare alla fermata. Qualcuno ha già tirato fuori il telefono.',
-    probability: 30,
+    probability: 18,
     choices: [
       {
         label: 'Attacco bottone con chi aspetta',
@@ -267,7 +267,7 @@ export const SCHOOL_MORNING_EVENTS: SchoolMorningEvent[] = [
     category: 'sociale',
     title: 'Pettegolezzo bomba prima di entrare',
     description: 'Prima di entrare un compagno ti prende da parte. Ha sentito qualcosa di grosso su qualcuno della classe. Aria di cospirazione.',
-    probability: 35,
+    probability: 20,
     choices: [
       {
         label: 'Ascolto e partecipo',
@@ -437,11 +437,11 @@ export const SCHOOL_MORNING_EVENTS: SchoolMorningEvent[] = [
   },
 
   {
-    id: 'sm_interrogazione_prevista',
+    id: 'sm_ansia_interrogazione',
     category: 'sociale',
-    title: 'Interrogazione annunciata',
-    description: 'Ieri il prof ha detto che oggi interroga. Il gruppo WhatsApp è in ebollizione — tutti si scambiano appunti e panico alle 7:45.',
-    probability: 28,
+    title: 'Ansia pre-interrogazione',
+    description: 'Ieri il prof ha detto che oggi interroga. Sul bus tutti si scambiano appunti e panico. Tu sai di non aver studiato abbastanza.',
+    probability: 15,
     choices: [
       {
         label: 'Rileggo gli appunti veloce sul bus',
