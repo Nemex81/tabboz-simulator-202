@@ -13,7 +13,7 @@ import {
   PHASE_SEQUENCE,
 } from '@/lib/time-utils'
 import { generateScheduledExam, calculateExamGrade, getDifficultyText, getScheduledExamAnnouncement } from '@/lib/exam-system'
-import { getParentEventByMedia, getConductEvent, getScaledTeacherEvent } from '@/lib/school-events'
+import { getParentEventByMedia, getConductEvent } from '@/lib/school-events'
 import { calculateMedia, clampStat, getGPASubjectsForYear } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 import { SchoolEvent } from '@/lib/school-events'
@@ -279,13 +279,6 @@ export function useGameTime({
         if (passed && newGameTime.schoolYear.currentYear === 5) {
           setGameWon(true)
         }
-      }
-
-      if (Math.random() < 0.15 && newGameTime.schoolYear.isSchoolPeriod && st && schoolRecord.wentToSchoolToday) {
-        const media = calculateMedia(gradesRef.current)
-        const teacherEvent = getScaledTeacherEvent(st, media, schoolRecord.condotta)
-        setSchoolEvent(teacherEvent)
-        setShowSchoolEvent(true)
       }
 
       setRawScheduledExams((currentExams) => {

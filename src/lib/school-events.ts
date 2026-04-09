@@ -724,6 +724,30 @@ export const getConductEvent = (condotta: number, note: number = 0): SchoolEvent
   return null
 }
 
+export const createDiscussionInClassEvent = (media: number): SchoolEvent => ({
+  type: 'teacher',
+  tier: 1,
+  title: 'DISCUSSIONE IN CLASSE!',
+  description: `Il prof apre un dibattito. Media: ${media.toFixed(1)}. Vuoi partecipare?`,
+  choices: [
+    {
+      label: 'Intervieni con una buona idea',
+      action: () => ({
+        message: 'Contributo apprezzato! +0.2 al voto, +0.2 Condotta',
+        gradeChanges: { subject: 'random', change: 0.2 },
+        conductChange: 0.2,
+      }),
+    },
+    {
+      label: 'Resta in silenzio',
+      action: () => ({
+        message: 'Nessuna variazione. Il prof non ti nota oggi.',
+        gradeChanges: { subject: 'random', change: 0 },
+      }),
+    },
+  ],
+})
+
 // ─── Tier Eventi Scolastici Scalati (STEP 5) ──────────────────────────────────
 
 export const getScaledTeacherEvent = (schoolType: SchoolType, media: number, condotta: number): SchoolEvent => {
@@ -884,29 +908,6 @@ export const getScaledTeacherEvent = (schoolType: SchoolType, media: number, con
                 }
               }
             },
-          },
-        ],
-      },
-      {
-        type: 'teacher' as const,
-        tier: 1 as const,
-        title: 'DISCUSSIONE IN CLASSE!',
-        description: `Il prof apre un dibattito. Media: ${media.toFixed(1)}. Vuoi partecipare?`,
-        choices: [
-          {
-            label: 'Intervieni con una buona idea',
-            action: () => ({
-              message: 'Contributo apprezzato! +0.2 al voto, +0.2 Condotta',
-              gradeChanges: { subject: 'random', change: 0.2 },
-              conductChange: 0.2,
-            }),
-          },
-          {
-            label: 'Resta in silenzio',
-            action: () => ({
-              message: 'Nessuna variazione. Il prof non ti nota oggi.',
-              gradeChanges: { subject: 'random', change: 0 },
-            }),
           },
         ],
       },

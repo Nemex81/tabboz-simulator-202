@@ -5,7 +5,7 @@
  */
 import { useEffect } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
-import { GameStats, SubjectGrades, SchoolRecord, GameTime } from '@/lib/types'
+import { GameStats, SubjectGrades, SchoolRecord, GameTime, SchoolDayState } from '@/lib/types'
 import type { SchoolEvent } from '@/lib/school-events'
 import { clampStat, calculateMedia } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
@@ -18,6 +18,7 @@ export interface UseSchoolEffectsParams {
   dayType: string | null
   gameTime: GameTime
   schoolRecord: SchoolRecord
+  schoolDayState: SchoolDayState
   grades: SubjectGrades
   stats: GameStats
   gameOver: boolean
@@ -28,8 +29,10 @@ export interface UseSchoolEffectsParams {
   setShowSchoolMorning: SetState<boolean>
   setSchoolMorningEvents: SetState<never[]>
   setMorningChoicePending: SetState<boolean>
+  setSchoolDayState: SetState<SchoolDayState>
   setStats: SetState<GameStats>
   setSchoolEvent: SetState<SchoolEvent | null>
+  showSchoolEvent: boolean
   setShowSchoolEvent: SetState<boolean>
   setGameOver: SetState<boolean>
   setGameOverReason: SetState<string>
@@ -104,4 +107,33 @@ export function useSchoolEffects(p: UseSchoolEffectsParams) {
       playSound.eventTrigger()
     }
   }, [p.schoolRecord.condotta]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (p.currentPhase !== 'mattina' || p.showSchoolEvent || !p.schoolRecord.isAtSchool) return
+    if (p.schoolDayState.isComplete) return
+
+    const currentSlot = p.schoolDayState.slots[p.schoolDayState.currentSlotIndex]
+    if (!currentSlot || currentSlot.type !== 'lesson' || !currentSlot.schoolEvent || currentSlot.schoolEventTriggered) {
+      return
+    }
+
+    p.setSchoolEvent(currentSlot.schoolEvent)
+    p.setShowSchoolEvent(true)
+    p.setSchoolDayState((prev) => ({
+      ...prev,
+      slots: prev.slots.map((slot, index) => (
+        index === prev.currentSlotIndex
+          ? { ...slot, schoolEventTriggered: true }
+          : slot
+      )),
+    }))
+  }, [
+    p.currentPhase,
+    p.showSchoolEvent,
+    p.schoolRecord.isAtSchool,
+    p.schoolDayState,
+    p.setSchoolEvent,
+    p.setShowSchoolEvent,
+    p.setSchoolDayState,
+  ])
 }

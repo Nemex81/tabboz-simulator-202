@@ -9,6 +9,7 @@
 import type { TimetableSlot, Teacher, HourSlot, GameStats } from '@/lib/types'
 import { COMMON_SUBJECTS, SPECIFIC_SUBJECTS } from '@/lib/subjects'
 import { pickTemplate, resolveTemplate } from '@/lib/school-day-templates'
+import { createDiscussionInClassEvent } from '@/lib/school-events'
 import { getContextualEvents } from '@/lib/school-structured-events'
 
 // ─── Mappa rapida key → displayName (costruita una sola volta) ────────────────
@@ -76,6 +77,14 @@ function maybePickStructuredEvent(
   return pool[pool.length - 1]
 }
 
+function pickDiscussionLessonSlot(stats: GameStats): number | null {
+  if (stats.media < 6 || stats.media >= 8) return null
+  if (Math.random() >= 0.15) return null
+
+  const lessonIndices = [0, 1, 2, 4, 5, 6]
+  return lessonIndices[Math.floor(Math.random() * lessonIndices.length)]
+}
+
 // ─── generateSchoolDaySlots ───────────────────────────────────────────────────
 
 /**
@@ -89,7 +98,7 @@ function maybePickStructuredEvent(
 export function generateSchoolDaySlots(
   daySchedule: TimetableSlot[],
   teachers: Teacher[],
-  _stats: GameStats
+  stats: GameStats
 ): HourSlot[] {
   // Mappa rapida teacher id → Teacher
   const teacherMap = new Map<string, Teacher>()
@@ -98,6 +107,7 @@ export function generateSchoolDaySlots(
   }
 
   const slots: HourSlot[] = []
+  const discussionLessonSlot = pickDiscussionLessonSlot(stats)
 
   // Pre-break: ore 1-3  (daySchedule[0,1,2] → HourSlot index 0,1,2)
   for (let i = 0; i < 3; i++) {
@@ -130,6 +140,8 @@ export function generateSchoolDaySlots(
       teacherId: slot.teacherId,
       ordinaryEvent,
       structuredEvent,
+      schoolEvent: discussionLessonSlot === i ? createDiscussionInClassEvent(stats.media) : undefined,
+      schoolEventTriggered: false,
       completed: false,
     })
   }
@@ -175,6 +187,8 @@ export function generateSchoolDaySlots(
       teacherId: slot.teacherId,
       ordinaryEvent,
       structuredEvent,
+      schoolEvent: discussionLessonSlot === 4 + i ? createDiscussionInClassEvent(stats.media) : undefined,
+      schoolEventTriggered: false,
       completed: false,
     })
   }

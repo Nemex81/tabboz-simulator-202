@@ -609,6 +609,8 @@ export interface HourSlot {
   teacherId?: string              // assente per break
   ordinaryEvent: OrdinaryHourEvent
   structuredEvent?: import('@/lib/school-morning-events').SchoolMorningEvent
+  schoolEvent?: import('@/lib/school-events').SchoolEvent
+  schoolEventTriggered?: boolean
   completed: boolean
   playerChoice?: string           // id della scelta fatta (per log)
 }
