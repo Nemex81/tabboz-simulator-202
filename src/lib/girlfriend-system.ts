@@ -5,6 +5,7 @@ import {
   DEFAULT_SEXUAL_ORIENTATION,
   getPartnerAdjective,
   getPartnerObjectPronoun,
+  normalizeRelationshipCandidate,
 } from '@/lib/gender-utils'
 
 export type AspettoType = 'carina' | 'bellissima' | 'normale' | 'alternativa'
@@ -62,6 +63,7 @@ export interface Ragazza {
 
 interface GenerateRomanticPartnerOptions {
   targetGender?: BinaryGenderCode
+  targetOrientation?: SexualOrientation
 }
 
 const NOMI_FEMMINILI = [
@@ -107,6 +109,7 @@ export const generateRandomGirlfriend = (
   options: GenerateRomanticPartnerOptions = {}
 ): Ragazza => {
   const targetGender = options.targetGender ?? 'F'
+  const targetOrientation = options.targetOrientation ?? DEFAULT_SEXUAL_ORIENTATION
   const namePool = targetGender === 'M' ? NOMI_MASCHILI : NOMI_FEMMINILI
   const nome = namePool[Math.floor(Math.random() * namePool.length)]
   const cognome = COGNOMI[Math.floor(Math.random() * COGNOMI.length)]
@@ -157,7 +160,7 @@ export const generateRandomGirlfriend = (
     nome,
     cognome,
     gender: targetGender,
-    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
+    orientamentoSessuale: targetOrientation,
     eta,
     classe: `${anno}${sezione}`,
     aspetto,
@@ -190,15 +193,18 @@ export const generateRandomGirlfriend = (
  * Il nome viene estratto dalla relationship; gli attributi sono parzialmente derivati dalla difficoltà/preferenza.
  */
 export const generateGirlfriendFromRelationship = (r: Relationship, currentDateString: string): Ragazza => {
-  const parts = r.name.trim().split(' ')
-  const nome = parts[0] ?? r.name
+  const normalizedRelationship = normalizeRelationshipCandidate(r)
+  const normalizedGender = normalizedRelationship.gender ?? 'F'
+  const normalizedOrientation = normalizedRelationship.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION
+  const parts = normalizedRelationship.name.trim().split(' ')
+  const nome = parts[0] ?? normalizedRelationship.name
   const cognome = parts.slice(1).join(' ') || COGNOMI[Math.floor(Math.random() * COGNOMI.length)]
 
   // Mappa preferenza → statPreferita
   const statPreferita: 'figosita' | 'muscoli' | 'intelligenza' | 'carisma' =
-    r.preference === 'figosita' ? 'figosita'
-    : r.preference === 'muscoli' ? 'muscoli'
-    : r.preference === 'intelligenza' ? 'intelligenza'
+    normalizedRelationship.preference === 'figosita' ? 'figosita'
+    : normalizedRelationship.preference === 'muscoli' ? 'muscoli'
+    : normalizedRelationship.preference === 'intelligenza' ? 'intelligenza'
     : 'carisma'
 
   // Mappa difficoltà → aspetto e soglie
@@ -207,7 +213,7 @@ export const generateGirlfriendFromRelationship = (r: Relationship, currentDateS
     media: 'carina',
     difficile: 'bellissima',
   }
-  const aspetto = aspettoMap[r.difficulty]
+  const aspetto = aspettoMap[normalizedRelationship.difficulty]
 
   let figositaRichiesta = aspetto === 'bellissima' ? 70 : aspetto === 'carina' ? 50 : 40
   let statusSociale = aspetto === 'bellissima' ? 80 : aspetto === 'carina' ? 60 : 50
@@ -227,11 +233,11 @@ export const generateGirlfriendFromRelationship = (r: Relationship, currentDateS
   const sezione = String.fromCharCode(65 + Math.floor(Math.random() * 5))
 
   return {
-    id: `girl_rel_${r.id}_${Date.now()}`,
+    id: `girl_rel_${normalizedRelationship.id}_${Date.now()}`,
     nome,
     cognome,
-    gender: r.gender ?? 'F',
-    orientamentoSessuale: r.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
+    gender: normalizedGender,
+    orientamentoSessuale: normalizedOrientation,
     eta,
     classe: `${anno}${sezione}`,
     aspetto,

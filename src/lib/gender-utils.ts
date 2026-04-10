@@ -21,6 +21,8 @@ function normalizeRelationshipMetAt(metAt: Relationship['metAt'] | 'rete' | 'in 
 
 export const DEFAULT_SEXUAL_ORIENTATION: SexualOrientation = 'eterosessuale'
 
+export const MAX_RELATIONSHIPS_REACHED_MESSAGE = 'Hai già troppe relazioni in corso! Aumenta il tuo Carisma per gestirne di più.'
+
 const SELF_WORD_REPLACEMENTS: Array<[string, string]> = [
   ['stanco', 'stanca'],
   ['distrutto', 'distrutta'],
@@ -183,6 +185,10 @@ export function isRomanticallyCompatible(
   candidateGender: BinaryGenderCode,
   candidateOrientation: SexualOrientation = DEFAULT_SEXUAL_ORIENTATION,
 ): boolean {
+  if (playerOrientation === 'asessuale') {
+    return false
+  }
+
   const preferredGender = getPreferredPartnerGender(playerGender, playerOrientation)
   if (preferredGender && candidateGender !== preferredGender) {
     return false
@@ -199,6 +205,54 @@ export function isRomanticallyCompatible(
   }
 
   return candidateOrientation !== 'asessuale'
+}
+
+export function getRandomSupportedPartnerGender(): BinaryGenderCode {
+  return Math.random() < 0.5 ? 'F' : 'M'
+}
+
+export function getCompatibleCandidateOrientation(
+  playerGender: NarrativePlayerGender,
+  playerOrientation: SexualOrientation,
+  candidateGender: BinaryGenderCode,
+): SexualOrientation {
+  if (playerOrientation === 'asessuale') {
+    return DEFAULT_SEXUAL_ORIENTATION
+  }
+
+  if (playerOrientation === 'eterosessuale') {
+    return candidateGender === 'M' ? 'eterosessuale' : 'eterosessuale'
+  }
+
+  if (playerOrientation === 'omosessuale') {
+    return candidateGender === 'M' ? 'omosessuale' : 'omosessuale'
+  }
+
+  return DEFAULT_SEXUAL_ORIENTATION
+}
+
+export function getPreferredPartnerGenderOrRandom(
+  playerGender: NarrativePlayerGender,
+  orientation: SexualOrientation = DEFAULT_SEXUAL_ORIENTATION,
+): BinaryGenderCode {
+  return getPreferredPartnerGender(playerGender, orientation) ?? getRandomSupportedPartnerGender()
+}
+
+export function calcMaxRelazioni(stats: { carisma: number; figosita: number; intelligenza: number }): number {
+  return 1
+    + Math.floor(stats.carisma / 30)
+    + Math.floor((stats.figosita + stats.intelligenza) / 80)
+}
+
+export function countActiveRomanticRelationships(relationships: Array<Pick<Relationship, 'isActive'>>): number {
+  return relationships.filter((relationship) => relationship.isActive).length
+}
+
+export function canStartNewRomanticRelationship(
+  stats: { carisma: number; figosita: number; intelligenza: number },
+  relationships: Array<Pick<Relationship, 'isActive'>>,
+): boolean {
+  return countActiveRomanticRelationships(relationships) < calcMaxRelazioni(stats)
 }
 
 export function getVisibleRelationshipTierLabel(

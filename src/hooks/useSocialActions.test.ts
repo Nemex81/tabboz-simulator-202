@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Relationship } from '@/lib/types'
+import { MAX_RELATIONSHIPS_REACHED_MESSAGE } from '@/lib/gender-utils'
 import { useSocialActions } from './useSocialActions'
 
 type UseSocialActionsParams = Parameters<typeof useSocialActions>[0]
@@ -40,7 +41,7 @@ vi.mock('@/lib/game-utils', async () => {
   }
 })
 
-function makeRelationship(): Relationship {
+function makeRelationship(overrides: Partial<Relationship> = {}): Relationship {
   return {
     id: 'rel-1',
     name: 'Jessica',
@@ -51,6 +52,7 @@ function makeRelationship(): Relationship {
     preference: 'figosita',
     relationshipLevel: 0,
     isActive: false,
+    ...overrides,
   }
 }
 
@@ -169,6 +171,40 @@ describe('useSocialActions handleTryRelationship', () => {
     const updatedRelationships = updater([makeRelationship()])
     expect(updatedRelationships[0]).toMatchObject({ isActive: true, relationshipLevel: 1 })
     expect(sharedSetGirlfriend).toHaveBeenCalledWith(generatedGirlfriend)
+  })
+
+  it('blocca un nuovo partner attivo quando il cap delle relazioni e gia raggiunto', () => {
+    const setRelationships = vi.fn()
+    const setGirlfriend = vi.fn()
+    const announce = vi.fn()
+    const consumeAction = vi.fn()
+    const activeRelationships = [
+      makeRelationship({ id: 'rel-a', sourceKey: 'relationship:rel-a', isActive: true, relationshipLevel: 1 }),
+      makeRelationship({ id: 'rel-b', name: 'Valentina', sourceKey: 'relationship:rel-b', isActive: true, relationshipLevel: 1 }),
+      makeRelationship({ id: 'rel-c', name: 'Deborah', sourceKey: 'relationship:rel-c', isActive: true, relationshipLevel: 1 }),
+      makeRelationship({ id: 'rel-d', name: 'Melissa', sourceKey: 'relationship:rel-d', isActive: true, relationshipLevel: 1 }),
+      makeRelationship({ id: 'rel-e', name: 'Jennifer', sourceKey: 'relationship:rel-e', isActive: true, relationshipLevel: 1 }),
+    ]
+
+    const { result } = renderHook(() => useSocialActions(makeParams([
+      ...activeRelationships,
+      makeRelationship({ id: 'rel-2', name: 'Valentina', sourceKey: 'relationship:rel-2' }),
+    ], {
+      setRelationships,
+      setGirlfriend,
+      announce,
+      consumeAction,
+      setStats: vi.fn(),
+    })))
+
+    act(() => {
+      result.current.handleTryRelationship('rel-2')
+    })
+
+    expect(setRelationships).not.toHaveBeenCalled()
+    expect(setGirlfriend).not.toHaveBeenCalled()
+    expect(consumeAction).not.toHaveBeenCalled()
+    expect(announce).toHaveBeenCalledWith(MAX_RELATIONSHIPS_REACHED_MESSAGE, 'assertive')
   })
 })
 

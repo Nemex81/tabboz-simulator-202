@@ -22,6 +22,7 @@ import { applyFriendActionEffects, FRIEND_ACTIONS } from '@/lib/enhanced-friend-
 import { calculateRelationshipSuccess } from '@/lib/relationship-utils'
 import { Ragazza, generateGirlfriendFromRelationship } from '@/lib/girlfriend-system'
 import { playSound } from '@/lib/sound-effects'
+import { canStartNewRomanticRelationship, MAX_RELATIONSHIPS_REACHED_MESSAGE } from '@/lib/gender-utils'
 
 interface UseSocialActionsParams {
   stats: GameStats
@@ -258,6 +259,11 @@ export function useSocialActions({
     if (s.soldi < 80) {
       playSound.failure()
       announce('Servono 80€ per uscire!', 'assertive')
+      return
+    }
+    if (!canStartNewRomanticRelationship(s, relationshipsRef.current)) {
+      playSound.failure()
+      announce(MAX_RELATIONSHIPS_REACHED_MESSAGE, 'assertive')
       return
     }
     const relationship = relationshipsRef.current.find(r => r.id === relationshipId)

@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Friend, GameStats, Relationship } from '@/lib/types'
+import { MAX_RELATIONSHIPS_REACHED_MESSAGE } from '@/lib/gender-utils'
 import { useEventEngine } from './useEventEngine'
 
 const hookMocks = vi.hoisted(() => ({
@@ -177,6 +178,60 @@ describe('useEventEngine romantic flow', () => {
     expect(updatedRelationships[0].sourceKey).toMatch(/^direct-girlfriend:/)
     expect(updatedRelationships[0].name.length).toBeGreaterThan(0)
     expect(params.setGirlfriend).toHaveBeenCalledWith(generatedGirlfriend)
+  })
+
+  it('genera un partner compatibile con l orientamento del giocatore nel flusso pickup', () => {
+    const params = makeParams({
+      playerProfile: { name: 'Tabboz', gender: 'maschio', orientamentoSessuale: 'omosessuale' },
+    })
+    hookMocks.generateGirlfriendFromRelationship.mockReturnValue({ id: 'girl-4', nome: 'Davide', cognome: 'Blu', relationshipStatus: 'fidanzata' })
+    hookMocks.randomChance.mockReturnValue(true)
+
+    const randomSpy = vi.spyOn(Math, 'random')
+    randomSpy.mockReturnValue(0)
+
+    const { result } = renderHook(() => useEventEngine(params))
+
+    act(() => {
+      result.current.handleProvarciConAtipa()
+    })
+
+    act(() => {
+      result.current.handleAtipaProva()
+    })
+
+    const relationshipsMock = params.setRelationships as ReturnType<typeof vi.fn>
+    const relationshipsUpdater = relationshipsMock.mock.calls[0][0] as (prev: Relationship[]) => Relationship[]
+    const updatedRelationships = relationshipsUpdater([])
+    expect(updatedRelationships[0]).toMatchObject({ gender: 'M', orientamentoSessuale: 'omosessuale' })
+  })
+
+  it('blocca la generazione di nuove relazioni automatiche quando il cap attivo e raggiunto', () => {
+    const params = makeParams({
+      stats: makeStats({ carisma: 0, figosita: 0, intelligenza: 0 }),
+      relationships: [{
+        id: 'rel-active',
+        name: 'Jessica',
+        sourceKey: 'relationship:active',
+        sourceType: 'generated_interest',
+        gender: 'F',
+        difficulty: 'media',
+        preference: 'figosita',
+        relationshipLevel: 1,
+        isActive: true,
+      }],
+    })
+    hookMocks.randomChance.mockReturnValue(true)
+
+    const { result } = renderHook(() => useEventEngine(params))
+
+    act(() => {
+      result.current.checkForNewGirlfriend('quartiere')
+    })
+
+    expect(params.setRelationships).not.toHaveBeenCalled()
+    expect(params.setGirlfriend).not.toHaveBeenCalled()
+    expect(params.announce).toHaveBeenCalledWith(MAX_RELATIONSHIPS_REACHED_MESSAGE, 'assertive')
   })
 
   it('assegna il contesto online ai nuovi interessi romantici generati in rete', () => {

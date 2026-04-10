@@ -8,3 +8,5 @@
 - [x] Cleanup - Ripulire il typecheck globale del repository
 - [x] Cleanup - Aggiungere test UI per RelationshipsPanel
 - [x] Cleanup - Rinominare le label sociali di quartiere in UI, handler, test e registry azioni
+- [x] Bugfix - Bloccare partner automatici incompatibili con orientamento e gender del giocatore
+- [x] Feature - Introdurre limite massimo di relazioni romantiche attive basato sulle statistiche

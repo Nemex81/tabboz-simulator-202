@@ -24,6 +24,7 @@ export const MALE_PARTNER_NAMES = [
 export const generateRandomRelationship = (
   targetGender: BinaryGenderCode = 'F',
   metAt?: Relationship['metAt'],
+  targetOrientation = DEFAULT_SEXUAL_ORIENTATION,
 ): Relationship => {
   const namePool = targetGender === 'M' ? MALE_PARTNER_NAMES : FEMALE_PARTNER_NAMES
   const name = namePool[Math.floor(Math.random() * namePool.length)]
@@ -40,7 +41,7 @@ export const generateRandomRelationship = (
     sourceType: 'generated_interest',
     metAt,
     gender: targetGender,
-    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
+    orientamentoSessuale: targetOrientation,
     difficulty,
     preference,
     relationshipLevel: 0,

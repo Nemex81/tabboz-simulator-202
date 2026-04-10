@@ -115,3 +115,19 @@
   - rinomina label utente da attività parco a quartiere
   - rinomina label romantica da rimorchio generico alla nuova azione nel quartiere
   - allineamento di help text, log e testi di supporto
+
+## Compatibilità romantica e limite relazioni
+
+- Stato: done
+- File:
+  - src/lib/gender-utils.ts
+  - src/lib/girlfriend-system.ts
+  - src/hooks/useEventEngine.ts
+  - src/hooks/useSocialActions.ts
+  - src/hooks/useEventEngine.test.ts
+  - src/hooks/useSocialActions.test.ts
+- Tipo modifica:
+  - enforcement compatibilità gender/orientamento nei flussi romantici automatici
+  - introduzione formula `calcMaxRelazioni(stats)` e guard sui partner attivi
+  - allineamento della generazione partner da `Relationship` normalizzata
+  - copertura test per casi bloccati e casi consentiti

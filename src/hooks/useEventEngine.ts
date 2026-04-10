@@ -7,13 +7,24 @@ import {
   getReputationEventModifier,
   canAvoidNegativeEventWithCharisma
 } from '@/lib/game-utils'
-import { createRelationshipSourceKey, generateRandomRelationship } from '@/lib/relationship-utils'
+import {
+  createRelationshipSourceKey,
+  FEMALE_PARTNER_NAMES,
+  generateRandomRelationship,
+  MALE_PARTNER_NAMES,
+} from '@/lib/relationship-utils'
 import { generateExtraFriend } from '@/lib/enhanced-friend-system'
 import { getFriendGenChance, LOCATION_PROB_BONUS } from '@/lib/relation-system'
 import { playSound } from '@/lib/sound-effects'
 import { getAfternoonEvent, AfternoonLocation, AfternoonEvent } from '@/lib/afternoon-events'
 import { BetInfo, generateStreetRace } from '@/lib/bet-system'
-import { getPreferredPartnerGender } from '@/lib/gender-utils'
+import {
+  canStartNewRomanticRelationship,
+  getCompatibleCandidateOrientation,
+  getPreferredPartnerGenderOrRandom,
+  isRomanticallyCompatible,
+  MAX_RELATIONSHIPS_REACHED_MESSAGE,
+} from '@/lib/gender-utils'
 
 const LOCATION_NORMALIZATION: Record<string, keyof typeof LOCATION_PROB_BONUS> = {
   quartiere: 'quartiere',
@@ -47,6 +58,7 @@ function buildPickupRelationship(
   gender: Relationship['gender'],
   sourceKey: string,
   metAt?: Relationship['metAt'],
+  orientamentoSessuale?: Relationship['orientamentoSessuale'],
   preference: Relationship['preference'] = 'figosita',
   difficulty: Relationship['difficulty'] = 'media',
 ): Relationship {
@@ -57,6 +69,7 @@ function buildPickupRelationship(
     sourceType: 'pickup',
     metAt,
     gender,
+    orientamentoSessuale,
     difficulty,
     preference,
     relationshipLevel: 1,
@@ -109,6 +122,8 @@ export function useEventEngine({
   const [showMetallariEvent, setShowMetallariEvent] = useState(false)
   const [showAtipaEvent, setShowAtipaEvent] = useState(false)
   const [atipaName, setAtipaName] = useState('')
+  const [atipaGender, setAtipaGender] = useState<Relationship['gender']>('F')
+  const [atipaOrientation, setAtipaOrientation] = useState<Relationship['orientamentoSessuale']>('eterosessuale')
   const [atipaEncounterKey, setAtipaEncounterKey] = useState('')
   const [atipaSuccessChance, setAtipaSuccessChance] = useState(0)
   const [showPoliceEvent, setShowPoliceEvent] = useState(false)
@@ -134,6 +149,10 @@ export function useEventEngine({
   raceWinChanceRef.current = raceWinChance
   const atipaNameRef = useRef(atipaName)
   atipaNameRef.current = atipaName
+  const atipaGenderRef = useRef(atipaGender)
+  atipaGenderRef.current = atipaGender
+  const atipaOrientationRef = useRef(atipaOrientation)
+  atipaOrientationRef.current = atipaOrientation
   const atipaEncounterKeyRef = useRef(atipaEncounterKey)
   atipaEncounterKeyRef.current = atipaEncounterKey
   const atipaSuccessChanceRef = useRef(atipaSuccessChance)
@@ -219,11 +238,14 @@ export function useEventEngine({
   const checkForNewRelationship = useCallback((metAt?: Relationship['metAt']) => {
     if (relationshipsRef.current.length < 6 && randomChance(20)) {
       const currentPlayer = playerProfileRef.current
-      const targetGender = getPreferredPartnerGender(
-        currentPlayer?.gender ?? 'maschio',
-        currentPlayer?.orientamentoSessuale ?? 'eterosessuale',
-      ) ?? 'F'
-      const newRelationship = generateRandomRelationship(targetGender, metAt)
+      const playerGender = currentPlayer?.gender ?? 'maschio'
+      const playerOrientation = currentPlayer?.orientamentoSessuale ?? 'eterosessuale'
+      const targetGender = getPreferredPartnerGenderOrRandom(playerGender, playerOrientation)
+      const targetOrientation = getCompatibleCandidateOrientation(playerGender, playerOrientation, targetGender)
+      if (!isRomanticallyCompatible(playerGender, playerOrientation, targetGender, targetOrientation)) {
+        return
+      }
+      const newRelationship = generateRandomRelationship(targetGender, metAt, targetOrientation)
       upsertRelationship(newRelationship)
       playSound.eventTrigger()
       announce(`Hai notato ${newRelationship.name}! Nuovo interesse romantico disponibile.`)
@@ -231,15 +253,21 @@ export function useEventEngine({
   }, [announce, upsertRelationship])
 
   const checkForNewGirlfriend = useCallback((metAt?: Relationship['metAt']) => {
-    if (girlfriendRef.current) return
+    if (!canStartNewRomanticRelationship(statsRef.current, relationshipsRef.current)) {
+      announce(MAX_RELATIONSHIPS_REACHED_MESSAGE, 'assertive')
+      return
+    }
     if (randomChance(10)) {
       const currentPlayer = playerProfileRef.current
-      const targetGender = getPreferredPartnerGender(
-        currentPlayer?.gender ?? 'maschio',
-        currentPlayer?.orientamentoSessuale ?? 'eterosessuale',
-      ) ?? 'F'
+      const playerGender = currentPlayer?.gender ?? 'maschio'
+      const playerOrientation = currentPlayer?.orientamentoSessuale ?? 'eterosessuale'
+      const targetGender = getPreferredPartnerGenderOrRandom(playerGender, playerOrientation)
+      const targetOrientation = getCompatibleCandidateOrientation(playerGender, playerOrientation, targetGender)
+      if (!isRomanticallyCompatible(playerGender, playerOrientation, targetGender, targetOrientation)) {
+        return
+      }
       const newRelationship = {
-        ...generateRandomRelationship(targetGender, metAt),
+        ...generateRandomRelationship(targetGender, metAt, targetOrientation),
         sourceKey: createRelationshipSourceKey('direct-girlfriend'),
         sourceType: 'direct_girlfriend' as const,
         relationshipLevel: 1,
@@ -485,12 +513,29 @@ export function useEventEngine({
       announce('Nessuna azione rimasta per questa fascia oraria!', 'assertive')
       return
     }
+    if (!canStartNewRomanticRelationship(statsRef.current, relationshipsRef.current)) {
+      playSound.failure()
+      announce(MAX_RELATIONSHIPS_REACHED_MESSAGE, 'assertive')
+      return
+    }
     const s = statsRef.current
+    const currentPlayer = playerProfileRef.current
+    const playerGender = currentPlayer?.gender ?? 'maschio'
+    const playerOrientation = currentPlayer?.orientamentoSessuale ?? 'eterosessuale'
+    const targetGender = getPreferredPartnerGenderOrRandom(playerGender, playerOrientation)
+    const targetOrientation = getCompatibleCandidateOrientation(playerGender, playerOrientation, targetGender)
+    if (!isRomanticallyCompatible(playerGender, playerOrientation, targetGender, targetOrientation)) {
+      playSound.failure()
+      announce('Non trovi nessuno compatibile in questo momento.', 'assertive')
+      return
+    }
     playSound.buttonClick()
     playSound.eventTrigger()
-    const names = ['Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer']
+    const names = targetGender === 'M' ? MALE_PARTNER_NAMES : FEMALE_PARTNER_NAMES
     const randomName = names[Math.floor(Math.random() * names.length)]
     setAtipaName(randomName)
+    setAtipaGender(targetGender)
+    setAtipaOrientation(targetOrientation)
 
     const reputationModifier = getReputationEventModifier(s.reputazione)
     const successChance = Math.min(90, Math.max(10,
@@ -522,12 +567,31 @@ export function useEventEngine({
     setShowAtipaEvent(false)
     const name = atipaNameRef.current
     if (randomChance(atipaSuccessChanceRef.current)) {
+      if (!canStartNewRomanticRelationship(statsRef.current, relationshipsRef.current)) {
+        playSound.failure()
+        announce(MAX_RELATIONSHIPS_REACHED_MESSAGE, 'assertive')
+        return
+      }
       const newRelationship = buildPickupRelationship(
         name,
-        'F',
+        atipaGenderRef.current,
         atipaEncounterKeyRef.current || `pickup:fallback:${name}`,
         'quartiere',
+        atipaOrientationRef.current,
       )
+      const currentPlayer = playerProfileRef.current
+      const playerGender = currentPlayer?.gender ?? 'maschio'
+      const playerOrientation = currentPlayer?.orientamentoSessuale ?? 'eterosessuale'
+      if (!isRomanticallyCompatible(
+        playerGender,
+        playerOrientation,
+        newRelationship.gender ?? 'F',
+        newRelationship.orientamentoSessuale ?? 'eterosessuale',
+      )) {
+        playSound.failure()
+        announce('Questa persona non e compatibile con il tuo orientamento.', 'assertive')
+        return
+      }
       const currentDate = gameTimeRef.current.currentDate
       const currentDateString = `${currentDate.day}/${currentDate.month}/${currentDate.year}`
 
