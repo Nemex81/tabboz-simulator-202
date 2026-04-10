@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "project": "tabboz-simulator-202",
+  "generated_at": "2026-04-11T00:00:00Z",
+  "installed_packages": [
+    {
+      "id": "scf-master-codecrafter",
+      "version": "1.0.0",
+      "engine_min_version": "1.5.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "source": "github:Nemex81/scf-master-codecrafter@v1.0.0",
+      "files": [
+        ".github/AGENTS.md",
+        ".github/copilot-instructions.md",
+        ".github/project-profile.md",
+        ".github/agents/Agent-Orchestrator.md",
+        ".github/agents/Agent-Git.md",
+        ".github/agents/Agent-Helper.md",
+        ".github/agents/Agent-Release.md",
+        ".github/agents/Agent-FrameworkDocs.md",
+        ".github/agents/Agent-Welcome.md",
+        ".github/agents/Agent-Research.md",
+        ".github/agents/Agent-CodeRouter.md",
+        ".github/agents/Agent-Analyze.md",
+        ".github/agents/Agent-Design.md",
+        ".github/agents/Agent-Plan.md",
+        ".github/agents/Agent-Docs.md",
+        ".github/agents/Agent-CodeUI.md",
+        ".github/instructions/framework-guard.instructions.md",
+        ".github/instructions/git-policy.instructions.md",
+        ".github/instructions/model-policy.instructions.md",
+        ".github/instructions/personality.instructions.md",
+        ".github/instructions/verbosity.instructions.md",
+        ".github/instructions/workflow-standard.instructions.md",
+        ".github/skills/accessibility-output.skill.md",
+        ".github/skills/agent-selector.skill.md",
+        ".github/skills/code-routing.skill.md",
+        ".github/skills/conventional-commit.skill.md",
+        ".github/skills/document-template.skill.md",
+        ".github/skills/file-deletion-guard.skill.md",
+        ".github/skills/framework-guard.skill.md",
+        ".github/skills/framework-scope-guard.skill.md",
+        ".github/skills/git-execution.skill.md",
+        ".github/skills/personality.skill.md",
+        ".github/skills/project-profile.skill.md",
+        ".github/skills/project-reset.skill.md",
+        ".github/skills/rollback-procedure.skill.md",
+        ".github/skills/semantic-gate.skill.md",
+        ".github/skills/semver-bump.skill.md",
+        ".github/skills/style-setup.skill.md",
+        ".github/skills/task-scope-guard.skill.md",
+        ".github/skills/changelog-entry/SKILL.md",
+        ".github/skills/clean-architecture/SKILL.md",
+        ".github/skills/docs-manager/SKILL.md",
+        ".github/skills/error-recovery/SKILL.md",
+        ".github/skills/framework-index/SKILL.md",
+        ".github/skills/framework-query/SKILL.md",
+        ".github/skills/project-doc-bootstrap/SKILL.md",
+        ".github/skills/validate-accessibility/SKILL.md"
+      ],
+      "naming_notes": "Agent-Research.md non ancora presente in tabboz — vedere anomalia A3"
+    },
+    {
+      "id": "scf-pycode-crafter",
+      "version": "2.0.0",
+      "engine_min_version": "1.5.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "source": "github:Nemex81/scf-pycode-crafter@v2.0.0",
+      "files": [
+        ".github/AGENTS-python.md",
+        ".github/agents/Agent-Code.md",
+        ".github/agents/Agent-Validate.md"
+      ],
+      "naming_notes": "Agent-Code.md e Agent-Validate.md corrispondono a py-Agent-Code.md e py-Agent-Validate.md del package. Naming locale senza prefisso py- per compatibilità con routing tabboz pre-convenzione. NON rinominare senza aggiornare tutti i riferimenti interni."
+    }
+  ],
+  "untracked_files": [
+    {
+      "path": ".github/agents/Agent-Code.md",
+      "note": "mapping: scf-pycode-crafter/py-Agent-Code.md — naming divergente documentato"
+    },
+    {
+      "path": ".github/agents/Agent-Validate.md",
+      "note": "mapping: scf-pycode-crafter/py-Agent-Validate.md — naming divergente documentato"
+    }
+  ]
+}
