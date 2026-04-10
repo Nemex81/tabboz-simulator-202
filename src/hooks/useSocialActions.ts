@@ -20,7 +20,7 @@ import {
 import { ECONOMY } from '@/lib/game-balance.constants'
 import { applyFriendActionEffects, FRIEND_ACTIONS } from '@/lib/enhanced-friend-system'
 import { calculateRelationshipSuccess } from '@/lib/relationship-utils'
-import { Ragazza, generateGirlfriendFromRelationship } from '@/lib/girlfriend-system'
+import { ActivePartner, asActivePartner, generateGirlfriendFromRelationship, upsertActivePartnerCollection } from '@/lib/girlfriend-system'
 import { playSound } from '@/lib/sound-effects'
 import { canStartNewRomanticRelationship, MAX_RELATIONSHIPS_REACHED_MESSAGE } from '@/lib/gender-utils'
 
@@ -32,7 +32,7 @@ interface UseSocialActionsParams {
   setFriends: (updater: ((prev: Friend[]) => Friend[]) | Friend[]) => void
   relationships: Relationship[]
   setRelationships: (updater: ((prev: Relationship[]) => Relationship[]) | Relationship[]) => void
-  setGirlfriend: (v: Ragazza | null | ((prev: Ragazza | null) => Ragazza | null)) => void
+  setActivePartners: React.Dispatch<React.SetStateAction<ActivePartner[]>>
   consumeAction: () => void
   consumeInterazione: () => void
   announce: (msg: string, priority?: 'polite' | 'assertive') => void
@@ -68,7 +68,7 @@ export function useSocialActions({
   setFriends,
   relationships,
   setRelationships,
-  setGirlfriend,
+  setActivePartners,
   consumeAction,
   consumeInterazione,
   announce,
@@ -102,6 +102,10 @@ export function useSocialActions({
   dayTypeRef.current = dayType
   const marinatoOggiRef = useRef(marinatoOggi)
   marinatoOggiRef.current = marinatoOggi
+
+  const upsertActivePartner = useCallback((partner: ActivePartner) => {
+    setActivePartners((current) => upsertActivePartnerCollection(current, partner))
+  }, [setActivePartners])
 
   const handleDisco = useCallback(() => {
     const gt = gameTimeRef.current
@@ -287,7 +291,7 @@ export function useSocialActions({
       const gt = gameTimeRef.current
       const dateString = `${gt.currentDate.day}/${gt.currentDate.month}/${gt.currentDate.year}`
       const newGirlfriend = generateGirlfriendFromRelationship(relationship, dateString)
-      setGirlfriend(newGirlfriend)
+      upsertActivePartner(asActivePartner(newGirlfriend, relationship.sourceKey ?? `legacy-partner:${relationship.id}`))
       consumeAction()
       announce(`${relationship.name} ha detto SÌ! Siete INSIEME! +30 Figosità, +15 Carisma`)
       addLogEntry('social', `${relationship.name} ha detto sì!`, `${relationship.name} ha detto SÌ! Siete INSIEME! +30 Figosità, +15 Carisma`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
@@ -303,7 +307,7 @@ export function useSocialActions({
       announce(`${relationship.name} ti ha dato il PALO! RIFIUTATO! -20 Figosità, -10 Carisma, -40 Soldi`)
       addLogEntry('social', `Palo da ${relationship.name}`, `${relationship.name} ti ha dato il PALO! RIFIUTATO! -20 Figosità, -10 Carisma, -40 Soldi`, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
-  }, [setRelationships, setStats, setGirlfriend, consumeAction, announce, addLogEntry])
+  }, [setRelationships, setStats, upsertActivePartner, consumeAction, announce, addLogEntry])
 
   // A8 — Nuove azioni sociali gratuite
   // B1-FIX-5 applicato

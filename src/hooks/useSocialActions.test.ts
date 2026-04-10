@@ -61,7 +61,7 @@ function makeParams(
   overrides: Partial<{
     setStats: ReturnType<typeof vi.fn>
     setRelationships: ReturnType<typeof vi.fn>
-    setGirlfriend: ReturnType<typeof vi.fn>
+    setActivePartners: ReturnType<typeof vi.fn>
     consumeAction: ReturnType<typeof vi.fn>
     consumeInterazione: ReturnType<typeof vi.fn>
     announce: ReturnType<typeof vi.fn>
@@ -108,7 +108,7 @@ function makeParams(
     setFriends: vi.fn() as unknown as UseSocialActionsParams['setFriends'],
     relationships,
     setRelationships: (overrides.setRelationships ?? vi.fn()) as unknown as UseSocialActionsParams['setRelationships'],
-    setGirlfriend: (overrides.setGirlfriend ?? vi.fn()) as unknown as UseSocialActionsParams['setGirlfriend'],
+    setActivePartners: (overrides.setActivePartners ?? vi.fn()) as unknown as UseSocialActionsParams['setActivePartners'],
     consumeAction: (overrides.consumeAction ?? vi.fn()) as unknown as UseSocialActionsParams['consumeAction'],
     consumeInterazione: (overrides.consumeInterazione ?? vi.fn()) as unknown as UseSocialActionsParams['consumeInterazione'],
     announce: (overrides.announce ?? vi.fn()) as unknown as UseSocialActionsParams['announce'],
@@ -136,7 +136,7 @@ afterEach(() => {
 describe('useSocialActions handleTryRelationship', () => {
   it('usa la lista relazioni aggiornata anche se viene invocato un handler creato prima del rerender', () => {
     const sharedSetRelationships = vi.fn()
-    const sharedSetGirlfriend = vi.fn()
+    const sharedSetActivePartners = vi.fn()
     const sharedSetStats = vi.fn()
     const sharedConsumeAction = vi.fn()
     const sharedAnnounce = vi.fn()
@@ -144,7 +144,7 @@ describe('useSocialActions handleTryRelationship', () => {
     const sharedOverrides = {
       setStats: sharedSetStats,
       setRelationships: sharedSetRelationships,
-      setGirlfriend: sharedSetGirlfriend,
+      setActivePartners: sharedSetActivePartners,
       consumeAction: sharedConsumeAction,
       announce: sharedAnnounce,
       addLogEntry: sharedAddLogEntry,
@@ -170,12 +170,15 @@ describe('useSocialActions handleTryRelationship', () => {
     const updater = sharedSetRelationships.mock.calls[0][0] as (prev: Relationship[]) => Relationship[]
     const updatedRelationships = updater([makeRelationship()])
     expect(updatedRelationships[0]).toMatchObject({ isActive: true, relationshipLevel: 1 })
-    expect(sharedSetGirlfriend).toHaveBeenCalledWith(generatedGirlfriend)
+    expect(sharedSetActivePartners).toHaveBeenCalledTimes(1)
+    const activePartnersUpdater = sharedSetActivePartners.mock.calls[0][0] as (prev: Array<{ relationshipSourceKey: string }>) => Array<{ id: string; relationshipSourceKey: string }>
+    const updatedPartners = activePartnersUpdater([])
+    expect(updatedPartners[0]).toMatchObject({ id: 'girl-3', relationshipSourceKey: 'relationship:rel-1' })
   })
 
   it('blocca un nuovo partner attivo quando il cap delle relazioni e gia raggiunto', () => {
     const setRelationships = vi.fn()
-    const setGirlfriend = vi.fn()
+    const setActivePartners = vi.fn()
     const announce = vi.fn()
     const consumeAction = vi.fn()
     const activeRelationships = [
@@ -191,7 +194,7 @@ describe('useSocialActions handleTryRelationship', () => {
       makeRelationship({ id: 'rel-2', name: 'Valentina', sourceKey: 'relationship:rel-2' }),
     ], {
       setRelationships,
-      setGirlfriend,
+      setActivePartners,
       announce,
       consumeAction,
       setStats: vi.fn(),
@@ -202,7 +205,7 @@ describe('useSocialActions handleTryRelationship', () => {
     })
 
     expect(setRelationships).not.toHaveBeenCalled()
-    expect(setGirlfriend).not.toHaveBeenCalled()
+    expect(setActivePartners).not.toHaveBeenCalled()
     expect(consumeAction).not.toHaveBeenCalled()
     expect(announce).toHaveBeenCalledWith(MAX_RELATIONSHIPS_REACHED_MESSAGE, 'assertive')
   })

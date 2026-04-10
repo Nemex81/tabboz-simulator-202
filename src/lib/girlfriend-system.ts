@@ -61,6 +61,36 @@ export interface Ragazza {
   lastInteractionDate?: string
 }
 
+export type ActivePartner = Ragazza & {
+  relationshipSourceKey: string
+}
+
+export function asActivePartner(partner: Ragazza, relationshipSourceKey: string): ActivePartner {
+  return {
+    ...partner,
+    relationshipSourceKey,
+  }
+}
+
+export function upsertActivePartnerCollection(
+  partners: ActivePartner[],
+  nextPartner: ActivePartner,
+): ActivePartner[] {
+  const existingIndex = partners.findIndex(
+    (partner) => partner.relationshipSourceKey === nextPartner.relationshipSourceKey,
+  )
+
+  if (existingIndex === -1) {
+    return [...partners, nextPartner]
+  }
+
+  return partners.map((partner, index) => (
+    index === existingIndex
+      ? nextPartner
+      : partner
+  ))
+}
+
 interface GenerateRomanticPartnerOptions {
   targetGender?: BinaryGenderCode
   targetOrientation?: SexualOrientation

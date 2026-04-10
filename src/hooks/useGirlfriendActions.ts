@@ -3,12 +3,13 @@ import {
   GameStats,
   SubjectGrades,
   GameTime,
+  Relationship,
   LogEntryType,
   GameLogEntry,
   GameDate,
   DayPhase,
 } from '@/lib/types'
-import { Ragazza, performGirlfriendAction, shouldGirlfriendBreakup } from '@/lib/girlfriend-system'
+import { ActivePartner, performGirlfriendAction, shouldGirlfriendBreakup, upsertActivePartnerCollection } from '@/lib/girlfriend-system'
 import { clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 
@@ -18,8 +19,9 @@ interface UseGirlfriendActionsParams {
   grades: SubjectGrades
   setGrades: (updater: ((prev: SubjectGrades) => SubjectGrades) | SubjectGrades) => void
   gameTime: GameTime
-  girlfriend: Ragazza | null
-  setGirlfriend: (v: Ragazza | null | ((prev: Ragazza | null) => Ragazza | null)) => void
+  activePartners: ActivePartner[]
+  setActivePartners: React.Dispatch<React.SetStateAction<ActivePartner[]>>
+  setRelationships: React.Dispatch<React.SetStateAction<Relationship[]>>
   consumeAction: () => void
   announce: (msg: string, priority?: 'polite' | 'assertive') => void
   addLogEntry: (
@@ -40,8 +42,9 @@ export function useGirlfriendActions({
   grades,
   setGrades,
   gameTime,
-  girlfriend,
-  setGirlfriend,
+  activePartners,
+  setActivePartners,
+  setRelationships,
   consumeAction,
   announce,
   addLogEntry,
@@ -54,24 +57,32 @@ export function useGirlfriendActions({
   gradesRef.current = grades
   const gameTimeRef = useRef(gameTime)
   gameTimeRef.current = gameTime
-  const girlfriendRef = useRef(girlfriend)
-  girlfriendRef.current = girlfriend
+  const activePartnersRef = useRef(activePartners)
+  activePartnersRef.current = activePartners
   const phaseActionsRemainingRef = useRef(phaseActionsRemaining)
   phaseActionsRemainingRef.current = phaseActionsRemaining
   const currentPhaseRef = useRef(currentPhase)
   currentPhaseRef.current = currentPhase
 
   // B1-FIX-4: limita messaggi alla ragazza a 1 per fascia oraria
-  const messaggioUsatoRef = useRef(false)
+  const messaggiUsatiRef = useRef<Set<string>>(new Set())
   const lastPhaseRef = useRef(currentPhase)
   if (currentPhase !== lastPhaseRef.current) {
     lastPhaseRef.current = currentPhase
-    messaggioUsatoRef.current = false
+    messaggiUsatiRef.current = new Set()
   }
 
+  const getTargetPartner = useCallback((partnerKey?: string) => {
+    if (partnerKey) {
+      return activePartnersRef.current.find((partner) => partner.relationshipSourceKey === partnerKey) ?? null
+    }
+
+    return activePartnersRef.current[0] ?? null
+  }, [])
+
   // B1-FIX-4 applicato
-  const handleGirlfriendAction = useCallback((action: string) => {
-    const gf = girlfriendRef.current
+  const handleGirlfriendAction = useCallback((action: string, partnerKey?: string) => {
+    const gf = getTargetPartner(partnerKey)
     if (!gf) return
     const gt = gameTimeRef.current
     if (phaseActionsRemainingRef.current <= 0 && action !== 'messaggio') {
@@ -80,19 +91,23 @@ export function useGirlfriendActions({
       return
     }
     // B1-FIX-4: messaggio — un solo messaggio gratuito per fascia oraria
-    if (action === 'messaggio' && messaggioUsatoRef.current) {
+    if (action === 'messaggio' && messaggiUsatiRef.current.has(gf.relationshipSourceKey)) {
       playSound.failure()
       announce('Hai già mandato un messaggio in questa fascia oraria! Non essere troppo appiccicoso.')
       return
     }
     if (action === 'messaggio') {
-      messaggioUsatoRef.current = true
+      messaggiUsatiRef.current.add(gf.relationshipSourceKey)
     }
     const currentDateString = `${gt.currentDate.day}/${gt.currentDate.month}/${gt.currentDate.year}`
     const s = statsRef.current
     const g = gradesRef.current
     const result = performGirlfriendAction(action, s, gf, currentDateString)
-    setGirlfriend(result.updatedGirlfriend)
+    const nextPartner = {
+      ...result.updatedGirlfriend,
+      relationshipSourceKey: gf.relationshipSourceKey,
+    }
+    setActivePartners((current) => upsertActivePartnerCollection(current, nextPartner))
     if (result.statChanges) {
       setStats((current) => {
         const updated = { ...current }
@@ -134,20 +149,30 @@ export function useGirlfriendActions({
          : 'neutral')
       : 'neutral'
     addLogEntry('social', `${action} con ${gf.nome}`, result.message, gfLogResult, gameTimeRef.current.currentDate, currentPhaseRef.current)
-    if (shouldGirlfriendBreakup(result.updatedGirlfriend)) {
+    if (shouldGirlfriendBreakup(nextPartner)) {
       playSound.gameOver()
       announce(`${gf.nome} ti ha lasciato! La relazione è finita...`)
-      setGirlfriend(null)
+      setActivePartners((current) => current.filter((partner) => partner.relationshipSourceKey !== gf.relationshipSourceKey))
+      setRelationships(prev => prev.map(r =>
+        r.sourceKey === gf.relationshipSourceKey
+          ? { ...r, isActive: false }
+          : r
+      ))
     }
-  }, [setGirlfriend, setStats, setGrades, consumeAction, announce, addLogEntry])
+  }, [getTargetPartner, setActivePartners, setRelationships, setStats, setGrades, consumeAction, announce, addLogEntry])
 
-  const handleGirlfriendBreakup = useCallback(() => {
-    const gf = girlfriendRef.current
+  const handleGirlfriendBreakup = useCallback((partnerKey?: string) => {
+    const gf = getTargetPartner(partnerKey)
     if (!gf) return
     playSound.failure()
     announce(`Hai lasciato ${gf.nome}. La storia è finita.`)
-    setGirlfriend(null)
-  }, [setGirlfriend, announce])
+    setActivePartners((current) => current.filter((partner) => partner.relationshipSourceKey !== gf.relationshipSourceKey))
+    setRelationships(prev => prev.map(r =>
+      r.sourceKey === gf.relationshipSourceKey
+        ? { ...r, isActive: false }
+        : r
+    ))
+  }, [getTargetPartner, setActivePartners, setRelationships, announce])
 
   return {
     handleGirlfriendAction,

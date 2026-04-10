@@ -9,6 +9,12 @@ vi.mock('@/hooks/useSoundFeedback', () => ({
   }),
 }))
 
+vi.mock('@/components/GirlfriendPanel', () => ({
+  GirlfriendPanel: ({ girlfriend, partnerKey }: { girlfriend: { nome: string }; partnerKey: string }) => (
+    <div data-testid="partner-card">{partnerKey}:{girlfriend.nome}</div>
+  ),
+}))
+
 function makeStats(): GameStats {
   return {
     muscoli: 30,
@@ -53,7 +59,7 @@ describe('EnhancedFriendsPanel', () => {
         stats={makeStats()}
         interactionsRemaining={2}
         onFriendAction={vi.fn()}
-        girlfriend={null}
+        activePartners={[]}
         onGirlfriendAction={vi.fn()}
         onGirlfriendBreakup={vi.fn()}
       />
@@ -61,5 +67,68 @@ describe('EnhancedFriendsPanel', () => {
 
     expect(screen.getByText('Provenienza: Rete')).toBeInTheDocument()
     expect(screen.getByText('Incontro: Online')).toBeInTheDocument()
+  })
+
+  it('renderizza due partner attivi distinti', () => {
+    render(
+      <EnhancedFriendsPanel
+        playerProfile={null}
+        friends={[]}
+        stats={makeStats()}
+        interactionsRemaining={2}
+        onFriendAction={vi.fn()}
+        activePartners={[
+          {
+            id: 'partner-1',
+            relationshipSourceKey: 'relationship:partner-1',
+            nome: 'Jessica',
+            cognome: 'Rossi',
+            gender: 'F',
+            orientamentoSessuale: 'eterosessuale',
+            eta: 16,
+            classe: '2A',
+            aspetto: 'carina',
+            personalita: 'timida',
+            interessePerTe: 80,
+            figositaRichiesta: 50,
+            statusSociale: 60,
+            gelosa: false,
+            hobby: [],
+            coloreCapelli: 'Castani',
+            scuola: 'ITIS',
+            statPreferita: 'carisma',
+            relationshipStatus: 'fidanzata',
+            stats: { totalDates: 1, messagesExchanged: 0, giftsGiven: 0, fightsHad: 0, dateActivities: [], daysTogether: 1, jealousyLevel: 10, trustLevel: 60, happinessLevel: 70 },
+          },
+          {
+            id: 'partner-2',
+            relationshipSourceKey: 'relationship:partner-2',
+            nome: 'Vanessa',
+            cognome: 'Bianchi',
+            gender: 'F',
+            orientamentoSessuale: 'eterosessuale',
+            eta: 17,
+            classe: '3B',
+            aspetto: 'bellissima',
+            personalita: 'estroversa',
+            interessePerTe: 75,
+            figositaRichiesta: 60,
+            statusSociale: 70,
+            gelosa: true,
+            hobby: [],
+            coloreCapelli: 'Neri',
+            scuola: 'Liceo',
+            statPreferita: 'figosita',
+            relationshipStatus: 'fidanzata',
+            stats: { totalDates: 2, messagesExchanged: 1, giftsGiven: 0, fightsHad: 0, dateActivities: [], daysTogether: 3, jealousyLevel: 20, trustLevel: 65, happinessLevel: 80 },
+          },
+        ]}
+        onGirlfriendAction={vi.fn()}
+        onGirlfriendBreakup={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('relationship:partner-1:Jessica')).toBeInTheDocument()
+    expect(screen.getByText('relationship:partner-2:Vanessa')).toBeInTheDocument()
   })
 })

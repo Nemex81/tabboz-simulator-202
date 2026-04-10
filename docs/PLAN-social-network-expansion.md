@@ -131,3 +131,33 @@
   - introduzione formula `calcMaxRelazioni(stats)` e guard sui partner attivi
   - allineamento della generazione partner da `Relationship` normalizzata
   - copertura test per casi bloccati e casi consentiti
+
+## Refactor activePartners
+
+- Stato: done
+- File:
+  - src/App.tsx
+  - src/hooks/types.ts
+  - src/hooks/useHydratedKV.ts
+  - src/hooks/useAppEffects.ts
+  - src/hooks/useEventEngine.ts
+  - src/hooks/useSocialActions.ts
+  - src/hooks/useGirlfriendActions.ts
+  - src/hooks/useGameActions.ts
+  - src/hooks/useSchoolHandlers.ts
+  - src/components/CharacterSheet.tsx
+  - src/components/tabs/SchoolTab.tsx
+  - src/components/FriendshipsPanel.tsx
+  - src/components/EnhancedFriendsPanel.tsx
+  - src/components/GirlfriendPanel.tsx
+  - src/hooks/useEventEngine.test.ts
+  - src/hooks/useSocialActions.test.ts
+  - src/hooks/useGameActions.test.ts
+  - src/components/EnhancedFriendsPanel.test.tsx
+  - src/components/FriendshipsPanel.test.tsx
+- Tipo modifica:
+  - sostituzione dello slot singolo `girlfriend` con la collezione persistita `activePartners`
+  - migrazione legacy one-way da `tabboz-girlfriend` a `tabboz-active-partners`
+  - upsert dei partner attivi tramite `relationshipSourceKey` nei flussi hook romantici
+  - rendering multi-partner nei container UI mantenendo `GirlfriendPanel` come dettaglio singolo
+  - aggiornamento dei test hook e UI al nuovo contratto con copertura per due partner distinti

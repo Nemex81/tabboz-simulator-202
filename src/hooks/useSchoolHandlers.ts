@@ -26,7 +26,7 @@ import {
   HealthRecord,
 } from '@/lib/types'
 import type { GameTime, SchoolDayState, Relationship, ScheduledExam } from '@/lib/types'
-import { Ragazza } from '@/lib/girlfriend-system'
+import type { ActivePartner } from '@/lib/girlfriend-system'
 import { clampStat, calculateMedia, archiveYearGrades } from '@/lib/game-utils'
 import { calculateNextSchoolYear } from '@/lib/time-utils'
 import { playSound } from '@/lib/sound-effects'
@@ -78,7 +78,7 @@ export interface UseSchoolHandlersParams {
   setRawFriends: SetState<Friend[]>
   setRelationships: SetState<Relationship[]>
   setScheduledExams: SetState<ScheduledExam[]>
-  setGirlfriend: SetState<Ragazza | null>
+  setActivePartners: SetState<ActivePartner[]>
   gameWon: boolean
   phaseActionsRemaining: number
   currentPhase: Phase
@@ -448,7 +448,7 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
       () => p.setRawFriends([]),
       () => p.setRelationships([]),
       () => p.setScheduledExams([]),
-      () => p.setGirlfriend(null),
+      () => p.setActivePartners([]),
       () => p.setSchoolType(null),
       () => p.setPlayerProfile(null),
       () => p.setSchoolRecord(DEFAULT_SCHOOL_RECORD),
@@ -461,7 +461,7 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
     ])
   }, [
     p.setStats, p.setGrades, p.schoolType, p.setGameTime,
-    p.setRawFriends, p.setRelationships, p.setScheduledExams, p.setGirlfriend,
+    p.setRawFriends, p.setRelationships, p.setScheduledExams, p.setActivePartners,
     p.setGameOver, p.setGameOverReason, p.setShowResetDialog, p.setGameWon,
     p.setSchoolType, p.setPlayerProfile, p.setSchoolRecord,
     p.setRawGradesHistory, p.clearLog, p.setHealthRecord, p.announce,

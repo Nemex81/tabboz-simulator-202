@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import { GameStats, Friend, Relationship, GameTime, PlayerProfile } from '@/lib/types'
-import { Ragazza, generateGirlfriendFromRelationship } from '@/lib/girlfriend-system'
+import { ActivePartner, asActivePartner, generateGirlfriendFromRelationship, upsertActivePartnerCollection } from '@/lib/girlfriend-system'
 import {
   randomChance,
   clampStat,
@@ -84,8 +84,7 @@ interface UseEventEngineParams {
   setFriends: (updater: ((prev: Friend[]) => Friend[]) | Friend[]) => void
   relationships: Relationship[]
   setRelationships: (updater: ((prev: Relationship[]) => Relationship[]) | Relationship[]) => void
-  girlfriend: Ragazza | null
-  setGirlfriend: (v: Ragazza | null | ((prev: Ragazza | null) => Ragazza | null)) => void
+  setActivePartners: React.Dispatch<React.SetStateAction<ActivePartner[]>>
   gameTime: GameTime
   consumeAction: () => void
   announce: (msg: string, priority?: 'polite' | 'assertive') => void
@@ -109,8 +108,7 @@ export function useEventEngine({
   setFriends,
   relationships,
   setRelationships,
-  girlfriend,
-  setGirlfriend,
+  setActivePartners,
   gameTime,
   consumeAction,
   announce,
@@ -141,8 +139,6 @@ export function useEventEngine({
   friendsRef.current = friends
   const relationshipsRef = useRef(relationships)
   relationshipsRef.current = relationships
-  const girlfriendRef = useRef(girlfriend)
-  girlfriendRef.current = girlfriend
   const gameTimeRef = useRef(gameTime)
   gameTimeRef.current = gameTime
   const raceWinChanceRef = useRef(raceWinChance)
@@ -207,6 +203,10 @@ export function useEventEngine({
       ))
     })
   }, [setRelationships])
+
+  const upsertActivePartner = useCallback((partner: ActivePartner) => {
+    setActivePartners((current) => upsertActivePartnerCollection(current, partner))
+  }, [setActivePartners])
 
   const checkForNewFriend = useCallback((location: string) => {
     const normalizedLocation = LOCATION_NORMALIZATION[location] ?? 'quartiere'
@@ -277,11 +277,11 @@ export function useEventEngine({
       const currentDateString = `${currentDate.day}/${currentDate.month}/${currentDate.year}`
       const newGirl = generateGirlfriendFromRelationship(newRelationship, currentDateString)
       upsertRelationship(newRelationship)
-      setGirlfriend(newGirl)
+      upsertActivePartner(asActivePartner(newGirl, newRelationship.sourceKey ?? `legacy-partner:${newGirl.id}`))
       playSound.eventTrigger()
       announce(`Hai fatto colpo su ${newRelationship.name}! Nuova relazione attiva.`)
     }
-  }, [setGirlfriend, announce, upsertRelationship])
+  }, [announce, upsertActivePartner, upsertRelationship])
 
   const triggerRandomEvent = useCallback(() => {
     const s = statsRef.current
@@ -597,7 +597,12 @@ export function useEventEngine({
 
       playSound.bigWin()
       upsertRelationship(newRelationship)
-      setGirlfriend(generateGirlfriendFromRelationship(newRelationship, currentDateString))
+      upsertActivePartner(
+        asActivePartner(
+          generateGirlfriendFromRelationship(newRelationship, currentDateString),
+          newRelationship.sourceKey ?? `legacy-partner:${newRelationship.id}`,
+        ),
+      )
       setStats((current) => ({
         ...current,
         figosita: clampStat(current.figosita + 20),
@@ -617,7 +622,7 @@ export function useEventEngine({
       addLogEntry('social', `Palo da ${name}`, `${name} ti ha dato il PALO! Bruciata DEVASTANTE! -15 Figosità, -10 Coattaggine`, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
     // consumeAction() rimossa — già chiamata in handleProvarciConAtipa
-  }, [setStats, announce, addLogEntry, setGirlfriend, upsertRelationship])
+  }, [setStats, announce, addLogEntry, upsertActivePartner, upsertRelationship])
 
   const handleAfternoonChoice = useCallback((choiceId: string) => {
     if (!afternoonEvent) return

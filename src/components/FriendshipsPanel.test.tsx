@@ -57,7 +57,7 @@ describe('FriendshipsPanel', () => {
         stats={makeStats()}
         interactionsRemaining={2}
         onFriendAction={vi.fn()}
-        girlfriend={null}
+        activePartners={[]}
         onGirlfriendAction={vi.fn()}
         onGirlfriendBreakup={vi.fn()}
       />

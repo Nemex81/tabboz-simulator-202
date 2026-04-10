@@ -15,7 +15,7 @@ import { useAppDialogs } from '@/hooks/useAppDialogs'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useGameLog } from '@/hooks/useGameLog'
 import { useHealthSystem } from '@/hooks/useHealthSystem'
-import { Ragazza } from '@/lib/girlfriend-system'
+import { ActivePartner } from '@/lib/girlfriend-system'
 import { 
   validateGrades, 
   validateFriends, 
@@ -53,7 +53,8 @@ function App() {
   const [rawGrades, setRawGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
   const [rawFriends, setRawFriends] = useKV<Friend[]>('tabboz-friends', [])
   const [rawRelationships, setRawRelationships] = useKV<Relationship[]>('tabboz-relationships', [])
-  const [rawGirlfriend, setRawGirlfriend] = useKV<Ragazza | null>('tabboz-girlfriend', null)
+  const [rawActivePartners, setRawActivePartners] = useKV<ActivePartner[]>('tabboz-active-partners', [])
+  const [rawLegacyGirlfriend, setRawLegacyGirlfriend] = useKV<Ragazza | null>('tabboz-girlfriend', null)
   const [currentTheme, setCurrentTheme] = useKV<ThemeVariant>('tabboz-theme', 'default')
   const [rawSchoolRecord, setRawSchoolRecord] = useKV<SchoolRecord>('tabboz-school-record', DEFAULT_SCHOOL_RECORD)
   const [rawGradesHistory, setRawGradesHistory] = useKV<Record<number, SubjectGrades>>('tabboz-grades-history', {})
@@ -66,7 +67,13 @@ function App() {
     () => validateRelationships(rawRelationships).map(normalizeRelationshipCandidate),
     [rawRelationships]
   )
-  const girlfriend = useMemo(() => normalizeRomanticPartner(rawGirlfriend ?? null), [rawGirlfriend])
+  const activePartners = useMemo(
+    () => (rawActivePartners ?? []).map((partner) => ({
+      ...(normalizeRomanticPartner(partner) ?? partner),
+      relationshipSourceKey: partner.relationshipSourceKey,
+    })),
+    [rawActivePartners]
+  )
   const schoolRecord = rawSchoolRecord || DEFAULT_SCHOOL_RECORD
 
   const setSchoolType = setRawSchoolType
@@ -74,7 +81,7 @@ function App() {
   const setGrades = setRawGrades
   const setFriends = setRawFriends
   const setRelationships = setRawRelationships
-  const setGirlfriend = setRawGirlfriend
+  const setActivePartners = setRawActivePartners
   const setSchoolRecord = setRawSchoolRecord
 
   const {
@@ -222,8 +229,7 @@ function App() {
     setFriends,
     relationships,
     setRelationships,
-    girlfriend: girlfriend ?? null,
-    setGirlfriend,
+    setActivePartners,
     gameTime,
     consumeAction,
     announce,
@@ -246,8 +252,8 @@ function App() {
     setFriends: setRawFriends,
     relationships,
     setRelationships,
-    girlfriend: girlfriend ?? null,
-    setGirlfriend,
+    activePartners,
+    setActivePartners,
     setGameOver,
     setGameOverReason,
     consumeAction,
@@ -416,7 +422,7 @@ function App() {
     setRawFriends,
     setRelationships,
     setScheduledExams,
-    setGirlfriend,
+    setActivePartners,
     gameWon,
     phaseActionsRemaining: phaseActionsRemaining ?? 0,
     currentPhase: currentPhase ?? null,
@@ -463,8 +469,10 @@ function App() {
     setRawPlayerProfile,
     rawRelationships: rawRelationships ?? [],
     setRawRelationships,
-    rawGirlfriend: rawGirlfriend ?? null,
-    setRawGirlfriend,
+    rawActivePartners: rawActivePartners ?? [],
+    setRawActivePartners,
+    rawLegacyGirlfriend: rawLegacyGirlfriend ?? null,
+    setRawLegacyGirlfriend,
     rawFriends: rawFriends ?? [],
     setRawFriends,
     schoolType,
@@ -572,7 +580,7 @@ function App() {
       teachers: teachers ?? [],
       classRoster: classRoster ?? [],
       schoolRecord,
-      girlfriend: girlfriend ?? null,
+      activePartners,
       phaseActionsLeft,
       phaseActionsRemaining: phaseActionsRemaining ?? 0,
       interactionsRemaining: interazioniRimaste ?? 0,
@@ -630,7 +638,7 @@ function App() {
       interactionsRemaining: interazioniRimaste ?? 0,
       onFriendAction: handleFriendAction,
       onRelationInteraction: doInteraction,
-      girlfriend: girlfriend ?? null,
+      activePartners,
       onGirlfriendAction: handleGirlfriendAction,
       onGirlfriendBreakup: handleGirlfriendBreakup,
       onTryRelationship: handleTryRelationship,

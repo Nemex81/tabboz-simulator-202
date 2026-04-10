@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { GameStats, Friend, PlayerProfile, getRelationshipTier } from '@/lib/types'
 import { getAffinita } from '@/lib/relation-system'
 import { RelationCard } from '@/components/RelationCard'
-import type { Ragazza } from '@/lib/girlfriend-system'
+import type { ActivePartner } from '@/lib/girlfriend-system'
 import {
   getFriendTypeDescription,
   FRIEND_ACTIONS,
@@ -27,9 +27,9 @@ interface EnhancedFriendsPanelProps {
   interactionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
   onRelationInteraction?: (friendId: string, interactionId: string) => void
-  girlfriend: Ragazza | null
-  onGirlfriendAction: (action: string) => void
-  onGirlfriendBreakup: () => void
+  activePartners: ActivePartner[]
+  onGirlfriendAction: (action: string, partnerKey?: string) => void
+  onGirlfriendBreakup: (partnerKey?: string) => void
 }
 
 export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
@@ -39,7 +39,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   interactionsRemaining,
   onFriendAction,
   onRelationInteraction,
-  girlfriend,
+  activePartners,
   onGirlfriendAction,
   onGirlfriendBreakup,
 }: EnhancedFriendsPanelProps) {
@@ -114,16 +114,18 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   return (
     <div className="space-y-6">
       {/* C3-2: GirlfriendPanel embedded — sostituisce la card inline di C2-3 */}
-      {girlfriend && (
+      {activePartners.map((partner) => (
         <GirlfriendPanel
-          girlfriend={girlfriend}
+          key={partner.relationshipSourceKey}
+          partnerKey={partner.relationshipSourceKey}
+          girlfriend={partner}
           playerProfile={playerProfile}
           stats={stats}
           actionsRemaining={interactionsRemaining}
           onAction={onGirlfriendAction}
           onBreakup={onGirlfriendBreakup}
         />
-      )}
+      ))}
 
       {/* FIX-A: messaggio amici vuoti inline — non blocca più il rendering della fidanzata */}
       {friends.length === 0 && (

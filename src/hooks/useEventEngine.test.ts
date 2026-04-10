@@ -19,9 +19,13 @@ const hookMocks = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/lib/girlfriend-system', () => ({
-  generateGirlfriendFromRelationship: (...args: unknown[]) => hookMocks.generateGirlfriendFromRelationship(...args),
-}))
+vi.mock('@/lib/girlfriend-system', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/girlfriend-system')>('@/lib/girlfriend-system')
+  return {
+    ...actual,
+    generateGirlfriendFromRelationship: (...args: unknown[]) => hookMocks.generateGirlfriendFromRelationship(...args),
+  }
+})
 
 vi.mock('@/lib/sound-effects', () => ({
   playSound: hookMocks.playSound,
@@ -62,8 +66,7 @@ function makeParams(overrides: Partial<Parameters<typeof useEventEngine>[0]> = {
     setFriends: vi.fn(),
     relationships: [],
     setRelationships: vi.fn(),
-    girlfriend: null,
-    setGirlfriend: vi.fn(),
+    setActivePartners: vi.fn(),
     gameTime: {
       currentDate: { day: 10, month: 4, year: 2026 },
       actionsRemaining: 2,
@@ -147,7 +150,12 @@ describe('useEventEngine romantic flow', () => {
       },
     ])
     expect(preservedRelationships).toHaveLength(2)
-    expect(params.setGirlfriend).toHaveBeenCalledWith(generatedGirlfriend)
+    expect(params.setActivePartners).toHaveBeenCalledTimes(1)
+    const partnersMock = params.setActivePartners as ReturnType<typeof vi.fn>
+    const partnersUpdater = partnersMock.mock.calls[0][0] as (prev: Array<{ relationshipSourceKey: string }>) => Array<{ id: string; relationshipSourceKey: string }>
+    const updatedPartners = partnersUpdater([])
+    expect(updatedPartners).toHaveLength(1)
+    expect(updatedPartners[0]).toMatchObject({ id: 'girl-1', relationshipSourceKey: updatedRelationships[0].sourceKey })
   })
 
   it('sincronizza la lista relazioni quando genera direttamente una fidanzata da evento sociale', () => {
@@ -177,7 +185,12 @@ describe('useEventEngine romantic flow', () => {
     })
     expect(updatedRelationships[0].sourceKey).toMatch(/^direct-girlfriend:/)
     expect(updatedRelationships[0].name.length).toBeGreaterThan(0)
-    expect(params.setGirlfriend).toHaveBeenCalledWith(generatedGirlfriend)
+    expect(params.setActivePartners).toHaveBeenCalledTimes(1)
+    const partnersMock = params.setActivePartners as ReturnType<typeof vi.fn>
+    const partnersUpdater = partnersMock.mock.calls[0][0] as (prev: Array<{ relationshipSourceKey: string }>) => Array<{ id: string; relationshipSourceKey: string }>
+    const updatedPartners = partnersUpdater([])
+    expect(updatedPartners).toHaveLength(1)
+    expect(updatedPartners[0]).toMatchObject({ id: 'girl-2', relationshipSourceKey: updatedRelationships[0].sourceKey })
   })
 
   it('genera un partner compatibile con l orientamento del giocatore nel flusso pickup', () => {
@@ -230,7 +243,7 @@ describe('useEventEngine romantic flow', () => {
     })
 
     expect(params.setRelationships).not.toHaveBeenCalled()
-    expect(params.setGirlfriend).not.toHaveBeenCalled()
+    expect(params.setActivePartners).not.toHaveBeenCalled()
     expect(params.announce).toHaveBeenCalledWith(MAX_RELATIONSHIPS_REACHED_MESSAGE, 'assertive')
   })
 

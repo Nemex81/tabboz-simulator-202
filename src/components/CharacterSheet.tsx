@@ -9,7 +9,7 @@ import { HealthRecordPanel } from '@/components/HealthRecordPanel'
 import { GradeProgressPanel } from '@/components/GradeProgressPanel'
 import { FriendshipsPanel } from '@/components/FriendshipsPanel'
 import { RelationshipsPanel } from '@/components/RelationshipsPanel'
-import type { Ragazza } from '@/lib/girlfriend-system'
+import type { ActivePartner } from '@/lib/girlfriend-system'
 import { getCharacterGenderLabel, getSexualOrientationLabel } from '@/lib/gender-utils'
 
 interface CharacterSheetProps {
@@ -31,9 +31,9 @@ interface CharacterSheetProps {
   interactionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
   onRelationInteraction?: (friendId: string, interactionId: string) => void
-  girlfriend: Ragazza | null
-  onGirlfriendAction: (action: string) => void
-  onGirlfriendBreakup: () => void
+  activePartners: ActivePartner[]
+  onGirlfriendAction: (action: string, partnerKey?: string) => void
+  onGirlfriendBreakup: (partnerKey?: string) => void
   onTryRelationship: (relationshipId: string) => void
 }
 
@@ -55,7 +55,7 @@ export const CharacterSheet = React.memo(function CharacterSheet({
   interactionsRemaining,
   onFriendAction,
   onRelationInteraction,
-  girlfriend,
+  activePartners,
   onGirlfriendAction,
   onGirlfriendBreakup,
   onTryRelationship,
@@ -264,7 +264,7 @@ export const CharacterSheet = React.memo(function CharacterSheet({
             interactionsRemaining={interactionsRemaining}
             onFriendAction={onFriendAction}
             onRelationInteraction={onRelationInteraction}
-            girlfriend={girlfriend}
+            activePartners={activePartners}
             onGirlfriendAction={onGirlfriendAction}
             onGirlfriendBreakup={onGirlfriendBreakup}
           />

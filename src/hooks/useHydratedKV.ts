@@ -54,6 +54,7 @@ const BOOTSTRAP_KEYS = new Set<string>([
   'tabboz-grades',
   'tabboz-friends',
   'tabboz-relationships',
+  'tabboz-active-partners',
   'tabboz-girlfriend',
   'tabboz-theme',
   'tabboz-school-record',

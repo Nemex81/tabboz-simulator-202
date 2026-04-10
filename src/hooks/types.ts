@@ -16,7 +16,7 @@ import type {
   GameDate,
   HealthConditionId,
 } from '@/lib/types'
-import type { Ragazza } from '@/lib/girlfriend-system'
+import type { ActivePartner } from '@/lib/girlfriend-system'
 
 export interface UseGameActionsParams {
   stats: GameStats
@@ -31,8 +31,8 @@ export interface UseGameActionsParams {
   setFriends: (updater: ((prev: Friend[]) => Friend[]) | Friend[]) => void
   relationships: Relationship[]
   setRelationships: (updater: ((prev: Relationship[]) => Relationship[]) | Relationship[]) => void
-  girlfriend: Ragazza | null
-  setGirlfriend: (v: Ragazza | null | ((prev: Ragazza | null) => Ragazza | null)) => void
+  activePartners: ActivePartner[]
+  setActivePartners: React.Dispatch<React.SetStateAction<ActivePartner[]>>
   setGameOver: (v: boolean) => void
   setGameOverReason: (v: string) => void
   consumeAction: () => void

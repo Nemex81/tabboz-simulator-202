@@ -25,7 +25,7 @@ import type {
 } from '@/lib/types'
 import type { AfternoonEvent } from '@/lib/afternoon-events'
 import type { SchoolMorningEvent } from '@/lib/school-morning-events'
-import type { Ragazza } from '@/lib/girlfriend-system'
+import type { ActivePartner } from '@/lib/girlfriend-system'
 import { getSubjectDisplayName } from '@/lib/types'
 import { calculateStudyGradeIncrease } from '@/lib/game-utils'
 import { AfternoonEventPanel } from '@/components/AfternoonEventPanel'
@@ -59,7 +59,7 @@ export interface SchoolTabProps {
   teachers: Teacher[]
   classRoster: Classmate[]
   schoolRecord: SchoolRecord
-  girlfriend: Ragazza | null
+  activePartners: ActivePartner[]
 
   // Fase / timing
   phaseActionsLeft: number
@@ -88,8 +88,8 @@ export interface SchoolTabProps {
   handleOpenCorrompiDialog: () => void
   handleOpenMinacciaDialog: () => void
   handleFriendAction: (friendId: string, actionId: string) => void
-  handleGirlfriendAction: (action: string) => void
-  handleGirlfriendBreakup: () => void
+  handleGirlfriendAction: (action: string, partnerKey?: string) => void
+  handleGirlfriendBreakup: (partnerKey?: string) => void
   handlePrepareExam: (examSubject: string) => void
   handleAfternoonChoice: (choiceId: string) => void
   handlePromoteToFriend: (classmateId: string) => void
@@ -131,7 +131,7 @@ export function SchoolTab({
   teachers,
   classRoster,
   schoolRecord,
-  girlfriend,
+  activePartners,
   phaseActionsLeft,
   phaseActionsRemaining,
   interactionsRemaining,
@@ -613,7 +613,7 @@ export function SchoolTab({
           interactionsRemaining={interactionsRemaining}
           onFriendAction={handleFriendAction}
           onRelationInteraction={doInteraction}
-          girlfriend={girlfriend ?? null}
+          activePartners={activePartners}
           onGirlfriendAction={handleGirlfriendAction}
           onGirlfriendBreakup={handleGirlfriendBreakup}
         />

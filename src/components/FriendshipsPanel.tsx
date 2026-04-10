@@ -8,7 +8,7 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Friend, GameStats, PlayerProfile } from '@/lib/types'
-import type { Ragazza } from '@/lib/girlfriend-system'
+import type { ActivePartner } from '@/lib/girlfriend-system'
 import { EnhancedFriendsPanel } from '@/components/EnhancedFriendsPanel'
 
 interface FriendshipsPanelProps {
@@ -18,9 +18,9 @@ interface FriendshipsPanelProps {
   interactionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
   onRelationInteraction?: (friendId: string, interactionId: string) => void
-  girlfriend: Ragazza | null
-  onGirlfriendAction: (action: string) => void
-  onGirlfriendBreakup: () => void
+  activePartners: ActivePartner[]
+  onGirlfriendAction: (action: string, partnerKey?: string) => void
+  onGirlfriendBreakup: (partnerKey?: string) => void
 }
 
 export const FriendshipsPanel = React.memo(function FriendshipsPanel(props: FriendshipsPanelProps) {

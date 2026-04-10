@@ -10,3 +10,8 @@
 - [x] Cleanup - Rinominare le label sociali di quartiere in UI, handler, test e registry azioni
 - [x] Bugfix - Bloccare partner automatici incompatibili con orientamento e gender del giocatore
 - [x] Feature - Introdurre limite massimo di relazioni romantiche attive basato sulle statistiche
+- [x] Refactor - Sostituire lo slot singolo girlfriend con activePartners persistiti
+- [x] Refactor - Aggiornare hook business romantici a upsert multi-partner
+- [x] Refactor - Aggiornare container UI e pannelli partner a rendering multiplo
+- [x] Test - Allineare mock e asserzioni al contratto activePartners
+- [x] Docs - Chiudere il refactor activePartners in TODO e PLAN

@@ -9,7 +9,7 @@ import type {
   SubjectGrades,
   ThemeVariant,
 } from '@/lib/types'
-import type { Ragazza } from '@/lib/girlfriend-system'
+import type { ActivePartner, Ragazza } from '@/lib/girlfriend-system'
 import { checkGameOver, calculateMedia } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 import {
@@ -19,14 +19,40 @@ import {
   normalizeRomanticPartner,
 } from '@/lib/gender-utils'
 
+function getLegacyPartnerSourceKey(partner: Ragazza | null): string | null {
+  if (!partner) return null
+
+  const candidate = partner as Ragazza & {
+    relationshipSourceKey?: string
+    sourceKey?: string
+  }
+
+  return candidate.relationshipSourceKey ?? candidate.sourceKey ?? `legacy-partner:${partner.id}`
+}
+
+function normalizeActivePartner(partner: ActivePartner): ActivePartner {
+  const normalizedPartner = normalizeRomanticPartner(partner)
+
+  if (!normalizedPartner) {
+    return partner
+  }
+
+  return {
+    ...normalizedPartner,
+    relationshipSourceKey: partner.relationshipSourceKey || getLegacyPartnerSourceKey(partner) || `legacy-partner:${partner.id}`,
+  }
+}
+
 interface UseAppEffectsParams {
   currentTheme: ThemeVariant | null | undefined
   rawPlayerProfile: PlayerProfile | null
   setRawPlayerProfile: React.Dispatch<React.SetStateAction<PlayerProfile | null>>
   rawRelationships: Relationship[]
   setRawRelationships: React.Dispatch<React.SetStateAction<Relationship[]>>
-  rawGirlfriend: Ragazza | null
-  setRawGirlfriend: React.Dispatch<React.SetStateAction<Ragazza | null>>
+  rawActivePartners: ActivePartner[]
+  setRawActivePartners: React.Dispatch<React.SetStateAction<ActivePartner[]>>
+  rawLegacyGirlfriend: Ragazza | null
+  setRawLegacyGirlfriend: React.Dispatch<React.SetStateAction<Ragazza | null>>
   rawFriends: Friend[]
   setRawFriends: React.Dispatch<React.SetStateAction<Friend[]>>
   schoolType: SchoolType | null
@@ -50,8 +76,10 @@ export function useAppEffects({
   setRawPlayerProfile,
   rawRelationships,
   setRawRelationships,
-  rawGirlfriend,
-  setRawGirlfriend,
+  rawActivePartners,
+  setRawActivePartners,
+  rawLegacyGirlfriend,
+  setRawLegacyGirlfriend,
   rawFriends,
   setRawFriends,
   schoolType,
@@ -94,10 +122,34 @@ export function useAppEffects({
   }, [rawRelationships, setRawRelationships])
 
   useEffect(() => {
-    if (rawGirlfriend && (!rawGirlfriend.orientamentoSessuale || !rawGirlfriend.gender)) {
-      setRawGirlfriend(prev => normalizeRomanticPartner(prev ?? null))
+    if ((rawActivePartners ?? []).length === 0 && rawLegacyGirlfriend) {
+      const sourceKey = getLegacyPartnerSourceKey(rawLegacyGirlfriend)
+      const normalizedLegacyPartner = normalizeRomanticPartner(rawLegacyGirlfriend)
+
+      if (!sourceKey || !normalizedLegacyPartner) {
+        return
+      }
+
+      setRawActivePartners([{
+        ...normalizedLegacyPartner,
+        relationshipSourceKey: sourceKey,
+      }])
+      setRawLegacyGirlfriend(null)
+      return
     }
-  }, [rawGirlfriend, setRawGirlfriend])
+
+    if ((rawActivePartners ?? []).some(partner => (
+      !partner.relationshipSourceKey ||
+      !partner.orientamentoSessuale ||
+      !partner.gender
+    ))) {
+      setRawActivePartners(prev => (prev ?? []).map(normalizeActivePartner))
+    }
+
+    if (rawLegacyGirlfriend) {
+      setRawLegacyGirlfriend(null)
+    }
+  }, [rawActivePartners, rawLegacyGirlfriend, setRawActivePartners, setRawLegacyGirlfriend])
 
   useEffect(() => {
     if ((rawFriends ?? []).some(friend => !friend.orientamentoSessuale)) {

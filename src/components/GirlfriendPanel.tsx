@@ -32,15 +32,17 @@ import {
 import { getRomanticStatusLabel } from '@/lib/gender-utils'
 
 interface GirlfriendPanelProps {
+  partnerKey: string
   girlfriend: Ragazza          // C3-1: non più nullable — il guard è nel padre
   playerProfile?: PlayerProfile | null
   stats: GameStats
   actionsRemaining: number
-  onAction: (action: string) => void
-  onBreakup: () => void
+  onAction: (action: string, partnerKey?: string) => void
+  onBreakup: (partnerKey?: string) => void
 }
 
 export const GirlfriendPanel = memo(function GirlfriendPanel({
+  partnerKey,
   girlfriend,
   playerProfile: _playerProfile,
   stats,
@@ -106,7 +108,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
           </div>
           
           <Button
-            onClick={onBreakup}
+            onClick={() => onBreakup(partnerKey)}
             variant="outline"
             size="sm"
             className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
@@ -252,7 +254,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
             <div className="space-y-3">
               {/* FIX-B: messaggio è gratuito (non consuma azione) — non va mai disabilitato per azioni esaurite */}
               <Button
-                onClick={() => { play('click'); onAction('messaggio') }}
+                onClick={() => { play('click'); onAction('messaggio', partnerKey) }}
                 disabled={false}
                 className="w-full justify-start"
                 variant="secondary"
@@ -265,7 +267,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
               </Button>
               
               <Button
-                onClick={() => { play('click'); onAction('cinema') }}
+                onClick={() => { play('click'); onAction('cinema', partnerKey) }}
                 disabled={actionsRemaining === 0 || !canInvitareCinema || stats.soldi < 40}
                 className="w-full justify-start"
                 variant="default"
@@ -280,7 +282,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
               </Button>
               
               <Button
-                onClick={() => { play('click'); onAction('motorino') }}
+                onClick={() => { play('click'); onAction('motorino', partnerKey) }}
                 disabled={actionsRemaining === 0 || !canPortareMotorino || stats.soldi < 20}
                 className="w-full justify-start"
                 variant="default"
@@ -296,7 +298,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
               
               {girlfriend.personalita === 'secchiona' && (
                 <Button
-                  onClick={() => { play('click'); onAction('compiti') }}
+                  onClick={() => { play('click'); onAction('compiti', partnerKey) }}
                   disabled={actionsRemaining === 0 || stats.intelligenza < 40}
                   className="w-full justify-start"
                   variant="secondary"
@@ -312,7 +314,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
               )}
               
               <Button
-                onClick={() => { play('moneySpent'); onAction('regalo') }}
+                onClick={() => { play('moneySpent'); onAction('regalo', partnerKey) }}
                 disabled={actionsRemaining === 0 || stats.soldi < 60}
                 className="w-full justify-start bg-accent text-accent-foreground"
               >
@@ -327,7 +329,7 @@ export const GirlfriendPanel = memo(function GirlfriendPanel({
               
               {canDichiararti && (
                 <Button
-                  onClick={() => { play('bigWin'); onAction('dichiarati') }}
+                  onClick={() => { play('bigWin'); onAction('dichiarati', partnerKey) }}
                   disabled={actionsRemaining === 0}
                   className="w-full justify-start bg-primary text-primary-foreground animate-pulse"
                 >
