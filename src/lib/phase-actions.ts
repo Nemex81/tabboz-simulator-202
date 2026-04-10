@@ -19,6 +19,7 @@ export type ActionId =
   | 'cinema'
   | 'shopping'
   | 'chiacchiera'
+  | 'online'
   | 'parco'
   | 'telefona'
   | 'studia_gruppo'
@@ -47,7 +48,7 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'motorino', label: 'Giro col motorino' },
       { id: 'shopping', label: 'Shopping in centro' },
       { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
-      { id: 'parco', label: 'Giro al parco' },
+      { id: 'parco', label: 'Socializza nel quartiere' },
       { id: 'chiacchiera', label: 'Chiacchiera in giro' },
     ],
     sera: [
@@ -71,7 +72,7 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'shopping', label: 'Shopping al mercato' },
       { id: 'lavoro', label: 'Lavoro mattutino' },
       { id: 'riposa', label: 'Dormi fino a tardi' },
-      { id: 'parco', label: 'Giro al parco' },
+      { id: 'parco', label: 'Socializza nel quartiere' },
     ],
     pomeriggio: [
       { id: 'palestra', label: 'Vai in palestra' },
@@ -79,7 +80,7 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
       { id: 'shopping', label: 'Shopping in centro' },
       { id: 'lavoro', label: 'Lavoro part-time' },
       { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
-      { id: 'parco', label: 'Giro al parco' },
+      { id: 'parco', label: 'Socializza nel quartiere' },
       { id: 'chiacchiera', label: 'Chiacchiera in giro' },
     ],
     sera: [
@@ -123,14 +124,14 @@ export const PHASE_ACTIONS: Record<DayType, Record<DayPhase, PhaseActionEntry[]>
     mattina: [
       { id: 'riposa', label: 'Riposa il giorno di festa' },
       { id: 'palestra', label: 'Sport' },
-      { id: 'parco', label: 'Giro al parco' },
+      { id: 'parco', label: 'Socializza nel quartiere' },
     ],
     pomeriggio: [
       { id: 'shopping', label: 'Shopping' },
       { id: 'cinema', label: 'Cinema' },
       { id: 'motorino', label: 'Giro col motorino' },
       { id: 'riposa', label: 'Riposa un po\' (25-35% stanchezza)' },
-      { id: 'parco', label: 'Giro al parco' },
+      { id: 'parco', label: 'Socializza nel quartiere' },
       { id: 'chiacchiera', label: 'Chiacchiera in giro' },
     ],
     sera: [

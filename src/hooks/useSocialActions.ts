@@ -37,8 +37,8 @@ interface UseSocialActionsParams {
   announce: (msg: string, priority?: 'polite' | 'assertive') => void
   triggerRandomEvent: () => void
   checkForNewFriend: (location: string) => void
-  checkForNewRelationship: () => void
-  checkForNewGirlfriend: () => void
+  checkForNewRelationship: (metAt?: Relationship['metAt']) => void
+  checkForNewGirlfriend: (metAt?: Relationship['metAt']) => void
   currentPhase: DayPhase
   dayType: DayType
   phaseActionsRemaining: number
@@ -170,8 +170,8 @@ export function useSocialActions({
     }
     consumeAction()
     checkForNewFriend('in discoteca')
-    checkForNewRelationship()
-    checkForNewGirlfriend()
+    checkForNewRelationship('festa')
+    checkForNewGirlfriend('festa')
     triggerRandomEvent()
     // STEP 9C: rischio sbornia dopo la discoteca
     if (Math.random() < 0.15) {
@@ -234,8 +234,8 @@ export function useSocialActions({
     }
     consumeAction()
     checkForNewFriend('al cinema')
-    checkForNewRelationship()
-    checkForNewGirlfriend()
+    checkForNewRelationship('quartiere')
+    checkForNewGirlfriend('quartiere')
     triggerRandomEvent()
   }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
 
@@ -325,8 +325,30 @@ export function useSocialActions({
     announce(chiacchieraMsg)
     addLogEntry('social', 'Chiacchierata con qualcuno', chiacchieraMsg, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('quartiere')
-    checkForNewRelationship()
+    checkForNewRelationship('quartiere')
   }, [setStats, consumeInterazione, announce, checkForNewFriend, checkForNewRelationship, addLogEntry])
+
+  const handleNavigaOnline = useCallback(() => {
+    if (!canInteractRef.current) {
+      playSound.failure()
+      announce('Hai esaurito le interazioni per questa fascia oraria!', 'assertive')
+      return
+    }
+    playSound.buttonClick()
+    setStats((current) => ({
+      ...current,
+      carisma: clampStat(current.carisma + 4),
+      reputazione: clampStat(current.reputazione + 1),
+      stanchezza: clampStat(current.stanchezza + 2),
+      stress: clampStat(current.stress - 3),
+      morale: clampStat(current.morale + 4)
+    }))
+    consumeInterazione()
+    announce('Hai navigato online e conosciuto nuova gente in rete! +4 Carisma, +1 Reputazione')
+    addLogEntry('social', 'Sessione online', 'Hai navigato online e conosciuto nuova gente in rete! +4 Carisma, +1 Reputazione', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    checkForNewFriend('online')
+    checkForNewRelationship('online')
+  }, [setStats, consumeInterazione, announce, addLogEntry, checkForNewFriend, checkForNewRelationship])
 
   // B1-FIX-5 applicato
   const handleParco = useCallback(() => {
@@ -353,11 +375,11 @@ export function useSocialActions({
       morale: clampStat(current.morale + 8)
     }))
     consumeAction()
-    announce('Giro rilassante al parco! +5 Carisma, -5 Stanchezza, +2 Reputazione')
-    addLogEntry('action_neutral', 'Giro al parco', 'Giro rilassante al parco! +5 Carisma, -5 Stanchezza, +2 Reputazione', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    announce('Hai socializzato nel quartiere! +5 Carisma, -5 Stanchezza, +2 Reputazione')
+    addLogEntry('action_neutral', 'Socializza nel quartiere', 'Hai socializzato nel quartiere! +5 Carisma, -5 Stanchezza, +2 Reputazione', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('al parco')
-    checkForNewRelationship()
-    checkForNewGirlfriend()
+    checkForNewRelationship('quartiere')
+    checkForNewGirlfriend('quartiere')
     // STEP 9C: leggero rischio raffreddore al parco
     if (Math.random() < 0.05) {
       applyCondition('raffreddore', gameTimeRef.current.currentDate, currentPhaseRef.current)
@@ -433,9 +455,9 @@ export function useSocialActions({
           const key = k as keyof GameStats
           const val = v as number
           if (key === 'soldi') {
-            updated[key] = clampStat(val, 0, 1000)
+            ;(updated as unknown as Record<string, number>)[key] = clampStat(val, 0, 1000)
           } else {
-            updated[key] = clampStat(val)
+            ;(updated as unknown as Record<string, number>)[key] = clampStat(val)
           }
         })
         return updated
@@ -451,6 +473,7 @@ export function useSocialActions({
     handleCinema,
     handleTryRelationship,
     handleChiacchiera,
+    handleNavigaOnline,
     handleParco,
     handleTelefona,
     handleFriendAction,

@@ -42,6 +42,7 @@ function makeProps(overrides: Partial<CityDialogsProps> = {}): CityDialogsProps 
     availableJobsForDialog: [JOBS.dogsitter],
     onSelectJob: vi.fn(),
     playerStats: {
+      media: 6,
       muscoli: 10,
       coattaggine: 10,
       figosita: 10,
@@ -57,7 +58,7 @@ function makeProps(overrides: Partial<CityDialogsProps> = {}): CityDialogsProps 
       fame: 10,
       igiene: 50,
       hasMotorino: false,
-    } as CityDialogsProps['playerStats'],
+    } as unknown as CityDialogsProps['playerStats'],
     playerSchoolYear: 1,
     ...overrides,
   }

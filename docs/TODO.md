@@ -1,8 +1,10 @@
-# TODO - Eliminare collisioni residue nelle chiavi romantiche
+# TODO - Social Network Expansion
 
-- [x] Sostituire la chiave pickup derivata con un encounter id casuale esplicito
-- [x] Assegnare `sourceKey` stabili anche alle relazioni legacy prive di chiave
-- [x] Aggiornare la normalizzazione di bootstrap per persistere le nuove chiavi
-- [x] Aggiungere test sui casi pickup/direct-girlfriend e sulla migrazione legacy
-- [x] Validare con `npx tsc --noEmit` e suite Vitest completa
-- [x] Riassumere i rischi residui rimasti fuori dal perimetro minimo
+- [x] F1 - Aggiungere azione social online nel tab Social
+- [x] F2 - Far nascere gli amici online con provenienza rete coerente
+- [x] F3 - Mostrare la provenienza nelle card amici
+- [x] F4 - Tracciare il contesto di origine nelle relazioni romantiche
+- [x] F5 - Aggiungere il filtro Rete nel FriendshipsPanel
+- [x] Cleanup - Ripulire il typecheck globale del repository
+- [x] Cleanup - Aggiungere test UI per RelationshipsPanel
+- [x] Cleanup - Rinominare le label sociali di quartiere in UI, handler, test e registry azioni

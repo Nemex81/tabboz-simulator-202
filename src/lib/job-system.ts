@@ -123,7 +123,7 @@ const STAT_LABELS: Record<string, string> = {
  */
 export function getJobDisabledReason(job: JobDefinition, stats: GameStats): string | null {
   const ms = job.minStats as Record<string, unknown>
-  const st = stats as Record<string, unknown>
+  const st = stats as unknown as Record<string, unknown>
   for (const key of Object.keys(ms)) {
     const req = ms[key]
     const val = st[key]

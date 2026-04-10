@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Relationship } from '@/lib/types'
 import { useSocialActions } from './useSocialActions'
 
+type UseSocialActionsParams = Parameters<typeof useSocialActions>[0]
+
 const hookMocks = vi.hoisted(() => ({
   generateGirlfriendFromRelationship: vi.fn(),
   randomChance: vi.fn(),
@@ -59,10 +61,13 @@ function makeParams(
     setRelationships: ReturnType<typeof vi.fn>
     setGirlfriend: ReturnType<typeof vi.fn>
     consumeAction: ReturnType<typeof vi.fn>
+    consumeInterazione: ReturnType<typeof vi.fn>
     announce: ReturnType<typeof vi.fn>
     addLogEntry: ReturnType<typeof vi.fn>
+    checkForNewFriend: ReturnType<typeof vi.fn>
+    checkForNewRelationship: ReturnType<typeof vi.fn>
   }> = {},
-) {
+): UseSocialActionsParams {
   return {
     stats: {
       muscoli: 90,
@@ -79,7 +84,7 @@ function makeParams(
       salute: 100,
       hasMotorino: false,
     },
-    setStats: overrides.setStats ?? vi.fn(),
+    setStats: (overrides.setStats ?? vi.fn()) as unknown as UseSocialActionsParams['setStats'],
     gameTime: {
       currentDate: { day: 10, month: 4, year: 2026 },
       actionsRemaining: 2,
@@ -94,28 +99,28 @@ function makeParams(
       },
       age: 14,
       extraActions: 0,
-      currentPhase: 'pomeriggio',
+      currentPhase: 'pomeriggio' as const,
       phaseActions: { mattina: 2, pomeriggio: 2, sera: 2, notte: 1 },
     },
     friends: [],
-    setFriends: vi.fn(),
+    setFriends: vi.fn() as unknown as UseSocialActionsParams['setFriends'],
     relationships,
-    setRelationships: overrides.setRelationships ?? vi.fn(),
-    setGirlfriend: overrides.setGirlfriend ?? vi.fn(),
-    consumeAction: overrides.consumeAction ?? vi.fn(),
-    consumeInterazione: vi.fn(),
-    announce: overrides.announce ?? vi.fn(),
-    triggerRandomEvent: vi.fn(),
-    checkForNewFriend: vi.fn(),
-    checkForNewRelationship: vi.fn(),
-    checkForNewGirlfriend: vi.fn(),
+    setRelationships: (overrides.setRelationships ?? vi.fn()) as unknown as UseSocialActionsParams['setRelationships'],
+    setGirlfriend: (overrides.setGirlfriend ?? vi.fn()) as unknown as UseSocialActionsParams['setGirlfriend'],
+    consumeAction: (overrides.consumeAction ?? vi.fn()) as unknown as UseSocialActionsParams['consumeAction'],
+    consumeInterazione: (overrides.consumeInterazione ?? vi.fn()) as unknown as UseSocialActionsParams['consumeInterazione'],
+    announce: (overrides.announce ?? vi.fn()) as unknown as UseSocialActionsParams['announce'],
+    triggerRandomEvent: vi.fn() as unknown as UseSocialActionsParams['triggerRandomEvent'],
+    checkForNewFriend: (overrides.checkForNewFriend ?? vi.fn()) as unknown as UseSocialActionsParams['checkForNewFriend'],
+    checkForNewRelationship: (overrides.checkForNewRelationship ?? vi.fn()) as unknown as UseSocialActionsParams['checkForNewRelationship'],
+    checkForNewGirlfriend: vi.fn() as unknown as UseSocialActionsParams['checkForNewGirlfriend'],
     currentPhase: 'pomeriggio' as const,
     dayType: 'feriale' as const,
     phaseActionsRemaining: 2,
     canInteract: true,
     marinatoOggi: false,
-    addLogEntry: overrides.addLogEntry ?? vi.fn(),
-    applyCondition: vi.fn(),
+    addLogEntry: (overrides.addLogEntry ?? vi.fn()) as unknown as UseSocialActionsParams['addLogEntry'],
+    applyCondition: vi.fn() as unknown as UseSocialActionsParams['applyCondition'],
   }
 }
 
@@ -164,5 +169,38 @@ describe('useSocialActions handleTryRelationship', () => {
     const updatedRelationships = updater([makeRelationship()])
     expect(updatedRelationships[0]).toMatchObject({ isActive: true, relationshipLevel: 1 })
     expect(sharedSetGirlfriend).toHaveBeenCalledWith(generatedGirlfriend)
+  })
+})
+
+describe('useSocialActions handleNavigaOnline', () => {
+  it('consuma un interazione e prova a generare un amico online', () => {
+    const setStats = vi.fn()
+    const consumeInterazione = vi.fn()
+    const checkForNewFriend = vi.fn()
+    const checkForNewRelationship = vi.fn()
+    const announce = vi.fn()
+    const addLogEntry = vi.fn()
+
+    const { result } = renderHook(() => useSocialActions(makeParams([], {
+      setStats,
+      consumeInterazione,
+      checkForNewFriend,
+      checkForNewRelationship,
+      announce,
+      addLogEntry,
+    })))
+
+    act(() => {
+      result.current.handleNavigaOnline()
+    })
+
+    expect(setStats).toHaveBeenCalledTimes(1)
+    expect(consumeInterazione).toHaveBeenCalledTimes(1)
+    expect(checkForNewFriend).toHaveBeenCalledWith('online')
+    expect(checkForNewRelationship).toHaveBeenCalledWith('online')
+    expect(announce).toHaveBeenCalledWith(
+      'Hai navigato online e conosciuto nuova gente in rete! +4 Carisma, +1 Reputazione'
+    )
+    expect(addLogEntry).toHaveBeenCalledTimes(1)
   })
 })

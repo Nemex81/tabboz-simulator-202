@@ -44,6 +44,42 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   onGirlfriendBreakup,
 }: EnhancedFriendsPanelProps) {
   const { play } = useSoundFeedback()
+
+  const getOriginLabel = (friend: Friend): string => {
+    if (friend.metAt === 'online') {
+      return 'Provenienza: Rete'
+    }
+
+    if (friend.originType === 'compagno_classe' || friend.originType === 'compagno_istituto') {
+      return 'Provenienza: Scuola'
+    }
+
+    return 'Provenienza: Extra'
+  }
+
+  const getMetAtLabel = (metAt: Friend['metAt']): string | null => {
+    switch (metAt) {
+      case 'classe':
+        return 'Classe'
+      case 'corridoio':
+        return 'Corridoio'
+      case 'quartiere':
+        return 'Quartiere'
+      case 'palestra':
+        return 'Palestra'
+      case 'online':
+        return 'Online'
+      case 'festa':
+        return 'Festa'
+      case 'sport':
+        return 'Sport'
+      case 'lavoro':
+        return 'Lavoro'
+      default:
+        return null
+    }
+  }
+
   // FIX-A: early-return rimosso — la sezione fidanzata deve renderizzarsi anche senza amici
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -143,6 +179,16 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
                   <p className="text-sm text-muted-foreground mt-1">
                     {getFriendTypeDescription(friend.type)}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge variant="outline" className="border-primary/40 text-primary">
+                      {getOriginLabel(friend)}
+                    </Badge>
+                    {friend.metAt && getMetAtLabel(friend.metAt) && (
+                      <Badge variant="outline" className="border-secondary/40 text-secondary">
+                        Incontro: {getMetAtLabel(friend.metAt)}
+                      </Badge>
+                    )}
+                  </div>
                   {friend.intelligenza && friend.intelligenza > 60 && (
                     <Badge className="mt-2 bg-primary/20 text-primary border border-primary">
                       <Brain size={16} className="mr-1" weight="fill" />

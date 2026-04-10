@@ -40,8 +40,8 @@ export interface UseGameActionsParams {
   announce: (message: string, priority?: 'polite' | 'assertive') => void
   triggerRandomEvent: () => void
   checkForNewFriend: (location: string) => void
-  checkForNewRelationship: () => void
-  checkForNewGirlfriend: () => void
+  checkForNewRelationship: (metAt?: Relationship['metAt']) => void
+  checkForNewGirlfriend: (metAt?: Relationship['metAt']) => void
   setShowSubjectDialog: (v: boolean) => void
   currentPhase: DayPhase
   dayType: DayType

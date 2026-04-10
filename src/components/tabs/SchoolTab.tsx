@@ -627,7 +627,7 @@ export function SchoolTab({
               <strong className="text-accent">Il Carisma</strong> è la tua capacità di convincere e socializzare!
             </p>
             <ul className="list-disc list-inside space-y-2">
-              <li>Influenza TUTTE le interazioni sociali (Disco, Cinema, Rimorchio)</li>
+              <li>Influenza TUTTE le interazioni sociali (Disco, Cinema, Rimorchia nel quartiere)</li>
               <li>Con Carisma {'>'} 70 hai 20% di evitare eventi negativi con la PARLANTINA!</li>
               <li>Aumenta le probabilità di fare nuove amicizie (base 15% + bonus Carisma)</li>
               <li>Migliora le chance romantiche con i potenziali partner (ogni tipo ha preferenze diverse!)</li>

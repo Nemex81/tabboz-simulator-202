@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import type {
   Teacher,
   GameDate,
+  TeacherMemoryEntry,
 } from '@/lib/types'
 import { playSound } from '@/lib/sound-effects'
 import type { DoInteractionResult, TeacherInteractionKey } from '@/hooks/useGameRelations'

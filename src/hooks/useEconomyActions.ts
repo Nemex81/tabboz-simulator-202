@@ -5,6 +5,7 @@ import { BetInfo, generateStreetRace } from '@/lib/bet-system'
 import {
   GameStats,
   GameTime,
+  Relationship,
   LogEntryType,
   GameLogEntry,
   GameDate,
@@ -30,8 +31,8 @@ interface UseEconomyActionsParams {
   announce: (msg: string, priority?: 'polite' | 'assertive') => void
   triggerRandomEvent: () => void
   checkForNewFriend: (location: string) => void
-  checkForNewRelationship: () => void
-  checkForNewGirlfriend: () => void
+  checkForNewRelationship: (metAt?: Relationship['metAt']) => void
+  checkForNewGirlfriend: (metAt?: Relationship['metAt']) => void
   addLogEntry: (
     type: LogEntryType,
     title: string,
@@ -160,7 +161,7 @@ export function useEconomyActions({
       `Lavoro: ${job.label}`,
       `Turno completato come ${job.label}. +${job.payPerShift}€; effetti: ${Object.entries(job.statEffects)
         .filter(([, value]) => typeof value === 'number')
-        .map(([key, value]) => `${key} ${value > 0 ? '+' : ''}${value}`)
+        .map(([key, value]) => `${key} ${(value as number) > 0 ? '+' : ''}${value}`)
         .join(', ') || 'nessuno'}`,
       'positive',
       gameTimeRef.current.currentDate,
@@ -254,8 +255,8 @@ export function useEconomyActions({
     consumeAction()
     announce(`Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -${ECONOMY.SHOPPING_COSTO} Soldi`)
     checkForNewFriend('al centro commerciale')
-    checkForNewRelationship()
-    checkForNewGirlfriend()
+    checkForNewRelationship('quartiere')
+    checkForNewGirlfriend('quartiere')
     triggerRandomEvent()
     addLogEntry('action_neutral', 'Shopping al centro commerciale', `Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -${ECONOMY.SHOPPING_COSTO} Soldi`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
   }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])

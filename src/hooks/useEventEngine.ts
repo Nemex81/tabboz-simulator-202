@@ -22,16 +22,31 @@ const LOCATION_NORMALIZATION: Record<string, keyof typeof LOCATION_PROB_BONUS> =
   'al cinema': 'quartiere',
   'in palestra': 'palestra',
   palestra: 'palestra',
+  online: 'online',
+  rete: 'online',
+  'in rete': 'online',
   'al centro commerciale': 'lavoro',
   lavoro: 'lavoro',
   'in discoteca': 'festa',
   festa: 'festa',
 }
 
+const FRIEND_LOCATION_TEXT: Record<keyof typeof LOCATION_PROB_BONUS, string> = {
+  classe: 'a scuola',
+  corridoio: 'in corridoio',
+  quartiere: 'in quartiere',
+  palestra: 'in palestra',
+  online: 'online',
+  festa: 'a una festa',
+  sport: 'durante un attivita sportiva',
+  lavoro: 'al lavoro',
+}
+
 function buildPickupRelationship(
   name: string,
   gender: Relationship['gender'],
   sourceKey: string,
+  metAt?: Relationship['metAt'],
   preference: Relationship['preference'] = 'figosita',
   difficulty: Relationship['difficulty'] = 'media',
 ): Relationship {
@@ -40,6 +55,7 @@ function buildPickupRelationship(
     name,
     sourceKey,
     sourceType: 'pickup',
+    metAt,
     gender,
     difficulty,
     preference,
@@ -161,6 +177,7 @@ export function useEventEngine({
               ...entry,
               sourceKey: entry.sourceKey ?? relationship.sourceKey,
               sourceType: entry.sourceType ?? relationship.sourceType,
+              metAt: entry.metAt ?? relationship.metAt,
               gender: entry.gender ?? relationship.gender,
               orientamentoSessuale: entry.orientamentoSessuale ?? relationship.orientamentoSessuale,
               difficulty: relationship.difficulty,
@@ -193,27 +210,27 @@ export function useEventEngine({
       const newFriend = generateExtraFriend(normalizedLocation)
       setFriends((current) => [...current, newFriend])
       playSound.success()
-      const description = `Hai conosciuto ${newFriend.name} in zona ${normalizedLocation}! Nuovo amico aggiunto alla rubrica. (${newFriend.type.toUpperCase()})`
+      const description = `Hai conosciuto ${newFriend.name} ${FRIEND_LOCATION_TEXT[normalizedLocation]}! Nuovo amico aggiunto alla rubrica. (${newFriend.type.toUpperCase()})`
       announce(description)
       addLogEntry('social', `Nuovo amico: ${newFriend.name}`, description, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
   }, [setFriends, announce, addLogEntry])
 
-  const checkForNewRelationship = useCallback(() => {
+  const checkForNewRelationship = useCallback((metAt?: Relationship['metAt']) => {
     if (relationshipsRef.current.length < 6 && randomChance(20)) {
       const currentPlayer = playerProfileRef.current
       const targetGender = getPreferredPartnerGender(
         currentPlayer?.gender ?? 'maschio',
         currentPlayer?.orientamentoSessuale ?? 'eterosessuale',
       ) ?? 'F'
-      const newRelationship = generateRandomRelationship(targetGender)
+      const newRelationship = generateRandomRelationship(targetGender, metAt)
       upsertRelationship(newRelationship)
       playSound.eventTrigger()
       announce(`Hai notato ${newRelationship.name}! Nuovo interesse romantico disponibile.`)
     }
   }, [announce, upsertRelationship])
 
-  const checkForNewGirlfriend = useCallback(() => {
+  const checkForNewGirlfriend = useCallback((metAt?: Relationship['metAt']) => {
     if (girlfriendRef.current) return
     if (randomChance(10)) {
       const currentPlayer = playerProfileRef.current
@@ -222,7 +239,7 @@ export function useEventEngine({
         currentPlayer?.orientamentoSessuale ?? 'eterosessuale',
       ) ?? 'F'
       const newRelationship = {
-        ...generateRandomRelationship(targetGender),
+        ...generateRandomRelationship(targetGender, metAt),
         sourceKey: createRelationshipSourceKey('direct-girlfriend'),
         sourceType: 'direct_girlfriend' as const,
         relationshipLevel: 1,
@@ -485,10 +502,10 @@ export function useEventEngine({
     ))
     setAtipaEncounterKey(createRelationshipSourceKey('pickup'))
     setAtipaSuccessChance(Math.round(successChance))
-    setCurrentEvent(`Hai adocchiato ${randomName} al centro commerciale! Ti vuoi provare?`)
+    setCurrentEvent(`Hai incrociato ${randomName} nel quartiere! Vuoi provarci?`)
     setShowAtipaEvent(true)
     consumeAction()
-    announce(`Evento: Hai incontrato ${randomName}! Possibilità di successo: ${Math.round(successChance)}%`)
+    announce(`Evento: occasione per rimorchiare nel quartiere con ${randomName}. Possibilità di successo: ${Math.round(successChance)}%`)
   }, [consumeAction, announce])
 
   // B1-FIX-3 applicato
@@ -498,7 +515,7 @@ export function useEventEngine({
     setStats((current) => ({ ...current, coattaggine: clampStat(current.coattaggine - 5) }))
     // consumeAction() rimossa — già chiamata in handleProvarciConAtipa
     announce('Hai CAGATO sotto! -5 Coattaggine')
-    addLogEntry('social', 'Atipa — rinunciato', 'Hai CAGATO sotto! -5 Coattaggine', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    addLogEntry('social', 'Rimorchia nel quartiere — rinunciato', 'Hai CAGATO sotto! -5 Coattaggine', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
   }, [setStats, announce, addLogEntry])
 
   const handleAtipaProva = useCallback(() => {
@@ -509,6 +526,7 @@ export function useEventEngine({
         name,
         'F',
         atipaEncounterKeyRef.current || `pickup:fallback:${name}`,
+        'quartiere',
       )
       const currentDate = gameTimeRef.current.currentDate
       const currentDateString = `${currentDate.day}/${currentDate.month}/${currentDate.year}`
@@ -523,7 +541,7 @@ export function useEventEngine({
         carisma: clampStat(current.carisma + 5)
       }))
       announce(`${name} ha detto SÌ! +20 Figosità, +10 Coattaggine, +5 Carisma`)
-      addLogEntry('social', `Atipa con ${name} — successo`, `${name} ha detto SÌ! +20 Figosità, +10 Coattaggine, +5 Carisma`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+      addLogEntry('social', `Rimorchia nel quartiere con ${name} — successo`, `${name} ha detto SÌ! +20 Figosità, +10 Coattaggine, +5 Carisma`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {
       playSound.bigLoss()
       setStats((current) => ({

@@ -11,6 +11,29 @@ import { Badge } from '@/components/ui/badge'
 import { getRelationshipPreferenceText, getDifficultyText, calculateRelationshipSuccess } from '@/lib/relationship-utils'
 import { getPotentialPartnersEmptyLabel, getPotentialPartnersHeading, getPartnerSubjectPronoun } from '@/lib/gender-utils'
 
+function getRelationshipMetAtLabel(metAt: Relationship['metAt']): string | null {
+  switch (metAt) {
+    case 'online':
+      return 'Rete'
+    case 'quartiere':
+      return 'Quartiere'
+    case 'palestra':
+      return 'Palestra'
+    case 'festa':
+      return 'Festa'
+    case 'classe':
+      return 'Classe'
+    case 'corridoio':
+      return 'Corridoio'
+    case 'sport':
+      return 'Sport'
+    case 'lavoro':
+      return 'Lavoro'
+    default:
+      return null
+  }
+}
+
 interface RelationshipsPanelProps {
   playerProfile: PlayerProfile | null
   relationships: Relationship[]
@@ -52,6 +75,11 @@ export function RelationshipsPanel({ playerProfile, relationships, stats, onTryR
                         State insieme! Continua a uscire con {getPartnerSubjectPronoun(rel.gender ?? 'F')}!
                       </span>
                     </div>
+                    {rel.metAt && getRelationshipMetAtLabel(rel.metAt) && (
+                      <div className="mt-2">
+                        <Badge variant="outline">Origine: {getRelationshipMetAtLabel(rel.metAt)}</Badge>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -96,6 +124,11 @@ export function RelationshipsPanel({ playerProfile, relationships, stats, onTryR
                             Probabilità di successo: {successChance.toFixed(0)}%
                           </span>
                         </div>
+                        {rel.metAt && getRelationshipMetAtLabel(rel.metAt) && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline">Origine: {getRelationshipMetAtLabel(rel.metAt)}</Badge>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <Button

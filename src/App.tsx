@@ -321,6 +321,7 @@ function App() {
     handleGirlfriendAction,
     handleGirlfriendBreakup,
     handleChiacchiera,
+    handleNavigaOnline,
     handleParco,
     handleTelefona,
     handleMarina: handleMarinaFromHook,
@@ -458,13 +459,13 @@ function App() {
 
   useAppEffects({
     currentTheme,
-    rawPlayerProfile,
+    rawPlayerProfile: rawPlayerProfile ?? null,
     setRawPlayerProfile,
-    rawRelationships,
+    rawRelationships: rawRelationships ?? [],
     setRawRelationships,
-    rawGirlfriend,
+    rawGirlfriend: rawGirlfriend ?? null,
     setRawGirlfriend,
-    rawFriends,
+    rawFriends: rawFriends ?? [],
     setRawFriends,
     schoolType,
     gameYear: gameTime.schoolYear.currentYear,
@@ -486,7 +487,7 @@ function App() {
     dayType: dayType ?? null,
     gameTime,
     schoolRecord,
-    schoolDayState,
+    schoolDayState: _schoolDayStateFromHook,
     grades,
     stats,
     gameOver,
@@ -645,6 +646,7 @@ function App() {
       intelligenza: stats.intelligenza,
       handleStudia,
       handleChiacchiera,
+      handleNavigaOnline,
       handleParco,
       handleTelefona,
       handleProvarciConAtipa,
@@ -768,8 +770,8 @@ function App() {
           gameTime={gameTime}
           currentPhase={currentPhase}
           dayType={dayType}
-          phaseActionsRemaining={phaseActionsRemaining}
-          interazioniRimaste={interazioniRimaste}
+          phaseActionsRemaining={phaseActionsRemaining ?? 0}
+          interazioniRimaste={interazioniRimaste ?? 0}
           isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
           morningChoicePending={morningChoicePending}
           onOpenKeyboardHelp={() => setShowKeyboardHelp(true)}

@@ -1,4 +1,4 @@
-import { Brain, Chats, Heart, Motorcycle, UserCircle, PersonSimpleRun } from '@phosphor-icons/react'
+import { Brain, Chats, Heart, Laptop, Motorcycle, UserCircle, PersonSimpleRun } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { ActionButton } from '@/components/ActionButton'
 import { calculateStudyGradeIncrease } from '@/lib/game-utils'
@@ -17,6 +17,7 @@ interface SocialTabProps {
   intelligenza: number
   handleStudia: () => void
   handleChiacchiera: () => void
+  handleNavigaOnline: () => void
   handleParco: () => void
   handleTelefona: () => void
   handleProvarciConAtipa: () => void
@@ -35,6 +36,7 @@ export function SocialTab({
   intelligenza,
   handleStudia,
   handleChiacchiera,
+  handleNavigaOnline,
   handleParco,
   handleTelefona,
   handleProvarciConAtipa,
@@ -98,7 +100,7 @@ export function SocialTab({
           />
           <ActionButton
             icon={<PersonSimpleRun size={48} />}
-            label="Giro al Parco"
+            label="Socializza nel quartiere"
             onClick={handleParco}
             disabled={morningChoicePending || phaseActionsLeft <= 0}
             blockedReason={
@@ -107,8 +109,23 @@ export function SocialTab({
                 : 'Nessuna azione per questa fascia oraria'
             }
             variant="secondary"
-            ariaLabel="Giro rilassante al parco. Gratis. +5 Carisma, -5 Stanchezza, +2 Reputazione"
-            helpText="Giro rilassante al parco. Gratis. Aumenta il Carisma di 5, riduce la Stanchezza di 5 e aumenta la Reputazione di 2."
+            ariaLabel="Socializza nel quartiere. Gratis. +5 Carisma, -5 Stanchezza, +2 Reputazione"
+            helpText="Socializza nel quartiere. Gratis. Aumenta il Carisma di 5, riduce la Stanchezza di 5 e aumenta la Reputazione di 2."
+            announce={announce}
+          />
+          <ActionButton
+            icon={<Laptop size={48} />}
+            label="Naviga Online"
+            onClick={handleNavigaOnline}
+            disabled={morningChoicePending || interactionsLeft <= 0}
+            blockedReason={
+              morningChoicePending
+                ? '🏫 Scegli prima se andare a scuola o marinare!'
+                : 'Nessuna interazione disponibile per questa fascia oraria'
+            }
+            variant="secondary"
+            ariaLabel="Naviga online e socializza in rete. Gratis. +4 Carisma, +1 Reputazione"
+            helpText="Naviga online e socializza in rete. Gratis. Aumenta il Carisma di 4, la Reputazione di 1 e puo farti conoscere nuove persone online."
             announce={announce}
           />
           <ActionButton
@@ -135,12 +152,12 @@ export function SocialTab({
       <Card className="p-6 border-2 border-accent bg-card">
         <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
           <Heart size={24} weight="fill" />
-          RIMORCHIO
+          RIMORCHIA NEL QUARTIERE
         </h3>
         <div className="space-y-3">
           <ActionButton
             icon={<Heart size={48} />}
-            label="Atipa"
+            label="Rimorchia nel quartiere"
             shortcut="Ctrl+9"
             onClick={handleProvarciConAtipa}
             disabled={morningChoicePending || phaseActionsLeft <= 0}
@@ -150,8 +167,8 @@ export function SocialTab({
                 : 'Nessuna azione per questa fascia oraria'
             }
             variant="default"
-            ariaLabel="Prova a rimorchiare un'atipa. Se rifiuta perdi Figosiità e Carisma; se accetta guadagni entrambi. Tasto rapido: Ctrl+9"
-            helpText="Prova a rimorchiare. In caso di successo guadagni Figosiità e Carisma; in caso di rifiuto li perdi. Tasto rapido: Ctrl+9."
+            ariaLabel="Rimorchia nel quartiere. Se ricevi un rifiuto perdi Figosità e Carisma; se va bene li guadagni. Tasto rapido: Ctrl+9"
+            helpText="Rimorchia nel quartiere. In caso di successo guadagni Figosità e Carisma; in caso di rifiuto li perdi. Tasto rapido: Ctrl+9."
             announce={announce}
           />
         </div>

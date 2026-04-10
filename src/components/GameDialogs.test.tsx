@@ -63,6 +63,7 @@ function makeProps(): GameDialogsProps {
       availableJobsForDialog: [JOBS.dogsitter],
       onSelectJob: vi.fn(),
       playerStats: {
+        media: 6,
         muscoli: 10,
         coattaggine: 10,
         figosita: 10,
@@ -78,7 +79,7 @@ function makeProps(): GameDialogsProps {
         fame: 10,
         igiene: 50,
         hasMotorino: false,
-      } as GameDialogsProps['city']['playerStats'],
+      } as unknown as GameDialogsProps['city']['playerStats'],
       playerSchoolYear: 1,
     },
     social: {

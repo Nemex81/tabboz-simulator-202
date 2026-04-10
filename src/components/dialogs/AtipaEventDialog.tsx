@@ -20,10 +20,10 @@ export const AtipaEventDialog = memo(function AtipaEventDialog({
       <AlertDialogContent className="border-2 border-accent">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl text-accent">
-            💖 RIMORCHIO!
+            💖 RIMORCHIA NEL QUARTIERE!
           </AlertDialogTitle>
           <AlertDialogDescription className="text-lg">
-            <p className="mb-2">Hai adocchiato un&apos;atipa! Vuoi provarci?</p>
+            <p className="mb-2">Hai adocchiato una tipa nel quartiere! Vuoi provarci?</p>
             <p className="text-sm text-muted-foreground">
               Probabilità di successo: {atipaSuccessChance}%
             </p>

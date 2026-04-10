@@ -22,7 +22,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       { keys: 'Ctrl + 7', action: 'Minaccia professore' }
     ]},
     { category: 'Vita Sociale', shortcuts: [
-      { keys: 'Ctrl + 9', action: 'Prova a rimorchiare' },
+      { keys: 'Ctrl + 9', action: 'Rimorchia nel quartiere' },
       { keys: 'Ctrl + D', action: 'Vai in discoteca' },
       { keys: 'Ctrl + C', action: 'Vai al cinema' },
       { keys: 'Ctrl + S', action: 'Vai allo shopping' },

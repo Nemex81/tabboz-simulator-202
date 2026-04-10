@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { GameStats, Relationship } from '@/lib/types'
+import type { Friend, GameStats, Relationship } from '@/lib/types'
 import { useEventEngine } from './useEventEngine'
 
 const hookMocks = vi.hoisted(() => ({
@@ -53,7 +53,7 @@ function makeStats(overrides: Partial<GameStats> = {}): GameStats {
   }
 }
 
-function makeParams(overrides: Partial<Parameters<typeof useEventEngine>[0]> = {}) {
+function makeParams(overrides: Partial<Parameters<typeof useEventEngine>[0]> = {}): Parameters<typeof useEventEngine>[0] {
   return {
     stats: makeStats(),
     setStats: vi.fn(),
@@ -77,14 +77,14 @@ function makeParams(overrides: Partial<Parameters<typeof useEventEngine>[0]> = {
       },
       age: 14,
       extraActions: 0,
-      currentPhase: 'pomeriggio',
+      currentPhase: 'pomeriggio' as const,
       phaseActions: { mattina: 2, pomeriggio: 2, sera: 2, notte: 1 },
     },
     consumeAction: vi.fn(),
     announce: vi.fn(),
     phaseActionsRemaining: 2,
     addLogEntry: vi.fn(),
-    currentPhase: 'pomeriggio',
+    currentPhase: 'pomeriggio' as const,
     playerProfile: { name: 'Tabboz', gender: 'maschio', orientamentoSessuale: 'eterosessuale' },
     ...overrides,
   }
@@ -98,7 +98,7 @@ afterEach(() => {
 })
 
 describe('useEventEngine romantic flow', () => {
-  it('aggiunge una relazione e una fidanzata quando Atipa va a buon fine', () => {
+  it('aggiunge una relazione e una fidanzata quando Rimorchia nel quartiere va a buon fine', () => {
     const params = makeParams()
     const generatedGirlfriend = { id: 'girl-1', nome: 'Jessica', cognome: 'Rossi', relationshipStatus: 'fidanzata' }
     hookMocks.generateGirlfriendFromRelationship.mockReturnValue(generatedGirlfriend)
@@ -118,12 +118,14 @@ describe('useEventEngine romantic flow', () => {
     })
 
     expect(params.setRelationships).toHaveBeenCalledTimes(1)
-    const relationshipsUpdater = params.setRelationships.mock.calls[0][0] as (prev: Relationship[]) => Relationship[]
+    const relationshipsMock = params.setRelationships as ReturnType<typeof vi.fn>
+    const relationshipsUpdater = relationshipsMock.mock.calls[0][0] as (prev: Relationship[]) => Relationship[]
     const updatedRelationships = relationshipsUpdater([])
     expect(updatedRelationships).toHaveLength(1)
     expect(updatedRelationships[0]).toMatchObject({
       name: 'Jessica',
       sourceType: 'pickup',
+      metAt: 'quartiere',
       isActive: true,
       relationshipLevel: 1,
       preference: 'figosita',
@@ -163,7 +165,8 @@ describe('useEventEngine romantic flow', () => {
     })
 
     expect(params.setRelationships).toHaveBeenCalledTimes(1)
-    const relationshipsUpdater = params.setRelationships.mock.calls[0][0] as (prev: Relationship[]) => Relationship[]
+    const relationshipsMock = params.setRelationships as ReturnType<typeof vi.fn>
+    const relationshipsUpdater = relationshipsMock.mock.calls[0][0] as (prev: Relationship[]) => Relationship[]
     const updatedRelationships = relationshipsUpdater([])
     expect(updatedRelationships).toHaveLength(1)
     expect(updatedRelationships[0]).toMatchObject({
@@ -174,5 +177,58 @@ describe('useEventEngine romantic flow', () => {
     expect(updatedRelationships[0].sourceKey).toMatch(/^direct-girlfriend:/)
     expect(updatedRelationships[0].name.length).toBeGreaterThan(0)
     expect(params.setGirlfriend).toHaveBeenCalledWith(generatedGirlfriend)
+  })
+
+  it('assegna il contesto online ai nuovi interessi romantici generati in rete', () => {
+    const params = makeParams()
+    hookMocks.randomChance.mockReturnValue(true)
+
+    const randomSpy = vi.spyOn(Math, 'random')
+    randomSpy.mockReturnValue(0)
+
+    const { result } = renderHook(() => useEventEngine(params))
+
+    act(() => {
+      result.current.checkForNewRelationship('online')
+    })
+
+    expect(params.setRelationships).toHaveBeenCalledTimes(1)
+    const relationshipsMock = params.setRelationships as ReturnType<typeof vi.fn>
+    const relationshipsUpdater = relationshipsMock.mock.calls[0][0] as (prev: Relationship[]) => Relationship[]
+    const updatedRelationships = relationshipsUpdater([])
+    expect(updatedRelationships).toHaveLength(1)
+    expect(updatedRelationships[0]).toMatchObject({
+      sourceType: 'generated_interest',
+      metAt: 'online',
+      isActive: false,
+    })
+  })
+
+  it('normalizza correttamente gli incontri online e crea un amico con metAt online', () => {
+    const params = makeParams({
+      currentPhase: 'notte' as const,
+    })
+
+    const randomSpy = vi.spyOn(Math, 'random')
+    randomSpy.mockReturnValue(0)
+
+    const { result } = renderHook(() => useEventEngine(params))
+
+    act(() => {
+      result.current.checkForNewFriend('online')
+    })
+
+    expect(params.setFriends).toHaveBeenCalledTimes(1)
+  const friendsMock = params.setFriends as ReturnType<typeof vi.fn>
+  const friendsUpdater = friendsMock.mock.calls[0][0] as (prev: Friend[]) => Friend[]
+    const updatedFriends = friendsUpdater([])
+    expect(updatedFriends).toHaveLength(1)
+    expect(updatedFriends[0]).toMatchObject({
+      originType: 'extrascolastico',
+      metAt: 'online',
+    })
+    expect(params.announce).toHaveBeenCalledWith(
+      expect.stringContaining(' online! Nuovo amico aggiunto alla rubrica.')
+    )
   })
 })

@@ -153,7 +153,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
 
       const deltaSum = Object.entries(result.delta)
         .filter(([k, v]) => k !== 'soldi' && typeof v === 'number')
-        .reduce((acc, [, v]) => acc + v, 0)
+        .reduce((acc, [, v]) => acc + (v as number), 0)
       const logResult: import('@/lib/types').GameLogEntry['result'] =
         deltaSum > 0 ? 'positive' : deltaSum < 0 ? 'negative' : 'neutral'
       addLogEntry('school', 'Evento scolastico', result.message, logResult, currentDate, 'mattina')
@@ -421,7 +421,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
       }
       const deltaSum = Object.entries(result.delta)
         .filter(([k, v]) => k !== 'soldi' && typeof v === 'number')
-        .reduce((acc, [, v]) => acc + v, 0)
+        .reduce((acc, [, v]) => acc + (v as number), 0)
       const logResult: import('@/lib/types').GameLogEntry['result'] =
         deltaSum > 0 ? 'positive' : deltaSum < 0 ? 'negative' : 'neutral'
       addLogEntry(

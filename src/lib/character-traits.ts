@@ -63,10 +63,10 @@ export const getTraitsStressModifier = (traits: TraitId[]): number =>
 
 export const getTraitsStatBonuses = (traits: TraitId[]): Partial<GameStats> => {
   const result: Partial<GameStats> = {}
+  const numericResult = result as unknown as Record<string, number | undefined>
   for (const id of traits) {
     for (const [key, val] of Object.entries(ALL_TRAITS[id].statBonuses)) {
-      const k = key as keyof GameStats
-      result[k] = ((result[k] ?? 0) as number) + (val as number)
+      numericResult[key] = (numericResult[key] ?? 0) + (val as number)
     }
   }
   return result

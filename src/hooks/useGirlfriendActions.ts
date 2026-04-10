@@ -97,11 +97,12 @@ export function useGirlfriendActions({
       setStats((current) => {
         const updated = { ...current }
         Object.entries(result.statChanges).forEach(([key, value]) => {
+          if (typeof value !== 'number') return
           const statKey = key as keyof GameStats
           if (statKey === 'soldi') {
-            updated[statKey] = clampStat((updated[statKey] as number) + value, 0, 1000)
+            ;(updated as unknown as Record<string, number>)[statKey] = clampStat((updated[statKey] as number) + value, 0, 1000)
           } else {
-            updated[statKey] = clampStat((updated[statKey] as number) + value)
+            ;(updated as unknown as Record<string, number>)[statKey] = clampStat((updated[statKey] as number) + value)
           }
         })
         return updated
@@ -128,8 +129,8 @@ export function useGirlfriendActions({
     }
     announce(result.message)
     const gfLogResult: 'positive' | 'negative' | 'neutral' = result.statChanges
-      ? (Object.values(result.statChanges).reduce((a, b) => a + b, 0) > 0 ? 'positive'
-         : Object.values(result.statChanges).reduce((a, b) => a + b, 0) < 0 ? 'negative'
+      ? (Object.values(result.statChanges).filter((value): value is number => typeof value === 'number').reduce((a, b) => a + b, 0) > 0 ? 'positive'
+        : Object.values(result.statChanges).filter((value): value is number => typeof value === 'number').reduce((a, b) => a + b, 0) < 0 ? 'negative'
          : 'neutral')
       : 'neutral'
     addLogEntry('social', `${action} con ${gf.nome}`, result.message, gfLogResult, gameTimeRef.current.currentDate, currentPhaseRef.current)

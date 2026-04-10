@@ -290,6 +290,7 @@ export interface Relationship {
   name: string
   sourceKey?: string
   sourceType?: 'generated_interest' | 'pickup' | 'direct_girlfriend'
+  metAt?: Friend['metAt']
   gender?: BinaryGenderCode
   orientamentoSessuale?: SexualOrientation
   difficulty: 'facile' | 'media' | 'difficile'

@@ -93,7 +93,7 @@ export function useHealthSystem({
             const maxVal = k === 'soldi' ? 1000 : 100
             const before = next[k] as number
             const after = clampStat((before as number) + (mod as number), 0, maxVal)
-            ;(next as Record<string, number>)[k] = after
+            ;(next as unknown as Record<string, number>)[k] = after
             appliedModifiers[k] = after - before
           }
           return next
@@ -138,7 +138,7 @@ export function useHealthSystem({
           for (const [key, mod] of Object.entries(condition.appliedModifiers)) {
             const k = key as keyof GameStats
             const maxVal = k === 'soldi' ? 1000 : 100
-            ;(next as Record<string, number>)[k] = clampStat(
+            ;(next as unknown as Record<string, number>)[k] = clampStat(
               (next[k] as number) - (mod as number),
               0,
               maxVal
@@ -188,7 +188,7 @@ export function useHealthSystem({
             for (const [key, mod] of Object.entries(template.statModifiers)) {
               const k = key as keyof GameStats
               const maxVal = k === 'soldi' ? 1000 : 100
-              ;(next as Record<string, number>)[k] = clampStat(
+              ;(next as unknown as Record<string, number>)[k] = clampStat(
                 (next[k] as number) + (mod as number),
                 0,
                 maxVal

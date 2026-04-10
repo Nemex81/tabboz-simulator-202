@@ -139,7 +139,8 @@ describe('useSchoolEffects', () => {
     expect(params.setShowSchoolEvent).toHaveBeenCalledWith(true)
     expect(params.setSchoolDayState).toHaveBeenCalledTimes(1)
 
-    const updater = params.setSchoolDayState.mock.calls[0][0] as (prev: SchoolDayState) => SchoolDayState
+    const setSchoolDayStateMock = params.setSchoolDayState as ReturnType<typeof vi.fn>
+    const updater = setSchoolDayStateMock.mock.calls[0][0] as (prev: SchoolDayState) => SchoolDayState
     const updatedState = updater(makeSchoolDayState())
     expect(updatedState.slots[0].schoolEventTriggered).toBe(true)
   })

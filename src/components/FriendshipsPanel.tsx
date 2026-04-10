@@ -30,11 +30,12 @@ export const FriendshipsPanel = React.memo(function FriendshipsPanel(props: Frie
   const schoolFriends = friends.filter(f =>
     f.originType === 'compagno_classe' || f.originType === 'compagno_istituto'
   )
-  const extraFriends = friends.filter(f => f.originType === 'extrascolastico')
+  const reteFriends = friends.filter(f => f.metAt === 'online')
+  const extraFriends = friends.filter(f => f.originType === 'extrascolastico' && f.metAt !== 'online')
 
   return (
     <Tabs defaultValue="tutti" className="w-full">
-      <TabsList className="w-full grid grid-cols-3">
+      <TabsList className="w-full grid grid-cols-4">
         <TabsTrigger value="tutti">
           Tutti ({friends.length})
         </TabsTrigger>
@@ -43,6 +44,9 @@ export const FriendshipsPanel = React.memo(function FriendshipsPanel(props: Frie
         </TabsTrigger>
         <TabsTrigger value="extra">
           Extra ({extraFriends.length})
+        </TabsTrigger>
+        <TabsTrigger value="rete">
+          Rete ({reteFriends.length})
         </TabsTrigger>
       </TabsList>
 
@@ -56,6 +60,10 @@ export const FriendshipsPanel = React.memo(function FriendshipsPanel(props: Frie
 
       <TabsContent value="extra">
         <EnhancedFriendsPanel friends={extraFriends} {...rest} />
+      </TabsContent>
+
+      <TabsContent value="rete">
+        <EnhancedFriendsPanel friends={reteFriends} {...rest} />
       </TabsContent>
     </Tabs>
   )

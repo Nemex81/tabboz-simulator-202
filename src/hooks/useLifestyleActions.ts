@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react'
 import {
   GameStats,
   GameTime,
+  Relationship,
   SchoolRecord,
   DayPhase,
   DayType,
@@ -24,7 +25,7 @@ interface UseLifestyleActionsParams {
   announce: (msg: string, priority?: 'polite' | 'assertive') => void
   triggerRandomEvent: () => void
   checkForNewFriend: (location: string) => void
-  checkForNewRelationship: () => void
+  checkForNewRelationship: (metAt?: Relationship['metAt']) => void
   gainExtraAction: () => void
   currentPhase: DayPhase
   dayType: DayType
@@ -112,7 +113,7 @@ export function useLifestyleActions({
     announce(`Hai pompato FERRO! +10 Muscoli, +5 Figosità, -${ECONOMY.PALESTRA_COSTO} Soldi, +15 Stanchezza`)
     addLogEntry('action_neutral', 'Sessione in palestra', `Hai pompato FERRO! +10 Muscoli, +5 Figosità, -${ECONOMY.PALESTRA_COSTO} Soldi, +15 Stanchezza`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('in palestra')
-    checkForNewRelationship()
+    checkForNewRelationship('palestra')
     triggerRandomEvent()
     // STEP 9C: rischio infortunio da palestra
     const injuryRoll = Math.random()

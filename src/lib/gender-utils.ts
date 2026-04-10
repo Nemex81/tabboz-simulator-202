@@ -11,6 +11,14 @@ function buildLegacyRelationshipSourceKey(relationship: Relationship): string {
   return `legacy-relationship:${relationship.id}`
 }
 
+function normalizeRelationshipMetAt(metAt: Relationship['metAt'] | 'rete' | 'in rete' | undefined): Relationship['metAt'] {
+  if (metAt === 'rete' || metAt === 'in rete') {
+    return 'online'
+  }
+
+  return metAt
+}
+
 export const DEFAULT_SEXUAL_ORIENTATION: SexualOrientation = 'eterosessuale'
 
 const SELF_WORD_REPLACEMENTS: Array<[string, string]> = [
@@ -129,6 +137,7 @@ export function normalizeRelationshipCandidate(relationship: Relationship): Rela
     ...relationship,
     sourceKey: relationship.sourceKey ?? buildLegacyRelationshipSourceKey(relationship),
     sourceType: relationship.sourceType ?? 'generated_interest',
+    metAt: normalizeRelationshipMetAt(relationship.metAt as Relationship['metAt'] | 'rete' | 'in rete' | undefined),
     gender: normalizeCharacterGenderCode(relationship.gender, 'F'),
     orientamentoSessuale: relationship.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION,
   }

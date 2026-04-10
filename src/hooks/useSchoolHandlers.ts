@@ -289,11 +289,12 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
       p.setStats((current) => {
         const updated = { ...current! }
         Object.entries(outcome.statChanges!).forEach(([key, value]) => {
+          if (typeof value !== 'number') return
           const statKey = key as keyof GameStats
           if (statKey === 'soldi') {
-            updated[statKey] = clampStat((updated[statKey] as number) + value, 0, 1000)
+            ;(updated as unknown as Record<string, number>)[statKey] = clampStat((updated[statKey] as number) + value, 0, 1000)
           } else {
-            updated[statKey] = clampStat((updated[statKey] as number) + value)
+            ;(updated as unknown as Record<string, number>)[statKey] = clampStat((updated[statKey] as number) + value)
           }
         })
         return updated
@@ -340,7 +341,7 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
       p.schoolEvent?.title ?? 'Evento scolastico',
       outcome.message,
       outcome.statChanges
-        ? (Object.values(outcome.statChanges).reduce((a, b) => a + b, 0) >= 0 ? 'positive' : 'negative')
+        ? (Object.values(outcome.statChanges).filter((value): value is number => typeof value === 'number').reduce((a, b) => a + b, 0) >= 0 ? 'positive' : 'negative')
         : 'neutral',
       p.gameTime.currentDate,
       p.currentPhase ?? 'mattina'

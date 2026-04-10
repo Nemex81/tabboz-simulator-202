@@ -2,13 +2,13 @@ import { Buildings, ChartBar, Chats, GraduationCap, IdentificationCard, Keyboard
 import { Button } from '@/components/ui/button'
 import { DailyControls } from '@/components/DailyControls'
 import { TimeDisplay } from '@/components/TimeDisplay'
-import type { GameTime, PlayerProfile } from '@/lib/types'
+import type { DayPhase, DayType, GameTime, PlayerProfile } from '@/lib/types'
 
 interface AppHeaderProps {
   playerProfile: PlayerProfile | null
   gameTime: GameTime
-  currentPhase: GameTime['currentPhase'] | null | undefined
-  dayType: GameTime['dayType'] | null | undefined
+  currentPhase: DayPhase | null | undefined
+  dayType: DayType | null | undefined
   phaseActionsRemaining: number
   interazioniRimaste: number
   isSchoolMorningSequenceInProgress: boolean
@@ -68,8 +68,8 @@ export function AppHeader({
 
       <TimeDisplay
         gameTime={gameTime}
-        currentPhase={currentPhase}
-        dayType={dayType}
+        currentPhase={currentPhase ?? undefined}
+        dayType={dayType ?? undefined}
         phaseActionsRemaining={phaseActionsRemaining}
         interazioniRimaste={interazioniRimaste}
       />

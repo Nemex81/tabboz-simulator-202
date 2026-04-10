@@ -6,6 +6,7 @@ describe('normalizeRelationshipCandidate', () => {
     const normalized = normalizeRelationshipCandidate({
       id: 'legacy-rel-1',
       name: 'Jessica',
+      metAt: 'in rete' as import('@/lib/types').Relationship['metAt'],
       difficulty: 'media',
       preference: 'figosita',
       relationshipLevel: 0,
@@ -14,6 +15,7 @@ describe('normalizeRelationshipCandidate', () => {
 
     expect(normalized.sourceKey).toBe('legacy-relationship:legacy-rel-1')
     expect(normalized.sourceType).toBe('generated_interest')
+    expect(normalized.metAt).toBe('online')
     expect(normalized.gender).toBe('F')
     expect(normalized.orientamentoSessuale).toBe('eterosessuale')
   })
