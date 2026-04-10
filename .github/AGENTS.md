@@ -256,6 +256,23 @@ Script Python per automazione del framework:
 
 ---
 
+## MCP Runtime Tools
+
+### Tool Runtime Orchestratore (engine v1.5.1)
+
+| Tool | Descrizione |
+|---|---|
+| scf_get_runtime_state | Legge .github/runtime/orchestrator-state.json. Restituisce lo stato corrente dell'orchestratore. |
+| scf_update_runtime_state | Aggiorna campi parziali di orchestrator-state.json (merge parziale). Accetta un dict con i soli campi da modificare. |
+
+### Resource Runtime
+
+| Resource URI | Descrizione |
+|---|---|
+| scf://runtime-state | Stato runtime orchestratore in formato JSON leggibile da Copilot. |
+
+---
+
 ## Riferimenti
 
 - **Regole globali Copilot**: [.github/copilot-instructions.md](copilot-instructions.md)
