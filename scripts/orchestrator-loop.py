@@ -63,8 +63,9 @@ class OrchestratorState:
         try:
             with self.path.open("r", encoding="utf-8") as f:
                 self._state = json.load(f)
-        except Exception:
-            raise
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"ATTENZIONE: orchestrator-state.json illeggibile ({exc}) - uso default")
+            self._state = dict(self.DEFAULT)
         return self._state
 
     def save(self, patch: Dict) -> None:
@@ -145,7 +146,7 @@ class GateRunner:
         "CODE": ["python", "scripts/validate_gates.py", "--check-all"],
         "VALIDATE": ["python", "-m", "pytest", "-m", "not gui", "--cov=src", "-q"],
         "DOCS": ["python", "scripts/sync-documentation.py", "--check"],
-        "RELEASE": [],
+        "RELEASE": ["python", "scripts/validate_gates.py", "--check-release"],
     }
 
     def __init__(self, verbose: bool = False):
@@ -202,7 +203,7 @@ class OrchestratorLoop:
             self._print("LOOP", f"{p.id} — {p.title} — gate: {' '.join(cmd) if cmd else 'manuale'}")
         return 0
 
-    def _print_status(self) -> int:
+    def print_status(self) -> int:
         st = self.state.load()
         self._print("STATO", json.dumps(st, ensure_ascii=False))
         return 0
@@ -228,22 +229,24 @@ class OrchestratorLoop:
         if self.dry_run:
             return self._handle_dry_run(pending)
 
-        for phase in list(pending):
+        while pending:
+            phase = pending[0]
             self._print("LOOP", f"esecuzione fase {phase.id} — {phase.title}")
 
             if phase.is_checkpoint:
-                # in autonomous mode we proceed automatically
+                # DESIGN and PLAN remain auto-approved in autonomous mode.
+                # RELEASE previously was auto-approved; now we run a real gate for RELEASE
+                # so in autonomous mode RELEASE will be evaluated by the GateRunner below.
                 mode = st.get("execution_mode", "autonomous")
-                if mode == "autonomous":
+                if mode == "autonomous" and phase.id != "RELEASE":
                     self._print("CHECKPOINT", f"{phase.id} — eseguo automaticamente in autonomous mode")
-                    # update state and continue
                     st.update({"current_phase": phase.id, "current_agent": "Agent-Orchestrator", "retry_count": 0})
                     self.state.save(st)
                     self.todo.mark_phase_done(phase.id)
                     pending.pop(0)
                     continue
-                else:
-                    # ask user
+                if mode != "autonomous":
+                    # ask user for explicit approval for checkpoints when supervised
                     self._print("CHECKPOINT", f"{phase.id} — attendere conferma utente (S/N)")
                     ans = input().strip().lower()
                     if ans != "s":
@@ -278,7 +281,6 @@ class OrchestratorLoop:
                 self._print("STATO", f"aggiornato → fase {phase.id}")
                 self.todo.mark_phase_done(phase.id)
                 pending.pop(0)
-                continue
             else:
                 retry_count = retry_count + 1
                 penalized = max(0.0, confidence - 0.10)
@@ -307,7 +309,7 @@ def main() -> int:
     args = parse_args()
     loop = OrchestratorLoop(dry_run=(args.mode == "dry-run"), verbose=args.verbose)
     if args.mode == "status":
-        return loop._print_status()
+        return loop.print_status()
     if args.mode == "reset":
         loop.state.reset()
         loop._print("LOOP", "stato resettato ai default")
