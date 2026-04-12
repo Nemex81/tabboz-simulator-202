@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {},
+	"mcp": {
+		"servers": {
+			"sparkFrameworkEngine": {
+				"env": {
+					"WORKSPACE_FOLDER": "C:\\Users\\nemex\\OneDrive\\Documenti\\GitHub\\tabboz-simulator-202"
+				}
+			}
+		}
+	}
+}
