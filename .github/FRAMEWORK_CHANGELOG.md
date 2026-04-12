@@ -11,6 +11,10 @@ Versioning: [SemVer](https://semver.org/lang/it/)
 
 <!-- Le voci non rilasciate vanno inserite qui. Rimane vuoto dopo la release. -->
 
+### Changed
+
+- Allineato il bootstrap engine al file agente canonico `spark-guide.agent.md` (invece di `spark-user-guide.agent.md`) per evitare `missing_sources` e ripristinare la coerenenza del bootstrap.
+
 ## [v1.11.0] - 2026-03-29
 
 ### Added

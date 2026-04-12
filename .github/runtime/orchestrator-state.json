@@ -1,10 +1,10 @@
 {
-  "current_phase": "release",
+  "current_phase": "validate",
   "current_agent": "Agent-Orchestrator",
-  "retry_count": 0,
-  "confidence": 0.88,
+  "retry_count": 1,
+  "confidence": 0.82,
   "execution_mode": "autonomous",
-  "last_updated": "2026-04-12T22:47:52Z",
+  "last_updated": "2026-04-12T23:22:12Z",
   "phase_history": [
     "analyze",
     "code",
@@ -52,5 +52,8 @@
     "CHANGELOG.md"
   ],
   "spark_guide_commit_status": "blocked-no-git-write-tool",
-  "spark_guide_commit_message": "docs(agents): integra spark-guide nel sistema — aggiorna indice e documentazione"
+  "spark_guide_commit_message": "docs(agents): integra spark-guide nel sistema — aggiorna indice e documentazione",
+  "spark_user_guide_bootstrap_patch": "applied",
+  "spark_user_guide_bootstrap_validation": "blocked-missing-source-file",
+  "spark_user_guide_source_exists": false
 }
