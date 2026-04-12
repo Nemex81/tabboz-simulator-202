@@ -1,77 +1,286 @@
 {
-  "schema_version": "1.0",
-  "project": "tabboz-simulator-202",
-  "generated_at": "2026-04-11T00:00:00Z",
-  "installed_packages": [
+  "schema_version": "2.0",
+  "generated_at": "2026-04-12T22:04:13Z",
+  "entries": [
     {
-      "id": "scf-master-codecrafter",
-      "version": "1.0.0",
-      "engine_min_version": "1.5.0",
+      "file": "AGENTS.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
       "installed_at": "2026-04-11T00:00:00Z",
-      "source": "github:Nemex81/scf-master-codecrafter@v1.0.0",
-      "files": [
-        ".github/AGENTS.md",
-        ".github/copilot-instructions.md",
-        ".github/project-profile.md",
-        ".github/agents/Agent-Orchestrator.md",
-        ".github/agents/Agent-Git.md",
-        ".github/agents/Agent-Helper.md",
-        ".github/agents/Agent-Release.md",
-        ".github/agents/Agent-FrameworkDocs.md",
-        ".github/agents/Agent-Welcome.md",
-        ".github/agents/Agent-Research.md",
-        ".github/agents/Agent-CodeRouter.md",
-        ".github/agents/Agent-Analyze.md",
-        ".github/agents/Agent-Design.md",
-        ".github/agents/Agent-Plan.md",
-        ".github/agents/Agent-Docs.md",
-        ".github/agents/Agent-CodeUI.md",
-        ".github/instructions/framework-guard.instructions.md",
-        ".github/instructions/git-policy.instructions.md",
-        ".github/instructions/model-policy.instructions.md",
-        ".github/instructions/personality.instructions.md",
-        ".github/instructions/verbosity.instructions.md",
-        ".github/instructions/workflow-standard.instructions.md",
-        ".github/skills/accessibility-output.skill.md",
-        ".github/skills/agent-selector.skill.md",
-        ".github/skills/code-routing.skill.md",
-        ".github/skills/conventional-commit.skill.md",
-        ".github/skills/document-template.skill.md",
-        ".github/skills/file-deletion-guard.skill.md",
-        ".github/skills/framework-guard.skill.md",
-        ".github/skills/framework-scope-guard.skill.md",
-        ".github/skills/git-execution.skill.md",
-        ".github/skills/personality.skill.md",
-        ".github/skills/project-profile.skill.md",
-        ".github/skills/project-reset.skill.md",
-        ".github/skills/rollback-procedure.skill.md",
-        ".github/skills/semantic-gate.skill.md",
-        ".github/skills/semver-bump.skill.md",
-        ".github/skills/style-setup.skill.md",
-        ".github/skills/task-scope-guard.skill.md",
-        ".github/skills/changelog-entry/SKILL.md",
-        ".github/skills/clean-architecture/SKILL.md",
-        ".github/skills/docs-manager/SKILL.md",
-        ".github/skills/error-recovery/SKILL.md",
-        ".github/skills/framework-index/SKILL.md",
-        ".github/skills/framework-query/SKILL.md",
-        ".github/skills/project-doc-bootstrap/SKILL.md",
-        ".github/skills/validate-accessibility/SKILL.md"
-      ],
-      "naming_notes": "Agent-Research.md non ancora presente in tabboz — vedere anomalia A3"
+      "sha256": "61155641a7f4341a65a8cb8ae247ab24b19c10cf48fe01d8811d53551f5a5131"
     },
     {
-      "id": "scf-pycode-crafter",
-      "version": "2.0.0",
-      "engine_min_version": "1.5.0",
+      "file": "copilot-instructions.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
       "installed_at": "2026-04-11T00:00:00Z",
-      "source": "github:Nemex81/scf-pycode-crafter@v2.0.0",
-      "files": [
-        ".github/AGENTS-python.md",
-        ".github/agents/Agent-Code.md",
-        ".github/agents/Agent-Validate.md"
-      ],
-      "naming_notes": "Agent-Code.md e Agent-Validate.md corrispondono a py-Agent-Code.md e py-Agent-Validate.md del package. Naming locale senza prefisso py- per compatibilità con routing tabboz pre-convenzione. NON rinominare senza aggiornare tutti i riferimenti interni."
+      "sha256": "6b22b1e6286f7be3c9e75ce86ad9d6e57ac4f949b47fb937ded13c27c6887bb5"
+    },
+    {
+      "file": "project-profile.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "4f907e57a270d63126b8cb2a04bb0ac0b41687d9da7ff4ee157e87b585e34b2b"
+    },
+    {
+      "file": "agents/Agent-Orchestrator.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "f10dbbe4fe5aa07f1b7698dc09244d2e4c2e3d03350870deb16f29d2374740f9"
+    },
+    {
+      "file": "agents/Agent-Git.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "412eecd7c728940b7ebd414100bea81b6d5cf2c0aac97633d4de62f5b0647c15"
+    },
+    {
+      "file": "agents/Agent-Helper.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "cf85c50e53fb7a4b3e651a12e8475f264e7eda9b7095cef00c2d1383ba702444"
+    },
+    {
+      "file": "agents/Agent-Release.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "6318db820f26a7d38121b5793b1be6af71eb9cd92ec208ca84232922336f8441"
+    },
+    {
+      "file": "agents/Agent-FrameworkDocs.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "f4ea94d6c46c8cd1e2afeb117bb5df0e35fe3168bb60e6607c8c08c73b902fdd"
+    },
+    {
+      "file": "agents/Agent-Welcome.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "95cd2427fe916dd58906aafe261d615193e1368ea885decfd1758bb29cca2863"
+    },
+    {
+      "file": "agents/Agent-Research.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "2668e1a24496e4e1302f944f8965de590b399f2e31f02421c44c58999b136a1e"
+    },
+    {
+      "file": "agents/Agent-CodeRouter.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "ec565e1429b0a14a25221635028b690b60c84ddd42684641e5ed582ad7372d4c"
+    },
+    {
+      "file": "agents/Agent-Analyze.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "3e836380ffbfaba9f5b62937fc7857254b8139426a77059d94472490fe6fb3bf"
+    },
+    {
+      "file": "agents/Agent-Design.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "0c2521584faf5997141a17c37b3bced3b6013c7155cf5241d1663907393e80d2"
+    },
+    {
+      "file": "agents/Agent-Plan.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "4062399e9c7b7f21d9093f450b31b506cb87d41b6a3f72781f8af63f7345bdbe"
+    },
+    {
+      "file": "agents/Agent-Docs.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "9057b6700e089567d1a063823056383892901d706e180ca77e585dc0fa5c3ae7"
+    },
+    {
+      "file": "agents/Agent-CodeUI.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "5011fbf504cdf033f1b072d9f611843f6eee6b8dca674c39dd5be4cad36f4025"
+    },
+    {
+      "file": "instructions/framework-guard.instructions.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "8362053be10e30f0d172de7223dc06f13992be6608d9ba64ac09b6998d0750bd"
+    },
+    {
+      "file": "instructions/git-policy.instructions.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "2624dd177b4ba9f2cb919fa148310e142b50339bde109d075d3cf081fb0dba82"
+    },
+    {
+      "file": "instructions/model-policy.instructions.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "20fef41c2641c87ac1a95a900c7dc889a34bcd9df026f2b8a9db79fe3e86054c"
+    },
+    {
+      "file": "instructions/personality.instructions.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "672406b13e06d7712b202a72262915f90a9d90f1871ce4dcc6c90c57eddfc4eb"
+    },
+    {
+      "file": "instructions/verbosity.instructions.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "0133acb7b8294f1292fa58228aa2094dfb6acafe70556b2d5c5cc047a5dc0974"
+    },
+    {
+      "file": "instructions/workflow-standard.instructions.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "78363734ce6c6404a76d6cfc41cae70276224bda929425ad01fb895fcb4a66b7"
+    },
+    {
+      "file": "skills/accessibility-output.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "69f1ecb5528cc98e3e35f12db564a419c955dbde88f67f308a94b4d7900082f8"
+    },
+    {
+      "file": "skills/agent-selector.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "afbed7a940b0779ed5b7dd9f62f60478ced9010347eeee7bc32557cb255e1715"
+    },
+    {
+      "file": "skills/code-routing.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "9c2a130ae61e95944704bb5baae085f9603f53777d2b21c1662d48d1cd237c9a"
+    },
+    {
+      "file": "skills/conventional-commit.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "903ce3691d2d0596e856e494daab9e9b50438b65d171bc220699a9fb38b32498"
+    },
+    {
+      "file": "skills/document-template.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "6a9dd2b020a5b4dac4f4e768ef0ff3e75d8ce64a096d1e1d9f1729ae651c18ab"
+    },
+    {
+      "file": "skills/file-deletion-guard.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "e322ecda6e15883eadb63019b2c4026758acde459dc914fb26d2805a16791f5b"
+    },
+    {
+      "file": "skills/framework-guard.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "1d7d89b81de8e9a7b69ec4816b3d7c2619d1d6c02ddf3a275adebd1ddd5c6160"
+    },
+    {
+      "file": "skills/framework-scope-guard.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "a83d1105488a113c9535a1456b77132af49d58749a6807b6f8cb9b9d0b4cc00a"
+    },
+    {
+      "file": "skills/git-execution.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "624204d94267f991bbedd7fe170424aa8ab9091b7eaaf1712bcf5143108783d0"
+    },
+    {
+      "file": "skills/personality.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "8e2e4c9fd8c39320300a2a1a87dc1df7d2d4380047f416667d01c06b5cadd32f"
+    },
+    {
+      "file": "skills/project-profile.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "a6aff552fdf145e2773ea0df04daa146789b3e7605d94157e1ddf26e39e32987"
+    },
+    {
+      "file": "skills/project-reset.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "9e91e87457d18b6d9bffe683d7b72510ba647b325d8644d19e217fb7f68cd4e2"
+    },
+    {
+      "file": "skills/rollback-procedure.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "3136b1edc11401532653761ce42c8e2e2974ee8f6d350978a15fb47d6b04cc8f"
+    },
+    {
+      "file": "skills/semantic-gate.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "e3766dee12f84c14dcb08cc68b41d0be451cb8e77fe76f166e2956bcf7186cb4"
+    },
+    {
+      "file": "skills/semver-bump.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "f265673fe77496ce3e81df6a8a6950f914cf0c9fb0ccf1518f6eecbdb2aea93a"
+    },
+    {
+      "file": "skills/style-setup.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "1.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "226fe897a0f7ad6711cba90e14db6aa29048eb2c5e41fdfe5eb750d9a2e580e5"
+    },
+    {
+      "file": "agents/Agent-Code.md",
+      "package": "scf-pycode-crafter",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "59809faaa745ece5d74def4d72787b9d2b0f38e60d84cbbf77be539b6246d2e4"
+    },
+    {
+      "file": "agents/Agent-Validate.md",
+      "package": "scf-pycode-crafter",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-11T00:00:00Z",
+      "sha256": "db33ba0d091590d2471bd11f000438dc6fac190e1c6720aa0eab234410138777"
     }
   ],
   "untracked_files": [
