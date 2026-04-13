@@ -9,7 +9,7 @@
       "latest_version": "1.0.0",
       "status": "stable",
       "repo_url": "https://github.com/Nemex81/scf-master-codecrafter",
-      "engine_min_version": "1.5.0",
+      "engine_min_version": "1.9.0",
       "tags": [
         "master",
         "orchestrator",
@@ -22,7 +22,7 @@
       "repo_url": "https://github.com/Nemex81/scf-pycode-crafter",
       "latest_version": "2.0.0",
       "description": "Pacchetto SCF per progetti Python — agenti, skill e instruction per Copilot Agent mode",
-      "engine_min_version": "1.5.0",
+      "engine_min_version": "1.9.0",
       "status": "stable",
       "tags": [
         "python",
