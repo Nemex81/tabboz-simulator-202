@@ -1,6 +1,5 @@
 {
-  "schema_version": "2.0",
-  "generated_at": "2026-04-12T22:04:13Z",
+  "schema_version": "1.0",
   "entries": [
     {
       "file": "AGENTS.md",
@@ -267,30 +266,6 @@
       "package_version": "1.0.0",
       "installed_at": "2026-04-11T00:00:00Z",
       "sha256": "226fe897a0f7ad6711cba90e14db6aa29048eb2c5e41fdfe5eb750d9a2e580e5"
-    },
-    {
-      "file": "agents/Agent-Code.md",
-      "package": "scf-pycode-crafter",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "59809faaa745ece5d74def4d72787b9d2b0f38e60d84cbbf77be539b6246d2e4"
-    },
-    {
-      "file": "agents/Agent-Validate.md",
-      "package": "scf-pycode-crafter",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "db33ba0d091590d2471bd11f000438dc6fac190e1c6720aa0eab234410138777"
-    }
-  ],
-  "untracked_files": [
-    {
-      "path": ".github/agents/Agent-Code.md",
-      "note": "mapping: scf-pycode-crafter/py-Agent-Code.md — naming divergente documentato"
-    },
-    {
-      "path": ".github/agents/Agent-Validate.md",
-      "note": "mapping: scf-pycode-crafter/py-Agent-Validate.md — naming divergente documentato"
     }
   ]
 }
