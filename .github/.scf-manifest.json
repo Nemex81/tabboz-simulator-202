@@ -266,6 +266,62 @@
       "package_version": "1.0.0",
       "installed_at": "2026-04-11T00:00:00Z",
       "sha256": "226fe897a0f7ad6711cba90e14db6aa29048eb2c5e41fdfe5eb750d9a2e580e5"
+    },
+    {
+      "file": "prompts/scf-pre-implementation-audit.prompt.md",
+      "package": "scf-engine-bootstrap",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-14T17:19:26Z",
+      "sha256": "921eef0624fd21596437ac6d6d3b397580f510bcf630675b1be31b1a624b5930"
+    },
+    {
+      "file": "agents/spark-guide.agent.md",
+      "package": "scf-engine-bootstrap",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-14T17:19:26Z",
+      "sha256": "832f17377a8e62d766eca628115314daa7576fa68e34a631b6332038860660fe"
+    },
+    {
+      "file": "prompts/scf-check-updates.prompt.md",
+      "package": "scf-engine-bootstrap",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-14T17:19:26Z",
+      "sha256": "1b00f27ceaa227f26eddf476c1f6ffc8875235d367e3162eee9cb5c84f0c4442"
+    },
+    {
+      "file": "prompts/scf-list-available.prompt.md",
+      "package": "scf-engine-bootstrap",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-14T17:19:26Z",
+      "sha256": "4c852455c7adae47efffd97ad1975509610b650b2c78667e3b3670494da97d27"
+    },
+    {
+      "file": "prompts/scf-list-installed.prompt.md",
+      "package": "scf-engine-bootstrap",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-14T17:19:26Z",
+      "sha256": "c2515e5ce6102cb1ce74d044712767e0d678d75afe0f3e72cc0a6e5dd88aa4b3"
+    },
+    {
+      "file": "prompts/scf-package-info.prompt.md",
+      "package": "scf-engine-bootstrap",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-14T17:19:26Z",
+      "sha256": "8973f8d03730fa86525006f3633fdcec6118fbe180a67b9d1f461e59016f9d3f"
+    },
+    {
+      "file": "prompts/scf-remove.prompt.md",
+      "package": "scf-engine-bootstrap",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-14T17:19:26Z",
+      "sha256": "788d8a4313931948a33c8907f739b528e4963e8f0e890d1000d0a5b3c0d13fde"
+    },
+    {
+      "file": "prompts/scf-status.prompt.md",
+      "package": "scf-engine-bootstrap",
+      "package_version": "2.0.0",
+      "installed_at": "2026-04-14T17:19:26Z",
+      "sha256": "f8da2d879374a8a9e4054d1404f642902f4ae13433b9c269439cf876c277f465"
     }
   ]
 }
