@@ -3,325 +3,493 @@
   "entries": [
     {
       "file": "AGENTS.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "61155641a7f4341a65a8cb8ae247ab24b19c10cf48fe01d8811d53551f5a5131"
-    },
-    {
-      "file": "copilot-instructions.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "6b22b1e6286f7be3c9e75ce86ad9d6e57ac4f949b47fb937ded13c27c6887bb5"
-    },
-    {
-      "file": "project-profile.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "4f907e57a270d63126b8cb2a04bb0ac0b41687d9da7ff4ee157e87b585e34b2b"
-    },
-    {
-      "file": "agents/Agent-Orchestrator.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "f10dbbe4fe5aa07f1b7698dc09244d2e4c2e3d03350870deb16f29d2374740f9"
-    },
-    {
-      "file": "agents/Agent-Git.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "412eecd7c728940b7ebd414100bea81b6d5cf2c0aac97633d4de62f5b0647c15"
-    },
-    {
-      "file": "agents/Agent-Helper.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "cf85c50e53fb7a4b3e651a12e8475f264e7eda9b7095cef00c2d1383ba702444"
-    },
-    {
-      "file": "agents/Agent-Release.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "6318db820f26a7d38121b5793b1be6af71eb9cd92ec208ca84232922336f8441"
-    },
-    {
-      "file": "agents/Agent-FrameworkDocs.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "f4ea94d6c46c8cd1e2afeb117bb5df0e35fe3168bb60e6607c8c08c73b902fdd"
-    },
-    {
-      "file": "agents/Agent-Welcome.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "95cd2427fe916dd58906aafe261d615193e1368ea885decfd1758bb29cca2863"
-    },
-    {
-      "file": "agents/Agent-Research.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "2668e1a24496e4e1302f944f8965de590b399f2e31f02421c44c58999b136a1e"
-    },
-    {
-      "file": "agents/Agent-CodeRouter.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "ec565e1429b0a14a25221635028b690b60c84ddd42684641e5ed582ad7372d4c"
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "14b2d959ec68a9cd08e6f2c0e989ed862221d39f2663a3e8f59290a53aa68678"
     },
     {
       "file": "agents/Agent-Analyze.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "3e836380ffbfaba9f5b62937fc7857254b8139426a77059d94472490fe6fb3bf"
-    },
-    {
-      "file": "agents/Agent-Design.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "0c2521584faf5997141a17c37b3bced3b6013c7155cf5241d1663907393e80d2"
-    },
-    {
-      "file": "agents/Agent-Plan.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "4062399e9c7b7f21d9093f450b31b506cb87d41b6a3f72781f8af63f7345bdbe"
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "19b45850e58a873998199d46a4e58b225a5084789df2ceaa34714011b03e00a3"
     },
     {
       "file": "agents/Agent-Docs.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "9057b6700e089567d1a063823056383892901d706e180ca77e585dc0fa5c3ae7"
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "bc25bd2374e9486ae23b793247e64a9ceb85574b630457d9b300f6f82b7d12f1"
     },
     {
-      "file": "agents/Agent-CodeUI.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "5011fbf504cdf033f1b072d9f611843f6eee6b8dca674c39dd5be4cad36f4025"
+      "file": "agents/Agent-FrameworkDocs.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "9a124bca08e179b563081dee74bfa95a5cef48c7c0ae816d32614d23f350269f"
     },
     {
-      "file": "instructions/framework-guard.instructions.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "8362053be10e30f0d172de7223dc06f13992be6608d9ba64ac09b6998d0750bd"
+      "file": "agents/Agent-Git.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "84971440b7b5f6fdc7301534e59b8cea71dbd5446751240b0d65c7893bc9440e"
     },
     {
-      "file": "instructions/git-policy.instructions.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "2624dd177b4ba9f2cb919fa148310e142b50339bde109d075d3cf081fb0dba82"
+      "file": "agents/Agent-Helper.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "f76d2e83effc9e6cf1260016f646b226d2655623b5b74200eae19883c5f13d7b"
     },
     {
-      "file": "instructions/model-policy.instructions.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "20fef41c2641c87ac1a95a900c7dc889a34bcd9df026f2b8a9db79fe3e86054c"
+      "file": "agents/Agent-Orchestrator.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "b8ba780581e88dbba7469b3d3f7b7600cfa879bbce02cbdfec97262d2a949b8a"
     },
     {
-      "file": "instructions/personality.instructions.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "672406b13e06d7712b202a72262915f90a9d90f1871ce4dcc6c90c57eddfc4eb"
+      "file": "agents/Agent-Plan.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "37d6cf35e04037f7c48dd3c444ff8808d6ce1fe91066e4c2480349e176b5f34b"
     },
     {
-      "file": "instructions/verbosity.instructions.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "0133acb7b8294f1292fa58228aa2094dfb6acafe70556b2d5c5cc047a5dc0974"
+      "file": "agents/Agent-Release.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "51f192eac49c1fba960930b9a6b03b4a8833ed500ccb264512a47e93f0bec96a"
     },
     {
-      "file": "instructions/workflow-standard.instructions.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "78363734ce6c6404a76d6cfc41cae70276224bda929425ad01fb895fcb4a66b7"
+      "file": "agents/Agent-Research.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "cf1b73d32d87e75019ed3e795f8c3e3351c322518dc9f5988429b8f6d563d53a"
     },
     {
-      "file": "skills/accessibility-output.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "69f1ecb5528cc98e3e35f12db564a419c955dbde88f67f308a94b4d7900082f8"
+      "file": "agents/Agent-Validate.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "982f98bb69d499880d6a36096d79f341d82c35f0dabe39c30e14320eb55574ab"
     },
     {
-      "file": "skills/agent-selector.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "afbed7a940b0779ed5b7dd9f62f60478ced9010347eeee7bc32557cb255e1715"
-    },
-    {
-      "file": "skills/code-routing.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "9c2a130ae61e95944704bb5baae085f9603f53777d2b21c1662d48d1cd237c9a"
-    },
-    {
-      "file": "skills/conventional-commit.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "903ce3691d2d0596e856e494daab9e9b50438b65d171bc220699a9fb38b32498"
-    },
-    {
-      "file": "skills/document-template.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "6a9dd2b020a5b4dac4f4e768ef0ff3e75d8ce64a096d1e1d9f1729ae651c18ab"
-    },
-    {
-      "file": "skills/file-deletion-guard.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "e322ecda6e15883eadb63019b2c4026758acde459dc914fb26d2805a16791f5b"
-    },
-    {
-      "file": "skills/framework-guard.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "1d7d89b81de8e9a7b69ec4816b3d7c2619d1d6c02ddf3a275adebd1ddd5c6160"
-    },
-    {
-      "file": "skills/framework-scope-guard.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "a83d1105488a113c9535a1456b77132af49d58749a6807b6f8cb9b9d0b4cc00a"
-    },
-    {
-      "file": "skills/git-execution.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "624204d94267f991bbedd7fe170424aa8ab9091b7eaaf1712bcf5143108783d0"
-    },
-    {
-      "file": "skills/personality.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "8e2e4c9fd8c39320300a2a1a87dc1df7d2d4380047f416667d01c06b5cadd32f"
-    },
-    {
-      "file": "skills/project-profile.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "a6aff552fdf145e2773ea0df04daa146789b3e7605d94157e1ddf26e39e32987"
-    },
-    {
-      "file": "skills/project-reset.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "9e91e87457d18b6d9bffe683d7b72510ba647b325d8644d19e217fb7f68cd4e2"
-    },
-    {
-      "file": "skills/rollback-procedure.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "3136b1edc11401532653761ce42c8e2e2974ee8f6d350978a15fb47d6b04cc8f"
-    },
-    {
-      "file": "skills/semantic-gate.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "e3766dee12f84c14dcb08cc68b41d0be451cb8e77fe76f166e2956bcf7186cb4"
-    },
-    {
-      "file": "skills/semver-bump.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "f265673fe77496ce3e81df6a8a6950f914cf0c9fb0ccf1518f6eecbdb2aea93a"
-    },
-    {
-      "file": "skills/style-setup.skill.md",
-      "package": "scf-master-codecrafter",
-      "package_version": "1.0.0",
-      "installed_at": "2026-04-11T00:00:00Z",
-      "sha256": "226fe897a0f7ad6711cba90e14db6aa29048eb2c5e41fdfe5eb750d9a2e580e5"
-    },
-    {
-      "file": "prompts/scf-pre-implementation-audit.prompt.md",
-      "package": "scf-engine-bootstrap",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-14T17:19:26Z",
-      "sha256": "921eef0624fd21596437ac6d6d3b397580f510bcf630675b1be31b1a624b5930"
+      "file": "agents/Agent-Welcome.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "737bfcbcddb6b41335ae165fd61217c9c62ac5ffc9eedcc47ba1433311f3568c"
     },
     {
       "file": "agents/spark-guide.agent.md",
-      "package": "scf-engine-bootstrap",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-14T17:19:26Z",
-      "sha256": "832f17377a8e62d766eca628115314daa7576fa68e34a631b6332038860660fe"
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "947c40683aaecadca92b3e50ddad129e70e18b1b3bb28fdcccafe8539903c005"
     },
     {
-      "file": "prompts/scf-check-updates.prompt.md",
-      "package": "scf-engine-bootstrap",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-14T17:19:26Z",
-      "sha256": "1b00f27ceaa227f26eddf476c1f6ffc8875235d367e3162eee9cb5c84f0c4442"
+      "file": "changelogs/spark-base.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "779acf2c950b137083888626ae61029eb608fedb3ed9a9af9f22391af9dae141"
     },
     {
-      "file": "prompts/scf-list-available.prompt.md",
-      "package": "scf-engine-bootstrap",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-14T17:19:26Z",
-      "sha256": "4c852455c7adae47efffd97ad1975509610b650b2c78667e3b3670494da97d27"
+      "file": "copilot-instructions.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "019653d47783d60825ac19eac05d4494802d9d17dd01fc100843960387d338cb"
     },
     {
-      "file": "prompts/scf-list-installed.prompt.md",
-      "package": "scf-engine-bootstrap",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-14T17:19:26Z",
-      "sha256": "c2515e5ce6102cb1ce74d044712767e0d678d75afe0f3e72cc0a6e5dd88aa4b3"
+      "file": "instructions/framework-guard.instructions.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "f72f95f7da856ac14caadfb25cf15e8bc3e1780a929882bd3317cab2864863fe"
     },
     {
-      "file": "prompts/scf-package-info.prompt.md",
-      "package": "scf-engine-bootstrap",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-14T17:19:26Z",
-      "sha256": "8973f8d03730fa86525006f3633fdcec6118fbe180a67b9d1f461e59016f9d3f"
+      "file": "instructions/git-policy.instructions.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "8c86018d06b017c3d4bb1a75ff55269eb047d716001b73fa14905b480b28bd52"
     },
     {
-      "file": "prompts/scf-remove.prompt.md",
-      "package": "scf-engine-bootstrap",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-14T17:19:26Z",
-      "sha256": "788d8a4313931948a33c8907f739b528e4963e8f0e890d1000d0a5b3c0d13fde"
+      "file": "instructions/model-policy.instructions.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "f3d1f2b4a866d0203b3a06b6c86c6bba2b0cabaeb24d8f5ceeffe78c68f63994"
     },
     {
-      "file": "prompts/scf-status.prompt.md",
-      "package": "scf-engine-bootstrap",
-      "package_version": "2.0.0",
-      "installed_at": "2026-04-14T17:19:26Z",
-      "sha256": "f8da2d879374a8a9e4054d1404f642902f4ae13433b9c269439cf876c277f465"
+      "file": "instructions/personality.instructions.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "41aa5d74ab65f9189bbd1420d39e5c12aa300addf4f72c3010dc3c29f0db8463"
+    },
+    {
+      "file": "instructions/verbosity.instructions.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "a4a1529ffc470c49375efe5f08842a506407b717b6bdcb1d4f5d94dd121e981e"
+    },
+    {
+      "file": "instructions/workflow-standard.instructions.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "bf7f2acde4c3269c8056d25f8079260c6a9bc468c2856c23f18b19d869234eb3"
+    },
+    {
+      "file": "project-profile.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "3e7a81dc52826f1f75543b43aeb3e37103bd0c354fd9714e0026a3c3920de238"
+    },
+    {
+      "file": "prompts/README.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "f9ecec022eb942019bf03d14d3e2e9c226c8023df06667911acb34c7d55d0b82"
+    },
+    {
+      "file": "prompts/framework-changelog.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "ccc03011ae7f243cc7931df57635ca312fde62724c7b5488febe4f2e3aeaaaef"
+    },
+    {
+      "file": "prompts/framework-release.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "cbaa86d6a7f0e13fc3c45cacf95280d3274c3ef078d9441315194284555b3093"
+    },
+    {
+      "file": "prompts/framework-unlock.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "5244d5e084b8eec6d7fa0754e8ac7635ce6ac3d9a4a778eb5a448237000ab531"
+    },
+    {
+      "file": "prompts/framework-update.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "bdb92a9b3df90b450da604bcc250659fb5a20a2227a3e835aa17e34e98af740d"
+    },
+    {
+      "file": "prompts/git-commit.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "9a98c67095c7c919add4557249879c4eee7943b1c69c763c15dd73b887c973c7"
+    },
+    {
+      "file": "prompts/git-merge.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "1a31f4ad1d2b30af98af3c3ef8aecfd751947b4f8356e3c38634f436f6118ab0"
+    },
+    {
+      "file": "prompts/help.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "f11924d335c4827693326940c7d624afabccce5657b043d494a5109763ec6500"
+    },
+    {
+      "file": "prompts/init.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "fb09cd998dfdb87770caae73f434ec2f92dadb33dde751bd456c0c0e83553344"
+    },
+    {
+      "file": "prompts/orchestrate.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "14b8caf7b904db7f850c6daff94f62fb313111e041c0e3bb922f4eb3f7abfec9"
+    },
+    {
+      "file": "prompts/package-update.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "0e365d5e5648be6a8f4c03fb5fcc63a3bdcea27122afa5576a642c3252f6694b"
+    },
+    {
+      "file": "prompts/personality.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "3d27921966591d9a6ae3f8dd07fcb5d77748a96bf54517282bdc7704830d3bc1"
+    },
+    {
+      "file": "prompts/project-setup.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "63cfa40581585cf074241d27a0f40ae64ee5bdf2d1133bd068cad66c018749dc"
+    },
+    {
+      "file": "prompts/project-update.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "ced43499180380b4b47ba3b466564a36b5cc578dd6d8f8be74d489ff2c0aa354"
+    },
+    {
+      "file": "prompts/release.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "7c20e5719ffc76016ee6a87c6197077398027e35a3c0f9682d0a6460c623fbaa"
+    },
+    {
+      "file": "prompts/start.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "57b3dda5c58e01f20769e1dce83b29ba910093fd4a1c338c0f5aa1d77f4b4eac"
+    },
+    {
+      "file": "prompts/status.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "f2bd14096597db631457cb3cc532dcb38fde2c99f9c585a1425ed328734002a4"
+    },
+    {
+      "file": "prompts/sync-docs.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "9f2311d32bfbae319d83804f5fe75044bd0296de0b56d0d70ef453fc8ee751df"
+    },
+    {
+      "file": "prompts/verbosity.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "171cb2d9b5a6b066ead52d0994050cd0ce8b505a5d83e8ca1b5afd39cbfd4644"
+    },
+    {
+      "file": "skills/accessibility-output.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "ce2afa9e6f3cdb5c1dd02bba8e34022575310677e04da043767c152aa2fe7a24"
+    },
+    {
+      "file": "skills/agent-selector.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "b7bf0f63f9b3fe4768c4cb5ee2eef2f96ec77fddd42cb2f8b776a6bcc3752ce0"
+    },
+    {
+      "file": "skills/changelog-entry/SKILL.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "6ca9110cc04a85e2c3298685aa31ad2299dacac2bc231e4bc2bf365a8af71ccd"
+    },
+    {
+      "file": "skills/changelog-entry/templates/entry-template.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "692d98f868d8249cd5b3f6c1c4b493d8dd2d05fdd33fb6992ec2efbdbf0bc72b"
+    },
+    {
+      "file": "skills/conventional-commit.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "e4fee2bf23a0742888d0a132ed45532b6c797e3e5b2e36736ce92eeb8a018255"
+    },
+    {
+      "file": "skills/document-template.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "917005f14672d6cee68f5187c5b910cac17051e05d79d2bf8b9a756ee6e11541"
+    },
+    {
+      "file": "skills/error-recovery/SKILL.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "a64544e431525df25ee6b48c2d6d2b1aa82eb535a52e771d2abd7e3f0d990bc6"
+    },
+    {
+      "file": "skills/error-recovery/reference/errors-git.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "955337a73debbf8efcc62530b5c9ecfeae5a04cecffb58e6a6c5ef95a213d4a1"
+    },
+    {
+      "file": "skills/file-deletion-guard.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "8dcce1dbf69bbaad1995d46e77c5789fe3bac80bcaf48865d093c069377d1d9e"
+    },
+    {
+      "file": "skills/framework-guard.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "64908d9bea7db57d0aefb0cb3e40d4e2ee9161a75f61e7b9cbc2e1c032d0a85c"
+    },
+    {
+      "file": "skills/framework-index/SKILL.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "6b1ecf5f9bdd78634d6583a77417006f31bf8dcae4828223017108533e36f9ab"
+    },
+    {
+      "file": "skills/framework-query/SKILL.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "228402ff1feff945cf06fd57a94b869d39d3ae80363303ffda9dd0379454a74d"
+    },
+    {
+      "file": "skills/framework-query/reference/mcp-tool-index.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "6af922499b3995077aec1b63e4f5d60436f14004e98319e3e84d5e7887e3b9be"
+    },
+    {
+      "file": "skills/framework-scope-guard.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "3f448f27308f03e9af7020b2e054716034a07bd5c2eeca3d44bb34446c22cdbc"
+    },
+    {
+      "file": "skills/git-execution.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "e438ef52a98cacecb0a6adf7780cdac49885e7991ddd360512601b084ebe35f7"
+    },
+    {
+      "file": "skills/personality.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "99ace83000779bcdb1ac0bc7fa234d52cbaf573f33807c63910891e4acc2127d"
+    },
+    {
+      "file": "skills/project-doc-bootstrap/SKILL.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "11150fe7cd913a1ac862b1644e113fdc3434bde32b5598f8f54b45d8f55f74fe"
+    },
+    {
+      "file": "skills/project-doc-bootstrap/templates/doc-structure.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "c51b53f2902bb3410d51b61be0fb63ee2cadfdfcb4a7f8cff2d7aa8d97539294"
+    },
+    {
+      "file": "skills/project-profile.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "d6ac6096c4e1de149a4976f8251c48255bf70ec87d623ce4587f588af51d253d"
+    },
+    {
+      "file": "skills/project-reset.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "5a775ec14cab6a4985f98529b375eb9bbb7ed2923617820e19f417ee24f4721a"
+    },
+    {
+      "file": "skills/rollback-procedure.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "c2c7fafa9e1d63cb9bfc769e276bf3d09838c072cc2c2096e0b6fe0fc6e5e560"
+    },
+    {
+      "file": "skills/semantic-gate.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "9654432e92e8e04bf976c24c43f910f6a1113fb6ae5d6f7747de2ad0daec3f18"
+    },
+    {
+      "file": "skills/semver-bump.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "0856f52a75ece7cfab1a8abd70e3aaa1cd1316e6d17164a6ce79cc86aaba22e5"
+    },
+    {
+      "file": "skills/style-setup.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "fece8222a440a1e784d00bc7d55d714153d7b51db4a96c0b9ce4333f822be2ec"
+    },
+    {
+      "file": "skills/task-scope-guard.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "20fff93212746c2b8af3aa088a83962e9d6b1e6c80ebdec14b18b378dfb477db"
+    },
+    {
+      "file": "skills/validate-accessibility/SKILL.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "5312ed563b0bb97a206da60865494f503b6f41350d5473a47c41ffd498de8ab0"
+    },
+    {
+      "file": "skills/validate-accessibility/checklists/keyboard-nav-checklist.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "575516e4e9047a9cdac1fd51794867a535eb8a860586a23919786eb581cbe918"
+    },
+    {
+      "file": "skills/validate-accessibility/checklists/nvda-checklist.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "fae2adbd318cd74aeea7a5cb22c177e0a8c68f47c80ba0055234d12164f269e0"
+    },
+    {
+      "file": "skills/verbosity.skill.md",
+      "package": "spark-base",
+      "package_version": "1.1.0",
+      "installed_at": "2026-04-16T10:28:50Z",
+      "sha256": "29805352a56364eea67457a5376068a048733cc0f1ba6b586f38eebe4e0913b7"
     }
   ]
 }

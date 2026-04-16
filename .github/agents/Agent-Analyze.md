@@ -1,83 +1,22 @@
 ---
+spark: true
 name: Agent-Analyze
-description: >
-  Agente di discovery e analisi codebase. Attivalo per analizzare
-  architettura, trovare dipendenze, capire come funziona un componente.
-  Modalita read-only: non modifica file.
-model: ['Claude Sonnet 4.6 (copilot)', 'GPT-5.4 (copilot)']
+version: 1.0.0
+description: Dispatcher per analisi e discovery read-only con fallback controllato ad Agent-Research.
+model: ['Claude Sonnet 4.6 (copilot)', 'GPT-5.3-mini (copilot)']
+layer: master
+role: dispatcher
+delegates_to_capabilities: [analyze]
+fallback: Agent-Research
 ---
 
 # Agent-Analyze
 
-Scopo: Discovery, analisi codebase, requirement gathering.
+Dispatcher per analisi e discovery read-only.
 
-Modalita operativa: **read-only**. Questo agente non modifica alcun file.
+## Istruzioni contestuali
 
-Verbosita: `inherit`.
-Personalita: `reviewer`.
+- Per analisi su tool MCP, prompt framework o codice engine, considera `.github/instructions/mcp-context.instructions.md`.
 
----
-
-## Trigger Detection
-
-- "analizza [X]" / "studia [X]" / "qual e" / "come funziona"
-- "trova dove" / "esplora" / "cerca"
-- Esecuzione: read-only, nessun file modify
-
----
-
-## Input Richiesto
-
-- Descrizione utente del componente o area da analizzare
-- Eventuale contesto aggiuntivo (versione, branch, feature specifica)
-
----
-
-## Deliverable
-
-- Findings report (findings.md temporaneo, non committed)
-- Code snippets rilevanti
-- Dipendenze, architectural patterns identificati
-- Domande di chiarimento (se requirements ambigui)
-
----
-
-## Riferimenti Skills
-
-- **Regole Clean Architecture** (layer, dipendenze, violazioni da cercare):
-  → `.github/skills/clean-architecture-rules.skill.md`
-- **Standard output accessibile** (struttura, NVDA, report):
-  → `.github/skills/accessibility-output.skill.md`
-- **Verbosita comunicativa** (profili, cascata, regole):
-  → `.github/skills/verbosity.skill.md`
-- **Postura operativa e stile relazionale** (profili, cascata, regole):
-  → `.github/skills/personality.skill.md`
-
----
-
-## Gate di Completamento
-
-- Analisi completa (copertura breadth del codebase)
-- Domande di follow-up risolte
-- Pronto per Agent-Design o Agent-Plan (user confirm)
-
----
-
-## Workflow Tipico
-
-```
-User: "Analizza l'architettura del timer system"
-  -> Agent-Analyze legge ARCHITECTURE.md, src/application/game_engine.py, src/domain/models/game_end.py
-  -> Report: "Timer gestito da GameEngine con 2 modalita (STRICT/PERMISSIVE),
-             score penalty, override detection"
-  -> Suggerisce successivo: Agent-Design per refactor o Agent-Code per bugfix
-```
-
----
-
-## Regole Operative
-
-- Non creare, modificare o eliminare file
-- Consultare sempre ARCHITECTURE.md e API.md come punto di partenza
-- Riportare dipendenze tra layer (Domain, Application, Infrastructure, Presentation)
-- Segnalare eventuali violazioni della Clean Architecture trovate
+Instrada verso agenti plugin che dichiarano capability `analyze`.
+Se nessun plugin e disponibile, usa Agent-Research come fallback controllato.

@@ -1,5 +1,7 @@
 ---
 name: Agent-Research
+description: Agente di fallback per ricerca linguaggio-dominio e best practice sintetizzate.
+model: ['GPT-5.3-mini (copilot)', 'Claude Haiku 4.6 (copilot)']
 role: support
 visibility: internal
 invoked_by: [Agent-Analyze, Agent-Design, Agent-Plan, Agent-CodeUI, Agent-Docs]
