@@ -1,5 +1,6 @@
 # TODO - Social Network Expansion
 
+- [x] Chore - Escludere backup e snapshot SCF generati localmente per evitare errori di commit su Windows
 - [x] F1 - Aggiungere azione social online nel tab Social
 - [x] F2 - Far nascere gli amici online con provenienza rete coerente
 - [x] F3 - Mostrare la provenienza nelle card amici

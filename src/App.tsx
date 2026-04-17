@@ -15,7 +15,7 @@ import { useAppDialogs } from '@/hooks/useAppDialogs'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useGameLog } from '@/hooks/useGameLog'
 import { useHealthSystem } from '@/hooks/useHealthSystem'
-import { ActivePartner } from '@/lib/girlfriend-system'
+import type { ActivePartner, Ragazza } from '@/lib/girlfriend-system'
 import { 
   validateGrades, 
   validateFriends, 

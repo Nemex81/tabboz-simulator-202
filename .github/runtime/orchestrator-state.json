@@ -1,59 +1,13 @@
 {
-  "current_phase": "docs",
+  "current_phase": "analyze",
   "current_agent": "Agent-Orchestrator",
   "retry_count": 0,
-  "confidence": 0.97,
+  "confidence": 0.92,
   "execution_mode": "autonomous",
-  "last_updated": "2026-04-13T08:44:34Z",
-  "phase_history": [
-    "analyze",
-    "code",
-    "validate",
-    "docs",
-    "validate",
-    "release",
-    "analyze",
-    "code",
-    "validate",
-    "release",
-    "analyze",
-    "validate",
-    "analyze"
-  ],
+  "last_updated": "2026-04-17T14:15:30Z",
+  "phase_history": [],
   "active_task_id": "",
   "update_check_done": true,
-  "last_update_check": "2026-04-13",
-  "available_package_updates": 0,
-  "task1_manifest_update": "completed",
-  "task1_runtime_updated_at": "2026-04-13T00:00:00Z",
-  "task2_manifest_migration": "completed",
-  "task2_runtime_updated_at": "2026-04-13T00:00:00Z",
-  "task2_installed_package_count": 2,
-  "task2_verify_workspace_is_clean": true,
-  "task2_verify_workspace_issue_count": 0,
-  "task2_missing_legacy_files": 10,
-  "task2_validation_completed_at": "2026-04-13T00:00:00Z",
-  "spark_guide_phase0_repo_counts": {
-    "spark-framework-engine": 22,
-    "scf-master-codecrafter": 23,
-    "scf-pycode-crafter": 6,
-    "scf-registry": 1
-  },
-  "spark_guide_validation": {
-    "global": "PASS",
-    "phantom_tools": [],
-    "out_of_scope_tools": [],
-    "implicit_dependencies": [],
-    "bootstrap_sentinel": "spark-assistant.agent.md"
-  },
-  "spark_guide_docs_files": [
-    "README.md",
-    ".github/copilot-instructions.md",
-    "CHANGELOG.md"
-  ],
-  "spark_guide_commit_status": "blocked-no-git-write-tool",
-  "spark_guide_commit_message": "docs(agents): integra spark-guide nel sistema — aggiorna indice e documentazione",
-  "spark_user_guide_bootstrap_patch": "applied",
-  "spark_user_guide_bootstrap_validation": "blocked-missing-source-file",
-  "spark_user_guide_source_exists": false
+  "last_update_check": "2026-04-17",
+  "available_package_updates": 0
 }

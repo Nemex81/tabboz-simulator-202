@@ -86,20 +86,6 @@
       "sha256": "737bfcbcddb6b41335ae165fd61217c9c62ac5ffc9eedcc47ba1433311f3568c"
     },
     {
-      "file": "agents/spark-guide.agent.md",
-      "package": "spark-base",
-      "package_version": "1.1.0",
-      "installed_at": "2026-04-16T10:28:50Z",
-      "sha256": "947c40683aaecadca92b3e50ddad129e70e18b1b3bb28fdcccafe8539903c005"
-    },
-    {
-      "file": "changelogs/spark-base.md",
-      "package": "spark-base",
-      "package_version": "1.1.0",
-      "installed_at": "2026-04-16T10:28:50Z",
-      "sha256": "779acf2c950b137083888626ae61029eb608fedb3ed9a9af9f22391af9dae141"
-    },
-    {
       "file": "copilot-instructions.md",
       "package": "spark-base",
       "package_version": "1.1.0",
@@ -490,6 +476,174 @@
       "package_version": "1.1.0",
       "installed_at": "2026-04-16T10:28:50Z",
       "sha256": "29805352a56364eea67457a5376068a048733cc0f1ba6b586f38eebe4e0913b7"
+    },
+    {
+      "file": "AGENTS-master.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "50fd3c94b4efc97341d8929bc0cfa409ccbba37e519733121143d23ba8295cab"
+    },
+    {
+      "file": "changelogs/scf-master-codecrafter.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "9af995940eb4f617e59c15dbe2aea17f3b3d6a387e0006eac0d477a56b2be91f"
+    },
+    {
+      "file": "agents/Agent-Code.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "5840a34618561258f0c0ccb7ff3e0d1a10e7923af2551bfb68e3652f255af96b"
+    },
+    {
+      "file": "agents/Agent-Design.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "11b4811049564e4d6632f79f83951b6dec08b14165e3a50bfa4452b21990fc74"
+    },
+    {
+      "file": "agents/Agent-CodeRouter.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "68571acb1ba4836cdb27c0cb8eae959b2d4009f68b1650a9b8438ad6279d514a"
+    },
+    {
+      "file": "agents/Agent-CodeUI.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "703c560cc112ddaf86889667032a8eb54cc2d35a6965d6defdd99dd4fd11da0e"
+    },
+    {
+      "file": "instructions/mcp-context.instructions.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "63ba9355d1c968540c6754316d17f4a9b8a0eb9711688fc3981435010dd6dd26"
+    },
+    {
+      "file": "skills/clean-architecture/SKILL.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "be5af77895a215edfbe6a2a004cf18a3302c19db97272853643ebf78d39b7c0b"
+    },
+    {
+      "file": "skills/clean-architecture/templates/project-structure.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "3e8c6d52909eff174dfbf7832913c2e0de619039a168c78feae473f836116ad8"
+    },
+    {
+      "file": "skills/code-routing.skill.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "61107e7707aa563e4dddc29f417d569720e38830b723c0d971b29b5c6c6045c8"
+    },
+    {
+      "file": "skills/docs-manager/SKILL.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "7833d65310c49c07e2dca5c0900c612e37d4246a80263cb1ba998fa9db0a7550"
+    },
+    {
+      "file": "skills/docs-manager/templates/readme-template.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "be590fc89cd6693cb5eeee414ab68ca907250c2159a6ce340ff0f15f4d5fd941"
+    },
+    {
+      "file": "skills/docs-manager/templates/adr-template.md",
+      "package": "scf-master-codecrafter",
+      "package_version": "2.1.0",
+      "installed_at": "2026-04-16T13:11:19Z",
+      "sha256": "bd1bfe9130c808e7c1dd7dcc92845e237e266188f3a289445163775fdcced190"
+    },
+    {
+      "file": "changelogs/spark-base.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "aec84214572bf6259cc8f69393c2d12f8043f5eb19cd273ae12ee2b24e0d1cab"
+    },
+    {
+      "file": "agents/spark-guide.agent.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "c49ac7951d570430dd87272920996db722295e72f97ea14cb715de8a90e89c3f"
+    },
+    {
+      "file": "prompts/scf-check-updates.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "1b00f27ceaa227f26eddf476c1f6ffc8875235d367e3162eee9cb5c84f0c4442"
+    },
+    {
+      "file": "prompts/scf-install.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "44cfd51800a421af99bc44cef1ed2c413d0281f2bb1a5f693b4b86fff6b22a3c"
+    },
+    {
+      "file": "prompts/scf-list-available.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "4c852455c7adae47efffd97ad1975509610b650b2c78667e3b3670494da97d27"
+    },
+    {
+      "file": "prompts/scf-list-installed.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "c2515e5ce6102cb1ce74d044712767e0d678d75afe0f3e72cc0a6e5dd88aa4b3"
+    },
+    {
+      "file": "prompts/scf-package-info.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "8973f8d03730fa86525006f3633fdcec6118fbe180a67b9d1f461e59016f9d3f"
+    },
+    {
+      "file": "prompts/scf-pre-implementation-audit.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "921eef0624fd21596437ac6d6d3b397580f510bcf630675b1be31b1a624b5930"
+    },
+    {
+      "file": "prompts/scf-remove.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "788d8a4313931948a33c8907f739b528e4963e8f0e890d1000d0a5b3c0d13fde"
+    },
+    {
+      "file": "prompts/scf-status.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "f8da2d879374a8a9e4054d1404f642902f4ae13433b9c269439cf876c277f465"
+    },
+    {
+      "file": "prompts/scf-update.prompt.md",
+      "package": "spark-base",
+      "package_version": "1.2.0",
+      "installed_at": "2026-04-17T12:27:26Z",
+      "sha256": "1a081fdef933dcc55517017677bb17a64a4a97f31c65fd9518485b5208482637"
     }
   ]
 }
