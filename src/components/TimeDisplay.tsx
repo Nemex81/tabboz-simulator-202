@@ -53,8 +53,13 @@ export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPh
       {typeof interazioniRimaste === 'number' && (
         <>
           <span className="text-border">|</span>
-          <span className="flex items-center gap-1 text-muted-foreground">
-            <ChatsCircle size={14} weight="fill" className="text-primary" />
+          <span
+            className="flex items-center gap-1 text-muted-foreground"
+            aria-live="polite"
+            aria-atomic="true"
+            aria-label={`Interazioni rimanenti: ${interazioniRimaste}`}
+          >
+            <ChatsCircle size={14} weight="fill" className="text-primary" aria-hidden="true" />
             Interazioni: <strong className="text-primary">{interazioniRimaste}</strong>
           </span>
         </>

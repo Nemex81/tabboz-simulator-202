@@ -2,7 +2,7 @@
 
 ## [1.4] Glow neon adattivo ai temi
 - File: src/index.css
-- Stato: [ ] TODO
+- Stato: [x] DONE
 - Dipende da: nessuno
 - Stima: 5 minuti
 - Test: verifica visiva su 3 temi; conferma che .neon-glow, .neon-text-glow, neon-pulse e glow-intense seguano il colore primario
@@ -10,7 +10,7 @@
 
 ## [1.3] Rename label tab ambigui
 - File: src/components/MainGameTabs.tsx
-- Stato: [ ] TODO
+- Stato: [x] DONE
 - Dipende da: nessuno
 - Stima: 5 minuti
 - Test: verifica visiva tab Azioni/Impostazioni; NVDA annuncia i nuovi label; i value restano social/status
@@ -18,7 +18,7 @@
 
 ## [1.2] aria-live su interazioniRimaste
 - File: src/components/TimeDisplay.tsx
-- Stato: [ ] TODO
+- Stato: [x] DONE
 - Dipende da: nessuno
 - Stima: 10 minuti
 - Test: NVDA annuncia il decremento di interazioniRimaste con aria-live polite e aria-atomic true; npx tsc --noEmit
@@ -26,7 +26,7 @@
 
 ## [1.1] blockedReason leggibile da NVDA
 - File: src/components/ActionButton.tsx
-- Stato: [ ] TODO
+- Stato: [x] DONE
 - Dipende da: nessuno
 - Stima: 20 minuti
 - Test: focus su pulsante disabilitato con NVDA; annuncio di label + blockedReason; tooltip visivo invariato; npx tsc --noEmit
@@ -34,7 +34,7 @@
 
 ## [1.5] Pulizia contenuto corrotto di main.css
 - File: src/main.css
-- Stato: [ ] TODO
+- Stato: [x] DONE
 - Dipende da: nessuno
 - Stima: 10 minuti
 - Test: avvio app senza errori CSS; font JetBrains Mono e Orbitron caricati; tema funzionante; nessun warning console

@@ -1,4 +1,4 @@
-import React, { ReactNode, useRef } from 'react'
+import React, { ReactNode, useId, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
@@ -29,6 +29,7 @@ export const ActionButton = React.memo(function ActionButton({
   helpText,
   announce,
 }: ActionButtonProps) {
+  const id = useId()
   const helpTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleFocus = () => {
@@ -64,6 +65,7 @@ export const ActionButton = React.memo(function ActionButton({
           variant === 'destructive' && "bg-destructive text-destructive-foreground border-destructive"
         )}
         aria-label={ariaLabel || label}
+        aria-describedby={disabled && blockedReason ? `${id}-blocked` : undefined}
       >
         <motion.div 
           className="text-3xl" 
@@ -80,6 +82,11 @@ export const ActionButton = React.memo(function ActionButton({
           <div className="absolute top-1 right-1 text-xs opacity-70 font-mono" aria-hidden="true">
             {shortcut}
           </div>
+        )}
+        {disabled && blockedReason && (
+          <span id={`${id}-blocked`} className="sr-only">
+            {blockedReason}
+          </span>
         )}
       </Button>
     </motion.div>

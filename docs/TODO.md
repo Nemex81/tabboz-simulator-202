@@ -17,6 +17,6 @@
 - [x] Piano tecnico validato
 - [x] File TODO creati
 - [x] todo.md aggiornato
-- [ ] Blocco 1 implementato
+- [x] Blocco 1 implementato
 - [ ] Blocco 2 implementato
 - [ ] Blocco 3 analisi completata

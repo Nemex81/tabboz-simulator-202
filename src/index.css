@@ -106,19 +106,21 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .neon-glow {
-  box-shadow: 0 0 15px rgba(100, 255, 100, 0.3);
+  box-shadow:
+    0 0 10px color-mix(in oklch, var(--primary) 40%, transparent),
+    0 0 20px color-mix(in oklch, var(--primary) 20%, transparent);
 }
 
 .neon-text-glow {
-  text-shadow: 0 0 10px rgba(100, 255, 100, 0.8);
+  text-shadow: 0 0 10px color-mix(in oklch, var(--primary) 50%, transparent);
 }
 
 @keyframes neon-pulse {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(100, 255, 100, 0.3);
+    box-shadow: 0 0 15px color-mix(in oklch, var(--primary) 30%, transparent);
   }
   50% {
-    box-shadow: 0 0 25px rgba(100, 255, 100, 0.6);
+    box-shadow: 0 0 25px color-mix(in oklch, var(--primary) 60%, transparent);
   }
 }
 
@@ -165,9 +167,11 @@ h1, h2, h3, h4, h5, h6 {
 
 @keyframes glow-intense {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(100, 255, 100, 0.3);
+    box-shadow: 0 0 15px color-mix(in oklch, var(--primary) 30%, transparent);
   }
   50% {
-    box-shadow: 0 0 40px rgba(100, 255, 100, 0.9), 0 0 60px rgba(100, 255, 100, 0.5);
+    box-shadow:
+      0 0 40px color-mix(in oklch, var(--primary) 90%, transparent),
+      0 0 60px color-mix(in oklch, var(--primary) 50%, transparent);
   }
 }

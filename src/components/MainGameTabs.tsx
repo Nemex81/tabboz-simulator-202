@@ -46,12 +46,12 @@ export function MainGameTabs({
         </TabsTrigger>
         <TabsTrigger value="social" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Chats size={20} className="mr-2" weight="fill" />
-          <span className="hidden sm:inline">Attività</span>
-          <span className="sm:hidden">Attività</span>
+          <span className="hidden sm:inline">Azioni</span>
+          <span className="sm:hidden">Azioni</span>
         </TabsTrigger>
         <TabsTrigger value="status" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
           <ChartBar size={20} className="mr-2" weight="fill" />
-          <span className="hidden sm:inline">Controllo</span>
+          <span className="hidden sm:inline">Impostazioni</span>
           <span className="sm:hidden">⚙️</span>
         </TabsTrigger>
       </TabsList>
