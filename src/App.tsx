@@ -783,6 +783,7 @@ function App() {
           isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
           morningChoicePending={morningChoicePending}
           onOpenKeyboardHelp={() => setShowKeyboardHelp(true)}
+          onGoToSchool={() => setActiveTab('school')}
           handleRiposa={handleRiposa}
           handleDormi={handleDormi}
           handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
@@ -790,6 +791,7 @@ function App() {
         <MainGameTabs
           activeTab={activeTab}
           onValueChange={setActiveTab}
+          currentPhase={currentPhase}
           statusTab={statusTabProps}
           schoolTab={schoolTabProps}
           characterTab={characterTabProps}

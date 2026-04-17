@@ -37,6 +37,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       { keys: 'Ctrl + N', action: 'Avanza alla prossima fase della giornata' },
       { keys: 'Ctrl + R', action: 'Reset gioco' },
       { keys: 'Alt + H', action: 'Mostra questo aiuto' },
+      { keys: 'Alt + S', action: 'Vai al tab Scuola (scelta mattutina)' },
       { keys: 'Esc', action: 'Chiudi dialogo senza consumare azioni' },
       { keys: 'Enter', action: 'Conferma selezione (nei pannelli)' }
     ]}

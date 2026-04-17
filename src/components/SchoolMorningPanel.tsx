@@ -46,13 +46,13 @@ const categoryLabel: Record<MorningEventCategory, string> = {
 }
 
 const categoryColor: Record<MorningEventCategory, string> = {
-  didattica: 'bg-blue-100 text-blue-800',
-  sociale: 'bg-green-100 text-green-800',
-  istituto: 'bg-orange-100 text-orange-800',
-  strada: 'bg-gray-100 text-gray-800',
-  casa: 'bg-yellow-100 text-yellow-800',
-  citta: 'bg-purple-100 text-purple-800',
-  amici: 'bg-pink-100 text-pink-800',
+  didattica: 'bg-primary/10 text-primary border border-primary/30',
+  sociale:   'bg-secondary/10 text-secondary border border-secondary/30',
+  istituto:  'bg-accent/10 text-accent border border-accent/30',
+  strada:    'bg-muted text-muted-foreground',
+  casa:      'bg-secondary/10 text-secondary border border-secondary/30',
+  citta:     'bg-accent/10 text-accent border border-accent/30',
+  amici:     'bg-primary/10 text-primary border border-primary/30',
 }
 
 function EventCard({

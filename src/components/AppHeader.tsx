@@ -14,6 +14,7 @@ interface AppHeaderProps {
   isSchoolMorningSequenceInProgress: boolean
   morningChoicePending: boolean
   onOpenKeyboardHelp: () => void
+  onGoToSchool: () => void
   handleRiposa: () => void
   handleDormi: () => void
   handleAdvancePhaseGuarded: () => void
@@ -29,6 +30,7 @@ export function AppHeader({
   isSchoolMorningSequenceInProgress,
   morningChoicePending,
   onOpenKeyboardHelp,
+  onGoToSchool,
   handleRiposa,
   handleDormi,
   handleAdvancePhaseGuarded,
@@ -96,6 +98,15 @@ export function AppHeader({
           <p className="text-sm text-muted-foreground mt-1">
             Vai al tab <strong>Scuola → Voti</strong> e fai la tua scelta per sbloccare tutte le altre attività.
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onGoToSchool}
+            className="mt-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground focus-visible:ring-[3px]"
+            aria-label="Vai al tab Scuola per fare la scelta mattutina"
+          >
+            Vai a Scuola ora
+          </Button>
         </div>
       )}
     </>

@@ -18,5 +18,5 @@
 - [x] File TODO creati
 - [x] todo.md aggiornato
 - [x] Blocco 1 implementato
-- [ ] Blocco 2 implementato
+- [x] Blocco 2 implementato
 - [ ] Blocco 3 analisi completata

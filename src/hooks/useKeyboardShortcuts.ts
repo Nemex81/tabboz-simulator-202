@@ -76,6 +76,12 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
         announce('Aiuto scorciatoie da tastiera aperto')
         return
       }
+      if (e.altKey && key === 's') {
+        e.preventDefault()
+        setActiveTab('school')
+        announce('Tab Scuola aperto')
+        return
+      }
 
       if (!e.ctrlKey) return
 
