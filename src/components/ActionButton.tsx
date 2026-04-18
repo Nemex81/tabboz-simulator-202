@@ -30,19 +30,21 @@ export const ActionButton = React.memo(function ActionButton({
   announce,
 }: ActionButtonProps) {
   const id = useId()
-  const helpTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wasActivated = useRef(false)
 
-  const handleFocus = () => {
-    if (helpText && announce) {
-      helpTimer.current = setTimeout(() => {
-        announce(helpText)
-      }, 1500)
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      wasActivated.current = true
+      if (helpText && announce) announce(helpText)
     }
   }
 
-  const handleBlur = () => {
-    if (helpTimer.current) clearTimeout(helpTimer.current)
+  const handleClick = () => {
+    wasActivated.current = true
+    if (helpText && announce) announce(helpText)
+    onClick()
   }
+
   const buttonContent = (
     <motion.div
       whileHover={{ scale: disabled ? 1 : 1.05 }}
@@ -50,11 +52,10 @@ export const ActionButton = React.memo(function ActionButton({
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       <Button
-        onClick={onClick}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
         disabled={disabled}
         variant={variant}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
         className={cn(
           "relative flex flex-col items-center justify-center gap-2 h-auto py-4 px-6",
           "border-2 transition-all duration-100",

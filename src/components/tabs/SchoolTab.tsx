@@ -179,6 +179,17 @@ export function SchoolTab({
   const [activeSubTab, setActiveSubTab] = useState<string>('home')
   const prevPhaseRef = useRef<string | null | undefined>(null)
   const previousSubTabRef = useRef(activeSubTab)
+  const pendingFocusTargetRef = useRef<string | null>(null)
+
+  const markConfirmedTabChange = (targetTab: string) => {
+    pendingFocusTargetRef.current = targetTab
+  }
+
+  const handleTriggerKeyDown = (targetTab: string, event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      markConfirmedTabChange(targetTab)
+    }
+  }
 
   const hasActiveSchoolSequence =
     dayType === 'feriale' &&
@@ -219,6 +230,9 @@ export function SchoolTab({
     if (previousSubTabRef.current === activeSubTab) return
     previousSubTabRef.current = activeSubTab
 
+    if (pendingFocusTargetRef.current !== activeSubTab) return
+    pendingFocusTargetRef.current = null
+
     requestAnimationFrame(() => {
       const activePanel = document.querySelector(`[data-school-tab-panel="${activeSubTab}"]`) as HTMLElement | null
       activePanel?.focus()
@@ -235,23 +249,23 @@ export function SchoolTab({
     <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
       <nav aria-label="Sezioni scuola">
         <TabsList aria-label="Sezioni scuola" className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
-          <TabsTrigger value="home" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+          <TabsTrigger value="home" onMouseDown={() => markConfirmedTabChange('home')} onKeyDown={(event) => handleTriggerKeyDown('home', event)} className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
             <GraduationCap size={18} className="md:mr-2" weight="fill" />
             <span className="hidden md:inline">Home</span>
           </TabsTrigger>
-          <TabsTrigger value="voti" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+          <TabsTrigger value="voti" onMouseDown={() => markConfirmedTabChange('voti')} onKeyDown={(event) => handleTriggerKeyDown('voti', event)} className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
             <GraduationCap size={18} className="md:mr-2" weight="fill" />
             <span className="hidden md:inline">Voti</span>
           </TabsTrigger>
-          <TabsTrigger value="verifiche" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="verifiche" onMouseDown={() => markConfirmedTabChange('verifiche')} onKeyDown={(event) => handleTriggerKeyDown('verifiche', event)} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Brain size={18} className="md:mr-2" weight="fill" />
             <span className="hidden md:inline">Verifiche</span>
           </TabsTrigger>
-          <TabsTrigger value="amici" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+          <TabsTrigger value="amici" onMouseDown={() => markConfirmedTabChange('amici')} onKeyDown={(event) => handleTriggerKeyDown('amici', event)} className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
             <UserCircle size={18} className="md:mr-2" weight="fill" />
             <span className="hidden md:inline">Amici</span>
           </TabsTrigger>
-          <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="dashboard" onMouseDown={() => markConfirmedTabChange('dashboard')} onKeyDown={(event) => handleTriggerKeyDown('dashboard', event)} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Trophy size={18} className="md:mr-2" weight="fill" />
             <span className="hidden md:inline">Dashboard</span>
           </TabsTrigger>

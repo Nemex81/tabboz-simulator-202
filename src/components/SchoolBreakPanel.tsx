@@ -3,7 +3,7 @@
 // 3 tab: Compagni | Professori | Altro.
 // Una sola azione eseguibile per intervallo.
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -78,12 +78,6 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
   const [selectedTarget, setSelectedTarget] = useState<string | undefined>(undefined)
   const [actionResult, setActionResult] = useState<BreakResult | null>(null)
   const [actionDone, setActionDone] = useState(false)
-  const firstTabRef = useRef<HTMLButtonElement>(null)
-
-  // Focus sul primo tab al mount (accessibilità)
-  useEffect(() => {
-    firstTabRef.current?.focus()
-  }, [])
 
   // ── Derivazioni da schoolDayState (C11) ───────────────────────────────────
   const todayTeachers: Teacher[] = schoolDayState.slots
@@ -312,7 +306,6 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
           >
             <TabsTrigger
               value="compagni"
-              ref={firstTabRef}
               aria-label="Tab Compagni"
             >
               👥 Compagni

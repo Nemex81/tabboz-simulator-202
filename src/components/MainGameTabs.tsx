@@ -31,7 +31,18 @@ export function MainGameTabs({
   cityTab,
 }: MainGameTabsProps) {
   const previousTabRef = useRef(activeTab)
+  const pendingFocusTargetRef = useRef<string | null>(null)
   const isSkippedSchoolMorning = currentPhase === 'mattina' && schoolTab.marinatoOggi
+
+  const markConfirmedTabChange = (targetTab: string) => {
+    pendingFocusTargetRef.current = targetTab
+  }
+
+  const handleTriggerKeyDown = (targetTab: string, event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      markConfirmedTabChange(targetTab)
+    }
+  }
 
   // DayPhase reale: 'mattina' | 'pomeriggio' | 'sera' | 'notte'
   const isSchoolAvailable = currentPhase === 'mattina'
@@ -59,6 +70,9 @@ export function MainGameTabs({
     if (previousTabRef.current === activeTab) return
     previousTabRef.current = activeTab
 
+    if (pendingFocusTargetRef.current !== activeTab) return
+    pendingFocusTargetRef.current = null
+
     requestAnimationFrame(() => {
       const activePanel = document.querySelector(`[data-main-tab-panel="${activeTab}"]`) as HTMLElement | null
       activePanel?.focus()
@@ -73,6 +87,8 @@ export function MainGameTabs({
             value="school"
             disabled={!isSchoolAvailable}
             aria-label={!isSchoolAvailable ? 'Scuola: disponibile solo al mattino' : 'Scuola'}
+            onMouseDown={() => markConfirmedTabChange('school')}
+            onKeyDown={(event) => handleTriggerKeyDown('school', event)}
             className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground"
           >
             <GraduationCap size={20} className="mr-2" weight="fill" />
@@ -83,6 +99,8 @@ export function MainGameTabs({
             value="city"
             disabled={!isCityAvailable}
             aria-label={!isCityAvailable ? 'Città: disponibile dal pomeriggio o se salti la scuola' : 'Città'}
+            onMouseDown={() => markConfirmedTabChange('city')}
+            onKeyDown={(event) => handleTriggerKeyDown('city', event)}
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <Buildings size={20} className="mr-2" weight="fill" />
@@ -92,6 +110,8 @@ export function MainGameTabs({
           <TabsTrigger
             value="character"
             aria-label="Personaggio"
+            onMouseDown={() => markConfirmedTabChange('character')}
+            onKeyDown={(event) => handleTriggerKeyDown('character', event)}
             className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
           >
             <IdentificationCard size={20} className="mr-2" weight="fill" aria-hidden="true" />
@@ -102,6 +122,8 @@ export function MainGameTabs({
             value="social"
             disabled={!isSocialAvailable}
             aria-label={!isSocialAvailable ? 'Azioni: non disponibili di mattina prima della scelta scuola o se vai a lezione' : 'Azioni'}
+            onMouseDown={() => markConfirmedTabChange('social')}
+            onKeyDown={(event) => handleTriggerKeyDown('social', event)}
             className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
           >
             <Chats size={20} className="mr-2" weight="fill" />
@@ -111,6 +133,8 @@ export function MainGameTabs({
           <TabsTrigger
             value="status"
             aria-label="Impostazioni"
+            onMouseDown={() => markConfirmedTabChange('status')}
+            onKeyDown={(event) => handleTriggerKeyDown('status', event)}
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <ChartBar size={20} className="mr-2" weight="fill" aria-hidden="true" />

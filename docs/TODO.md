@@ -34,7 +34,12 @@
 - [x] Label SR verificate sui pulsanti icona censiti
 - [x] Landmark ARIA aggiunti ai TabsList principali
 - [x] hidden corretto su TabsContent inattivi
+- [x] ActionButton: announce spostato da focus passivo a click/Enter/Space
+- [x] Guard focus aggiunta su MainGameTabs e SchoolTab per evitare focus shift da stato di gioco
+- [x] SchoolBreakPanel: rimosso focus automatico al mount durante l'intervallo
 - [ ] Verifica manuale NVDA post-fix (test manuale aperto)
+- [ ] Verifica manuale NVDA browse mode: ActionButton non annuncia durante esplorazione passiva
+- [ ] Verifica manuale NVDA browse mode: cambio fase/intervallo non sposta il focus senza azione confermata
 - [ ] Verifica manuale: consumo azioni in tutti i pannelli
 
 ### Sessione audit SR esteso — aprile 2026
