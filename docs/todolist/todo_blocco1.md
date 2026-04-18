@@ -15,6 +15,7 @@
 - Stima: 5 minuti
 - Test: verifica visiva tab Azioni/Impostazioni; NVDA annuncia i nuovi label; i value restano social/status
 - Note: aggiornare sia desktop sia mobile span
+- Note sessione: completato in sessione accessibilita SR — aprile 2026
 
 ## [1.2] aria-live su interazioniRimaste
 - File: src/components/TimeDisplay.tsx
@@ -23,6 +24,7 @@
 - Stima: 10 minuti
 - Test: NVDA annuncia il decremento di interazioniRimaste con aria-live polite e aria-atomic true; npx tsc --noEmit
 - Note: marcare l'icona come aria-hidden per evitare ridondanza
+- Note sessione: completato in sessione accessibilita SR — aprile 2026
 
 ## [1.1] blockedReason leggibile da NVDA
 - File: src/components/ActionButton.tsx
@@ -31,6 +33,7 @@
 - Stima: 20 minuti
 - Test: focus su pulsante disabilitato con NVDA; annuncio di label + blockedReason; tooltip visivo invariato; npx tsc --noEmit
 - Note: usare useId() internamente; non aggiungere prop id a ActionButtonProps
+- Note sessione: completato in sessione accessibilita SR — aprile 2026
 
 ## [1.5] Pulizia contenuto corrotto di main.css
 - File: src/main.css

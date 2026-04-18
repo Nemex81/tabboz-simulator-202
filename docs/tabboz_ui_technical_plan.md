@@ -1306,6 +1306,29 @@ Blocco 3 — Pianificazione separata (non stimabile senza analisi)
 
 ## Criteri gate pre-merge
 
+## Aggiornamento tecnico — sessione accessibilità SR aprile 2026
+
+### Nuovo file: src/hooks/useActionGuard.ts
+
+- Firma: useActionGuard(consumeAction: () => void, actionsRemaining: number, announce: (msg: string) => void): { guardedAction: (fn: () => void, label?: string) => void }
+- Componenti che lo usano: SchoolBreakPanel, SchoolMorningPanel
+
+### Modifiche ARIA
+
+- MainGameTabs.tsx: aria-label del TabsList aggiunto con valore Menu principale di gioco
+- SchoolTab.tsx: aria-label del TabsList interno aggiunto con valore Sezioni scuola
+- Nessuna correzione custom sul hidden dei TabsContent: il progetto continua a delegare al primitive standard di Radix tramite src/components/ui/tabs.tsx
+
+### Pattern sr-only adottato
+
+- Nessun nuovo span sr-only introdotto in questa sessione: l'audit dei controlli icon-only nel perimetro richiesto non ha trovato pulsanti senza nome accessibile.
+- Il pattern resta disponibile per futuri controlli icon-only reali.
+
+### Test da aggiornare
+
+- Nessun test esistente aggiornato in questa sessione.
+- Restano da verificare manualmente: NVDA post-fix sui pannelli scuola, landmark con tasto D e consumo azioni durante la sequenza scolastica.
+
 ### Blocco 1
 
 | # | Criterio | Verifica |

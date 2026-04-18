@@ -219,7 +219,7 @@ export function SchoolTab({
   return (
     <>
     <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
+      <TabsList aria-label="Sezioni scuola" className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
         <TabsTrigger value="home" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
           <GraduationCap size={18} className="md:mr-2" weight="fill" />
           <span className="hidden md:inline">Home</span>
@@ -405,6 +405,8 @@ export function SchoolTab({
                 onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
                 onTeacherInteraction={doTeacherInteraction}
                 onClassmateInteraction={doClassmateInteraction}
+                onConsumeAction={consumeAction}
+                actionsRemaining={phaseActionsRemaining}
                 onBreakComplete={onBreakComplete}
                 announce={announce}
                 currentDate={currentDate}
@@ -421,6 +423,7 @@ export function SchoolTab({
                 onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
                 onGainExtraAction={gainExtraAction}
                 onConsumeAction={consumeAction}
+                actionsRemaining={phaseActionsRemaining}
                 announce={announce}
                 onNewFriend={onNewFriend}
                 addLogEntry={addLogEntry}
@@ -439,6 +442,7 @@ export function SchoolTab({
                 onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
                 onGainExtraAction={gainExtraAction}
                 onConsumeAction={consumeAction}
+                actionsRemaining={phaseActionsRemaining}
                 announce={announce}
                 onNewFriend={onNewFriend}
                 addLogEntry={addLogEntry}

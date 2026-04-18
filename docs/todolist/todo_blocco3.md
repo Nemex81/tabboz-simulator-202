@@ -15,6 +15,7 @@ Esito analisi:
 - hasActiveSchoolSequence e una const locale in SchoolTab con 5 condizioni in AND: dayType feriale, currentPhase mattina, isSchoolPeriod, wentToSchoolToday, schoolDayState con slot e non completo.
 - Il layout mobile usa grid-cols-3 per 5 tab: prima di qualsiasi refactor accordion serve test su viewport 320px e mockup approvato.
 - Implementazione B3-1-T5 completata. Restano aperti i test manuali su viewport 320px e NVDA navigazione sotto-tab.
+- Note sessione: completato in sessione accessibilita SR — aprile 2026 per aria-label del TabsList interno; i test manuali NVDA restano aperti.
 
 ## [3.2] DailyControls — Replica contestuale
 - [x] Leggere il codice completo di DailyControls.tsx e mappare tutta la logica di guard
@@ -36,6 +37,7 @@ Note implementazione (B3-2):
 - AdvancePhaseButton verificato/aggiunto in CityTab: si — gia presente, con footer dopo il contenuto principale e prop `disabled={props.actionsRemaining > 0}`, `label={props.nextPhaseLabel}`, `onAdvance={props.onAdvance}`.
 - Prop aggiunte alle interfacce: nessuna
 - tsc pulito: si
+- Note sessione: completato in sessione accessibilita SR — aprile 2026 per il consumo azioni garantito nei pannelli scolastici. Test manuali NVDA e viewport restano aperti.
 
 ## [3.3] UI globale — Border-radius e uppercase
 - [x] Verificare se basta cambiare --radius in src/index.css o serve allineamento anche in tailwind.config.js

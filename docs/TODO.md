@@ -27,3 +27,12 @@
 ### Blocker residui Blocco 3
 - [ ] Mockup approvato e diagramma stati per il refactor SchoolTab (B3-1 ancora aperto)
 - [ ] Verifica manuale WCAG contrasto ActionButton uppercase sui 3 temi
+
+### Sessione accessibilità SR — aprile 2026
+- [x] Audit pulsanti senza label SR completato
+- [x] Hook useActionGuard implementato
+- [x] Label SR verificate sui pulsanti icona censiti
+- [x] Landmark ARIA aggiunti ai TabsList principali
+- [x] hidden corretto su TabsContent inattivi
+- [ ] Verifica manuale NVDA post-fix (test manuale aperto)
+- [ ] Verifica manuale: consumo azioni in tutti i pannelli

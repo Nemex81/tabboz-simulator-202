@@ -398,6 +398,27 @@ const categoryColor: Record<MorningEventCategory, string> = {
 
 **Note per Copilot:**
 - I token `primary`, `secondary`, `accent`, `muted`, `muted-foreground` sono definiti nel sistema Shadcn/ui e rispondono ai temi.
+
+## Sessione accessibilità SR — aprile 2026
+
+### Problemi riscontrati
+
+- Nessun pulsante icon-only senza nome accessibile nei componenti auditati del perimetro SR richiesto; il problema iniziale non è stato confermato nei file verificati.
+- Azioni senza consumo garantito rilevate nei pannelli scuola: SchoolBreakPanel e SchoolMorningPanel.
+- TabsList principali privi di aria-label esplicita per navigazione SR rapida.
+
+### Soluzioni adottate
+
+- Hook useActionGuard centralizzato per il consumo azioni di fase nei pannelli scuola.
+- Nessun fix aria-label o sr-only aggiuntivo nei componenti auditati del problema A, perché già conformi nel perimetro verificato.
+- aria-label aggiunto ai TabsList principali e sotto-tab scuola.
+- Verifica completata sul pattern TabsContent inattivo: mantenuto il comportamento standard di Radix/Shadcn, senza override custom.
+
+### Decisioni architetturali
+
+- useActionGuard: logica centralizzata in hook dedicato, non duplicata nei componenti.
+- sr-only: da usare solo per controlli icon-only reali o per testo supplementare che non deve sostituire il nome visibile.
+- aria-label: usato sui TabsList per migliorare il landmarking SR senza introdurre wrapper navigation ridondanti.
 - Verificare il contrasto risultante su tutti e 3 i temi (Default, Dark Viola, Dark Ciano) — in particolare `text-primary` su `bg-primary/10` deve rispettare WCAG AA (4.5:1 per testo normale, 3:1 per testo grande).
 - Il `border` aggiuntivo aiuta la distinzione visiva senza dipendere solo dal colore (principio WCAG 1.4.1 — uso del colore non come unico mezzo di trasmissione informazioni).
 

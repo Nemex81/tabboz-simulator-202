@@ -51,7 +51,7 @@ export function MainGameTabs({
 
   return (
     <Tabs value={activeTab} onValueChange={onValueChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-muted/50 p-1 h-auto">
+      <TabsList aria-label="Menu principale di gioco" className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-muted/50 p-1 h-auto">
         <TabsTrigger
           value="school"
           disabled={!isSchoolAvailable}

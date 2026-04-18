@@ -26,6 +26,7 @@ import { clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 import type { ClassmateInteractionKey } from '@/lib/classmate-relations'
 import type { DoInteractionResult, TeacherInteractionKey } from '@/hooks/useGameRelations'
+import { useActionGuard } from '@/hooks/useActionGuard'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,8 @@ interface SchoolBreakPanelProps {
   onStatChange: (updater: (prev: GameStats) => GameStats) => void
   onTeacherInteraction: (teacherId: string, interactionKey: TeacherInteractionKey) => DoInteractionResult
   onClassmateInteraction: (classmateId: string, interactionKey: ClassmateInteractionKey) => DoInteractionResult
+  onConsumeAction: () => void
+  actionsRemaining: number
   onBreakComplete: () => void
   announce: (msg: string) => void
   currentDate: GameDate
@@ -71,6 +74,8 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
   onStatChange,
   onTeacherInteraction,
   onClassmateInteraction,
+  onConsumeAction,
+  actionsRemaining,
   onBreakComplete,
   announce,
   currentDate,
@@ -79,6 +84,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
   const [actionResult, setActionResult] = useState<BreakResult | null>(null)
   const [actionDone, setActionDone] = useState(false)
   const firstTabRef = useRef<HTMLButtonElement>(null)
+  const { guardedAction } = useActionGuard(onConsumeAction, actionsRemaining, announce)
 
   // Focus sul primo tab al mount (accessibilità)
   useEffect(() => {
@@ -119,112 +125,124 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
     (actionKey: BreakActionType) => {
       if (actionDone) return
 
-      const applyStatDelta = (statDelta: Partial<GameStats>) => {
-        if (Object.keys(statDelta).length === 0) return
-        onStatChange((prev) => {
-          const updated = { ...prev }
-          const numericUpdated = updated as unknown as Record<string, number>
-          for (const [key, value] of Object.entries(statDelta)) {
-            if (typeof value !== 'number') continue
-            const k = key as keyof GameStats
-            if (k === 'soldi') {
-              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
-            } else {
-              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+      if (
+        (actionKey === 'chiacchiera_compagno' ||
+          actionKey === 'studia_insieme' ||
+          actionKey === 'risolvi_conflitto' ||
+          actionKey === 'conversazione_prof' ||
+          actionKey === 'chiedi_spiegazione' ||
+          actionKey === 'chiedi_revoca_voto' ||
+          actionKey === 'corruzione_prof' ||
+          actionKey === 'minaccia_prof') &&
+        !selectedTarget
+      ) {
+        return
+      }
+
+      guardedAction(() => {
+        const applyStatDelta = (statDelta: Partial<GameStats>) => {
+          if (Object.keys(statDelta).length === 0) return
+          onStatChange((prev) => {
+            const updated = { ...prev }
+            const numericUpdated = updated as unknown as Record<string, number>
+            for (const [key, value] of Object.entries(statDelta)) {
+              if (typeof value !== 'number') continue
+              const k = key as keyof GameStats
+              if (k === 'soldi') {
+                numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
+              } else {
+                numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+              }
             }
-          }
-          return updated
-        })
-      }
+            return updated
+          })
+        }
 
-      let result: BreakResult | null = null
+        let result: BreakResult | null = null
 
-      switch (actionKey) {
-        case 'chiacchiera_compagno': {
-          if (!selectedTarget) return
-          const interaction = onClassmateInteraction(selectedTarget, 'chiacchiera')
-          if (!interaction.success) return
-          result = {
-            message: interaction.message,
-            statDelta: { ...(interaction.statDelta ?? {}), stanchezza: -2 },
+        switch (actionKey) {
+          case 'chiacchiera_compagno': {
+            const interaction = onClassmateInteraction(selectedTarget as string, 'chiacchiera')
+            if (!interaction.success) return
+            result = {
+              message: interaction.message,
+              statDelta: { ...(interaction.statDelta ?? {}), stanchezza: -2 },
+            }
+            break
           }
-          break
-        }
-        case 'studia_insieme': {
-          if (!selectedTarget) return
-          const interaction = onClassmateInteraction(selectedTarget, 'studia_insieme')
-          if (!interaction.success) return
-          result = {
-            message: interaction.message,
-            statDelta: interaction.statDelta ?? {},
+          case 'studia_insieme': {
+            const interaction = onClassmateInteraction(selectedTarget as string, 'studia_insieme')
+            if (!interaction.success) return
+            result = {
+              message: interaction.message,
+              statDelta: interaction.statDelta ?? {},
+            }
+            break
           }
-          break
-        }
-        case 'risolvi_conflitto': {
-          if (!selectedTarget) return
-          const interaction = onClassmateInteraction(selectedTarget, 'risolvi_conflitto')
-          if (!interaction.success) return
-          result = {
-            message: interaction.message,
-            statDelta: interaction.statDelta ?? {},
+          case 'risolvi_conflitto': {
+            const interaction = onClassmateInteraction(selectedTarget as string, 'risolvi_conflitto')
+            if (!interaction.success) return
+            result = {
+              message: interaction.message,
+              statDelta: interaction.statDelta ?? {},
+            }
+            break
           }
-          break
-        }
-        case 'conversazione_prof':
-        case 'chiedi_spiegazione':
-        case 'chiedi_revoca_voto':
-        case 'corruzione_prof':
-        case 'minaccia_prof': {
-          if (!selectedTarget) return
-          const teacherActionMap: Record<
-            'conversazione_prof' | 'chiedi_spiegazione' | 'chiedi_revoca_voto' | 'corruzione_prof' | 'minaccia_prof',
-            TeacherInteractionKey
-          > = {
-            conversazione_prof: 'conversazione',
-            chiedi_spiegazione: 'richiesta_spiegazione',
-            chiedi_revoca_voto: 'richiesta_revoca_voto',
-            corruzione_prof: 'corruzione',
-            minaccia_prof: 'minaccia',
+          case 'conversazione_prof':
+          case 'chiedi_spiegazione':
+          case 'chiedi_revoca_voto':
+          case 'corruzione_prof':
+          case 'minaccia_prof': {
+            const teacherActionMap: Record<
+              'conversazione_prof' | 'chiedi_spiegazione' | 'chiedi_revoca_voto' | 'corruzione_prof' | 'minaccia_prof',
+              TeacherInteractionKey
+            > = {
+              conversazione_prof: 'conversazione',
+              chiedi_spiegazione: 'richiesta_spiegazione',
+              chiedi_revoca_voto: 'richiesta_revoca_voto',
+              corruzione_prof: 'corruzione',
+              minaccia_prof: 'minaccia',
+            }
+            const interaction = onTeacherInteraction(selectedTarget as string, teacherActionMap[actionKey])
+            if (!interaction.success && actionKey !== 'minaccia_prof' && actionKey !== 'chiedi_revoca_voto' && actionKey !== 'corruzione_prof') {
+              return
+            }
+            result = {
+              message: interaction.message,
+              statDelta: interaction.statDelta ?? {},
+            }
+            break
           }
-          const interaction = onTeacherInteraction(selectedTarget, teacherActionMap[actionKey])
-          if (!interaction.success && actionKey !== 'minaccia_prof' && actionKey !== 'chiedi_revoca_voto' && actionKey !== 'corruzione_prof') {
+          case 'bar_scolastico': {
+            result = {
+              message: 'Ti sei concesso qualcosa al bar. Stanchezza -5, umore +3.',
+              statDelta: { soldi: -2, stanchezza: -5, morale: 3 },
+            }
+            break
+          }
+          case 'riposa': {
+            result = {
+              message: 'Hai riposato durante l\'intervallo. Stanchezza -8.',
+              statDelta: { stanchezza: -8 },
+            }
+            break
+          }
+          default:
             return
-          }
-          result = {
-            message: interaction.message,
-            statDelta: interaction.statDelta ?? {},
-          }
-          break
         }
-        case 'bar_scolastico': {
-          result = {
-            message: 'Ti sei concesso qualcosa al bar. Stanchezza -5, umore +3.',
-            statDelta: { soldi: -2, stanchezza: -5, morale: 3 },
-          }
-          break
-        }
-        case 'riposa': {
-          result = {
-            message: 'Hai riposato durante l\'intervallo. Stanchezza -8.',
-            statDelta: { stanchezza: -8 },
-          }
-          break
-        }
-        default:
-          return
-      }
 
-      if (!result) return
-      applyStatDelta(result.statDelta)
+        if (!result) return
+        applyStatDelta(result.statDelta)
 
-      playSound.buttonClick()
-      if (actionKey === 'bar_scolastico' || actionKey === 'riposa') {
-        announce(result.message)
-      }
-      setActionResult(result)
-      setActionDone(true)
+        playSound.buttonClick()
+        if (actionKey === 'bar_scolastico' || actionKey === 'riposa') {
+          announce(result.message)
+        }
+        setActionResult(result)
+        setActionDone(true)
+      }, actionKey)
     },
-    [actionDone, announce, onClassmateInteraction, onStatChange, onTeacherInteraction, selectedTarget]
+    [actionDone, announce, guardedAction, onClassmateInteraction, onStatChange, onTeacherInteraction, selectedTarget]
   )
 
   // ── Render ────────────────────────────────────────────────────────────────
