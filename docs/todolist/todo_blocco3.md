@@ -7,13 +7,14 @@ Questa checklist va completata prima di qualsiasi implementazione o refactor del
 - [x] Mappare per ogni combinazione di dayType, currentPhase, isSchoolPeriod, morningChoicePending, marinatoOggi, hasActiveSchoolSequence quali pannelli sono visibili o attivi
 - [x] Verificare se SchoolMorningPanel e SchoolBreakPanel sostituiscono i sotto-tab o convivono con essi
 - [x] Valutare se home e voti possono diventare sezioni verticali o accordion senza regressioni NVDA
-- [ ] Definire criterio di uscita: diagramma stati approvato + mockup del layout alternativo + test SR
+- [x] Definire criterio di uscita: diagramma stati approvato + mockup del layout alternativo + test SR
 
 Esito analisi:
 - I sotto-tab reali sono confermati: home, voti, verifiche, amici, dashboard.
 - SchoolMorningPanel e SchoolBreakPanel vivono dentro TabsContent value="home" come rami condizionali, non come sotto-tab separati.
 - hasActiveSchoolSequence e una const locale in SchoolTab con 5 condizioni in AND: dayType feriale, currentPhase mattina, isSchoolPeriod, wentToSchoolToday, schoolDayState con slot e non completo.
 - Il layout mobile usa grid-cols-3 per 5 tab: prima di qualsiasi refactor accordion serve test su viewport 320px e mockup approvato.
+- Implementazione B3-1-T5 completata. Restano aperti i test manuali su viewport 320px e NVDA navigazione sotto-tab.
 
 ## [3.2] DailyControls — Replica contestuale
 - [x] Leggere il codice completo di DailyControls.tsx e mappare tutta la logica di guard

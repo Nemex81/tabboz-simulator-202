@@ -20,6 +20,7 @@
 - [x] Blocco 1 implementato
 - [x] Blocco 2 implementato
 - [x] Blocco 3 analisi completata
+- [x] B3-1 implementazione completata (test manuali aperti)
 - [x] Blocco 3 B3-2 implementato (footer ridotto: AdvancePhaseButton in SchoolTab, SocialTab, CityTab)
 - [x] Blocco 3 B3-3 implementato (--radius 0.5rem, colori tema SchoolHomePanel/SchoolBreakPanel)
 

@@ -259,3 +259,13 @@ File analizzati:
   - src/App.tsx (sezione props SchoolTab, useState marinatoOggi/morningChoicePending)
 tsc al momento della generazione: non eseguito (task documentazione — nessun file src/ modificato)
 ```
+
+## Stato implementazione B3-1-T5
+
+- [x] Label mobile: icona only sotto md
+- [x] Logica pannelli home: if-else-if esplicito con priorita definita
+- [x] Reset sotto-tab a home al cambio mattina→pomeriggio
+- [ ] Test visuale viewport 320px (manuale — non automatizzabile)
+- [ ] Test NVDA navigazione sotto-tab dopo reset fase
+
+Data implementazione: 18 aprile 2026

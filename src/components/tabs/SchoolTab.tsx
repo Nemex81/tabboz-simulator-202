@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react'
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { GraduationCap, Brain, UserCircle, Trophy, HandCoins, HandFist, Chats } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -176,6 +176,9 @@ export function SchoolTab({
   onAdvance,
   nextPhaseLabel,
 }: SchoolTabProps) {
+  const [activeSubTab, setActiveSubTab] = useState<string>('home')
+  const prevPhaseRef = useRef<string | null | undefined>(null)
+
   const hasActiveSchoolSequence =
     dayType === 'feriale' &&
     currentPhase === 'mattina' &&
@@ -185,31 +188,57 @@ export function SchoolTab({
     schoolDayState.slots.length > 0 &&
     !schoolDayState.isComplete
 
+  const isCurrentSlotBreak =
+    schoolDayState !== undefined &&
+    schoolDayState.slots.length > 0 &&
+    schoolDayState.slots[schoolDayState.currentSlotIndex]?.type === 'break'
+
+  const conditionalPanel = hasActiveSchoolSequence && isCurrentSlotBreak
+    ? 'break'
+    : hasActiveSchoolSequence && !isCurrentSlotBreak
+      ? 'morning-school'
+      : morningDisplay === 'street' &&
+          dayType === 'feriale' &&
+          currentPhase === 'mattina' &&
+          marinatoOggi
+        ? 'morning-street'
+        : afternoonEvent !== null &&
+            (currentPhase === 'pomeriggio' || currentPhase === 'sera')
+          ? 'afternoon'
+          : null
+
+  useEffect(() => {
+    if (prevPhaseRef.current === 'mattina' && currentPhase !== 'mattina') {
+      setActiveSubTab('home')
+    }
+    prevPhaseRef.current = currentPhase
+  }, [currentPhase])
+
   const footerDisabled = phaseActionsRemaining > 0 || hasActiveSchoolSequence
 
   return (
     <>
-    <Tabs defaultValue="home" className="w-full">
+    <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
       <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
         <TabsTrigger value="home" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-          <GraduationCap size={18} className="mr-2" weight="fill" />
-          Home
+          <GraduationCap size={18} className="md:mr-2" weight="fill" />
+          <span className="hidden md:inline">Home</span>
         </TabsTrigger>
         <TabsTrigger value="voti" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-          <GraduationCap size={18} className="mr-2" weight="fill" />
-          Voti
+          <GraduationCap size={18} className="md:mr-2" weight="fill" />
+          <span className="hidden md:inline">Voti</span>
         </TabsTrigger>
         <TabsTrigger value="verifiche" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <Brain size={18} className="mr-2" weight="fill" />
-          Verifiche
+          <Brain size={18} className="md:mr-2" weight="fill" />
+          <span className="hidden md:inline">Verifiche</span>
         </TabsTrigger>
         <TabsTrigger value="amici" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <UserCircle size={18} className="mr-2" weight="fill" />
-          Amici
+          <UserCircle size={18} className="md:mr-2" weight="fill" />
+          <span className="hidden md:inline">Amici</span>
         </TabsTrigger>
         <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <Trophy size={18} className="mr-2" weight="fill" />
-          Dashboard
+          <Trophy size={18} className="md:mr-2" weight="fill" />
+          <span className="hidden md:inline">Dashboard</span>
         </TabsTrigger>
       </TabsList>
 
@@ -366,11 +395,9 @@ export function SchoolTab({
             )}
 
             {/* SchoolBreakPanel — slot intervallo attivo */}
-            {hasActiveSchoolSequence &&
-             schoolDayState !== undefined &&
-             schoolDayState.slots[schoolDayState.currentSlotIndex]?.type === 'break' && (
+            {conditionalPanel === 'break' && (
               <SchoolBreakPanel
-                schoolDayState={schoolDayState}
+                schoolDayState={schoolDayState as SchoolDayState}
                 teachers={teachers ?? []}
                 classRoster={classRoster ?? []}
                 stats={stats}
@@ -385,8 +412,7 @@ export function SchoolTab({
             )}
 
             {/* SchoolMorningPanel — slot lezione attivo */}
-            {hasActiveSchoolSequence &&
-             schoolDayState?.slots[schoolDayState?.currentSlotIndex]?.type !== 'break' && (
+            {conditionalPanel === 'morning-school' && (
               <SchoolMorningPanel
                 key={`smp-${schoolDayState?.isComplete ? 'done' : 'live'}`}
                 context="school"
@@ -405,7 +431,7 @@ export function SchoolTab({
             )}
 
             {/* SchoolMorningPanel — contesto strada (marinatori) */}
-            {morningDisplay === 'street' && dayType === 'feriale' && currentPhase === 'mattina' && marinatoOggi && (
+            {conditionalPanel === 'morning-street' && (
               <SchoolMorningPanel
                 context="street"
                 events={streetMorningEvents}
@@ -421,9 +447,9 @@ export function SchoolTab({
             )}
 
             {/* AfternoonEventPanel */}
-            {afternoonEvent && (currentPhase === 'pomeriggio' || currentPhase === 'sera') && (
+            {conditionalPanel === 'afternoon' && (
               <AfternoonEventPanel
-                event={afternoonEvent}
+                event={afternoonEvent as AfternoonEvent}
                 onChoice={handleAfternoonChoice}
               />
             )}
