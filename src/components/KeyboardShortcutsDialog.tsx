@@ -34,7 +34,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
       { keys: 'Ctrl + 8', action: 'Riposa' }
     ]},
     { category: 'Generale', shortcuts: [
-      { keys: 'Ctrl + N', action: 'Avanza alla prossima fase della giornata' },
+      { keys: 'Ctrl + Alt + Invio', action: 'Avanza alla prossima fase della giornata' },
       { keys: 'Ctrl + R', action: 'Reset gioco' },
       { keys: 'Alt + H', action: 'Mostra questo aiuto' },
       { keys: 'Alt + S', action: 'Vai al tab Scuola (scelta mattutina)' },

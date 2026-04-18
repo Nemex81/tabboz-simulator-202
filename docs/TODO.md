@@ -99,3 +99,9 @@
 - [ ] Verifica manuale: ora successiva non decrementa il badge azioni
 - [ ] Verifica manuale: Fine intervallo non decrementa il badge azioni
 - [ ] Verifica manuale: chiacchiera, naviga online e telefona si bloccano solo a 0 azioni fase
+
+### Fix correttivi runtime scuola e shortcut — aprile 2026
+- [x] handleVaiAScuola: rimossa chiamata consumeAllMorningActions() (bloccava il pulsante 'Ora terminata')
+- [x] KeyboardShortcutsDialog: shortcut avanza fase corretto da Ctrl+N a Ctrl+Alt+Invio (allineato a useKeyboardShortcuts.ts)
+- [ ] Verifica manuale: pulsante 'Ora terminata' cliccabile durante sequenza lezioni
+- [ ] Verifica manuale: Ctrl+Alt+Invio mostrato correttamente nell'aiuto scorciatoie
