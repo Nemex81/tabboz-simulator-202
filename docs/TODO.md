@@ -78,3 +78,15 @@
 - [ ] Verifica manuale: Ctrl+Alt+N avanza fase correttamente
 - [ ] Verifica manuale: Ctrl+N non fa più nulla
 	(o non interferisce con funzioni browser/sistema)
+
+### Fix azioni sociali e shortcut — aprile 2026
+- [x] handleChiacchiera: migrata da interazioni ad azioni
+- [x] handleNavigaOnline: migrata da interazioni ad azioni
+- [x] handleTelefona: migrata da interazioni ad azioni
+- [x] handleFriendAction: migrata da interazioni ad azioni
+- [x] Shortcut avanza fase: Ctrl+Alt+N → Ctrl+Alt+Invio
+- [x] DailyControls: testi shortcut aggiornati
+- [ ] Verifica manuale: chiacchiera decrementa badge azioni
+- [ ] Verifica manuale: chiacchiera non decrementa interazioni
+- [ ] Verifica manuale: Ctrl+Alt+Invio avanza fase
+- [ ] Verifica manuale: Ctrl+Alt+N non fa più nulla

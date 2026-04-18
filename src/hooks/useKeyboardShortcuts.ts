@@ -149,14 +149,10 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
           setShowResetDialog(true)
           announce('Dialogo di reset aperto')
           break
-        case 'n':
+        case 'enter':
           if (!e.altKey) break
           e.preventDefault()
-          if (phaseActionsRemaining === 0) {
-            advancePhaseOnly()
-          } else {
-            announce(`Devi consumare prima le ${phaseActionsRemaining} azioni rimaste!`)
-          }
+          advancePhaseOnly()
           break
       }
     }

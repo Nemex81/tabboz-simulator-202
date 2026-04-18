@@ -43,7 +43,6 @@ interface UseSocialActionsParams {
   currentPhase: DayPhase
   dayType: DayType
   phaseActionsRemaining: number
-  canInteract: boolean
   marinatoOggi: boolean
   addLogEntry: (
     type: LogEntryType,
@@ -79,7 +78,6 @@ export function useSocialActions({
   currentPhase,
   dayType,
   phaseActionsRemaining,
-  canInteract,
   marinatoOggi,
   addLogEntry,
   applyCondition,
@@ -94,8 +92,6 @@ export function useSocialActions({
   relationshipsRef.current = relationships
   const phaseActionsRemainingRef = useRef(phaseActionsRemaining)
   phaseActionsRemainingRef.current = phaseActionsRemaining
-  const canInteractRef = useRef(canInteract)
-  canInteractRef.current = canInteract
   const currentPhaseRef = useRef(currentPhase)
   currentPhaseRef.current = currentPhase
   const dayTypeRef = useRef(dayType)
@@ -312,9 +308,9 @@ export function useSocialActions({
   // A8 — Nuove azioni sociali gratuite
   // B1-FIX-5 applicato
   const handleChiacchiera = useCallback(() => {
-    if (!canInteractRef.current) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le interazioni per questa fascia oraria!', 'assertive')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     const gt = gameTimeRef.current
@@ -331,17 +327,17 @@ export function useSocialActions({
     const chiacchieraMsg = isSchoolMorning
       ? 'Chiacchieri con un compagno tra una lezione e l\'altra! +5 Carisma, +3 Reputazione'
       : 'Hai chiacchierato con qualcuno! +5 Carisma, +3 Reputazione'
-    consumeInterazione()
+    consumeAction()
     announce(chiacchieraMsg)
     addLogEntry('social', 'Chiacchierata con qualcuno', chiacchieraMsg, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('quartiere')
     checkForNewRelationship('quartiere')
-  }, [setStats, consumeInterazione, announce, checkForNewFriend, checkForNewRelationship, addLogEntry])
+  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, addLogEntry])
 
   const handleNavigaOnline = useCallback(() => {
-    if (!canInteractRef.current) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le interazioni per questa fascia oraria!', 'assertive')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     playSound.buttonClick()
@@ -353,12 +349,12 @@ export function useSocialActions({
       stress: clampStat(current.stress - 3),
       morale: clampStat(current.morale + 4)
     }))
-    consumeInterazione()
+    consumeAction()
     announce('Hai navigato online e conosciuto nuova gente in rete! +4 Carisma, +1 Reputazione')
     addLogEntry('social', 'Sessione online', 'Hai navigato online e conosciuto nuova gente in rete! +4 Carisma, +1 Reputazione', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('online')
     checkForNewRelationship('online')
-  }, [setStats, consumeInterazione, announce, addLogEntry, checkForNewFriend, checkForNewRelationship])
+  }, [setStats, consumeAction, announce, addLogEntry, checkForNewFriend, checkForNewRelationship])
 
   // B1-FIX-5 applicato
   const handleParco = useCallback(() => {
@@ -398,9 +394,9 @@ export function useSocialActions({
 
   // B1-FIX-5 applicato
   const handleTelefona = useCallback(() => {
-    if (!canInteractRef.current) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le interazioni per questa fascia oraria!', 'assertive')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     const gt = gameTimeRef.current
@@ -416,7 +412,7 @@ export function useSocialActions({
       ...current,
       carisma: clampStat(current.carisma + 3)
     }))
-    consumeInterazione()
+    consumeAction()
     announce(isSchoolMorning
       ? `Hai mandato un messaggio a ${randomFriend.name} durante la ricreazione! +3 Carisma`
       : `Hai chiamato ${randomFriend.name}! Bella chiacchierata. +3 Carisma`
@@ -425,7 +421,7 @@ export function useSocialActions({
       ? `Hai mandato un messaggio a ${randomFriend.name} durante la ricreazione! +3 Carisma`
       : `Hai chiamato ${randomFriend.name}! Bella chiacchierata. +3 Carisma`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('quartiere')
-  }, [setStats, consumeInterazione, announce, addLogEntry, checkForNewFriend])
+  }, [setStats, consumeAction, announce, addLogEntry, checkForNewFriend])
 
   const handleFriendAction = useCallback((friendId: string, actionId: string) => {
     const friend = friendsRef.current.find(f => f.id === friendId)
@@ -433,9 +429,9 @@ export function useSocialActions({
     if (!friend) return
     const action = FRIEND_ACTIONS.find(a => a.id === actionId)
     if (!action) return
-    if (!canInteractRef.current) {
+    if (phaseActionsRemainingRef.current <= 0) {
       playSound.failure()
-      announce('Hai esaurito le interazioni per questa fascia oraria!', 'assertive')
+      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
       return
     }
     const req = action.requirements(s, friend)
@@ -473,10 +469,10 @@ export function useSocialActions({
         return updated
       })
     }
-    consumeInterazione()
+    consumeAction()
     playSound.success()
     announce(result.message)
-  }, [setStats, setFriends, consumeInterazione, announce])
+  }, [setStats, setFriends, consumeAction, announce])
 
   return {
     handleDisco,

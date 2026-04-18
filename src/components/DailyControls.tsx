@@ -44,12 +44,12 @@ export function DailyControls({
   const advanceButtonTitle =
     isSchoolMorningSequenceInProgress
       ? 'Completa prima tutte le ore di scuola per passare alla fase successiva'
-      : `Avanza a: ${nextPhaseLabel} (Ctrl+Alt+N)`
+      : `Avanza a: ${nextPhaseLabel} (Ctrl+Alt+Invio)`
 
   const advanceAriaLabel =
     isSchoolMorningSequenceInProgress
       ? `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Prima completa tutte le ore di scuola della mattina.`
-      : `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni disponibili nella fase corrente: ${phaseActionsRemaining ?? 0} su ${actionsMax}. Scorciatoia da tastiera: Ctrl+Alt+N`
+      : `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni disponibili nella fase corrente: ${phaseActionsRemaining ?? 0} su ${actionsMax}. Scorciatoia da tastiera: Ctrl+Alt+Invio`
 
   const showRiposa =
     currentPhase === 'pomeriggio' ||

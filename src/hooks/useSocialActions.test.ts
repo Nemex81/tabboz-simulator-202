@@ -212,9 +212,9 @@ describe('useSocialActions handleTryRelationship', () => {
 })
 
 describe('useSocialActions handleNavigaOnline', () => {
-  it('consuma un interazione e prova a generare un amico online', () => {
+  it('consuma un azione e prova a generare un amico online', () => {
     const setStats = vi.fn()
-    const consumeInterazione = vi.fn()
+    const consumeAction = vi.fn()
     const checkForNewFriend = vi.fn()
     const checkForNewRelationship = vi.fn()
     const announce = vi.fn()
@@ -222,7 +222,7 @@ describe('useSocialActions handleNavigaOnline', () => {
 
     const { result } = renderHook(() => useSocialActions(makeParams([], {
       setStats,
-      consumeInterazione,
+      consumeAction,
       checkForNewFriend,
       checkForNewRelationship,
       announce,
@@ -234,7 +234,7 @@ describe('useSocialActions handleNavigaOnline', () => {
     })
 
     expect(setStats).toHaveBeenCalledTimes(1)
-    expect(consumeInterazione).toHaveBeenCalledTimes(1)
+    expect(consumeAction).toHaveBeenCalledTimes(1)
     expect(checkForNewFriend).toHaveBeenCalledWith('online')
     expect(checkForNewRelationship).toHaveBeenCalledWith('online')
     expect(announce).toHaveBeenCalledWith(

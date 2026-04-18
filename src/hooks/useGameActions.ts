@@ -140,7 +140,6 @@ export function useGameActions({
     currentPhase,
     dayType,
     phaseActionsRemaining,
-    canInteract,
     marinatoOggi,
     addLogEntry,
     applyCondition,
