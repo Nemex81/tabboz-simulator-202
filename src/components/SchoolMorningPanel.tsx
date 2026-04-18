@@ -18,8 +18,6 @@ interface SchoolMorningPanelProps {
   stats: GameStats
   onStatChange: (updater: (prev: GameStats) => GameStats) => void
   onGainExtraAction: () => void
-  onConsumeAction: () => void
-  actionsRemaining: number
   announce: (msg: string) => void
   onNewFriend?: (f: Friend) => void
   addLogEntry: (

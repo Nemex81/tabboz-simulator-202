@@ -105,3 +105,12 @@
 - [x] KeyboardShortcutsDialog: shortcut avanza fase corretto da Ctrl+N a Ctrl+Alt+Invio (allineato a useKeyboardShortcuts.ts)
 - [ ] Verifica manuale: pulsante 'Ora terminata' cliccabile durante sequenza lezioni
 - [ ] Verifica manuale: Ctrl+Alt+Invio mostrato correttamente nell'aiuto scorciatoie
+
+### Fix eventi scolastici bloccati — aprile 2026
+- [x] Rimosso onConsumeAction da SchoolMorningPanel
+- [x] Rimosso actionsRemaining da SchoolMorningPanel
+- [x] Pulito call site in App.tsx
+- [x] Verificata propagazione in tutti i componenti School*
+- [ ] Verifica manuale: scelte slot funzionano
+- [ ] Verifica manuale: fine intervallo funziona
+- [ ] Verifica manuale: phaseActionsRemaining non scende

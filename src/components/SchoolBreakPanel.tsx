@@ -26,7 +26,6 @@ import { clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 import type { ClassmateInteractionKey } from '@/lib/classmate-relations'
 import type { DoInteractionResult, TeacherInteractionKey } from '@/hooks/useGameRelations'
-import { useActionGuard } from '@/hooks/useActionGuard'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -39,8 +38,6 @@ interface SchoolBreakPanelProps {
   onStatChange: (updater: (prev: GameStats) => GameStats) => void
   onTeacherInteraction: (teacherId: string, interactionKey: TeacherInteractionKey) => DoInteractionResult
   onClassmateInteraction: (classmateId: string, interactionKey: ClassmateInteractionKey) => DoInteractionResult
-  onConsumeAction: () => void
-  actionsRemaining: number
   onBreakComplete: () => void
   announce: (msg: string) => void
   currentDate: GameDate
@@ -74,8 +71,6 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
   onStatChange,
   onTeacherInteraction,
   onClassmateInteraction,
-  onConsumeAction,
-  actionsRemaining,
   onBreakComplete,
   announce,
   currentDate,
@@ -84,7 +79,6 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
   const [actionResult, setActionResult] = useState<BreakResult | null>(null)
   const [actionDone, setActionDone] = useState(false)
   const firstTabRef = useRef<HTMLButtonElement>(null)
-  const { guardedAction } = useActionGuard(onConsumeAction, actionsRemaining, announce)
 
   // Focus sul primo tab al mount (accessibilità)
   useEffect(() => {
@@ -139,7 +133,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
         return
       }
 
-      guardedAction(() => {
+      {
         const applyStatDelta = (statDelta: Partial<GameStats>) => {
           if (Object.keys(statDelta).length === 0) return
           onStatChange((prev) => {
@@ -240,9 +234,9 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
         }
         setActionResult(result)
         setActionDone(true)
-      }, actionKey)
+      }
     },
-    [actionDone, announce, guardedAction, onClassmateInteraction, onStatChange, onTeacherInteraction, selectedTarget]
+    [actionDone, announce, onClassmateInteraction, onStatChange, onTeacherInteraction, selectedTarget]
   )
 
   // ── Render ────────────────────────────────────────────────────────────────

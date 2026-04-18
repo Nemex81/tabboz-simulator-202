@@ -419,8 +419,6 @@ export function SchoolTab({
                 onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
                 onTeacherInteraction={doTeacherInteraction}
                 onClassmateInteraction={doClassmateInteraction}
-                onConsumeAction={consumeAction}
-                actionsRemaining={phaseActionsRemaining}
                 onBreakComplete={onBreakComplete}
                 announce={announce}
                 currentDate={currentDate}
@@ -436,8 +434,6 @@ export function SchoolTab({
                 stats={stats}
                 onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
                 onGainExtraAction={gainExtraAction}
-                onConsumeAction={consumeAction}
-                actionsRemaining={phaseActionsRemaining}
                 announce={announce}
                 onNewFriend={onNewFriend}
                 addLogEntry={addLogEntry}
@@ -455,8 +451,6 @@ export function SchoolTab({
                 stats={stats}
                 onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
                 onGainExtraAction={gainExtraAction}
-                onConsumeAction={consumeAction}
-                actionsRemaining={phaseActionsRemaining}
                 announce={announce}
                 onNewFriend={onNewFriend}
                 addLogEntry={addLogEntry}
