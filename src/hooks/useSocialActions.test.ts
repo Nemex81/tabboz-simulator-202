@@ -119,7 +119,6 @@ function makeParams(
     currentPhase: 'pomeriggio' as const,
     dayType: 'feriale' as const,
     phaseActionsRemaining: 2,
-    canInteract: true,
     marinatoOggi: false,
     addLogEntry: (overrides.addLogEntry ?? vi.fn()) as unknown as UseSocialActionsParams['addLogEntry'],
     applyCondition: vi.fn() as unknown as UseSocialActionsParams['applyCondition'],

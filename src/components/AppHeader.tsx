@@ -10,6 +10,7 @@ interface AppHeaderProps {
   currentPhase: DayPhase | null | undefined
   dayType: DayType | null | undefined
   phaseActionsRemaining: number
+  phaseActionsMax?: number
   interazioniRimaste: number
   isSchoolMorningSequenceInProgress: boolean
   morningChoicePending: boolean
@@ -26,6 +27,7 @@ export function AppHeader({
   currentPhase,
   dayType,
   phaseActionsRemaining,
+  phaseActionsMax,
   interazioniRimaste,
   isSchoolMorningSequenceInProgress,
   morningChoicePending,
@@ -80,6 +82,7 @@ export function AppHeader({
         currentPhase={currentPhase ?? null}
         dayType={dayType ?? null}
         phaseActionsRemaining={phaseActionsRemaining}
+        phaseActionsMax={phaseActionsMax}
         isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
         isSchoolPeriod={gameTime.schoolYear.isSchoolPeriod}
         handleRiposa={handleRiposa}

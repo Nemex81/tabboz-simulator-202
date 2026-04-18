@@ -10,7 +10,9 @@ interface ErrorFallbackProps {
 }
 
 export const ErrorFallback = ({ error, resetErrorBoundary }: ErrorFallbackProps) => {
-  if (import.meta.env.DEV) throw error;
+  if (import.meta.env.DEV) {
+    console.error('Runtime error captured by ErrorBoundary:', error)
+  }
 
   const isDynamicImportError = /Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError/i.test(error.message)
 
