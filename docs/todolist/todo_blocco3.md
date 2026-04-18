@@ -31,6 +31,12 @@ Esito analisi:
 
 Decisione: opzione B — footer ridotto. Implementato AdvancePhaseButton.tsx standalone. Aggiunto a SchoolTab, SocialTab, CityTab.
 
+Note implementazione (B3-2):
+- AdvancePhaseButton verificato/aggiunto in SocialTab: si — gia presente, con footer dopo il contenuto principale e prop `disabled={phaseActionsLeft > 0}`, `label={nextPhaseLabel}`, `onAdvance={onAdvance}`.
+- AdvancePhaseButton verificato/aggiunto in CityTab: si — gia presente, con footer dopo il contenuto principale e prop `disabled={props.actionsRemaining > 0}`, `label={props.nextPhaseLabel}`, `onAdvance={props.onAdvance}`.
+- Prop aggiunte alle interfacce: nessuna
+- tsc pulito: si
+
 ## [3.3] UI globale — Border-radius e uppercase
 - [x] Verificare se basta cambiare --radius in src/index.css o serve allineamento anche in tailwind.config.js
 - [x] Misurare quante occorrenze di uppercase tracking-wider esistono nel codebase e classificarle per uso corretto o da ridurre
