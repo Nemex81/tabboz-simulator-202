@@ -4,12 +4,23 @@
 
 ---
 
+## Aggiornamenti recenti (18 Apr 2026)
+
+- **Accessibilità NVDA (fix critico)**: `ActionButton` non attiva `announce(helpText)` su focus passivo — il callback è chiamato solo da `onClick`/`onKeyDown` (Enter/Space). Rimossa la logica `onFocus` + timer. `pendingFocusTargetRef` in `MainGameTabs` e `SchoolTab` impedisce shift del focus da redirect automatici di stato. `SchoolBreakPanel` non ruba il focus al mount.
+- `GameStats` aggiunge `hasMotorino: boolean` (persistito in KV; diventa `true` dopo la prima azione motorino riuscita).
+- `GameTime` aggiunge `lastPaghettaDate?: GameDate`; `phaseActions` è ora tipizzato come `PhaseActions` (record per fase). Aggiunta interfaccia derivata `GameTimeV2`.
+- `Friend.affinita` è ora opzionale (`affinita?: number`) e contrassegnato come deprecato (letto solo da `migrateLegacyFriend()`); aggiunti campi `gender`, `carisma`, `relazione`, `schoolYearMet`. `FriendType` aggiunge il valore `'generico'`.
+- `SchoolRecord` aggiunge i campi `assenze`, `note`, `sospensioni`, `condotta`, `consecutiveGoodDays`.
+- `HealthConditionId` aggiornato all'elenco corrente (vedi sezione Enumerazioni).
+- `Ragazza` documentata con campi completi; aggiunto tipo `ActivePartner` (store primario dei partner romantici).
+- Nota: il report di analisi codice completo è archiviato in `docs/piani archiviati/`.
+- Nuovi hook documentati: `useHydratedKV`, `useAppEffects`, `useSchoolSystem`, `useSchoolHandlers`, `useSocialActions`, `useEconomyActions`, `useLifestyleActions`, `useStudyActions`, `useGirlfriendActions`, `useActionGuard`, `useAppViewModels`, `useSoundFeedback`, `useSchoolEffects`.
+
 ## Aggiornamenti recenti (08 Apr 2026)
 
 - `useSchoolSystem` / flow scuole: introdotto `initSchoolYear` per inizializzare l'anno scolastico dall'onboarding (`SchoolSelection`).
 - `SchoolRecord` ora include `isAtSchool: boolean` (flag persistente usato nelle routine mattutine).
 - Nota implementativa: per evitare problemi di reconciliaton DOM durante la sequenza `SchoolMorningPanel`, alcune chiamate di aggiornamento parent vengono deferrate al prossimo tick (pattern `setTimeout(..., 0)`) — vedi `src/components/SchoolMorningPanel.tsx`.
-- Il report di analisi codice completo è disponibile in `docs/ANALISI_CODEBASE_COMPLETA.md`.
 - `ScheduledExam` supporta ora `type?: 'scritto' | 'orale'`; `generateScheduledExam()` può generare sia compiti scritti sia interrogazioni orali programmate.
 - Configurata la suite unit test con Vitest + `jsdom`; il setup condiviso vive in `src/test-setup.ts`.
 
@@ -68,6 +79,7 @@ interface GameStats {
   intelligenza: number;   // 0-100 — Intelligenza
   carisma: number;        // 0-100 — Carisma sociale
   salute: number;         // 0-100 — Salute fisica
+  hasMotorino: boolean;   // true dopo la prima azione motorino riuscita
 }
 ```
 
@@ -80,26 +92,46 @@ interface GameTime {
   maxActionsPerDay: number;
   schoolYear: SchoolYear;
   age: number;
-  currentPhase: DayPhase;
-  phaseActions: Record<DayPhase, number>;
+  lastPaghettaDate?: GameDate;        // Data ultimo pagamento paghetta
   extraActions: number;
+  currentPhase: DayPhase;
+  phaseActions: PhaseActions;         // { mattina, pomeriggio, sera, notte }
+}
+
+// Estensione con info tipo-giorno e azioni per fase corrente
+interface GameTimeV2 extends GameTime {
+  dayType: DayType;                   // 'feriale' | 'sabato' | 'domenica' | 'festivo'
+  phaseActionsRemaining: number;      // Azioni rimanenti nella fase corrente
 }
 ```
 
 ### Friend
 
 ```typescript
+type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico';
+
 interface Friend {
   id: string;
   name: string;
-  type: 'coatto' | 'secchione' | 'sportivo' | 'ribelle';
-  affinita: number;                  // 0-100 (legacy, compatibilità)
+  type: FriendType;
+  gender?: 'M' | 'F';
   intelligenza?: number;
+  carisma?: number;
+  relazione?: number;                // alias compatibilità BaseCharacter
   unlocked: boolean;
   originType: 'compagno_classe' | 'compagno_istituto' | 'extrascolastico';
-  metAt?: 'classe' | 'corridoio' | 'quartiere' | 'palestra';
-  rel?: RelationStats;               // Sistema 4 assi (nuovo)
+  metAt?: 'classe' | 'corridoio' | 'quartiere' | 'palestra'
+        | 'online' | 'festa' | 'sport' | 'lavoro';
+  schoolYearMet?: number;            // Anno scolastico in cui è stato incontrato
+  rel?: RelationStats;               // Sistema 4 assi (preferito)
   lastInteractionDay?: number;
+  // — campi deprecati (solo per migrazione KV legacy) —
+  /** @deprecated Letto solo da migrateLegacyFriend() */
+  affinita?: number;
+  /** @deprecated Derivato, non stored */
+  tier?: RelationshipTier;
+  /** @deprecated Derivato, non stored */
+  bondType?: SocialBondType;
 }
 ```
 
@@ -115,13 +147,21 @@ interface RelationStats {
 }
 ```
 
-### Ragazza (Fidanzata)
+### Ragazza / ActivePartner (Partner Romantico)
+
+`Ragazza` è il tipo base del personaggio romantico. `ActivePartner` estende `Ragazza` aggiungendo `relationshipSourceKey` che lo collega alla chiave KV persistente. Il store primario è `tabboz-active-partners: ActivePartner[]`; `tabboz-girlfriend` è legato ormai come fallback legacy.
 
 ```typescript
+type RelationshipStatus =
+  | 'sconosciuta' | 'conoscente' | 'amica'
+  | 'interessata' | 'fidanzata' | 'ex';
+
 interface Ragazza {
   id: string;
   nome: string;
   cognome: string;
+  gender: 'M' | 'F';
+  orientamentoSessuale: SexualOrientation;
   eta: number;
   classe: string;
   aspetto: 'carina' | 'bellissima' | 'normale' | 'alternativa';
@@ -131,15 +171,18 @@ interface Ragazza {
   statusSociale: number;
   gelosa: boolean;
   hobby: Hobby[];
+  coloreCapelli: string;
+  scuola: string;
   statPreferita: 'figosita' | 'muscoli' | 'intelligenza' | 'carisma';
   relationshipStatus: RelationshipStatus;
   stats: RelationshipStats;
   lastInteractionDate?: string;
 }
 
-type RelationshipStatus =
-  | 'sconosciuta' | 'conoscente' | 'amica'
-  | 'interessata' | 'fidanzata' | 'ex';
+// Store primario — src/lib/girlfriend-system.ts
+type ActivePartner = Ragazza & {
+  relationshipSourceKey: string;     // chiave KV da cui è stato generato
+};
 ```
 
 ### ScheduledExam
@@ -169,20 +212,32 @@ type DayType = 'feriale' | 'sabato' | 'domenica' | 'festivo';
 type ReputationLevel = 'sfigato' | 'normale' | 'popolare' | 'leggenda';
 
 type HealthConditionId =
-  | 'ciclo_doloroso' | 'influenza' | 'intossicazione' | 'infortunio'
-  | 'tossicchiella' | 'pancia_gonfia' | 'sfogo_acne' | 'herpes_labiale';
+  | 'raffreddore'
+  | 'influenza'
+  | 'febbre_alta'
+  | 'infortunio_lieve'
+  | 'infortunio_grave'
+  | 'sbornia'
+  | 'dipendenza_fumo'
+  | 'dipendenza_alcol'
+  | 'esaurito'
+  | 'depresso'
+  | 'ciclo_mestruale'   // genderRestricted: 'femmina'
+  | 'gravidanza';       // genderRestricted: 'femmina'
 
 // Nuovo: tipo unificato per categorie eventi mattutini
 type MorningEventCategory =
   | 'didattica' | 'sociale' | 'istituto'
   | 'strada' | 'casa' | 'citta' | 'amici';
 
-// SchoolRecord: ora include `isAtSchool` (flag persistente KV)
 interface SchoolRecord {
+  assenze: number;             // Giorni di assenza accumulati
+  note: number;                // Note disciplinari ricevute
+  sospensioni: number;         // Sospensioni subite
+  condotta: number;            // Voto condotta (0-10)
   wentToSchoolToday: boolean;
-  notes?: string[];
-  conduct?: number;
-  isAtSchool: boolean; // true se il giocatore si è recato fisicamente a scuola nella mattina corrente
+  isAtSchool: boolean;         // true se il giocatore è fisicamente a scuola nella mattina corrente
+  consecutiveGoodDays: number; // Giorni consecutivi di buona condotta
 }
 ```
 
@@ -592,7 +647,7 @@ Validazione e sanitizzazione di tutti i dati persistiti.
 
 **File:** `src/hooks/useGameStats.ts`
 
-Gestisce le 12 statistiche di gioco con calcolo automatico della reputazione.
+Gestisce le 13 statistiche di gioco con calcolo automatico della reputazione.
 
 ```typescript
 function useGameStats(announce: (msg: string) => void): {
@@ -788,14 +843,18 @@ function useHealthSystem(config: {
 
 | ID | Durata | Gender | Effetto principale |
 | --- | --- | --- | --- |
-| `ciclo_doloroso` | 3-5 gg | Femmina | -Salute, +Stress |
+| `raffreddore` | 3-5 gg | Tutti | Lieve -Salute, +Stress |
 | `influenza` | 5-7 gg | Tutti | -Salute, no scuola |
-| `intossicazione` | 2-3 gg | Tutti | -Salute, -Morale |
-| `infortunio` | 7-14 gg | Tutti | -Muscoli, -Salute |
-| `tossicchiella` | 3 gg | Tutti | Lieve -Salute |
-| `pancia_gonfia` | 1-2 gg | Tutti | -Morale |
-| `sfogo_acne` | 5-10 gg | Tutti | -Figosità |
-| `herpes_labiale` | 7 gg | Tutti | -Figosità, -Carisma |
+| `febbre_alta` | 3-5 gg | Tutti | -Salute severa, no scuola |
+| `infortunio_lieve` | 5-7 gg | Tutti | -Muscoli, -Salute lieve |
+| `infortunio_grave` | 10-14 gg | Tutti | -Muscoli, -Salute grave, no scuola |
+| `sbornia` | 1-2 gg | Tutti | -Intelligenza, -Morale |
+| `dipendenza_fumo` | indefinita | Tutti | -Salute, +Stress se non fuma |
+| `dipendenza_alcol` | indefinita | Tutti | -Salute, -Morale |
+| `esaurito` | 3-7 gg | Tutti | -Efficienza azioni, +Stanchezza |
+| `depresso` | 5-14 gg | Tutti | -Morale severo, -Carisma |
+| `ciclo_mestruale` | 3-5 gg | Femmina | +Stress, -Morale |
+| `gravidanza` | variabile | Femmina | -Figosità, effetti multipli |
 
 ---
 
@@ -820,7 +879,7 @@ function useGameLog(): {
 }
 ```
 
-**Limite:** max 50 entry (FIFO — le più vecchie vengono scartate).
+**Limite:** max 200 entry (FIFO — le più vecchie vengono scartate).
 
 ---
 
@@ -879,6 +938,118 @@ Scorciatoie da tastiera per accessibilità e navigazione rapida.
 | `Ctrl+1` – `Ctrl+8` | Cambia tab principale |
 | `Space` | Esegui azione corrente |
 | `Escape` | Chiudi dialog aperto |
+
+---
+
+### useHydratedKV
+
+**File:** `src/hooks/useHydratedKV.ts`
+
+Wrapper attorno a `useKV` di Spark con bootstrap snapshot condiviso e backoff automatico.
+
+```typescript
+function useHydratedKV<T>(key: string, defaultValue: T): [T, Setter<T>]
+```
+
+- Legge prima da uno snapshot locale (cache browser) per non bloccare il rendering.
+- Riallinea le chiavi principali da `tabboz-bootstrap-state` con una singola GET.
+- Retry con backoff esponenziale breve su risposte `403`/`429`/`5xx`.
+
+---
+
+### useAppEffects
+
+**File:** `src/hooks/useAppEffects.ts`
+
+Side effect globali: migrazione da KV legacy (`tabboz-girlfriend` → `tabboz-active-partners`), inizializzazioni one-shot all'avvio.
+
+---
+
+### useAppViewModels
+
+**File:** `src/hooks/useAppViewModels.ts`
+
+Computed props derivate dallo stato per la view. Mantiene separata la logica di derivazione dalla logica di business.
+
+---
+
+### useSchoolSystem
+
+**File:** `src/hooks/useSchoolSystem.ts`
+
+Stato anno scolastico, voti, esami programmati, promozione/bocciatura.
+
+---
+
+### useSchoolHandlers
+
+**File:** `src/hooks/useSchoolHandlers.ts`
+
+Handler azioni scuola: `handleVaiAScuola`, `handleMarina`, `handleAvanzaSlot`. Dipende da `useSchoolSystem`.
+
+---
+
+### useSchoolEffects
+
+**File:** `src/hooks/useSchoolEffects.ts`
+
+Effetti automatici fine anno: condotta, promozione/bocciatura, reset anno. Non deve essere invocato manualmente; è montato come side effect in `App.tsx`.
+
+---
+
+### useSocialActions
+
+**File:** `src/hooks/useSocialActions.ts`
+
+Azioni sociali: `handleChiacchiera`, `handleTelefona`, `handleNavigaOnline`, `handleStudiaGruppo`.
+
+---
+
+### useEconomyActions
+
+**File:** `src/hooks/useEconomyActions.ts`
+
+Azioni economia: `handleLavoro`, `handleShopping`, `handleMotorino`, `handleScommessa`.
+
+---
+
+### useLifestyleActions
+
+**File:** `src/hooks/useLifestyleActions.ts`
+
+Azioni lifestyle: `handlePalestra`, `handleRiposa`, `handleDisco`, `handleCinema`, `handleParco`, `handleLampada`.
+
+---
+
+### useStudyActions
+
+**File:** `src/hooks/useStudyActions.ts`
+
+Azioni studio: `handleStudia(subject?)`, `handleStudiaGruppo()`. Calcola bonus amici secchioni e gestisce il dialog di selezione materia.
+
+---
+
+### useGirlfriendActions
+
+**File:** `src/hooks/useGirlfriendActions.ts`
+
+Azioni su `ActivePartner`: `handleGirlfriendAction(actionType)`, gestione separazione. Aggiorna `tabboz-active-partners`.
+
+---
+
+### useActionGuard
+
+**File:** `src/hooks/useActionGuard.ts`
+
+Guard centralizzata per il consumo corretto delle azioni di fase. Verifica che `actionsRemaining > 0` prima di delegare al handler.
+
+---
+
+### useSoundFeedback
+
+**File:** `src/hooks/useSoundFeedback.ts`
+
+Trigger effetti audio contestuali alle azioni. Chiama `playSound.*` dai dati di esito dell'azione (successo → `statIncrease`, fallimento → `statDecrease`, ecc.).
 
 ---
 

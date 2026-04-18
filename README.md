@@ -164,7 +164,7 @@ Per una descrizione completa, consulta la [documentazione tecnica](#documentazio
 | --- | --- |
 | [docs/architecture.md](docs/architecture.md) | Architettura logica, layer, flusso dati, componenti |
 | [docs/api.md](docs/api.md) | Riferimento API completo: tipi, funzioni, hook, costanti |
-| [docs/ANALISI_CODEBASE_COMPLETA.md](docs/ANALISI_CODEBASE_COMPLETA.md) | Report di analisi e piano di rimedio (audit completo, 08 Apr 2026) |
+| [docs/piani archiviati/](docs/piani%20archiviati/) | Piani e analisi archiviate (incluso report audit 08 Apr 2026) |
 | [THEME_SYSTEM.md](THEME_SYSTEM.md) | Sistema di temi e variabili CSS |
 | [SECURITY.md](SECURITY.md) | Policy di sicurezza |
 | [PRD.md](PRD.md) | Product Requirements Document |
@@ -205,7 +205,7 @@ Il progetto è progettato per essere **completamente accessibile**:
 - **Stato:** Hook custom, zero state management library
 - **Logica pura:** Funzioni in `src/lib/` senza dipendenze React
 
-Documentazione aggiornata: 08 Apr 2026 — vedi `docs/ANALISI_CODEBASE_COMPLETA.md` per l'audit e i prossimi passi consigliati.
+Documentazione aggiornata: 18 Apr 2026 — vedi [docs/architecture.md](docs/architecture.md) e [docs/api.md](docs/api.md) per l'architettura corrente.
 
 ---
 
