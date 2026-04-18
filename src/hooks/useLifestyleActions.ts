@@ -185,7 +185,7 @@ export function useLifestyleActions({
       morale: clampStat(current.morale + 3)
     }))
     announce(`Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`)
-    addLogEntry('action_neutral', 'Riposo pomeridiano', `Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    addLogEntry('action_neutral', `Riposo ${currentPhaseRef.current === 'mattina' ? 'mattutino' : currentPhaseRef.current === 'pomeriggio' ? 'pomeridiano' : 'serale'}`, `Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
   }, [setStats, announce, addLogEntry])
 
   const handleMarina = useCallback(() => {

@@ -150,6 +150,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
           announce('Dialogo di reset aperto')
           break
         case 'n':
+          if (!e.altKey) break
           e.preventDefault()
           if (phaseActionsRemaining === 0) {
             advancePhaseOnly()

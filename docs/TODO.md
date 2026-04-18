@@ -70,3 +70,11 @@
 - [ ] Verifica manuale: Riposa non compare di notte
 - [ ] Verifica manuale: Riposa non decrementa badge azioni
 - [ ] Verifica manuale: badge notte mostra 2/2 correttamente
+
+### Fix minori log e shortcut — aprile 2026
+- [x] Titolo log Riposa dinamico: mattutino/pomeridiano/serale
+- [x] Shortcut avanza fase: Ctrl+N → Ctrl+Alt+N
+- [ ] Verifica manuale: diario mostra 'Riposo serale' di sera
+- [ ] Verifica manuale: Ctrl+Alt+N avanza fase correttamente
+- [ ] Verifica manuale: Ctrl+N non fa più nulla
+	(o non interferisce con funzioni browser/sistema)
