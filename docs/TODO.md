@@ -19,4 +19,9 @@
 - [x] todo.md aggiornato
 - [x] Blocco 1 implementato
 - [x] Blocco 2 implementato
-- [ ] Blocco 3 analisi completata
+- [x] Blocco 3 analisi completata
+
+### Blocker residui Blocco 3
+- [ ] Mockup approvato e diagramma stati per il refactor SchoolTab
+- [ ] Decisione prodotto: footer contestuale completo o ridotto
+- [ ] Piano test visuale radius/uppercase su 3 temi
