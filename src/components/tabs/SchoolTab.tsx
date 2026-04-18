@@ -178,6 +178,7 @@ export function SchoolTab({
 }: SchoolTabProps) {
   const [activeSubTab, setActiveSubTab] = useState<string>('home')
   const prevPhaseRef = useRef<string | null | undefined>(null)
+  const previousSubTabRef = useRef(activeSubTab)
 
   const hasActiveSchoolSequence =
     dayType === 'feriale' &&
@@ -214,36 +215,49 @@ export function SchoolTab({
     prevPhaseRef.current = currentPhase
   }, [currentPhase])
 
+  useEffect(() => {
+    if (previousSubTabRef.current === activeSubTab) return
+    previousSubTabRef.current = activeSubTab
+
+    requestAnimationFrame(() => {
+      const activePanel = document.querySelector(`[data-school-tab-panel="${activeSubTab}"]`) as HTMLElement | null
+      activePanel?.focus()
+    })
+  }, [activeSubTab])
+
   const footerDisabled = phaseActionsRemaining > 0 || hasActiveSchoolSequence
 
   return (
     <>
     <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
-      <TabsList aria-label="Sezioni scuola" className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
-        <TabsTrigger value="home" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-          <GraduationCap size={18} className="md:mr-2" weight="fill" />
-          <span className="hidden md:inline">Home</span>
-        </TabsTrigger>
-        <TabsTrigger value="voti" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-          <GraduationCap size={18} className="md:mr-2" weight="fill" />
-          <span className="hidden md:inline">Voti</span>
-        </TabsTrigger>
-        <TabsTrigger value="verifiche" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <Brain size={18} className="md:mr-2" weight="fill" />
-          <span className="hidden md:inline">Verifiche</span>
-        </TabsTrigger>
-        <TabsTrigger value="amici" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <UserCircle size={18} className="md:mr-2" weight="fill" />
-          <span className="hidden md:inline">Amici</span>
-        </TabsTrigger>
-        <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <Trophy size={18} className="md:mr-2" weight="fill" />
-          <span className="hidden md:inline">Dashboard</span>
-        </TabsTrigger>
-      </TabsList>
+      <nav aria-label="Sezioni scuola">
+        <TabsList aria-label="Sezioni scuola" className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
+          <TabsTrigger value="home" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <GraduationCap size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Home</span>
+          </TabsTrigger>
+          <TabsTrigger value="voti" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <GraduationCap size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Voti</span>
+          </TabsTrigger>
+          <TabsTrigger value="verifiche" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Brain size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Verifiche</span>
+          </TabsTrigger>
+          <TabsTrigger value="amici" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+            <UserCircle size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Amici</span>
+          </TabsTrigger>
+          <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Trophy size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Dashboard</span>
+          </TabsTrigger>
+        </TabsList>
+      </nav>
+      <h2 className="sr-only">Pannello scuola</h2>
 
       {/* ── Sotto-tab: Home ─────────────────────────────────────────────── */}
-      <TabsContent value="home" className="space-y-4 mt-6">
+      <TabsContent value="home" className="space-y-4 mt-6" tabIndex={-1} data-school-tab-panel="home">
         {/* Pannello Professori */}
         {schoolSubPanel === 'teachers' && (
           <div className="space-y-3">
@@ -462,7 +476,7 @@ export function SchoolTab({
       </TabsContent>
 
       {/* ── Sotto-tab: Voti ──────────────────────────────────────────────── */}
-      <TabsContent value="voti" className="space-y-6 mt-6">
+      <TabsContent value="voti" className="space-y-6 mt-6" tabIndex={-1} data-school-tab-panel="voti">
         <Card className="p-6 border-2 border-secondary bg-card">
           <h3 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
             <GraduationCap size={32} weight="fill" />
@@ -614,7 +628,7 @@ export function SchoolTab({
       </TabsContent>
 
       {/* ── Sotto-tab: Verifiche ─────────────────────────────────────────── */}
-      <TabsContent value="verifiche" className="space-y-6 mt-6">
+      <TabsContent value="verifiche" className="space-y-6 mt-6" tabIndex={-1} data-school-tab-panel="verifiche">
         <ExamsPanel
           exams={scheduledExams}
           onPrepareExam={handlePrepareExam}
@@ -642,7 +656,7 @@ export function SchoolTab({
       </TabsContent>
 
       {/* ── Sotto-tab: Amici ─────────────────────────────────────────────── */}
-      <TabsContent value="amici" className="space-y-6 mt-6">
+      <TabsContent value="amici" className="space-y-6 mt-6" tabIndex={-1} data-school-tab-panel="amici">
         <EnhancedFriendsPanel
           friends={friends.filter(f =>
             f.originType === 'compagno_classe' || f.originType === 'compagno_istituto'
@@ -676,7 +690,7 @@ export function SchoolTab({
       </TabsContent>
 
       {/* ── Sotto-tab: Dashboard ─────────────────────────────────────────── */}
-      <TabsContent value="dashboard" className="space-y-6 mt-6">
+      <TabsContent value="dashboard" className="space-y-6 mt-6" tabIndex={-1} data-school-tab-panel="dashboard">
         <ChunkErrorBoundary>
           <Suspense fallback={<div className="flex items-center justify-center p-8 text-sm text-muted-foreground">Caricamento statistiche...</div>}>
             <StatsDashboard stats={stats} grades={grades} />

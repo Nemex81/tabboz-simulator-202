@@ -1329,6 +1329,36 @@ Blocco 3 — Pianificazione separata (non stimabile senza analisi)
 - Nessun test esistente aggiornato in questa sessione.
 - Restano da verificare manualmente: NVDA post-fix sui pannelli scuola, landmark con tasto D e consumo azioni durante la sequenza scolastica.
 
+## Aggiornamento tecnico — audit esteso SR aprile 2026
+
+### Struttura heading definita
+
+- h1: AppHeader — titolo applicazione.
+- h2: pannello attivo principale.
+  Applicati in modo esplicito a SocialTab e SchoolTab; CityPanel, CharacterSheet, DiaryPanel e StatusTab avevano gia un heading di pannello.
+- h3: sezione interna al pannello.
+  Restano i titoli di sezione gia presenti nei card e nei sotto-pannelli.
+
+### Landmark regions presenti dopo fix
+
+- header: AppHeader tramite elemento header nativo.
+- main: App tramite elemento main nativo.
+- nav: MainGameTabs per il menu principale di gioco.
+- nav: SchoolTab per il menu delle sezioni scuola.
+- region/status gia presenti e mantenute: TimeDisplay, CityPanel, GradeProgressPanel, SchoolBreakPanel, SchoolMorningPanel, TeachersPanel e altri pannelli che espongono feedback contestuali.
+
+### Live region
+
+- Nessun nuovo container aggiunto in questa sessione.
+- Il progetto aveva gia due live region in App.tsx, una assertive e una polite, alimentate dalla callback announce.
+- Il comportamento e stato mantenuto invariato per non toccare la logica di gioco.
+
+### Focus management al cambio tab
+
+- Implementato localmente in MainGameTabs e SchoolTab.
+- Strategia: al cambio tab il pannello attivo riceve focus programmatico tramite tabIndex={-1} e query del pannello attivo nel frame successivo.
+- Impatto: nessuna modifica a App.tsx, hook o stato di dominio.
+
 ### Blocco 1
 
 | # | Criterio | Verifica |

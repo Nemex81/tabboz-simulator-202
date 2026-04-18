@@ -50,6 +50,7 @@ export function SocialTab({
 }: SocialTabProps) {
   return (
     <>
+    <h2 className="sr-only">Pannello azioni sociali</h2>
     <div className="grid md:grid-cols-2 gap-6">
       <Card className="p-3 border-2 border-secondary bg-card">
         <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">

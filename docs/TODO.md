@@ -36,3 +36,14 @@
 - [x] hidden corretto su TabsContent inattivi
 - [ ] Verifica manuale NVDA post-fix (test manuale aperto)
 - [ ] Verifica manuale: consumo azioni in tutti i pannelli
+
+### Sessione audit SR esteso — aprile 2026
+- [x] Audit etichette SR su tutto src completato
+- [x] Struttura heading corretta
+- [x] Landmark regions aggiunte
+- [x] Fix immediati etichette SR applicati
+- [x] Focus management al cambio tab implementato localmente
+- [ ] Verifica manuale NVDA: heading con tasto H
+- [ ] Verifica manuale NVDA: landmark con tasto D
+- [ ] Verifica manuale NVDA: annunci azioni con aria-live
+- [ ] Verifica manuale NVDA: pulsanti tutti etichettati

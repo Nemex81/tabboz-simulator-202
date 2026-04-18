@@ -341,7 +341,11 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
               ) : (
                 <fieldset>
                   <legend className="sr-only">Seleziona un compagno</legend>
-                  <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
+                  <div
+                    role="radiogroup"
+                    aria-label="Selezione compagno"
+                    className="space-y-1 max-h-40 overflow-y-auto pr-1"
+                  >
                     {classRoster.map(c => (
                       <button
                         key={c.id}
@@ -386,7 +390,11 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
               ) : (
                 <fieldset>
                   <legend className="sr-only">Seleziona un professore</legend>
-                  <div className="space-y-1">
+                  <div
+                    role="radiogroup"
+                    aria-label="Selezione professore"
+                    className="space-y-1"
+                  >
                     {todayTeachers.map(t => (
                       <button
                         key={t.id}

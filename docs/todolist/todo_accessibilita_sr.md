@@ -58,3 +58,30 @@ File analizzati:
 - src/hooks/useSchoolHandlers.ts
 - src/hooks/useEconomyActions.ts
 - src/hooks/useLifestyleActions.ts
+
+## Sessione audit esteso SR — aprile 2026
+
+### Problemi aggiuntivi trovati
+- MainGameTabs: mancava un landmark di navigazione esplicito attorno al menu tab principale.
+- MainGameTabs: al cambio tab il focus restava sui trigger, senza trasferimento programmatico all'inizio del pannello attivo.
+- SchoolTab: mancava un landmark di navigazione esplicito per i sotto-tab.
+- SchoolTab: al cambio sotto-tab mancava il focus transfer verso il pannello attivo.
+- SocialTab: la gerarchia heading partiva da h3 senza un h2 di pannello.
+- SchoolTab: mancava un h2 di pannello per mantenere la gerarchia lineare con AppHeader h1.
+- SchoolBreakPanel: i gruppi di scelta compagno/professore esponevano singoli role="radio" senza radiogroup esplicito.
+- ui/dialog.tsx e ui/sheet.tsx: pulsanti close con testo SR in inglese e senza aria-label esplicito in italiano.
+
+### Fix applicati
+- [x] [src/components/ui/dialog.tsx](src/components/ui/dialog.tsx) — close button localizzato con aria-label "Chiudi dialogo" e icona marcata aria-hidden.
+- [x] [src/components/ui/sheet.tsx](src/components/ui/sheet.tsx) — close button localizzato con aria-label "Chiudi pannello" e icona marcata aria-hidden.
+- [x] [src/components/SchoolBreakPanel.tsx](src/components/SchoolBreakPanel.tsx) — aggiunti radiogroup espliciti ai selettori di compagni e professori.
+- [x] [src/components/tabs/SocialTab.tsx](src/components/tabs/SocialTab.tsx) — aggiunto h2 semantico di pannello.
+- [x] [src/components/tabs/SchoolTab.tsx](src/components/tabs/SchoolTab.tsx) — aggiunto h2 semantico di pannello, landmark nav per i sotto-tab e focus transfer al cambio sotto-tab.
+- [x] [src/components/MainGameTabs.tsx](src/components/MainGameTabs.tsx) — aggiunto landmark nav per il menu principale e focus transfer al cambio tab.
+
+### Ancora aperti
+- [ ] Verifica manuale NVDA: heading con tasto H sui pannelli principali e scolastici.
+- [ ] Verifica manuale NVDA: landmark con tasto D su menu principale e sezioni scuola.
+- [ ] Verifica manuale NVDA: ordine di lettura dopo il focus transfer al cambio tab.
+- [ ] Verifica manuale NVDA: annunci delle azioni via live region restano coerenti durante il cambio pannello.
+- [ ] Verifica manuale comportamento mobile 320px e 375px dopo i wrapper nav aggiunti.
