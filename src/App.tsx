@@ -649,7 +649,6 @@ function App() {
       playerGender: playerProfile?.gender ?? 'maschio',
       morningChoicePending,
       phaseActionsLeft,
-      interactionsLeft: interazioniRimaste ?? 0,
       isSchoolPeriod: gameTime.schoolYear.isSchoolPeriod,
       stanchezza: stats.stanchezza,
       soldi: stats.soldi,

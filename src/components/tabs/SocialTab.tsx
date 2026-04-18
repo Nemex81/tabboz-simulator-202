@@ -11,7 +11,6 @@ interface SocialTabProps {
   playerGender: NarrativePlayerGender
   morningChoicePending: boolean
   phaseActionsLeft: number
-  interactionsLeft: number
   isSchoolPeriod: boolean
   stanchezza: number
   soldi: number
@@ -32,7 +31,6 @@ export function SocialTab({
   playerGender,
   morningChoicePending,
   phaseActionsLeft,
-  interactionsLeft,
   isSchoolPeriod,
   stanchezza,
   soldi,
@@ -94,11 +92,11 @@ export function SocialTab({
             icon={<Chats size={48} />}
             label="Chiacchiera"
             onClick={handleChiacchiera}
-            disabled={morningChoicePending || interactionsLeft <= 0}
+            disabled={morningChoicePending || phaseActionsLeft <= 0}
             blockedReason={
               morningChoicePending
                 ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : 'Nessuna interazione disponibile per questa fascia oraria'
+                : 'Nessuna azione per questa fascia oraria'
             }
             variant="secondary"
             ariaLabel="Chiacchiera con qualcuno. Gratis. +5 Carisma, +3 Reputazione"
@@ -124,11 +122,11 @@ export function SocialTab({
             icon={<Laptop size={48} />}
             label="Naviga Online"
             onClick={handleNavigaOnline}
-            disabled={morningChoicePending || interactionsLeft <= 0}
+            disabled={morningChoicePending || phaseActionsLeft <= 0}
             blockedReason={
               morningChoicePending
                 ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : 'Nessuna interazione disponibile per questa fascia oraria'
+                : 'Nessuna azione per questa fascia oraria'
             }
             variant="secondary"
             ariaLabel="Naviga online e socializza in rete. Gratis. +4 Carisma, +1 Reputazione"
@@ -139,11 +137,11 @@ export function SocialTab({
             icon={<UserCircle size={48} />}
             label="Telefona"
             onClick={handleTelefona}
-            disabled={morningChoicePending || interactionsLeft <= 0}
+            disabled={morningChoicePending || phaseActionsLeft <= 0}
             blockedReason={
               morningChoicePending
                 ? '🏫 Scegli prima se andare a scuola o marinare!'
-                : 'Nessuna interazione disponibile per questa fascia oraria'
+                : 'Nessuna azione per questa fascia oraria'
             }
             variant="secondary"
             ariaLabel="Telefona a un amico. Gratis. +3 Carisma (richiede almeno un amico)"
@@ -152,7 +150,7 @@ export function SocialTab({
           />
         </div>
         <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-          <p>Interazioni sociali rimaste in questa fase: {interactionsLeft}</p>
+          <p>Le azioni sociali di questo pannello consumano le azioni della fase corrente.</p>
         </div>
       </Card>
 

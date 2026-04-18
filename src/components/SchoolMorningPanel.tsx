@@ -11,7 +11,6 @@ import { GameStats, Friend, MorningEventCategory, SchoolDayState } from '@/lib/t
 import { SchoolMorningEvent, SchoolMorningChoice } from '@/lib/school-morning-events'
 import { clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
-import { useActionGuard } from '@/hooks/useActionGuard'
 
 interface SchoolMorningPanelProps {
   context: 'school' | 'street'
@@ -115,8 +114,6 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
   stats,
   onStatChange,
   onGainExtraAction,
-  onConsumeAction,
-  actionsRemaining,
   announce,
   onNewFriend,
   addLogEntry,
@@ -125,14 +122,13 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
   onSlotComplete,
 }: SchoolMorningPanelProps) {
   const [resolvedIds, setResolvedIds] = React.useState<Set<string>>(new Set())
-  const { guardedAction } = useActionGuard(onConsumeAction, actionsRemaining, announce)
 
   // ── Modalità slot: gestione scelta su structuredEvent ──────────────────────
   const handleSlotChoice = useCallback(
     (choice: SchoolMorningChoice, slotIndex: number, eventId: string) => {
       if (resolvedIds.has(eventId)) return
 
-      guardedAction(() => {
+      {
         const result = choice.outcome(stats)
 
         onStatChange((prev) => {
@@ -165,9 +161,9 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
 
         setResolvedIds((prev) => new Set([...prev, eventId]))
         setTimeout(() => onSlotComplete?.(slotIndex), 0)
-      }, choice.label)
+      }
     },
-    [resolvedIds, guardedAction, stats, onStatChange, onGainExtraAction, announce, onNewFriend, addLogEntry, currentDate, onSlotComplete]
+    [resolvedIds, stats, onStatChange, onGainExtraAction, announce, onNewFriend, addLogEntry, currentDate, onSlotComplete]
   )
 
   // ── Modalità slot: UI ──────────────────────────────────────────────────────
@@ -260,7 +256,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
               <Button
                 className="w-full"
                 onClick={() => {
-                  guardedAction(() => {
+                  {
                     if (Object.keys(delta).length > 0) {
                       onStatChange((prev) => {
                         const updated = { ...prev }
@@ -280,7 +276,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
                     playSound.buttonClick()
                     announce('Intervallo terminato. Si torna in classe.')
                     setTimeout(() => onSlotComplete?.(currentSlotIndex), 0)
-                  }, 'Fine intervallo')
+                  }
                 }}
                 aria-label="Fine intervallo, torna in classe"
               >
@@ -355,7 +351,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
               <Button
                 className="w-full mt-2"
                 onClick={() => {
-                  guardedAction(() => {
+                  {
                     const delta = ordinaryEvent.statDelta
                     if (Object.keys(delta).length > 0) {
                       onStatChange((prev) => {
@@ -376,7 +372,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
                     playSound.buttonClick()
                     announce(`Ora ${currentLessonNumber} terminata.`)
                     setTimeout(() => onSlotComplete?.(currentSlotIndex), 0)
-                  }, `Ora ${currentLessonNumber}`)
+                  }
                 }}
                 aria-label={`Termina ora ${currentLessonNumber} e vai alla successiva`}
               >
@@ -394,7 +390,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
     (event: SchoolMorningEvent, choice: SchoolMorningChoice) => {
       if (resolvedIds.has(event.id)) return
 
-      guardedAction(() => {
+      {
         const result = choice.outcome(stats)
 
         onStatChange((prev) => {
@@ -435,9 +431,9 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
           'mattina'
         )
         setResolvedIds((prev) => new Set([...prev, event.id]))
-      }, choice.label)
+      }
     },
-    [resolvedIds, guardedAction, stats, onStatChange, onGainExtraAction, announce, onNewFriend, addLogEntry, currentDate]
+    [resolvedIds, stats, onStatChange, onGainExtraAction, announce, onNewFriend, addLogEntry, currentDate]
   )
 
   return (

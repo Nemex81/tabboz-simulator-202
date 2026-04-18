@@ -90,3 +90,12 @@
 - [ ] Verifica manuale: chiacchiera non decrementa interazioni
 - [ ] Verifica manuale: Ctrl+Alt+Invio avanza fase
 - [ ] Verifica manuale: Ctrl+Alt+N non fa più nulla
+
+### Fix runtime scuola mattutina e UI sociale — aprile 2026
+- [x] SchoolMorningPanel: rimossa esecuzione tramite useActionGuard durante ore/intervalli/eventi scuola
+- [x] Ora successiva e Fine intervallo: non consumano più azioni o interazioni
+- [x] SocialTab: chiacchiera, naviga online e telefona bloccate su azioni di fase, non su interazioni
+- [x] SocialTab: testo informativo aggiornato per evitare ambiguità tra azioni e interazioni
+- [ ] Verifica manuale: ora successiva non decrementa il badge azioni
+- [ ] Verifica manuale: Fine intervallo non decrementa il badge azioni
+- [ ] Verifica manuale: chiacchiera, naviga online e telefona si bloccano solo a 0 azioni fase
