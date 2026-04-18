@@ -58,3 +58,15 @@
 - [ ] Verifica manuale: badge X/Y corretto ad ogni fase
 - [ ] Verifica manuale: school morning ancora blocca corretto
 - [ ] Verifica manuale: azione bonus porta remaining > max senza bug UI
+
+### Rifinitura Riposa e maxActions — aprile 2026
+- [x] maxActions = 2 per sera e notte su tutti i dayType
+- [x] Riposa non consuma più azioni
+- [x] showRiposa aggiornato: mattina non scol. + pomeriggio + sera
+- [x] showDormi invariato: sera + notte
+- [x] disabled Riposa rimosso (non dipende più da azioni)
+- [x] Test aggiornati per nuovo contratto Riposa
+- [ ] Verifica manuale: Riposa disponibile sera (nuovo)
+- [ ] Verifica manuale: Riposa non compare di notte
+- [ ] Verifica manuale: Riposa non decrementa badge azioni
+- [ ] Verifica manuale: badge notte mostra 2/2 correttamente

@@ -1318,6 +1318,12 @@ Blocco 3 — Pianificazione separata (non stimabile senza analisi)
 - Prima: badge rosso bloccante "X azioni rimaste"
 - Dopo: badge neutro informativo "X/Y azioni usate"
 
+### Rifinitura Riposa e maxActions — aprile 2026
+- maxActions = 2 per tutte le fasi e tutti i dayType. Valore uniforme per supportare eventi futuri in qualsiasi fascia oraria senza modifiche alla config.
+- Riposa non consuma più azioni: è un'utilità libera di recupero parziale stanchezza.
+- Riposa visibile in: mattina non scolastica, pomeriggio, sera. Non visibile di notte.
+- Vai a dormire visibile in: sera e notte (invariato).
+
 ## Aggiornamento tecnico — sessione accessibilità SR aprile 2026
 
 ### Nuovo file: src/hooks/useActionGuard.ts

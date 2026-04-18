@@ -53,6 +53,7 @@ export function DailyControls({
 
   const showRiposa =
     currentPhase === 'pomeriggio' ||
+    currentPhase === 'sera' ||
     (currentPhase === 'mattina' && (dayType !== 'feriale' || !isSchoolPeriod))
 
   const showDormi = currentPhase === 'sera' || currentPhase === 'notte'
@@ -82,9 +83,8 @@ export function DailyControls({
             variant="outline"
             size="sm"
             onClick={handleRiposa}
-            disabled={phaseActionsRemaining <= 0}
-            title="Recupera parte della stanchezza (consuma 1 azione)"
-            aria-label="Riposa: recupera parte della stanchezza, consuma un'azione"
+            title="Recupera parte della stanchezza"
+            aria-label="Riposa: recupera parte della stanchezza"
             className="flex items-center gap-1"
           >
             😴 <span>Riposa</span>
