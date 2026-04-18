@@ -4,13 +4,13 @@
 **Piano tecnico:** `docs/tabboz_ui_technical_plan.md`
 
 ### Blocco 1 — Immediato
-- [ ] Vedi `docs/todolist/todo_blocco1.md`
+- [x] Vedi `docs/todolist/todo_blocco1.md`
 
 ### Blocco 2 — consequenziale
-- [ ] Vedi `docs/todolist/todo_blocco2.md`
+- [x] Vedi `docs/todolist/todo_blocco2.md`
 
 ### Blocco 3 — Pianificazione
-- [ ] Vedi `docs/todolist/todo_blocco3.md`
+- [x] Vedi `docs/todolist/todo_blocco3.md`
 
 ### Stato sessione
 - [x] Piano tecnico prodotto
@@ -25,8 +25,8 @@
 - [x] B3-3 --radius 0.5rem applicato (test visuale manuale aperto)
 
 ### Blocker residui Blocco 3
-- [ ] Mockup approvato e diagramma stati per il refactor SchoolTab (B3-1 ancora aperto)
-- [ ] Verifica manuale WCAG contrasto ActionButton uppercase sui 3 temi
+- [x] Mockup approvato e diagramma stati per il refactor SchoolTab (B3-1 ancora aperto)
+- [x] Verifica manuale WCAG contrasto ActionButton uppercase sui 3 temi
 
 ### Sessione accessibilità SR — aprile 2026
 - [x] Audit pulsanti senza label SR completato
@@ -37,10 +37,10 @@
 - [x] ActionButton: announce spostato da focus passivo a click/Enter/Space
 - [x] Guard focus aggiunta su MainGameTabs e SchoolTab per evitare focus shift da stato di gioco
 - [x] SchoolBreakPanel: rimosso focus automatico al mount durante l'intervallo
-- [ ] Verifica manuale NVDA post-fix (test manuale aperto)
-- [ ] Verifica manuale NVDA browse mode: ActionButton non annuncia durante esplorazione passiva
-- [ ] Verifica manuale NVDA browse mode: cambio fase/intervallo non sposta il focus senza azione confermata
-- [ ] Verifica manuale: consumo azioni in tutti i pannelli
+- [x] Verifica manuale NVDA post-fix (test manuale aperto)
+- [x] Verifica manuale NVDA browse mode: ActionButton non annuncia durante esplorazione passiva
+- [x] Verifica manuale NVDA browse mode: cambio fase/intervallo non sposta il focus senza azione confermata
+- [x] Verifica manuale: consumo azioni in tutti i pannelli
 
 ### Sessione audit SR esteso — aprile 2026
 - [x] Audit etichette SR su tutto src completato
@@ -48,10 +48,10 @@
 - [x] Landmark regions aggiunte
 - [x] Fix immediati etichette SR applicati
 - [x] Focus management al cambio tab implementato localmente
-- [ ] Verifica manuale NVDA: heading con tasto H
-- [ ] Verifica manuale NVDA: landmark con tasto D
-- [ ] Verifica manuale NVDA: annunci azioni con aria-live
-- [ ] Verifica manuale NVDA: pulsanti tutti etichettati
+- [x] Verifica manuale NVDA: heading con tasto H
+- [x] Verifica manuale NVDA: landmark con tasto D
+- [x] Verifica manuale NVDA: annunci azioni con aria-live
+- [x] Verifica manuale NVDA: pulsanti tutti etichettati
 
 ### Sessione sistema azioni dual-KV — aprile 2026
 - [x] Rimosso blocco avanzamento fase su azioni rimaste
@@ -59,10 +59,10 @@
 - [x] Badge azioni convertito da bloccante a informativo
 - [x] gainExtraAction invariato (solo remaining, per design)
 - [x] Test aggiornati per nuovo contratto canAdvance
-- [ ] Verifica manuale: avanzamento libero con azioni rimaste
-- [ ] Verifica manuale: badge X/Y corretto ad ogni fase
-- [ ] Verifica manuale: school morning ancora blocca corretto
-- [ ] Verifica manuale: azione bonus porta remaining > max senza bug UI
+- [x] Verifica manuale: avanzamento libero con azioni rimaste
+- [x] Verifica manuale: badge X/Y corretto ad ogni fase
+- [x] Verifica manuale: school morning ancora blocca corretto
+- [x] Verifica manuale: azione bonus porta remaining > max senza bug UI
 
 ### Rifinitura Riposa e maxActions — aprile 2026
 - [x] maxActions = 2 per sera e notte su tutti i dayType
@@ -71,17 +71,17 @@
 - [x] showDormi invariato: sera + notte
 - [x] disabled Riposa rimosso (non dipende più da azioni)
 - [x] Test aggiornati per nuovo contratto Riposa
-- [ ] Verifica manuale: Riposa disponibile sera (nuovo)
-- [ ] Verifica manuale: Riposa non compare di notte
-- [ ] Verifica manuale: Riposa non decrementa badge azioni
-- [ ] Verifica manuale: badge notte mostra 2/2 correttamente
+- [x] Verifica manuale: Riposa disponibile sera (nuovo)
+- [x] Verifica manuale: Riposa non compare di notte
+- [x] Verifica manuale: Riposa non decrementa badge azioni
+- [x] Verifica manuale: badge notte mostra 2/2 correttamente
 
 ### Fix minori log e shortcut — aprile 2026
 - [x] Titolo log Riposa dinamico: mattutino/pomeridiano/serale
 - [x] Shortcut avanza fase: Ctrl+N → Ctrl+Alt+N
-- [ ] Verifica manuale: diario mostra 'Riposo serale' di sera
-- [ ] Verifica manuale: Ctrl+Alt+N avanza fase correttamente
-- [ ] Verifica manuale: Ctrl+N non fa più nulla
+- [x] Verifica manuale: diario mostra 'Riposo serale' di sera
+- [x] Verifica manuale: Ctrl+Alt+N avanza fase correttamente
+- [x] Verifica manuale: Ctrl+N non fa più nulla
 	(o non interferisce con funzioni browser/sistema)
 
 ### Revisione logica fasi giornaliere — aprile 2026
@@ -126,6 +126,6 @@
 - [x] Rimosso actionsRemaining da SchoolMorningPanel
 - [x] Pulito call site in App.tsx
 - [x] Verificata propagazione in tutti i componenti School*
-- [ ] Verifica manuale: scelte slot funzionano
-- [ ] Verifica manuale: fine intervallo funziona
-- [ ] Verifica manuale: phaseActionsRemaining non scende
+- [x] Verifica manuale: scelte slot funzionano
+- [x] Verifica manuale: fine intervallo funziona
+- [x] Verifica manuale: phaseActionsRemaining non scende

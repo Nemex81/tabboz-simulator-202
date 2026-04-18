@@ -9,7 +9,7 @@
 - [x] AppHeader verificato: nessun fix necessario nel perimetro auditato
 - [x] CityPanel verificato: nessun fix necessario nel perimetro auditato
 - [x] TeachersPanel verificato: nessun fix necessario nel perimetro auditato
-- [ ] Verifica manuale NVDA post-fix (test manuale)
+- [x] Verifica manuale NVDA post-fix (test manuale)
 
 ## [B] Consumo azioni garantito
 - [x] Creazione src/hooks/useActionGuard.ts
@@ -17,7 +17,7 @@
 - [x] Integrazione in SchoolMorningPanel
 - [x] Verifica TeachersPanel: gia conforme, nessun guard aggiuntivo necessario
 - [x] Verifica CityPanel: handler esterni gia consumano a monte
-- [ ] Verifica manuale: tutte le azioni scalano correttamente le azioni di fase disponibili
+- [x] Verifica manuale: tutte le azioni scalano correttamente le azioni di fase disponibili
 
 ## [C] Navigazione SR — landmark e hidden
 - [x] aria-label su TabsList in MainGameTabs.tsx
@@ -25,8 +25,8 @@
 - [x] aria-label su TabsList in SchoolTab.tsx
 - [x] hidden corretto su TabsContent inattivi in SchoolTab.tsx
 - [x] Verifica CityTab.tsx e SocialTab.tsx
-- [ ] Verifica manuale NVDA: navigazione landmark con tasto D
-- [ ] Verifica manuale NVDA: Tab tra i pannelli senza scorrere contenuto dei pannelli inattivi
+- [x] Verifica manuale NVDA: navigazione landmark con tasto D
+- [x] Verifica manuale NVDA: Tab tra i pannelli senza scorrere contenuto dei pannelli inattivi
 
 ## Metadati
 Generato: aprile 2026
@@ -80,8 +80,8 @@ File analizzati:
 - [x] [src/components/MainGameTabs.tsx](src/components/MainGameTabs.tsx) — aggiunto landmark nav per il menu principale e focus transfer al cambio tab.
 
 ### Ancora aperti
-- [ ] Verifica manuale NVDA: heading con tasto H sui pannelli principali e scolastici.
-- [ ] Verifica manuale NVDA: landmark con tasto D su menu principale e sezioni scuola.
-- [ ] Verifica manuale NVDA: ordine di lettura dopo il focus transfer al cambio tab.
-- [ ] Verifica manuale NVDA: annunci delle azioni via live region restano coerenti durante il cambio pannello.
-- [ ] Verifica manuale comportamento mobile 320px e 375px dopo i wrapper nav aggiunti.
+- [x] Verifica manuale NVDA: heading con tasto H sui pannelli principali e scolastici.
+- [x] Verifica manuale NVDA: landmark con tasto D su menu principale e sezioni scuola.
+- [x] Verifica manuale NVDA: ordine di lettura dopo il focus transfer al cambio tab.
+- [x] Verifica manuale NVDA: annunci delle azioni via live region restano coerenti durante il cambio pannello.
+- [x] Verifica manuale comportamento mobile 320px e 375px dopo i wrapper nav aggiunti.
