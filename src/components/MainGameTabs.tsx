@@ -31,11 +31,13 @@ export function MainGameTabs({
   cityTab,
 }: MainGameTabsProps) {
   const previousTabRef = useRef(activeTab)
+  const isSkippedSchoolMorning = currentPhase === 'mattina' && schoolTab.marinatoOggi
 
   // DayPhase reale: 'mattina' | 'pomeriggio' | 'sera' | 'notte'
   const isSchoolAvailable = currentPhase === 'mattina'
-  const isCityAvailable = currentPhase === 'pomeriggio' || currentPhase === 'sera'
+  const isCityAvailable = isSkippedSchoolMorning || currentPhase === 'pomeriggio' || currentPhase === 'sera'
   const isSocialAvailable =
+    isSkippedSchoolMorning ||
     currentPhase === 'pomeriggio' ||
     currentPhase === 'sera' ||
     currentPhase === 'notte'
@@ -45,11 +47,13 @@ export function MainGameTabs({
   useEffect(() => {
     if (currentPhase == null) return
     if (activeTab === 'school' && !isSchoolAvailable) {
-      onValueChange('social')
+      onValueChange(isSocialAvailable ? 'social' : 'status')
     } else if (activeTab === 'city' && !isCityAvailable) {
-      onValueChange('social')
+      onValueChange(isSchoolAvailable ? 'school' : isSocialAvailable ? 'social' : 'status')
+    } else if (activeTab === 'social' && !isSocialAvailable) {
+      onValueChange(isSchoolAvailable ? 'school' : 'status')
     }
-  }, [activeTab, currentPhase, isSchoolAvailable, isCityAvailable, onValueChange])
+  }, [activeTab, currentPhase, isSchoolAvailable, isCityAvailable, isSocialAvailable, onValueChange])
 
   useEffect(() => {
     if (previousTabRef.current === activeTab) return
@@ -78,7 +82,7 @@ export function MainGameTabs({
           <TabsTrigger
             value="city"
             disabled={!isCityAvailable}
-            aria-label={!isCityAvailable ? 'Città: disponibile dal pomeriggio' : 'Città'}
+            aria-label={!isCityAvailable ? 'Città: disponibile dal pomeriggio o se salti la scuola' : 'Città'}
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <Buildings size={20} className="mr-2" weight="fill" />
@@ -97,7 +101,7 @@ export function MainGameTabs({
           <TabsTrigger
             value="social"
             disabled={!isSocialAvailable}
-            aria-label={!isSocialAvailable ? 'Azioni: non disponibili di mattina' : 'Azioni'}
+            aria-label={!isSocialAvailable ? 'Azioni: non disponibili di mattina prima della scelta scuola o se vai a lezione' : 'Azioni'}
             className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
           >
             <Chats size={20} className="mr-2" weight="fill" />

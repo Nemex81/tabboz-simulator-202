@@ -371,13 +371,23 @@ function App() {
     !_schoolDayStateFromHook?.isComplete
 
   const handleAdvancePhaseGuarded = useCallback(() => {
+    if (currentPhase === 'notte') {
+      announce('Di notte usa Vai a dormire per passare al giorno successivo.', 'assertive')
+      return
+    }
+
+    if (morningChoicePending) {
+      announce('Scegli prima se andare a lezione o saltare la scuola.', 'assertive')
+      return
+    }
+
     if (isSchoolMorningSequenceInProgress) {
       announce('Completa prima tutte le ore di scuola prima di avanzare alla fase successiva.', 'assertive')
       return
     }
 
     advancePhaseOnly()
-  }, [advancePhaseOnly, announce, isSchoolMorningSequenceInProgress])
+  }, [advancePhaseOnly, announce, currentPhase, isSchoolMorningSequenceInProgress, morningChoicePending])
 
   const handleRiposa = () => actions.handleRiposa()
 
@@ -647,6 +657,7 @@ function App() {
     },
     socialTabInput: {
       playerGender: playerProfile?.gender ?? 'maschio',
+      currentPhase,
       morningChoicePending,
       phaseActionsLeft,
       isSchoolPeriod: gameTime.schoolYear.isSchoolPeriod,

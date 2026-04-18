@@ -10,6 +10,7 @@ interface DailyControlsProps {
   dayType: string | null
   phaseActionsRemaining: number
   phaseActionsMax?: number
+  morningChoicePending: boolean
   isSchoolMorningSequenceInProgress: boolean
   isSchoolPeriod: boolean
   handleRiposa: () => void
@@ -22,6 +23,7 @@ export function DailyControls({
   dayType,
   phaseActionsRemaining,
   phaseActionsMax,
+  morningChoicePending,
   isSchoolMorningSequenceInProgress,
   isSchoolPeriod,
   handleRiposa,
@@ -33,22 +35,32 @@ export function DailyControls({
     currentPhase === 'pomeriggio' ? 'Sera' :
     currentPhase === 'sera' ? 'Notte' : 'Mattina'
 
-  const canAdvance = !isSchoolMorningSequenceInProgress
+  const isNight = currentPhase === 'notte'
+  const requiresMorningChoice = currentPhase === 'mattina' && morningChoicePending
+  const isSchoolAdvanceBlocked = currentPhase === 'mattina' && isSchoolMorningSequenceInProgress
+  const canAdvance = !requiresMorningChoice && !isSchoolAdvanceBlocked
   const actionsMax = phaseActionsMax ?? 2
 
   const advanceStatusLabel =
-    isSchoolMorningSequenceInProgress
+    requiresMorningChoice
+      ? '🏫 Scegli prima'
+      : isSchoolAdvanceBlocked
       ? '🏫 Lezioni in corso'
       : `Azioni: ${phaseActionsRemaining ?? 0}/${actionsMax}`
 
+  const blockedAdvanceMessage =
+    requiresMorningChoice
+      ? 'Scegli prima se andare a lezione o saltare la scuola per continuare.'
+      : 'Completa tutte le ore di scuola della mattina per continuare.'
+
   const advanceButtonTitle =
-    isSchoolMorningSequenceInProgress
-      ? 'Completa prima tutte le ore di scuola per passare alla fase successiva'
+    !canAdvance
+      ? blockedAdvanceMessage
       : `Avanza a: ${nextPhaseLabel} (Ctrl+Alt+Invio)`
 
   const advanceAriaLabel =
-    isSchoolMorningSequenceInProgress
-      ? `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Prima completa tutte le ore di scuola della mattina.`
+    !canAdvance
+      ? `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. ${blockedAdvanceMessage}`
       : `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni disponibili nella fase corrente: ${phaseActionsRemaining ?? 0} su ${actionsMax}. Scorciatoia da tastiera: Ctrl+Alt+Invio`
 
   const showRiposa =
@@ -92,7 +104,7 @@ export function DailyControls({
         )}
         {showDormi && (
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             onClick={handleDormi}
             title="Vai a dormire: recupero totale, avanza al giorno dopo (sempre disponibile)"
@@ -102,18 +114,21 @@ export function DailyControls({
             🌙 <span>Vai a dormire</span>
           </Button>
         )}
-        <Button
-          variant={canAdvance ? 'default' : 'secondary'}
-          size="sm"
-          onClick={handleAdvancePhaseGuarded}
-          disabled={!canAdvance}
-          title={advanceButtonTitle}
-          aria-label={advanceAriaLabel}
-          className="flex items-center gap-1"
-        >
-          ▶ <span>Prossima fase</span>
-          <span className="ml-1 text-xs opacity-70">({nextPhaseLabel})</span>
-        </Button>
+        {!isNight && (
+          <Button
+            variant={canAdvance ? 'default' : 'secondary'}
+            size="sm"
+            onClick={handleAdvancePhaseGuarded}
+            disabled={!canAdvance}
+            aria-disabled={!canAdvance}
+            title={advanceButtonTitle}
+            aria-label={advanceAriaLabel}
+            className="flex items-center gap-1"
+          >
+            ▶ <span>Prossima fase</span>
+            <span className="ml-1 text-xs opacity-70">({nextPhaseLabel})</span>
+          </Button>
+        )}
       </div>
     </div>
   )

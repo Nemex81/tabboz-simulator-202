@@ -5,9 +5,10 @@ interface AdvancePhaseButtonProps {
   disabled: boolean
   label: string
   onAdvance: () => void
+  blockedMessage?: string
 }
 
-export function AdvancePhaseButton({ disabled, label, onAdvance }: AdvancePhaseButtonProps) {
+export function AdvancePhaseButton({ disabled, label, onAdvance, blockedMessage }: AdvancePhaseButtonProps) {
   const id = useId()
   return (
     <Button
@@ -22,7 +23,7 @@ export function AdvancePhaseButton({ disabled, label, onAdvance }: AdvancePhaseB
       Prossima fase → {label}
       {disabled && (
         <span id={`${id}-blocked`} className="sr-only">
-          Completa le azioni disponibili prima di avanzare
+          {blockedMessage ?? 'Completa le azioni disponibili prima di avanzare'}
         </span>
       )}
     </Button>

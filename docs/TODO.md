@@ -79,6 +79,16 @@
 - [ ] Verifica manuale: Ctrl+N non fa più nulla
 	(o non interferisce con funzioni browser/sistema)
 
+### Revisione logica fasi giornaliere — aprile 2026
+- [x] Avanza fase nascosto completamente durante la notte
+- [x] Dormi reso pulsante primario in sera/notte
+- [x] Avanza fase disabilitato prima della scelta mattutina
+- [x] Menu principale sbloccato subito dopo Marina la scuola
+- [x] Avanza fase bloccato fino al completamento delle lezioni mattutine
+- [ ] Verifica manuale: dopo Marina, tab Città e Azioni diventano subito disponibili
+- [ ] Verifica manuale: in notte resta solo Dormi e Ctrl+Alt+Invio non avanza
+- [ ] Verifica manuale: durante le lezioni il bottone Avanza resta visibile ma non attivo
+
 ### Fix azioni sociali e shortcut — aprile 2026
 - [x] handleChiacchiera: migrata da interazioni ad azioni
 - [x] handleNavigaOnline: migrata da interazioni ad azioni

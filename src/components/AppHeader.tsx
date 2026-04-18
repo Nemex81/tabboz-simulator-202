@@ -83,6 +83,7 @@ export function AppHeader({
         dayType={dayType ?? null}
         phaseActionsRemaining={phaseActionsRemaining}
         phaseActionsMax={phaseActionsMax}
+        morningChoicePending={morningChoicePending}
         isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
         isSchoolPeriod={gameTime.schoolYear.isSchoolPeriod}
         handleRiposa={handleRiposa}

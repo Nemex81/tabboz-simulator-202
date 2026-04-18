@@ -5,10 +5,11 @@ import { AdvancePhaseButton } from '@/components/AdvancePhaseButton'
 import { calculateStudyGradeIncrease } from '@/lib/game-utils'
 import { ECONOMY } from '@/lib/game-balance.constants'
 import { renderPlayerForm } from '@/lib/gender-utils'
-import type { NarrativePlayerGender } from '@/lib/types'
+import type { DayPhase, NarrativePlayerGender } from '@/lib/types'
 
 interface SocialTabProps {
   playerGender: NarrativePlayerGender
+  currentPhase: DayPhase | null | undefined
   morningChoicePending: boolean
   phaseActionsLeft: number
   isSchoolPeriod: boolean
@@ -29,6 +30,7 @@ interface SocialTabProps {
 
 export function SocialTab({
   playerGender,
+  currentPhase,
   morningChoicePending,
   phaseActionsLeft,
   isSchoolPeriod,
@@ -214,13 +216,15 @@ export function SocialTab({
         </div>
       </Card>
     </div>
-    <div className="mt-6 pt-4 border-t border-border flex justify-end">
-      <AdvancePhaseButton
-        disabled={false}
-        label={nextPhaseLabel}
-        onAdvance={onAdvance}
-      />
-    </div>
+    {currentPhase !== 'notte' && (
+      <div className="mt-6 pt-4 border-t border-border flex justify-end">
+        <AdvancePhaseButton
+          disabled={false}
+          label={nextPhaseLabel}
+          onAdvance={onAdvance}
+        />
+      </div>
+    )}
   </>
   )
 }

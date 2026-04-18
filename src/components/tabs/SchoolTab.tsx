@@ -226,6 +226,9 @@ export function SchoolTab({
   }, [activeSubTab])
 
   const footerDisabled = hasActiveSchoolSequence
+  const footerBlockedMessage = morningChoicePending
+    ? 'Scegli prima se andare a lezione o marinare per continuare.'
+    : 'Completa tutte le ore di lezione per continuare.'
 
   return (
     <>
@@ -694,9 +697,10 @@ export function SchoolTab({
     </Tabs>
     <div className="mt-6 pt-4 border-t border-border flex justify-end">
       <AdvancePhaseButton
-        disabled={footerDisabled}
+        disabled={morningChoicePending || footerDisabled}
         label={nextPhaseLabel}
         onAdvance={onAdvance}
+        blockedMessage={footerBlockedMessage}
       />
     </div>
     </>
