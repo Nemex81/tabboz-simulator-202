@@ -18,7 +18,7 @@ Esito analisi:
 ## [3.2] DailyControls — Replica contestuale
 - [x] Leggere il codice completo di DailyControls.tsx e mappare tutta la logica di guard
 - [x] Verificare se conviene estrarre useDailyControlsState() prima di replicare il footer nei tab
-- [ ] Stabilire se il footer contestuale deve replicare tutti i pulsanti o una versione ridotta
+- [x] Stabilire se il footer contestuale deve replicare tutti i pulsanti o una versione ridotta
 - [x] Definire comportamento in caso di transizione fase o click ripetuti durante animazioni
 - [x] Stimare il costo di coupling aggiuntivo verso AppHeader, SchoolTab, SocialTab e CityTab
 
@@ -28,11 +28,13 @@ Esito analisi:
 - Estrarre useDailyControlsState() ora non conviene: farlo solo se il footer verra davvero replicato nei tab.
 - Il click ripetuto e gia mitigato dal disabled UI e dalla guard centralizzata; resta solo da decidere se il footer contestuale debba mostrare tutti i pulsanti o solo Prossima fase.
 
+Decisione: opzione B — footer ridotto. Implementato AdvancePhaseButton.tsx standalone. Aggiunto a SchoolTab, SocialTab, CityTab.
+
 ## [3.3] UI globale — Border-radius e uppercase
 - [x] Verificare se basta cambiare --radius in src/index.css o serve allineamento anche in tailwind.config.js
 - [x] Misurare quante occorrenze di uppercase tracking-wider esistono nel codebase e classificarle per uso corretto o da ridurre
 - [x] Verificare l'impatto globale su componenti Shadcn/ui che derivano il radius da CSS variables o classi rounded-*
-- [ ] Definire piano di test visuale sui 3 temi per card, dialog, badge, popover e pulsanti
+- [x] Definire piano di test visuale sui 3 temi per card, dialog, badge, popover e pulsanti
 - [x] Stabilire i criteri WCAG per testo grande o normale prima di rivedere i titoli
 
 Esito analisi:
@@ -40,3 +42,7 @@ Esito analisi:
 - Le occorrenze di uppercase tracking-wider censite sono 6: 5 label UI text-xs coerenti, 1 label ActionButton text-sm bold da misurare sul contrasto prima di cambiare stile.
 - I componenti Shadcn/ui seguono gia le CSS variables del radius e verranno aggiornati automaticamente.
 - Restano due punti separati dal Blocco 3 ma rilevanti per la coerenza grafica: SchoolHomePanel e SchoolBreakPanel usano ancora colori hardcoded fuori sistema tema.
+
+Note implementazione (B3-3):
+- --radius aggiornato a 0.5rem nei tre blocchi tema (default, dark, green) in src/index.css.
+- ActionButton contiene `uppercase tracking-wider` sul label (text-sm font-bold). Non è possibile misurare oggettivamente il contrasto con tool di analisi statica del codice. Il codice ActionButton è rimasto invariato. Verifica manuale WCAG su tutti e 3 i temi rimane necessaria prima di qualsiasi modifica allo stile uppercase.

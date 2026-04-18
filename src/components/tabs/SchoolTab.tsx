@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ActionButton } from '@/components/ActionButton'
+import { AdvancePhaseButton } from '@/components/AdvancePhaseButton'
 import { EnhancedFriendsPanel } from '@/components/EnhancedFriendsPanel'
 import { SchoolBreakPanel } from '@/components/SchoolBreakPanel'
 import type {
@@ -115,6 +116,8 @@ export interface SchoolTabProps {
     date: GameDate,
     phase: DayPhase
   ) => void
+  onAdvance: () => void
+  nextPhaseLabel: string
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
@@ -170,6 +173,8 @@ export function SchoolTab({
   consumeAction,
   announce,
   addLogEntry,
+  onAdvance,
+  nextPhaseLabel,
 }: SchoolTabProps) {
   const hasActiveSchoolSequence =
     dayType === 'feriale' &&
@@ -180,7 +185,10 @@ export function SchoolTab({
     schoolDayState.slots.length > 0 &&
     !schoolDayState.isComplete
 
+  const footerDisabled = phaseActionsRemaining > 0 || hasActiveSchoolSequence
+
   return (
+    <>
     <Tabs defaultValue="home" className="w-full">
       <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
         <TabsTrigger value="home" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
@@ -646,5 +654,13 @@ export function SchoolTab({
         </ChunkErrorBoundary>
       </TabsContent>
     </Tabs>
+    <div className="mt-6 pt-4 border-t border-border flex justify-end">
+      <AdvancePhaseButton
+        disabled={footerDisabled}
+        label={nextPhaseLabel}
+        onAdvance={onAdvance}
+      />
+    </div>
+    </>
   )
 }

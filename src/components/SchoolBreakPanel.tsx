@@ -235,9 +235,9 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
       role="region"
       aria-label="Pannello intervallo scolastico"
     >
-      <div className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-center">
-        <p className="font-bold text-amber-800">☕ Intervallo</p>
-        <p className="text-sm text-amber-700">Hai 15 minuti. Scegli una sola azione.</p>
+      <div className="rounded-lg bg-secondary/10 border border-secondary/20 p-3 text-center">
+        <p className="font-bold text-secondary">☕ Intervallo</p>
+        <p className="text-sm text-secondary">Hai 15 minuti. Scegli una sola azione.</p>
       </div>
 
       {actionResult ? (
@@ -248,16 +248,16 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
           aria-live="polite"
           aria-label="Risultato azione"
         >
-          <Card className="border-2 border-green-300 bg-green-50">
+          <Card className="border-2 border-primary/20 bg-primary/10">
             <CardContent className="pt-4">
-              <p className="text-sm font-medium text-green-800">{actionResult.message}</p>
+              <p className="text-sm font-medium text-primary">{actionResult.message}</p>
               {Object.keys(actionResult.statDelta).length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {Object.entries(actionResult.statDelta).map(([k, v]) =>
                     typeof v === 'number' && v !== 0 ? (
                       <Badge
                         key={k}
-                        className={v > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                        className={v > 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}
                       >
                         {k}: {v > 0 ? '+' : ''}{v}
                       </Badge>
@@ -332,7 +332,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
                         aria-checked={selectedTarget === c.id}
                         className={`w-full text-left px-3 py-2 rounded-md border text-sm flex items-center justify-between transition-colors ${
                           selectedTarget === c.id
-                            ? 'border-amber-400 bg-amber-50 font-semibold'
+                            ? 'border-secondary/50 bg-secondary/10 font-semibold'
                             : 'border-muted bg-background hover:bg-muted/50'
                         }`}
                         onClick={() => setSelectedTarget(
@@ -377,7 +377,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
                         aria-checked={selectedTarget === t.id}
                         className={`w-full text-left px-3 py-2 rounded-md border text-sm flex items-center justify-between transition-colors ${
                           selectedTarget === t.id
-                            ? 'border-amber-400 bg-amber-50 font-semibold'
+                            ? 'border-secondary/50 bg-secondary/10 font-semibold'
                             : 'border-muted bg-background hover:bg-muted/50'
                         }`}
                         onClick={() => setSelectedTarget(
@@ -389,7 +389,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
                           {t.name}
                           {t.isOstile && (
                             <span
-                              className="ml-1 text-xs text-red-600 font-normal"
+                              className="ml-1 text-xs text-destructive font-normal"
                               aria-hidden
                             >
                               (ostile)

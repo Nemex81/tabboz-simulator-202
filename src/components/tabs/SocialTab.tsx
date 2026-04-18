@@ -1,6 +1,7 @@
 import { Brain, Chats, Heart, Laptop, Motorcycle, UserCircle, PersonSimpleRun } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { ActionButton } from '@/components/ActionButton'
+import { AdvancePhaseButton } from '@/components/AdvancePhaseButton'
 import { calculateStudyGradeIncrease } from '@/lib/game-utils'
 import { ECONOMY } from '@/lib/game-balance.constants'
 import { renderPlayerForm } from '@/lib/gender-utils'
@@ -23,6 +24,8 @@ interface SocialTabProps {
   handleProvarciConAtipa: () => void
   handleMotorino: () => void
   announce: (message: string) => void
+  onAdvance: () => void
+  nextPhaseLabel: string
 }
 
 export function SocialTab({
@@ -42,8 +45,11 @@ export function SocialTab({
   handleProvarciConAtipa,
   handleMotorino,
   announce,
+  onAdvance,
+  nextPhaseLabel,
 }: SocialTabProps) {
   return (
+    <>
     <div className="grid md:grid-cols-2 gap-6">
       <Card className="p-3 border-2 border-secondary bg-card">
         <h3 className="text-xl font-bold mb-4 text-secondary flex items-center gap-2">
@@ -209,5 +215,13 @@ export function SocialTab({
         </div>
       </Card>
     </div>
+    <div className="mt-6 pt-4 border-t border-border flex justify-end">
+      <AdvancePhaseButton
+        disabled={phaseActionsLeft > 0}
+        label={nextPhaseLabel}
+        onAdvance={onAdvance}
+      />
+    </div>
+  </>
   )
 }

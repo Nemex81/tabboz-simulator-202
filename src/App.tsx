@@ -551,6 +551,11 @@ function App() {
     [grades, schoolType]
   )
 
+  const nextPhaseLabelStr =
+    currentPhase === 'mattina' ? 'Pomeriggio' :
+    currentPhase === 'pomeriggio' ? 'Sera' :
+    currentPhase === 'sera' ? 'Notte' : 'Mattina'
+
   const {
     statusTabProps,
     schoolTabProps,
@@ -619,6 +624,8 @@ function App() {
       consumeAction,
       announce,
       addLogEntry,
+      onAdvance: handleAdvancePhaseGuarded,
+      nextPhaseLabel: nextPhaseLabelStr,
     },
     characterTabInput: {
       playerProfile: playerProfile ?? null,
@@ -660,6 +667,8 @@ function App() {
       handleProvarciConAtipa,
       handleMotorino,
       announce,
+      onAdvance: handleAdvancePhaseGuarded,
+      nextPhaseLabel: nextPhaseLabelStr,
     },
     cityTabInput: {
       playerGender: playerProfile?.gender ?? 'maschio',
@@ -676,6 +685,8 @@ function App() {
       stanchezza: stats.stanchezza,
       availableActions: actions.availableActions,
       onAction: actions.getHandlerForAction,
+      onAdvance: handleAdvancePhaseGuarded,
+      nextPhaseLabel: nextPhaseLabelStr,
     },
     schoolDialogsInput: {
       showReportCard,
