@@ -9,6 +9,7 @@ interface DailyControlsProps {
   currentPhase: string | null
   dayType: string | null
   phaseActionsRemaining: number
+  phaseActionsMax?: number
   isSchoolMorningSequenceInProgress: boolean
   isSchoolPeriod: boolean
   handleRiposa: () => void
@@ -20,6 +21,7 @@ export function DailyControls({
   currentPhase,
   dayType,
   phaseActionsRemaining,
+  phaseActionsMax,
   isSchoolMorningSequenceInProgress,
   isSchoolPeriod,
   handleRiposa,
@@ -31,26 +33,23 @@ export function DailyControls({
     currentPhase === 'pomeriggio' ? 'Sera' :
     currentPhase === 'sera' ? 'Notte' : 'Mattina'
 
-  const canAdvance = phaseActionsRemaining === 0 && !isSchoolMorningSequenceInProgress
+  const canAdvance = !isSchoolMorningSequenceInProgress
+  const actionsMax = phaseActionsMax ?? 2
 
   const advanceStatusLabel =
     isSchoolMorningSequenceInProgress
       ? '🏫 Lezioni in corso'
-      : canAdvance
-        ? '✓ Pronto ad avanzare'
-        : `${phaseActionsRemaining} azioni rimaste`
+      : `Azioni: ${phaseActionsRemaining ?? 0}/${actionsMax}`
 
   const advanceButtonTitle =
     isSchoolMorningSequenceInProgress
       ? 'Completa prima tutte le ore di scuola per passare alla fase successiva'
-      : canAdvance
-        ? `Avanza a: ${nextPhaseLabel} (Ctrl+N)`
-        : `Consuma prima le ${phaseActionsRemaining} azioni rimaste`
+      : `Avanza a: ${nextPhaseLabel} (Ctrl+N)`
 
   const advanceAriaLabel =
     isSchoolMorningSequenceInProgress
-      ? `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Pulsante disabilitato. Devi completare prima tutte le ore di scuola.`
-      : `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni rimaste per questa fase: ${phaseActionsRemaining}. ${canAdvance ? 'Pulsante abilitato. Premi per avanzare.' : 'Pulsante disabilitato. Devi consumare tutte le azioni prima di avanzare.'} Scorciatoia da tastiera: Ctrl+N`
+      ? `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Prima completa tutte le ore di scuola della mattina.`
+      : `Avanza alla prossima fase della giornata: ${nextPhaseLabel}. Azioni disponibili nella fase corrente: ${phaseActionsRemaining ?? 0} su ${actionsMax}. Scorciatoia da tastiera: Ctrl+N`
 
   const showRiposa =
     currentPhase === 'pomeriggio' ||
@@ -69,11 +68,9 @@ export function DailyControls({
           aria-live="polite"
           aria-atomic="true"
           className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-            canAdvance
-              ? 'bg-primary/20 text-primary'
-              : isSchoolMorningSequenceInProgress
-                ? 'bg-secondary/20 text-secondary'
-                : 'bg-destructive/15 text-destructive'
+            isSchoolMorningSequenceInProgress
+              ? 'bg-secondary/20 text-secondary'
+              : 'border border-border bg-background text-foreground'
           }`}
         >
           {advanceStatusLabel}

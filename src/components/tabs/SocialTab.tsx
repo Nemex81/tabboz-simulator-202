@@ -218,7 +218,7 @@ export function SocialTab({
     </div>
     <div className="mt-6 pt-4 border-t border-border flex justify-end">
       <AdvancePhaseButton
-        disabled={phaseActionsLeft > 0}
+        disabled={false}
         label={nextPhaseLabel}
         onAdvance={onAdvance}
       />

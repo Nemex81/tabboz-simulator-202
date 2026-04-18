@@ -47,3 +47,14 @@
 - [ ] Verifica manuale NVDA: landmark con tasto D
 - [ ] Verifica manuale NVDA: annunci azioni con aria-live
 - [ ] Verifica manuale NVDA: pulsanti tutti etichettati
+
+### Sessione sistema azioni dual-KV — aprile 2026
+- [x] Rimosso blocco avanzamento fase su azioni rimaste
+- [x] Introdotto phaseActionsMax come KV separato
+- [x] Badge azioni convertito da bloccante a informativo
+- [x] gainExtraAction invariato (solo remaining, per design)
+- [x] Test aggiornati per nuovo contratto canAdvance
+- [ ] Verifica manuale: avanzamento libero con azioni rimaste
+- [ ] Verifica manuale: badge X/Y corretto ad ogni fase
+- [ ] Verifica manuale: school morning ancora blocca corretto
+- [ ] Verifica manuale: azione bonus porta remaining > max senza bug UI

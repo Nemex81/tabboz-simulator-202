@@ -1306,6 +1306,18 @@ Blocco 3 — Pianificazione separata (non stimabile senza analisi)
 
 ## Criteri gate pre-merge
 
+## Sistema azioni fase — aggiornamento aprile 2026
+### Architettura dual-KV
+- tabboz-phase-actions-remaining: azioni ancora eseguibili nella fase corrente. Decrementa a ogni azione, resetta al valore max all'inizio di ogni nuova fase. Puo superare phaseActionsMax per effetto di azioni bonus (comportamento atteso per design).
+- tabboz-phase-actions-max: tetto massimo configurato per la fase corrente. Aggiornato solo al cambio fase da DAY_PHASE_CONFIG.maxActions. Mai modificato da gainExtraAction o da eventi in-fase.
+### Rimozione blocco avanzamento
+- Rimosso: if (phaseActionsRemaining > 0) return in handleAdvancePhaseGuarded (App.tsx)
+- Rimosso: canAdvance = phaseActionsRemaining === 0 in DailyControls.tsx
+- Mantenuto: blocco per isSchoolMorningSequenceInProgress
+### UI badge azioni
+- Prima: badge rosso bloccante "X azioni rimaste"
+- Dopo: badge neutro informativo "X/Y azioni usate"
+
 ## Aggiornamento tecnico — sessione accessibilità SR aprile 2026
 
 ### Nuovo file: src/hooks/useActionGuard.ts

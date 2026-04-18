@@ -43,7 +43,7 @@ export function CityTab(props: CityTabProps) {
       />
       <div className="mt-6 pt-4 border-t border-border flex justify-end">
         <AdvancePhaseButton
-          disabled={props.actionsRemaining > 0}
+          disabled={false}
           label={props.nextPhaseLabel}
           onAdvance={props.onAdvance}
         />

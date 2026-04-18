@@ -33,8 +33,11 @@ Esito analisi:
 Decisione: opzione B — footer ridotto. Implementato AdvancePhaseButton.tsx standalone. Aggiunto a SchoolTab, SocialTab, CityTab.
 
 Note implementazione (B3-2):
-- AdvancePhaseButton verificato/aggiunto in SocialTab: si — gia presente, con footer dopo il contenuto principale e prop `disabled={phaseActionsLeft > 0}`, `label={nextPhaseLabel}`, `onAdvance={onAdvance}`.
-- AdvancePhaseButton verificato/aggiunto in CityTab: si — gia presente, con footer dopo il contenuto principale e prop `disabled={props.actionsRemaining > 0}`, `label={props.nextPhaseLabel}`, `onAdvance={props.onAdvance}`.
+- [x] Sistema azioni di fase dual-KV introdotto. Risolto in sessione dual-KV azioni — aprile 2026.
+- [x] Blocco avanzamento turno su azioni residue rimosso. Risolto in sessione dual-KV azioni — aprile 2026.
+- [x] phaseActionsRemaining mantenuto come contatore corrente. Risolto in sessione dual-KV azioni — aprile 2026.
+- AdvancePhaseButton verificato/aggiunto in SocialTab: si — ora dipende solo dal blocco contestuale della fase, non da `phaseActionsLeft > 0`; `label={nextPhaseLabel}`, `onAdvance={onAdvance}`.
+- AdvancePhaseButton verificato/aggiunto in CityTab: si — ora dipende solo dal blocco contestuale della fase, non da `props.actionsRemaining > 0`; `label={props.nextPhaseLabel}`, `onAdvance={props.onAdvance}`.
 - Prop aggiunte alle interfacce: nessuna
 - tsc pulito: si
 - Note sessione: completato in sessione accessibilita SR — aprile 2026 per il consumo azioni garantito nei pannelli scolastici. Test manuali NVDA e viewport restano aperti.

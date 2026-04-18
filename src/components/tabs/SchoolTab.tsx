@@ -225,7 +225,7 @@ export function SchoolTab({
     })
   }, [activeSubTab])
 
-  const footerDisabled = phaseActionsRemaining > 0 || hasActiveSchoolSequence
+  const footerDisabled = hasActiveSchoolSequence
 
   return (
     <>

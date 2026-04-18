@@ -189,7 +189,7 @@ function App() {
   const {
     gameTime, setGameTime, scheduledExams, setScheduledExams,
     consumeAction, consumeInterazione, consumeAllMorningActions, advanceToNextDay, gainExtraAction, handleDormi,
-    currentPhase, dayType, phaseActionsRemaining, interazioniRimaste, advancePhaseOnly, canInteract,
+    currentPhase, dayType, phaseActionsRemaining, phaseActionsMax, interazioniRimaste, advancePhaseOnly, canInteract,
   } = useGameTime({
     grades,
     stats,
@@ -371,18 +371,13 @@ function App() {
     !_schoolDayStateFromHook?.isComplete
 
   const handleAdvancePhaseGuarded = useCallback(() => {
-    if ((phaseActionsRemaining ?? 0) > 0) {
-      announce(`Devi consumare prima le ${phaseActionsRemaining ?? 0} azioni rimaste!`, 'assertive')
-      return
-    }
-
     if (isSchoolMorningSequenceInProgress) {
       announce('Completa prima tutte le ore di scuola prima di avanzare alla fase successiva.', 'assertive')
       return
     }
 
     advancePhaseOnly()
-  }, [advancePhaseOnly, announce, isSchoolMorningSequenceInProgress, phaseActionsRemaining])
+  }, [advancePhaseOnly, announce, isSchoolMorningSequenceInProgress])
 
   const handleRiposa = () => actions.handleRiposa()
 
@@ -790,6 +785,7 @@ function App() {
           currentPhase={currentPhase}
           dayType={dayType}
           phaseActionsRemaining={phaseActionsRemaining ?? 0}
+          phaseActionsMax={phaseActionsMax}
           interazioniRimaste={interazioniRimaste ?? 0}
           isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
           morningChoicePending={morningChoicePending}

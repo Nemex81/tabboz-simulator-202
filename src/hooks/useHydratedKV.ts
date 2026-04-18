@@ -65,6 +65,7 @@ const BOOTSTRAP_KEYS = new Set<string>([
   'tabboz-phase',
   'tabboz-day-type',
   'tabboz-phase-actions',
+  'tabboz-phase-actions-max',
   'tabboz-interazioni',
   'tabboz-max-interazioni',
   'tabboz-health-record',
