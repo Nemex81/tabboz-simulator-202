@@ -3,6 +3,10 @@
 **Documento di riferimento:** `docs/tabboz_ui_implementation_proposal.md`
 **Piano tecnico:** `docs/tabboz_ui_technical_plan.md`
 
+### Sessione tooling CI — aprile 2026
+- [x] Ripristinato `scripts/detect_agent.py` per il gate ANALYZE e la CI Python
+- [x] Validato smoke test agenti SCF e compilazione Python 3.11
+
 ### Blocco 1 — Immediato
 - [x] Vedi `docs/todolist/todo_blocco1.md`
 
