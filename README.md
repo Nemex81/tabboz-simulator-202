@@ -182,7 +182,7 @@ Il progetto è progettato per essere **completamente accessibile**:
 
 - **Screen reader:** notifiche ARIA live per ogni azione e cambio di stato
 - **Navigazione da tastiera:** tutti i controlli raggiungibili senza mouse
-- **Scorciatoie:** `?` per aiuto, `Ctrl+1-8` per tab, `Space` per azione, `Escape` per chiudere
+- **Scorciatoie:** `Alt+H` aiuto, `Alt+S` tab Scuola, `Ctrl+1..9`/`Ctrl+D`/`Ctrl+C`/`Ctrl+S` azioni rapide, `Ctrl+R` reset, `Ctrl+Alt+Invio` avanzamento fase (di notte instradato su Vai a dormire)
 - **Focus trap:** attivo in tutti i dialog modali
 - **Contrasto:** palette con ratio minimo 9:1
 - **Semantica:** struttura heading corretta, label su ogni controllo

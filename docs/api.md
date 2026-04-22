@@ -4,6 +4,11 @@
 
 ---
 
+## Aggiornamenti recenti (22 Apr 2026)
+
+- Scelta mattutina scuola: il CTA in header "Vai a Scuola ora" apre il tab `school` e riposiziona il focus sul pulsante azione reale `Vai a Scuola` (`buttonId: school-go-to-school-action`).
+- `useKeyboardShortcuts`: `Ctrl+Alt+Invio` ora invoca lo stesso handler di `Vai a dormire` quando `currentPhase === 'notte'`; nelle altre fasi mantiene l'avanzamento fase.
+
 ## Aggiornamenti recenti (18 Apr 2026)
 
 - **Accessibilità NVDA (fix critico)**: `ActionButton` non attiva `announce(helpText)` su focus passivo — il callback è chiamato solo da `onClick`/`onKeyDown` (Enter/Space). Rimossa la logica `onFocus` + timer. `pendingFocusTargetRef` in `MainGameTabs` e `SchoolTab` impedisce shift del focus da redirect automatici di stato. `SchoolBreakPanel` non ruba il focus al mount.
@@ -933,11 +938,28 @@ Scorciatoie da tastiera per accessibilità e navigazione rapida.
 
 | Scorciatoia | Azione |
 | --- | --- |
-| `?` | Mostra dialog aiuto scorciatoie |
+| `Alt+H` | Mostra dialog aiuto scorciatoie |
+| `Alt+S` | Apre il tab Scuola |
 | `Ctrl+R` | Mostra dialog reset gioco |
-| `Ctrl+1` – `Ctrl+8` | Cambia tab principale |
-| `Space` | Esegui azione corrente |
-| `Escape` | Chiudi dialog aperto |
+| `Ctrl+1` | Palestra |
+| `Ctrl+2` | Lampada |
+| `Ctrl+3` | Lavoro |
+| `Ctrl+4` | Motorino |
+| `Ctrl+5` | Studia |
+| `Ctrl+6` | Apri dialog Corrompi |
+| `Ctrl+7` | Apri dialog Minaccia |
+| `Ctrl+8` | Riposa |
+| `Ctrl+9` | Provarci con Atipa |
+| `Ctrl+D` | Disco |
+| `Ctrl+C` | Cinema |
+| `Ctrl+S` | Shopping |
+| `Ctrl+F` | Tab personaggio (annuncio orientato agli amici) |
+| `Ctrl+T` | Tab personaggio (annuncio orientato alle relazioni) |
+| `Ctrl+Alt+Invio` | Se è notte: `handleDormi()`, altrimenti `advancePhaseOnly()` |
+
+Note operative:
+- Le scorciatoie vengono ignorate quando è aperto un dialog bloccante/evento o quando il gioco è in stato `gameOver`.
+- Il ramo `Ctrl+Alt+Invio` usa il contesto fase corrente (`currentPhase`) per evitare che di notte parta un avanzamento non equivalente al bottone `Vai a dormire`.
 
 ---
 

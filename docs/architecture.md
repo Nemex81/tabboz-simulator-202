@@ -4,6 +4,11 @@
 
 ---
 
+## Aggiornamenti recenti (22 Apr 2026)
+
+- Ripristinato il bridge di focus per la scelta mattutina: il CTA dell'header verso Scuola ora forza il focus sul pulsante azione `Vai a Scuola` nel tab `school` tramite target stabile (`school-go-to-school-action`).
+- `useKeyboardShortcuts` usa routing condizionale per `Ctrl+Alt+Invio`: in fase `notte` invoca `handleDormi`, nelle altre fasi usa `advancePhaseOnly`.
+
 ## Aggiornamenti recenti (18 Apr 2026)
 
 - **Accessibilità NVDA fix critico**: rimosso il side effect da focus passivo in `ActionButton` (era `onFocus` + timer → ora solo `onClick`/`onKeyDown`). Aggiunte guard `pendingFocusTargetRef` in `MainGameTabs` e `SchoolTab` per impedire shift del focus da redirect di stato non confermati dall'utente. Rimosso focus automatico al mount in `SchoolBreakPanel`.
@@ -535,7 +540,7 @@ Il progetto implementa accessibilità a più livelli:
 
 - **ARIA live regions** per annunci di cambio stato (statistiche, eventi, risultati).
 - **Focus trap** nei dialog modali con `aria-modal`.
-- **Scorciatoie da tastiera**: `?` per help, `Ctrl+1-8` per tab, `Space` per azione, `Escape` per chiudere dialog.
+- **Scorciatoie da tastiera**: `Alt+H` per help, `Alt+S` per tab Scuola, `Ctrl+1..9`/`Ctrl+D`/`Ctrl+C`/`Ctrl+S` per azioni rapide, `Ctrl+F` e `Ctrl+T` per tab Personaggio, `Ctrl+R` per reset, `Ctrl+Alt+Invio` per avanzamento fase con routing notturno su `handleDormi`.
 - **Screen reader**: ogni cambio significativo viene annunciato tramite `announce()` (toast + ARIA).
 - **Contrasto colori**: palette progettata per ratio ≥ 9:1.
 - **Navigazione Tab**: tutti i controlli raggiungibili senza mouse.
