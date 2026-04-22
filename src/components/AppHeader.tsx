@@ -11,10 +11,10 @@ interface AppHeaderProps {
   dayType: DayType | null | undefined
   phaseActionsRemaining: number
   phaseActionsMax?: number
+  onOpenKeyboardHelp: (trigger?: HTMLElement | null) => void
   interazioniRimaste: number
   isSchoolMorningSequenceInProgress: boolean
   morningChoicePending: boolean
-  onOpenKeyboardHelp: () => void
   onGoToSchool: () => void
   handleRiposa: () => void
   handleDormi: () => void
@@ -28,10 +28,10 @@ export function AppHeader({
   dayType,
   phaseActionsRemaining,
   phaseActionsMax,
+  onOpenKeyboardHelp,
   interazioniRimaste,
   isSchoolMorningSequenceInProgress,
   morningChoicePending,
-  onOpenKeyboardHelp,
   onGoToSchool,
   handleRiposa,
   handleDormi,
@@ -59,7 +59,7 @@ export function AppHeader({
             Usa <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+numero</kbd> o <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+lettera</kbd> per le scorciatoie.
           </p>
           <Button
-            onClick={onOpenKeyboardHelp}
+            onClick={(event) => onOpenKeyboardHelp(event.currentTarget)}
             variant="outline"
             size="sm"
             className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"

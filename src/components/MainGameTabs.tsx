@@ -7,7 +7,16 @@ import { CityTab } from '@/components/tabs/CityTab'
 import { SchoolTab } from '@/components/tabs/SchoolTab'
 import { SocialTab } from '@/components/tabs/SocialTab'
 import { StatusTab } from '@/components/tabs/StatusTab'
+import { announce } from '@/lib/a11y-announce'
 import type { DayPhase } from '@/lib/types'
+
+const TAB_ANNOUNCE_MESSAGES: Record<string, string> = {
+  school: 'Scheda scuola aperta',
+  city: 'Pannello città aperto',
+  character: 'Scheda personaggio aperta',
+  social: 'Azioni sociali aperte',
+  status: 'Impostazioni aperte',
+}
 
 interface MainGameTabsProps {
   activeTab: string
@@ -80,7 +89,15 @@ export function MainGameTabs({
   }, [activeTab])
 
   return (
-    <Tabs value={activeTab} onValueChange={onValueChange} className="w-full">
+    <Tabs
+      value={activeTab}
+      onValueChange={(value) => {
+        onValueChange(value)
+        const message = TAB_ANNOUNCE_MESSAGES[value]
+        if (message) announce(message)
+      }}
+      className="w-full"
+    >
       <nav aria-label="Menu principale di gioco">
         <TabsList aria-label="Menu principale di gioco" className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-muted/50 p-1 h-auto">
           <TabsTrigger

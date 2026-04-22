@@ -43,6 +43,7 @@ export function SocialDialogsGroup({ social, currentEvent }: SocialDialogsGroupP
           onOpenChange={(open) => {
             if (!open) social.setShowKeyboardHelp(false)
           }}
+          onCloseAutoFocus={social.onKeyboardHelpCloseAutoFocus}
         />
       )}
     </>

@@ -25,6 +25,7 @@ interface CityTabProps {
 export function CityTab(props: CityTabProps) {
   return (
     <>
+      <h2 className="sr-only">Pannello città e azioni</h2>
       <CityPanel
         playerGender={props.playerGender}
         onDisco={props.onDisco}

@@ -26,7 +26,7 @@ interface UseKeyboardShortcutsParams {
   handleShoppingMall: () => void
   setShowResetDialog: (show: boolean) => void
   advancePhaseOnly: () => void
-  setShowKeyboardHelp: (show: boolean) => void
+  openKeyboardHelp: () => void
   setActiveTab: (tab: string) => void
   announce: (message: string) => void
 }
@@ -57,7 +57,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     handleShoppingMall,
     setShowResetDialog,
     advancePhaseOnly,
-    setShowKeyboardHelp,
+    openKeyboardHelp,
     setActiveTab,
     announce
   } = params
@@ -72,7 +72,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
 
       if (e.altKey && key === 'h') {
         e.preventDefault()
-        setShowKeyboardHelp(true)
+        openKeyboardHelp()
         announce('Aiuto scorciatoie da tastiera aperto')
         return
       }
@@ -184,7 +184,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     handleShoppingMall,
     setShowResetDialog,
     advancePhaseOnly,
-    setShowKeyboardHelp,
+    openKeyboardHelp,
     setActiveTab,
     announce
   ])

@@ -13,7 +13,13 @@ interface TimeDisplayProps {
 
 export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPhase, dayType, interazioniRimaste }: TimeDisplayProps) {
   return (
-    <div role="region" aria-label="Stato giornata corrente" className="flex flex-wrap items-center gap-4 px-3 py-2 border border-border rounded-sm bg-card text-sm">
+    <div
+      role="region"
+      aria-label="Stato giornata corrente"
+      aria-live="polite"
+      aria-atomic="true"
+      className="flex flex-wrap items-center gap-4 px-3 py-2 border border-border rounded-sm bg-card text-sm"
+    >
 
       {/* Data */}
       <span className="flex items-center gap-1 text-muted-foreground">
@@ -55,8 +61,6 @@ export const TimeDisplay = React.memo(function TimeDisplay({ gameTime, currentPh
           <span className="text-border">|</span>
           <span
             className="flex items-center gap-1 text-muted-foreground"
-            aria-live="polite"
-            aria-atomic="true"
             aria-label={`Interazioni rimanenti: ${interazioniRimaste}`}
           >
             <ChatsCircle size={14} weight="fill" className="text-primary" aria-hidden="true" />

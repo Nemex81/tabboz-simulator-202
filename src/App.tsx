@@ -48,6 +48,7 @@ import {
 } from '@/lib/gender-utils'
 
 function App() {
+  const keyboardHelpRestoreTargetRef = useRef<HTMLElement | null>(null)
   const [rawSchoolType, setRawSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
   const [rawPlayerProfile, setRawPlayerProfile] = useKV<PlayerProfile | null>('tabboz-player-profile', null)
   const [rawGrades, setRawGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
@@ -521,6 +522,34 @@ function App() {
     announce,
   })
 
+  const openKeyboardHelp = useCallback((trigger?: HTMLElement | null) => {
+    if (typeof document !== 'undefined') {
+      keyboardHelpRestoreTargetRef.current = trigger ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null)
+    }
+
+    setShowKeyboardHelp(true)
+  }, [setShowKeyboardHelp])
+
+  const handleKeyboardHelpCloseAutoFocus = useCallback((event: Event) => {
+    event.preventDefault()
+
+    const restoreTarget = keyboardHelpRestoreTargetRef.current
+    const fallbackTarget = typeof document !== 'undefined'
+      ? document.getElementById('main-content')
+      : null
+
+    window.requestAnimationFrame(() => {
+      if (restoreTarget?.isConnected) {
+        restoreTarget.focus()
+        return
+      }
+
+      if (fallbackTarget instanceof HTMLElement) {
+        fallbackTarget.focus()
+      }
+    })
+  }, [])
+
   useKeyboardShortcuts({
     gameOver,
     showResetDialog,
@@ -546,7 +575,7 @@ function App() {
     handleShoppingMall,
     setShowResetDialog,
     advancePhaseOnly: handleAdvancePhaseGuarded,
-    setShowKeyboardHelp,
+    openKeyboardHelp,
     setActiveTab,
     announce
   })
@@ -757,6 +786,7 @@ function App() {
       setShowResetDialog,
       showKeyboardHelp,
       setShowKeyboardHelp,
+      onKeyboardHelpCloseAutoFocus: handleKeyboardHelpCloseAutoFocus,
       stanchezza: stats.stanchezza,
     },
   })
@@ -771,7 +801,13 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground p-4 md:p-8">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:rounded focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
+      >
+        Salta al contenuto principale
+      </a>
       <div
         ref={ariaLiveAssertiveRef}
         role="alert"
@@ -788,37 +824,39 @@ function App() {
         className="sr-only"
       />
 
-      <div className="max-w-6xl mx-auto space-y-6">
-        <AppHeader
-          playerProfile={playerProfile ?? null}
-          gameTime={gameTime}
-          currentPhase={currentPhase}
-          dayType={dayType}
-          phaseActionsRemaining={phaseActionsRemaining ?? 0}
-          phaseActionsMax={phaseActionsMax}
-          interazioniRimaste={interazioniRimaste ?? 0}
-          isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
-          morningChoicePending={morningChoicePending}
-          onOpenKeyboardHelp={() => setShowKeyboardHelp(true)}
-          onGoToSchool={() => setActiveTab('school')}
-          handleRiposa={handleRiposa}
-          handleDormi={handleDormi}
-          handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
-        />
-        <MainGameTabs
-          activeTab={activeTab}
-          onValueChange={setActiveTab}
-          currentPhase={currentPhase}
-          statusTab={statusTabProps}
-          schoolTab={schoolTabProps}
-          characterTab={characterTabProps}
-          socialTab={socialTabProps}
-          cityTab={cityTabProps}
-        />
-      </div>
+      <main id="main-content" role="main" tabIndex={-1} className="outline-none">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <AppHeader
+            playerProfile={playerProfile ?? null}
+            gameTime={gameTime}
+            currentPhase={currentPhase}
+            dayType={dayType}
+            phaseActionsRemaining={phaseActionsRemaining ?? 0}
+            phaseActionsMax={phaseActionsMax}
+            interazioniRimaste={interazioniRimaste ?? 0}
+            isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
+            morningChoicePending={morningChoicePending}
+            onOpenKeyboardHelp={openKeyboardHelp}
+            onGoToSchool={() => setActiveTab('school')}
+            handleRiposa={handleRiposa}
+            handleDormi={handleDormi}
+            handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
+          />
+          <MainGameTabs
+            activeTab={activeTab}
+            onValueChange={setActiveTab}
+            currentPhase={currentPhase}
+            statusTab={statusTabProps}
+            schoolTab={schoolTabProps}
+            characterTab={characterTabProps}
+            socialTab={socialTabProps}
+            cityTab={cityTabProps}
+          />
+        </div>
+      </main>
 
       <GameDialogs school={schoolDialogProps} city={cityDialogProps} social={socialDialogProps} />
-    </main>
+    </div>
   )
 }
 

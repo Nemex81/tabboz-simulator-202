@@ -31,6 +31,12 @@ function gradeSuffix(grade: number): string {
   return ''
 }
 
+function gradeLabel(grade: number): string {
+  if (grade >= 8) return 'Eccellente'
+  if (grade >= 6) return 'Sufficiente'
+  return 'Insufficiente'
+}
+
 function calculateWeightedAvg(
   grades: SubjectGrades,
   subjects: SubjectDefinition[],
@@ -89,22 +95,32 @@ export function GradeProgressPanel({ grades, schoolType, schoolYear }: GradeProg
           const grade = grades[subj.key] ?? 6
           const weight = getGradeWeight(subj, schoolType)
           const barWidth = (grade / 10) * 100
+          const subjectName = getSubjectDisplayName(subj.key)
+          const label = gradeLabel(grade)
           return (
             <Card key={subj.key} className="p-2 bg-muted/30 border-muted">
               <div className="flex items-center gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium truncate" title={subj.displayName}>
-                      {getSubjectDisplayName(subj.key)}
+                      {subjectName}
                     </span>
                     <div className="flex items-center gap-1 ml-2 shrink-0">
                       <span className="text-xs text-muted-foreground">×{weight.toFixed(1)}</span>
                       <span className={`text-sm font-bold ${gradeColor(grade)}`}>
                         {grade}{gradeSuffix(grade)}
                       </span>
+                      <span className="sr-only">{label}</span>
                     </div>
                   </div>
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-1.5 bg-muted rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={Math.round(grade * 10)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`${subjectName}: ${grade.toFixed(1)} su 10, ${label}`}
+                  >
                     <div
                       className={`h-full rounded-full transition-all ${gradeBarColor(grade)}`}
                       style={{ width: `${barWidth}%` }}

@@ -7,9 +7,10 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 interface KeyboardShortcutsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onCloseAutoFocus?: (event: Event) => void
 }
 
-export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcutsDialogProps) {
+export function KeyboardShortcutsDialog({ open, onOpenChange, onCloseAutoFocus }: KeyboardShortcutsDialogProps) {
   const shortcuts = [
     { category: 'Miglioramento Fisico', shortcuts: [
       { keys: 'Ctrl + 1', action: 'Palestra' },
@@ -45,7 +46,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: KeyboardShortcut
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl border-2 border-primary max-h-[80vh]">
+      <DialogContent className="max-w-2xl border-2 border-primary max-h-[80vh]" onCloseAutoFocus={onCloseAutoFocus}>
         <DialogHeader>
           <DialogTitle className="text-2xl text-primary flex items-center gap-2">
             <Keyboard size={32} weight="fill" />

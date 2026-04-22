@@ -66,7 +66,12 @@ export const ActionButton = React.memo(function ActionButton({
           variant === 'destructive' && "bg-destructive text-destructive-foreground border-destructive"
         )}
         aria-label={ariaLabel || label}
-        aria-describedby={disabled && blockedReason ? `${id}-blocked` : undefined}
+        aria-describedby={
+          [
+            disabled && blockedReason ? `${id}-blocked` : null,
+            helpText ? `${id}-help` : null,
+          ].filter(Boolean).join(' ') || undefined
+        }
       >
         <motion.div 
           className="text-3xl" 
@@ -87,6 +92,11 @@ export const ActionButton = React.memo(function ActionButton({
         {disabled && blockedReason && (
           <span id={`${id}-blocked`} className="sr-only">
             {blockedReason}
+          </span>
+        )}
+        {helpText && (
+          <span id={`${id}-help`} className="sr-only">
+            {helpText}
           </span>
         )}
       </Button>

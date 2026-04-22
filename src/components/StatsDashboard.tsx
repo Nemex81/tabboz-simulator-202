@@ -58,6 +58,19 @@ export const StatsDashboard = React.memo(function StatsDashboard({
 
   const media = useMemo(() => calculateMedia(grades), [grades])
 
+  const radarSummary = useMemo(
+    () =>
+      `Statistiche personaggio: Coattaggine ${stats.coattaggine}, Muscoli ${stats.muscoli}, Figosità ${stats.figosita}, Intelligenza ${stats.intelligenza}, Reputazione ${stats.reputazione} (scala 0-${RADAR_MAX}).`,
+    [stats.coattaggine, stats.muscoli, stats.figosita, stats.intelligenza, stats.reputazione]
+  )
+
+  const gradeSummary = useMemo(() => {
+    const entries = Object.entries(grades)
+      .map(([subject, grade]) => `${subject} ${Number(grade).toFixed(1)}`)
+      .join(', ')
+    return `Voti per materia, media generale ${media.toFixed(2)} su 10. Dettaglio: ${entries}.`
+  }, [grades, media])
+
   return (
     <div className="space-y-6">
       {/* Radar delle statistiche */}
@@ -66,7 +79,7 @@ export const StatsDashboard = React.memo(function StatsDashboard({
           <ChartBar size={24} weight="fill" />
           PROFILO STATISTICHE
         </h3>
-        <div className="h-64">
+        <div className="h-64" role="img" aria-label={radarSummary}>
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={radarData} outerRadius="75%">
               <PolarGrid stroke="hsl(var(--border))" />
@@ -85,6 +98,7 @@ export const StatsDashboard = React.memo(function StatsDashboard({
             </RadarChart>
           </ResponsiveContainer>
         </div>
+        <p className="sr-only">{radarSummary}</p>
       </Card>
 
       {/* Bar chart dei voti */}
@@ -96,7 +110,7 @@ export const StatsDashboard = React.memo(function StatsDashboard({
         <div className="text-sm text-muted-foreground mb-4">
           Media generale: <span className="font-bold text-accent">{media.toFixed(2)}</span>
         </div>
-        <div className="h-48">
+        <div className="h-48" role="img" aria-label={gradeSummary}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={gradeData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -130,6 +144,7 @@ export const StatsDashboard = React.memo(function StatsDashboard({
             </BarChart>
           </ResponsiveContainer>
         </div>
+        <p className="sr-only">{gradeSummary}</p>
       </Card>
 
       {/* Riepilogo testuale */}
