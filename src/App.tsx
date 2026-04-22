@@ -137,6 +137,7 @@ function App() {
   const [morningChoicePending, setMorningChoicePending] = useState(false)
   const [schoolSubPanel, setSchoolSubPanel] = useState<'home' | 'teachers' | 'break'>('home')
   const [activeTab, setActiveTab] = useState<string>('school')
+  const [schoolMorningChoiceFocusNonce, setSchoolMorningChoiceFocusNonce] = useState(0)
   const schoolBootstrapStartedRef = useRef(false)
 
   const announce = useCallback((
@@ -550,7 +551,38 @@ function App() {
     })
   }, [])
 
+  useEffect(() => {
+    if (schoolMorningChoiceFocusNonce === 0 || activeTab !== 'school') {
+      return
+    }
+
+    const focusMorningChoiceButton = () => {
+      const button = document.getElementById('school-go-to-school-action')
+
+      if (button instanceof HTMLElement) {
+        button.focus()
+        return
+      }
+
+      window.requestAnimationFrame(() => {
+        const retryButton = document.getElementById('school-go-to-school-action')
+
+        if (retryButton instanceof HTMLElement) {
+          retryButton.focus()
+        }
+      })
+    }
+
+    window.requestAnimationFrame(focusMorningChoiceButton)
+  }, [activeTab, schoolMorningChoiceFocusNonce])
+
+  const handleGoToSchoolMorningChoice = useCallback(() => {
+    setActiveTab('school')
+    setSchoolMorningChoiceFocusNonce((value) => value + 1)
+  }, [])
+
   useKeyboardShortcuts({
+    currentPhase,
     gameOver,
     showResetDialog,
     showMetallariEvent,
@@ -569,6 +601,7 @@ function App() {
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
     handleRiposa,
+    handleDormi,
     handleProvarciConAtipa,
     handleDisco,
     handleCinema,
@@ -837,7 +870,7 @@ function App() {
             isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
             morningChoicePending={morningChoicePending}
             onOpenKeyboardHelp={openKeyboardHelp}
-            onGoToSchool={() => setActiveTab('school')}
+            onGoToSchool={handleGoToSchoolMorningChoice}
             handleRiposa={handleRiposa}
             handleDormi={handleDormi}
             handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}

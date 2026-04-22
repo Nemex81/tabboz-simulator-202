@@ -348,6 +348,7 @@ export function SchoolTab({
                     VAI A SCUOLA
                   </h3>
                   <ActionButton
+                    buttonId="school-go-to-school-action"
                     icon={<GraduationCap size={48} />}
                     label="Vai a Scuola"
                     onClick={handleVaiAScuola}

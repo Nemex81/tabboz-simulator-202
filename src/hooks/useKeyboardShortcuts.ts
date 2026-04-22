@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { SchoolType } from '@/lib/types'
 
 interface UseKeyboardShortcutsParams {
+  currentPhase: string | null | undefined
   gameOver: boolean
   showResetDialog: boolean
   showMetallariEvent: boolean
@@ -20,6 +21,7 @@ interface UseKeyboardShortcutsParams {
   handleOpenCorrompiDialog: () => void
   handleOpenMinacciaDialog: () => void
   handleRiposa: () => void
+  handleDormi: () => void
   handleProvarciConAtipa: () => void
   handleDisco: () => void
   handleCinema: () => void
@@ -33,6 +35,7 @@ interface UseKeyboardShortcutsParams {
 
 export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
   const {
+    currentPhase,
     gameOver,
     showResetDialog,
     showMetallariEvent,
@@ -51,6 +54,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
     handleRiposa,
+    handleDormi,
     handleProvarciConAtipa,
     handleDisco,
     handleCinema,
@@ -152,6 +156,10 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
         case 'enter':
           if (!e.altKey) break
           e.preventDefault()
+          if (currentPhase === 'notte') {
+            handleDormi()
+            break
+          }
           advancePhaseOnly()
           break
       }
@@ -160,6 +168,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [
+    currentPhase,
     gameOver,
     showResetDialog,
     showMetallariEvent,
@@ -178,6 +187,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
     handleRiposa,
+    handleDormi,
     handleProvarciConAtipa,
     handleDisco,
     handleCinema,

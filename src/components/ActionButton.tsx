@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 interface ActionButtonProps {
   icon: ReactNode
   label: string
+  buttonId?: string
   shortcut?: string
   onClick: () => void
   disabled?: boolean
@@ -20,6 +21,7 @@ interface ActionButtonProps {
 export const ActionButton = React.memo(function ActionButton({ 
   icon, 
   label, 
+  buttonId,
   shortcut, 
   onClick, 
   disabled = false, 
@@ -52,6 +54,7 @@ export const ActionButton = React.memo(function ActionButton({
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       <Button
+        id={buttonId}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         disabled={disabled}

@@ -1,0 +1,3 @@
+- 2026-04-22: ripristinato il focus dal CTA mattutino al pulsante Vai a Scuola nel tab Scuola.
+- 2026-04-22: corretta la scorciatoia Ctrl+Alt+Invio per usare Vai a dormire durante la fase notte.
+- 2026-04-22: aggiunto test di regressione per useKeyboardShortcuts sul ramo notturno.
