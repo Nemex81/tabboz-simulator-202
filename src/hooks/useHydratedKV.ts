@@ -33,6 +33,7 @@ let hydrationSlot = 0
 let remoteBootstrapState: Snapshot | null = null
 let remoteBootstrapPromise: Promise<Snapshot> | null = null
 let bootstrapSyncTimer: number | null = null
+let remoteKVUnauthorized = false
 const bootstrapSeedValues: Snapshot = {}
 const pendingRemoteMutations = new Map<string, PendingMutation>()
 const pendingRemoteMutationTimers = new Map<string, number>()
@@ -81,6 +82,18 @@ function isBrowserAvailable(): boolean {
 
 function isRetryableBootstrapError(status: number): boolean {
   return status === 403 || status === 429 || status >= 500
+}
+
+function isUnauthorizedKVResponse(status: number): boolean {
+  return status === 401
+}
+
+function markRemoteKVUnauthorized(): void {
+  remoteKVUnauthorized = true
+}
+
+function isRemoteKVAvailable(): boolean {
+  return !remoteKVUnauthorized
 }
 
 function wait(delayMs: number): Promise<void> {
@@ -139,6 +152,10 @@ function getBootstrapPayload(): Snapshot {
 
 function syncRemoteBootstrapSnapshot(): void {
   if (!isBrowserAvailable()) return
+  if (!isRemoteKVAvailable()) {
+    remoteBootstrapState = getBootstrapPayload()
+    return
+  }
   if (bootstrapSyncTimer !== null) {
     window.clearTimeout(bootstrapSyncTimer)
   }
@@ -187,6 +204,10 @@ function enqueueKVTask<T>(task: () => Promise<T>): Promise<T> {
 }
 
 async function getOrSetRemoteValue<T>(key: string, initialValue?: T): Promise<T | undefined> {
+  if (!isRemoteKVAvailable()) {
+    return readCachedValue(key, initialValue)
+  }
+
   recordProfileStat('nonBootstrapRemoteFetches')
   const getResponse = await fetch(`${KV_BASE_URL}/${encodeURIComponent(key)}`, {
     method: 'GET',
@@ -195,6 +216,11 @@ async function getOrSetRemoteValue<T>(key: string, initialValue?: T): Promise<T 
 
   if (getResponse.ok) {
     return JSON.parse(await getResponse.text()) as T
+  }
+
+  if (isUnauthorizedKVResponse(getResponse.status)) {
+    markRemoteKVUnauthorized()
+    return readCachedValue(key, initialValue)
   }
 
   if (getResponse.status !== 404) {
@@ -214,6 +240,11 @@ async function getOrSetRemoteValue<T>(key: string, initialValue?: T): Promise<T 
     body: JSON.stringify(initialValue),
   })
 
+  if (isUnauthorizedKVResponse(setResponse.status)) {
+    markRemoteKVUnauthorized()
+    return initialValue
+  }
+
   if (!setResponse.ok) {
     throw new Error(`Failed to set default value for key: ${setResponse.statusText}`)
   }
@@ -222,6 +253,10 @@ async function getOrSetRemoteValue<T>(key: string, initialValue?: T): Promise<T 
 }
 
 async function setRemoteValue<T>(key: string, value: T): Promise<void> {
+  if (!isRemoteKVAvailable()) {
+    return
+  }
+
   const response = await fetch(`${KV_BASE_URL}/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: {
@@ -231,15 +266,29 @@ async function setRemoteValue<T>(key: string, value: T): Promise<void> {
     body: JSON.stringify(value),
   })
 
+  if (isUnauthorizedKVResponse(response.status)) {
+    markRemoteKVUnauthorized()
+    return
+  }
+
   if (!response.ok) {
     throw new Error(`Failed to set key: ${response.statusText}`)
   }
 }
 
 async function deleteRemoteValue(key: string): Promise<void> {
+  if (!isRemoteKVAvailable()) {
+    return
+  }
+
   const response = await fetch(`${KV_BASE_URL}/${encodeURIComponent(key)}`, {
     method: 'DELETE',
   })
+
+  if (isUnauthorizedKVResponse(response.status)) {
+    markRemoteKVUnauthorized()
+    return
+  }
 
   if (!response.ok && response.status !== 404) {
     throw new Error(`Failed to delete key: ${response.statusText}`)
@@ -271,6 +320,10 @@ function flushRemoteMutation(key: string): void {
 }
 
 function scheduleRemoteMutation(key: string, mutation: PendingMutation): void {
+  if (!isRemoteKVAvailable()) {
+    return
+  }
+
   if (!isBrowserAvailable()) {
     void enqueueKVTask(() => {
       if (mutation.kind === 'delete') {
@@ -301,6 +354,14 @@ function scheduleRemoteMutation(key: string, mutation: PendingMutation): void {
 }
 
 async function loadRemoteBootstrapSnapshot(): Promise<Snapshot> {
+  if (!isRemoteKVAvailable()) {
+    const payload = getBootstrapPayload()
+    remoteBootstrapState = payload
+    Object.assign(snapshotCache, payload)
+    persistSnapshot()
+    return payload
+  }
+
   if (remoteBootstrapState) {
     return remoteBootstrapState
   }
@@ -320,6 +381,15 @@ async function loadRemoteBootstrapSnapshot(): Promise<Snapshot> {
 
       if (response.ok) {
         const payload = JSON.parse(await response.text()) as Snapshot
+        remoteBootstrapState = payload
+        Object.assign(snapshotCache, payload)
+        persistSnapshot()
+        return payload
+      }
+
+      if (isUnauthorizedKVResponse(response.status)) {
+        markRemoteKVUnauthorized()
+        const payload = getBootstrapPayload()
         remoteBootstrapState = payload
         Object.assign(snapshotCache, payload)
         persistSnapshot()
@@ -356,6 +426,27 @@ async function loadRemoteBootstrapSnapshot(): Promise<Snapshot> {
   })
 
   return remoteBootstrapPromise
+}
+
+export function __resetHydratedKVStateForTests(): void {
+  snapshotLoaded = false
+  snapshotCache = {}
+  kvQueue = Promise.resolve()
+  hydrationSlot = 0
+  remoteBootstrapState = null
+  remoteBootstrapPromise = null
+  bootstrapSyncTimer = null
+  remoteKVUnauthorized = false
+  pendingRemoteMutations.clear()
+  pendingRemoteMutationTimers.clear()
+
+  for (const key of Object.keys(bootstrapSeedValues)) {
+    delete bootstrapSeedValues[key]
+  }
+
+  for (const stat of Object.keys(kvProfileStats) as Array<keyof KVProfileStats>) {
+    kvProfileStats[stat] = 0
+  }
 }
 
 export function useKV<T = string>(key: string, initialValue?: T): readonly [T | undefined, (newValue: Updater<T>) => void, () => void] {
