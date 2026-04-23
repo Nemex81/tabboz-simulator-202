@@ -32,31 +32,12 @@ export const ActionButton = React.memo(function ActionButton({
   helpText,
 }: ActionButtonProps) {
   const id = useId()
-<<<<<<< HEAD
   const { announce } = useA11y()
 
   const handleClick = () => {
     if (helpText && announce) announce(helpText)
     onClick()
   }
-
-=======
-  const wasActivated = useRef(false)
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      wasActivated.current = true
-      if (helpText && announce) announce(helpText)
-    }
-  }
-
-  const handleClick = () => {
-    wasActivated.current = true
-    if (helpText && announce) announce(helpText)
-    onClick()
-  }
-
->>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
   const buttonContent = (
     <motion.div
       whileHover={{ scale: disabled ? 1 : 1.05 }}
@@ -66,10 +47,6 @@ export const ActionButton = React.memo(function ActionButton({
       <Button
         id={buttonId}
         onClick={handleClick}
-<<<<<<< HEAD
-=======
-        onKeyDown={handleKeyDown}
->>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
         disabled={disabled}
         variant={variant}
         className={cn(
@@ -108,16 +85,6 @@ export const ActionButton = React.memo(function ActionButton({
             </div>
             <span className="sr-only">Scorciatoia: {shortcut}</span>
           </>
-        )}
-        {disabled && blockedReason && (
-          <span id={`${id}-blocked`} className="sr-only">
-            {blockedReason}
-          </span>
-        )}
-        {helpText && (
-          <span id={`${id}-help`} className="sr-only">
-            {helpText}
-          </span>
         )}
         {disabled && blockedReason && (
           <span id={`${id}-blocked`} className="sr-only">

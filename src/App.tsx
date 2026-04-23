@@ -50,10 +50,7 @@ import {
 } from '@/lib/gender-utils'
 
 function App() {
-<<<<<<< HEAD
   const { announce: baseAnnounce } = useA11y()
-=======
->>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
   const keyboardHelpRestoreTargetRef = useRef<HTMLElement | null>(null)
   const [rawSchoolType, setRawSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
   const [rawPlayerProfile, setRawPlayerProfile] = useKV<PlayerProfile | null>('tabboz-player-profile', null)
@@ -149,14 +146,8 @@ function App() {
     priority: 'polite' | 'assertive' = 'polite'
   ) => {
     const adaptedMessage = adaptNarrativeText(message, playerProfile?.gender)
-<<<<<<< HEAD
     baseAnnounce(adaptedMessage, priority)
   }, [baseAnnounce, playerProfile?.gender])
-=======
-    a11yAnnounce(adaptedMessage, priority)
-    toast(adaptedMessage, { duration: 3000 })
-  }, [playerProfile?.gender])
->>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
 
   const { stats, setStats } = useGameStats(announce)
   const { gameLog, addLogEntry: rawAddLogEntry, clearLog } = useGameLog()
@@ -622,18 +613,14 @@ function App() {
     [grades, schoolType]
   )
 
-<<<<<<< HEAD
   useGameNarrator({
     currentDate: gameTime.currentDate,
     currentPhase: currentPhase ?? null,
     phaseActionsRemaining: phaseActionsRemaining ?? 0,
     stats,
     afternoonEvent,
-    activeConditionIds: healthRecord.conditions.map((condition) => condition.id),
+    activeConditionIds: (healthRecord?.conditions ?? []).map((condition) => condition.id),
   })
-
-=======
->>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
   const nextPhaseLabelStr =
     currentPhase === 'mattina' ? 'Pomeriggio' :
     currentPhase === 'pomeriggio' ? 'Sera' :
@@ -874,10 +861,6 @@ function App() {
             handleDormi={handleDormi}
             handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
           />
-<<<<<<< HEAD
-          <A11yLiveRegion />
-=======
->>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
           <MainGameTabs
             activeTab={activeTab}
             onValueChange={setActiveTab}

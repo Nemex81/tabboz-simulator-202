@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { createContext, useContext, useMemo, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { announce as domAnnounce } from '@/lib/a11y-announce'
@@ -33,9 +32,6 @@ export function A11yProvider({ children }: { children: ReactNode }) {
 export function useA11y() {
   return useContext(A11yContext)
 }
-
-=======
->>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
 export function A11yLiveRegion() {
   return (
     <>
@@ -56,8 +52,5 @@ export function A11yLiveRegion() {
     </>
   )
 }
-<<<<<<< HEAD
 
 export type { A11yPriority }
-=======
->>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
