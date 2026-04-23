@@ -11,6 +11,7 @@ updates that do not introduce regressions.
 
 ---
 
+<<<<<<< HEAD
 ## [0.6.1] - 2026-04-23
 
 ### Added
@@ -31,6 +32,8 @@ updates that do not introduce regressions.
 
 ---
 
+=======
+>>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
 
 ## [0.6.0] - 2026-04-22
 
@@ -273,8 +276,12 @@ updates that do not introduce regressions.
 - Riconciliazione DOM durante la sequenza `SchoolMorningPanel`: aggiornamenti stato
   parent deferriti con `setTimeout(..., 0)` per evitare errori `removeChild`.
 
+<<<<<<< HEAD
 [Unreleased]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.6.1...HEAD
 [0.6.1]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.6.0...v0.6.1
+=======
+[Unreleased]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.6.0...HEAD
+>>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
 [0.6.0]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.5.0...v0.5.1

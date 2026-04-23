@@ -6,7 +6,11 @@
       "id": "spark-base",
       "display_name": "SPARK Base Layer",
       "description": "Layer fondazionale SCF con agenti base, skill condivise, instruction comuni e prompt framework general-purpose.",
+<<<<<<< HEAD
       "latest_version": "1.4.0",
+=======
+      "latest_version": "1.3.0",
+>>>>>>> 36b249777e886e265f6b221cc3f6c42204cebb17
       "version_source": "package-manifest",
       "status": "stable",
       "repo_url": "https://github.com/Nemex81/spark-base",

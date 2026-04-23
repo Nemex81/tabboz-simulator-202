@@ -61,8 +61,16 @@ export function ExamsPanel({ exams, onPrepareExam, actionsRemaining, stanchezza 
                   <Badge 
                     variant={(exam.daysUntil ?? 0) <= 1 ? 'destructive' : 'default'}
                     className="ml-2"
+                    aria-label={
+                      exam.daysUntil === 0
+                        ? `Scadenza imminente: ${getSubjectDisplayName(exam.subject)} domani`
+                        : `Scadenza tra ${exam.daysUntil ?? '?'} giorni: ${getSubjectDisplayName(exam.subject)}`
+                    }
                   >
                     {exam.daysUntil === 0 ? 'DOMANI!' : `Tra ${exam.daysUntil ?? '?'} giorni`}
+                    {exam.daysUntil === 0 && (
+                      <span className="sr-only"> Scadenza imminente</span>
+                    )}
                   </Badge>
                   <Badge 
                     variant="outline"
