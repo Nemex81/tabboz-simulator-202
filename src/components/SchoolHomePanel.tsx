@@ -38,7 +38,7 @@ function schoolDayOfWeek(date: GameDate): number {
 function RelationBar({ value }: { value: number }) {
   const pct = value
   const color =
-    value > 60 ? 'bg-green-500' : value >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+    value > 60 ? 'bg-primary' : value >= 40 ? 'bg-secondary' : 'bg-destructive'
   return (
     <div
       className="relative h-2 w-full rounded bg-muted overflow-hidden"
@@ -169,7 +169,7 @@ export const SchoolHomePanel = React.memo(function SchoolHomePanel({
                         {PERSONALITY_LABELS[c.personality] ?? c.personality}
                       </Badge>
                       {c.promotedToFriend && (
-                        <Badge className="text-xs bg-pink-100 text-pink-800 border-pink-200">
+                        <Badge className="text-xs bg-secondary/10 text-secondary border-secondary/20">
                           👫 Amico
                         </Badge>
                       )}
@@ -209,14 +209,14 @@ export const SchoolHomePanel = React.memo(function SchoolHomePanel({
     >
       {/* Sezione 1 — Header */}
       <div
-        className="rounded-lg bg-blue-50 border border-blue-200 p-3"
+        className="rounded-lg bg-primary/10 border border-primary/20 p-3"
         role="region"
         aria-label="Informazioni anno scolastico"
       >
-        <p className="font-bold text-blue-800">
+        <p className="font-bold text-primary">
           {getSchoolTypeName(schoolType)}
         </p>
-        <p className="text-sm text-blue-700">
+        <p className="text-sm text-primary">
           Anno {schoolYear}° scolastico
         </p>
       </div>
@@ -235,13 +235,13 @@ export const SchoolHomePanel = React.memo(function SchoolHomePanel({
       {/* Sezione 3 — Ora corrente (se mattinata attiva) */}
       {isSchoolActive && currentSlot && currentSlot.type === 'lesson' && (
         <Card
-          className="border border-amber-300 bg-amber-50"
+          className="border border-secondary/20 bg-secondary/10"
           role="region"
           aria-label="Ora scolastica corrente"
           aria-live="polite"
         >
           <CardContent className="pt-3 pb-2">
-            <p className="text-sm font-medium text-amber-800">
+            <p className="text-sm font-medium text-secondary">
               Ora corrente: {currentSlot.hourIndex + 1} —{' '}
               {currentSlot.subjectKey
                 ? subjectName(currentSlot.subjectKey, schoolType)
@@ -253,13 +253,13 @@ export const SchoolHomePanel = React.memo(function SchoolHomePanel({
       )}
       {isSchoolActive && currentSlot && currentSlot.type === 'break' && (
         <Card
-          className="border border-green-300 bg-green-50"
+          className="border border-primary/20 bg-primary/10"
           role="region"
           aria-label="Intervallo in corso"
           aria-live="polite"
         >
           <CardContent className="pt-3 pb-2">
-            <p className="text-sm font-medium text-green-800">☕ Intervallo in corso</p>
+            <p className="text-sm font-medium text-primary">☕ Intervallo in corso</p>
           </CardContent>
         </Card>
       )}

@@ -14,6 +14,7 @@ Versioning: [SemVer](https://semver.org/lang/it/)
 ### Changed
 
 - Allineato il bootstrap engine al file agente canonico `spark-guide.agent.md` (invece di `spark-user-guide.agent.md`) per evitare `missing_sources` e ripristinare la coerenenza del bootstrap.
+- **2026-04-17** — `.github/project-profile.md`: aggiunto campo `spark_base_version: "1.2.0"` per allineamento post-aggiornamento pacchetto `spark-base` 1.1.0 → 1.2.0. Operazione eseguita via `#framework-unlock` con `framework_edit_mode` aperto e chiuso atomicamente. Rischio regressione: basso.
 
 ## [v1.11.0] - 2026-03-29
 

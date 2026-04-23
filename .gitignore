@@ -35,3 +35,8 @@ pids
  
 # Ignora piani archiviati generati/manuali
 docs/piani archiviati/
+
+# Ignora artefatti framework generati localmente che possono rompere git add su Windows
+.github/backups/
+.github/runtime/snapshots/
+.github/update_manifest_scf_master_codecrafter.ps1

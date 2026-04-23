@@ -4,6 +4,13 @@ spark: true
 
 # Changelog — spark-base
 
+## [1.2.0] - 2026-04-16
+
+### Added
+
+- Nuova suite di prompt `scf-*` per installazione, rimozione, stato, aggiornamenti e ispezione dei pacchetti SCF dal picker prompt di VS Code.
+- Prompt `scf-pre-implementation-audit` per audit read-only dei piani di hardening e delle modifiche ecosistema prima dell'implementazione.
+
 ## [1.1.0] - 2026-04-15
 
 ### Added

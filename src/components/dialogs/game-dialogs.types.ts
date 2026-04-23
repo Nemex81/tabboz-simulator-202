@@ -70,6 +70,7 @@ export interface SocialDialogsProps {
   setShowResetDialog: (value: boolean) => void
   showKeyboardHelp: boolean
   setShowKeyboardHelp: (value: boolean) => void
+  onKeyboardHelpCloseAutoFocus?: (event: Event) => void
   stanchezza: number
 }
 

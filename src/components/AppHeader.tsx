@@ -10,10 +10,12 @@ interface AppHeaderProps {
   currentPhase: DayPhase | null | undefined
   dayType: DayType | null | undefined
   phaseActionsRemaining: number
+  phaseActionsMax?: number
+  onOpenKeyboardHelp: (trigger?: HTMLElement | null) => void
   interazioniRimaste: number
   isSchoolMorningSequenceInProgress: boolean
   morningChoicePending: boolean
-  onOpenKeyboardHelp: () => void
+  onGoToSchool: () => void
   handleRiposa: () => void
   handleDormi: () => void
   handleAdvancePhaseGuarded: () => void
@@ -25,10 +27,12 @@ export function AppHeader({
   currentPhase,
   dayType,
   phaseActionsRemaining,
+  phaseActionsMax,
+  onOpenKeyboardHelp,
   interazioniRimaste,
   isSchoolMorningSequenceInProgress,
   morningChoicePending,
-  onOpenKeyboardHelp,
+  onGoToSchool,
   handleRiposa,
   handleDormi,
   handleAdvancePhaseGuarded,
@@ -55,7 +59,7 @@ export function AppHeader({
             Usa <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+numero</kbd> o <kbd className="px-2 py-1 bg-muted rounded text-primary">Ctrl+lettera</kbd> per le scorciatoie.
           </p>
           <Button
-            onClick={onOpenKeyboardHelp}
+            onClick={(event) => onOpenKeyboardHelp(event.currentTarget)}
             variant="outline"
             size="sm"
             className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
@@ -78,6 +82,8 @@ export function AppHeader({
         currentPhase={currentPhase ?? null}
         dayType={dayType ?? null}
         phaseActionsRemaining={phaseActionsRemaining}
+        phaseActionsMax={phaseActionsMax}
+        morningChoicePending={morningChoicePending}
         isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
         isSchoolPeriod={gameTime.schoolYear.isSchoolPeriod}
         handleRiposa={handleRiposa}
@@ -96,6 +102,15 @@ export function AppHeader({
           <p className="text-sm text-muted-foreground mt-1">
             Vai al tab <strong>Scuola → Voti</strong> e fai la tua scelta per sbloccare tutte le altre attività.
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onGoToSchool}
+            className="mt-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground focus-visible:ring-[3px]"
+            aria-label="Vai al tab Scuola per fare la scelta mattutina"
+          >
+            Vai a Scuola ora
+          </Button>
         </div>
       )}
     </>

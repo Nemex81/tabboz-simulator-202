@@ -157,11 +157,6 @@ export function useLifestyleActions({
   }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
 
   const handleRiposa = useCallback(() => {
-    if (phaseActionsRemainingRef.current <= 0) {
-      playSound.failure()
-      announce('Hai esaurito le azioni per questa fascia oraria!', 'assertive')
-      return
-    }
     // A1: riposa non disponibile durante la mattina scolastica feriale
     const gt = gameTimeRef.current
     if (dayTypeRef.current === 'feriale' && currentPhaseRef.current === 'mattina'
@@ -171,13 +166,13 @@ export function useLifestyleActions({
       announce('Sei a scuola! Non puoi riposare adesso.', 'assertive')
       return
     }
-    // A7: riposa disponibile solo in pomeriggio o mattina non-feriale
+    // A7: riposa disponibile solo in pomeriggio, sera o mattina non-feriale
     const ph = currentPhaseRef.current
     const dt = dayTypeRef.current
-    const isRestAllowed = ph === 'pomeriggio' || (ph === 'mattina' && dt !== 'feriale')
+    const isRestAllowed = ph === 'pomeriggio' || ph === 'sera' || (ph === 'mattina' && dt !== 'feriale')
     if (!isRestAllowed) {
       playSound.failure()
-      announce('Il riposo parziale è disponibile solo al pomeriggio (o la mattina nei giorni non scolastici)!', 'assertive')
+      announce('Il riposo parziale è disponibile solo al pomeriggio, alla sera o la mattina nei giorni non scolastici!', 'assertive')
       return
     }
     // A7: recupero parziale 25-35%
@@ -189,10 +184,9 @@ export function useLifestyleActions({
       stress: clampStat(current.stress - 10),
       morale: clampStat(current.morale + 3)
     }))
-    consumeAction()
     announce(`Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`)
-    addLogEntry('action_neutral', 'Riposo pomeridiano', `Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
-  }, [setStats, consumeAction, announce, addLogEntry])
+    addLogEntry('action_neutral', `Riposo ${currentPhaseRef.current === 'mattina' ? 'mattutino' : currentPhaseRef.current === 'pomeriggio' ? 'pomeridiano' : 'serale'}`, `Hai riposato un po'! Recuperato il ${Math.round(recoveryPct * 100)}% di Stanchezza`, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
+  }, [setStats, announce, addLogEntry])
 
   const handleMarina = useCallback(() => {
     const gt = gameTimeRef.current

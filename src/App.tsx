@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { announce as a11yAnnounce } from '@/lib/a11y-announce'
 import { useKV } from '@/hooks/useHydratedKV'
 import { toast } from 'sonner'
 import { AppHeader } from '@/components/AppHeader'
@@ -15,7 +16,7 @@ import { useAppDialogs } from '@/hooks/useAppDialogs'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useGameLog } from '@/hooks/useGameLog'
 import { useHealthSystem } from '@/hooks/useHealthSystem'
-import { ActivePartner } from '@/lib/girlfriend-system'
+import type { ActivePartner, Ragazza } from '@/lib/girlfriend-system'
 import { 
   validateGrades, 
   validateFriends, 
@@ -48,6 +49,7 @@ import {
 } from '@/lib/gender-utils'
 
 function App() {
+  const keyboardHelpRestoreTargetRef = useRef<HTMLElement | null>(null)
   const [rawSchoolType, setRawSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
   const [rawPlayerProfile, setRawPlayerProfile] = useKV<PlayerProfile | null>('tabboz-player-profile', null)
   const [rawGrades, setRawGrades] = useKV<SubjectGrades>('tabboz-grades', DEFAULT_GAME_STATE.grades)
@@ -130,12 +132,11 @@ function App() {
     setMorningDisplay(value ? 'street' : null)
   }, [setMorningDisplay])
 
-  const ariaLiveAssertiveRef = useRef<HTMLDivElement>(null)
-  const ariaLivePoliteRef = useRef<HTMLDivElement>(null)
   const [marinatoOggi, setMarinatoOggi] = useState(false)
   const [morningChoicePending, setMorningChoicePending] = useState(false)
   const [schoolSubPanel, setSchoolSubPanel] = useState<'home' | 'teachers' | 'break'>('home')
   const [activeTab, setActiveTab] = useState<string>('school')
+  const [schoolMorningChoiceFocusNonce, setSchoolMorningChoiceFocusNonce] = useState(0)
   const schoolBootstrapStartedRef = useRef(false)
 
   const announce = useCallback((
@@ -143,12 +144,7 @@ function App() {
     priority: 'polite' | 'assertive' = 'polite'
   ) => {
     const adaptedMessage = adaptNarrativeText(message, playerProfile?.gender)
-    const ref = priority === 'assertive' ? ariaLiveAssertiveRef : ariaLivePoliteRef
-    if (!ref.current) return
-    ref.current.textContent = ''
-    requestAnimationFrame(() => {
-      if (ref.current) ref.current.textContent = adaptedMessage
-    })
+    a11yAnnounce(adaptedMessage, priority)
     toast(adaptedMessage, { duration: 3000 })
   }, [playerProfile?.gender])
 
@@ -189,7 +185,7 @@ function App() {
   const {
     gameTime, setGameTime, scheduledExams, setScheduledExams,
     consumeAction, consumeInterazione, consumeAllMorningActions, advanceToNextDay, gainExtraAction, handleDormi,
-    currentPhase, dayType, phaseActionsRemaining, interazioniRimaste, advancePhaseOnly, canInteract,
+    currentPhase, dayType, phaseActionsRemaining, phaseActionsMax, interazioniRimaste, advancePhaseOnly, canInteract,
   } = useGameTime({
     grades,
     stats,
@@ -371,8 +367,13 @@ function App() {
     !_schoolDayStateFromHook?.isComplete
 
   const handleAdvancePhaseGuarded = useCallback(() => {
-    if ((phaseActionsRemaining ?? 0) > 0) {
-      announce(`Devi consumare prima le ${phaseActionsRemaining ?? 0} azioni rimaste!`, 'assertive')
+    if (currentPhase === 'notte') {
+      announce('Di notte usa Vai a dormire per passare al giorno successivo.', 'assertive')
+      return
+    }
+
+    if (morningChoicePending) {
+      announce('Scegli prima se andare a lezione o saltare la scuola.', 'assertive')
       return
     }
 
@@ -382,7 +383,7 @@ function App() {
     }
 
     advancePhaseOnly()
-  }, [advancePhaseOnly, announce, isSchoolMorningSequenceInProgress, phaseActionsRemaining])
+  }, [advancePhaseOnly, announce, currentPhase, isSchoolMorningSequenceInProgress, morningChoicePending])
 
   const handleRiposa = () => actions.handleRiposa()
 
@@ -516,7 +517,66 @@ function App() {
     announce,
   })
 
+  const openKeyboardHelp = useCallback((trigger?: HTMLElement | null) => {
+    if (typeof document !== 'undefined') {
+      keyboardHelpRestoreTargetRef.current = trigger ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null)
+    }
+
+    setShowKeyboardHelp(true)
+  }, [setShowKeyboardHelp])
+
+  const handleKeyboardHelpCloseAutoFocus = useCallback((event: Event) => {
+    event.preventDefault()
+
+    const restoreTarget = keyboardHelpRestoreTargetRef.current
+    const fallbackTarget = typeof document !== 'undefined'
+      ? document.getElementById('main-content')
+      : null
+
+    window.requestAnimationFrame(() => {
+      if (restoreTarget?.isConnected) {
+        restoreTarget.focus()
+        return
+      }
+
+      if (fallbackTarget instanceof HTMLElement) {
+        fallbackTarget.focus()
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    if (schoolMorningChoiceFocusNonce === 0 || activeTab !== 'school') {
+      return
+    }
+
+    const focusMorningChoiceButton = () => {
+      const button = document.getElementById('school-go-to-school-action')
+
+      if (button instanceof HTMLElement) {
+        button.focus()
+        return
+      }
+
+      window.requestAnimationFrame(() => {
+        const retryButton = document.getElementById('school-go-to-school-action')
+
+        if (retryButton instanceof HTMLElement) {
+          retryButton.focus()
+        }
+      })
+    }
+
+    window.requestAnimationFrame(focusMorningChoiceButton)
+  }, [activeTab, schoolMorningChoiceFocusNonce])
+
+  const handleGoToSchoolMorningChoice = useCallback(() => {
+    setActiveTab('school')
+    setSchoolMorningChoiceFocusNonce((value) => value + 1)
+  }, [])
+
   useKeyboardShortcuts({
+    currentPhase,
     gameOver,
     showResetDialog,
     showMetallariEvent,
@@ -535,13 +595,14 @@ function App() {
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
     handleRiposa,
+    handleDormi,
     handleProvarciConAtipa,
     handleDisco,
     handleCinema,
     handleShoppingMall,
     setShowResetDialog,
     advancePhaseOnly: handleAdvancePhaseGuarded,
-    setShowKeyboardHelp,
+    openKeyboardHelp,
     setActiveTab,
     announce
   })
@@ -550,6 +611,11 @@ function App() {
     () => schoolType ? calculateWeightedMedia(grades, schoolType) : 0,
     [grades, schoolType]
   )
+
+  const nextPhaseLabelStr =
+    currentPhase === 'mattina' ? 'Pomeriggio' :
+    currentPhase === 'pomeriggio' ? 'Sera' :
+    currentPhase === 'sera' ? 'Notte' : 'Mattina'
 
   const {
     statusTabProps,
@@ -619,6 +685,8 @@ function App() {
       consumeAction,
       announce,
       addLogEntry,
+      onAdvance: handleAdvancePhaseGuarded,
+      nextPhaseLabel: nextPhaseLabelStr,
     },
     characterTabInput: {
       playerProfile: playerProfile ?? null,
@@ -645,9 +713,9 @@ function App() {
     },
     socialTabInput: {
       playerGender: playerProfile?.gender ?? 'maschio',
+      currentPhase,
       morningChoicePending,
       phaseActionsLeft,
-      interactionsLeft: interazioniRimaste ?? 0,
       isSchoolPeriod: gameTime.schoolYear.isSchoolPeriod,
       stanchezza: stats.stanchezza,
       soldi: stats.soldi,
@@ -659,7 +727,8 @@ function App() {
       handleTelefona,
       handleProvarciConAtipa,
       handleMotorino,
-      announce,
+      onAdvance: handleAdvancePhaseGuarded,
+      nextPhaseLabel: nextPhaseLabelStr,
     },
     cityTabInput: {
       playerGender: playerProfile?.gender ?? 'maschio',
@@ -676,6 +745,8 @@ function App() {
       stanchezza: stats.stanchezza,
       availableActions: actions.availableActions,
       onAction: actions.getHandlerForAction,
+      onAdvance: handleAdvancePhaseGuarded,
+      nextPhaseLabel: nextPhaseLabelStr,
     },
     schoolDialogsInput: {
       showReportCard,
@@ -741,6 +812,7 @@ function App() {
       setShowResetDialog,
       showKeyboardHelp,
       setShowKeyboardHelp,
+      onKeyboardHelpCloseAutoFocus: handleKeyboardHelpCloseAutoFocus,
       stanchezza: stats.stanchezza,
     },
   })
@@ -755,51 +827,46 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      <div
-        ref={ariaLiveAssertiveRef}
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-        className="sr-only"
-      />
-      {/* Regione polite — successi e notifiche routine */}
-      <div
-        ref={ariaLivePoliteRef}
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      />
-
-      <div className="max-w-6xl mx-auto space-y-6">
-        <AppHeader
-          playerProfile={playerProfile ?? null}
-          gameTime={gameTime}
-          currentPhase={currentPhase}
-          dayType={dayType}
-          phaseActionsRemaining={phaseActionsRemaining ?? 0}
-          interazioniRimaste={interazioniRimaste ?? 0}
-          isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
-          morningChoicePending={morningChoicePending}
-          onOpenKeyboardHelp={() => setShowKeyboardHelp(true)}
-          handleRiposa={handleRiposa}
-          handleDormi={handleDormi}
-          handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
-        />
-        <MainGameTabs
-          activeTab={activeTab}
-          onValueChange={setActiveTab}
-          statusTab={statusTabProps}
-          schoolTab={schoolTabProps}
-          characterTab={characterTabProps}
-          socialTab={socialTabProps}
-          cityTab={cityTabProps}
-        />
-      </div>
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:rounded focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
+      >
+        Salta al contenuto principale
+      </a>
+      <main id="main-content" role="main" tabIndex={-1} className="outline-none">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <AppHeader
+            playerProfile={playerProfile ?? null}
+            gameTime={gameTime}
+            currentPhase={currentPhase}
+            dayType={dayType}
+            phaseActionsRemaining={phaseActionsRemaining ?? 0}
+            phaseActionsMax={phaseActionsMax}
+            interazioniRimaste={interazioniRimaste ?? 0}
+            isSchoolMorningSequenceInProgress={isSchoolMorningSequenceInProgress}
+            morningChoicePending={morningChoicePending}
+            onOpenKeyboardHelp={openKeyboardHelp}
+            onGoToSchool={handleGoToSchoolMorningChoice}
+            handleRiposa={handleRiposa}
+            handleDormi={handleDormi}
+            handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
+          />
+          <MainGameTabs
+            activeTab={activeTab}
+            onValueChange={setActiveTab}
+            currentPhase={currentPhase}
+            statusTab={statusTabProps}
+            schoolTab={schoolTabProps}
+            characterTab={characterTabProps}
+            socialTab={socialTabProps}
+            cityTab={cityTabProps}
+          />
+        </div>
+      </main>
 
       <GameDialogs school={schoolDialogProps} city={cityDialogProps} social={socialDialogProps} />
-    </main>
+    </div>
   )
 }
 

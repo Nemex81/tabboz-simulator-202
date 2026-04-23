@@ -4,9 +4,9 @@ spark: true
 
 # AGENTS Index
 
-## Base Agents (spark-base)
+## Master Agents (scf-master-codecrafter)
 
-- spark-guide — executor — user entrypoint, framework orientation, routing to spark-assistant
+- Agent-Code — executor — code, implementation, fallback
 - Agent-Orchestrator — executor — orchestration, workflow, runtime-state
 - Agent-Git — executor — git, commit, push, merge, tag proposal
 - Agent-Helper — executor — framework-help, discovery, routing hints
@@ -14,10 +14,12 @@ spark: true
 - Agent-FrameworkDocs — executor — framework-docs, changelog, AGENTS index
 - Agent-Welcome — executor — setup, project-profile, onboarding
 - Agent-Research — support/internal — fallback research, unknown-stack briefing
+- Agent-CodeRouter — dispatcher — code, code-ui, routing
 - Agent-Analyze — dispatcher — analyze
+- Agent-Design — dispatcher — design
 - Agent-Plan — dispatcher — plan
 - Agent-Docs — dispatcher — docs
-- Agent-Validate — dispatcher — validate
+- Agent-CodeUI — dispatcher — code-ui, ui
 
 ## Plugin Agents
 
@@ -52,6 +54,6 @@ L'utente non li chiama direttamente.
 
 - **Ruolo**: fallback per linguaggi senza plugin SCF specializzato
 - **Visibilità**: internal
-- **Invocato da**: Agent-Analyze, Agent-Plan, Agent-Docs, Agent-Orchestrator, Agent-Validate
+- **Invocato da**: Agent-Analyze, Agent-Design, Agent-Plan, Agent-CodeUI, Agent-Docs
 - **Produce**: context brief in `.github/runtime/research-cache/{language}-{task-type}.md`
 - **Limite**: non sostituisce un plugin testato — fallback trasparente dichiarato

@@ -70,7 +70,11 @@ export function HealthRecordPanel({ healthRecord, gameLog }: HealthRecordPanelPr
                     <span className="sr-only">Progresso:</span>
                     <div
                       className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden"
-                      aria-hidden="true"
+                      role="progressbar"
+                      aria-valuenow={cond.daysElapsed + 1}
+                      aria-valuemin={0}
+                      aria-valuemax={template.durationDays ?? cond.daysElapsed + 1}
+                      aria-label={`${template.label}: giorno ${cond.daysElapsed + 1} di ${template.durationDays ?? 'durata indefinita'}`}
                     >
                       <div
                         className="h-full bg-primary rounded-full transition-all"

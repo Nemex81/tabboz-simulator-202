@@ -1,56 +1,18 @@
 ---
+spark: true
 name: Agent-CodeUI
-description: >
-  Implementazione incrementale componenti GUI wxPython con accessibilità
-  NVDA obbligatoria. Ogni componente deve superare la checklist
-  validate-accessibility.skill.md prima del commit.
+version: 1.0.0
+description: Dispatcher per UI e accessibilita. Instrada richieste assistive verso agenti plugin.
 model: ['Claude Sonnet 4.6 (copilot)', 'GPT-5.3-Codex (copilot)']
+layer: master
+role: dispatcher
+delegates_to_capabilities: [code-ui, ui]
+fallback: Agent-Research
 ---
 
 # Agent-CodeUI
 
-Scopo: Implementazione GUI wxPython + accessibilità NVDA. Commit atomici per fase.
+Dispatcher per richieste di UI, accessibilita e interazioni assistive.
 
-Verbosita: `inherit`.
-Personalita: `pragmatico`.
-
----
-
-## Trigger
-
-- Chiamato da Agent-CodeRouter per fasi classificate come GUI
-- Mai invocato direttamente da Agent-Orchestrator
-
----
-
-## Workflow Loop per Ogni Fase
-
-1. LEGGI la fase assegnata da Agent-CodeRouter (non rileggere tutto TODO)
-2. LEGGI PLAN + DESIGN per dettagli UI della fase
-3. CODIFICA — implementa solo la fase, type hints 100%, logging categorizzato
-4. VERIFICA ACCESSIBILITÀ — applica checklist da
-   `.github/skills/validate-accessibility.skill.md` per ogni componente UI
-5. VERIFICA PRE-COMMIT — syntax + types + `pytest -m "not gui"`
-6. COMMIT — scope obbligatorio: `presentation`
-7. REPORT — output strutturato: componente, checklist N/7, issues, PASS/FAIL
-
----
-
-## Regole Operative
-
-- Ogni componente UI DEVE avere report accessibilità PASS prima del commit
-- Se checklist FAIL: correggi prima di procedere, non chiedere deroga
-- Non spuntare docs/TODO.md — lo fa Agent-CodeRouter
-
----
-
-## Riferimenti Skills e Instructions
-
-- Accessibilità UI: `.github/skills/validate-accessibility.skill.md`
-- Standard Python: `.github/instructions/python.instructions.md`
-- Regole presentation layer: `.github/instructions/ui.instructions.md`
-- Commit atomici: `.github/skills/conventional-commit.skill.md`
-- Output accessibile: `.github/skills/accessibility-output.skill.md`
-- Verbosita comunicativa: `.github/skills/verbosity.skill.md`
-- Postura operativa e stile relazionale: `.github/skills/personality.skill.md`
-- Git policy: `.github/skills/git-execution.skill.md`
+Instrada verso agenti plugin che dichiarano capability `code-ui` o `ui`.
+Se nessun plugin le espone, usa Agent-Research e segnala il gap di competenza nativa.

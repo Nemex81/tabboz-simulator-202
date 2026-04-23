@@ -63,32 +63,32 @@ export const CharacterSheet = React.memo(function CharacterSheet({
   return (
     <Tabs defaultValue="profilo" className="w-full mt-6">
       <TabsList className="grid w-full grid-cols-6 gap-1 bg-muted/50 p-1 h-auto mb-6">
-        <TabsTrigger value="profilo">
+        <TabsTrigger value="profilo" aria-label="Profilo: informazioni personaggio">
           <IdentificationCard size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Profilo</span>
           <span className="sm:hidden">👤</span>
         </TabsTrigger>
-        <TabsTrigger value="scuola" aria-label="Voti scuola">
+        <TabsTrigger value="scuola" aria-label="Scuola: voti e materie">
           <GraduationCap size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Scuola</span>
           <span className="sm:hidden">🎓</span>
         </TabsTrigger>
-        <TabsTrigger value="relazioni" aria-label="Relazioni e amicizie">
+        <TabsTrigger value="relazioni" aria-label="Relazioni: amicizie e partner">
           <UsersThree size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Relazioni</span>
           <span className="sm:hidden">👥</span>
         </TabsTrigger>
-        <TabsTrigger value="diario" aria-label="Diario degli eventi">
+        <TabsTrigger value="diario" aria-label="Diario: eventi recenti">
           <BookOpen size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Diario</span>
           <span className="sm:hidden">📓</span>
         </TabsTrigger>
-        <TabsTrigger value="salute" aria-label="Registro salute">
+        <TabsTrigger value="salute" aria-label="Salute: condizioni attive">
           <Heart size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Salute</span>
           <span className="sm:hidden">❤️</span>
         </TabsTrigger>
-        <TabsTrigger value="obiettivi" disabled aria-label="Obiettivi: non ancora disponibile">
+        <TabsTrigger value="obiettivi" disabled aria-label="Obiettivi: traguardi (non ancora disponibile)">
           <span className="hidden sm:inline">Obiettivi</span>
           <span className="sm:hidden">🏆</span>
           <span className="ml-1 text-xs opacity-50">🔜</span>

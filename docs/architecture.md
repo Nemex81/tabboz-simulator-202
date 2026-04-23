@@ -4,6 +4,20 @@
 
 ---
 
+## Aggiornamenti recenti (22 Apr 2026)
+
+- Ripristinato il bridge di focus per la scelta mattutina: il CTA dell'header verso Scuola ora forza il focus sul pulsante azione `Vai a Scuola` nel tab `school` tramite target stabile (`school-go-to-school-action`).
+- `useKeyboardShortcuts` usa routing condizionale per `Ctrl+Alt+Invio`: in fase `notte` invoca `handleDormi`, nelle altre fasi usa `advancePhaseOnly`.
+
+## Aggiornamenti recenti (18 Apr 2026)
+
+- **Accessibilità NVDA fix critico**: rimosso il side effect da focus passivo in `ActionButton` (era `onFocus` + timer → ora solo `onClick`/`onKeyDown`). Aggiunte guard `pendingFocusTargetRef` in `MainGameTabs` e `SchoolTab` per impedire shift del focus da redirect di stato non confermati dall'utente. Rimosso focus automatico al mount in `SchoolBreakPanel`.
+- Nuovi hook aggiunti all'architettura: `useSchoolSystem`, `useSchoolHandlers`, `useSchoolEffects`, `useSocialActions`, `useEconomyActions`, `useLifestyleActions`, `useStudyActions`, `useGirlfriendActions`, `useActionGuard`, `useHydratedKV`, `useAppEffects`, `useAppViewModels`, `useSoundFeedback`.
+- Nuovi moduli lib: `classmate-relations`, `school-day-engine`, `school-timetable`, `school-roster`, `school-break-actions`, `school-actions`, `teacher-relations`, `job-system`, `gender-utils`, `game-balance.constants`, `relationship-utils`, `school-day-templates`, `school-event-handlers`, `school-roster-transitions`, `school-teachers`, `utils`.
+- Nuovi componenti: `AdvancePhaseButton`, `AfternoonEventPanel`, `DailyControls`, `JobSelectionDialog`, `SchoolBreakPanel`, `SchoolHomePanel`, `FriendshipsPanel`, `MainGameTabs`, `RelationCard`, `TeachersPanel`, `ChunkErrorBoundary`; sottocartelle `dialogs/` e `tabs/`.
+- `tabboz-active-partners` aggiunto alle chiavi KV principali (sostituisce `tabboz-girlfriend` come store primario partner romantici).
+- Nota: `docs/ANALISI_CODEBASE_COMPLETA.md` è stato archiviato in `docs/piani archiviati/`.
+
 ## Aggiornamenti recenti (08 Apr 2026)
 
 - Aggiunte e modifiche al sottosistema "scuola": `initSchoolYear` è ora invocabile dall'onboarding (`SchoolSelection`).
@@ -11,7 +25,7 @@
 - Risolto un problema runtime di reconciliaton: alcune chiamate che aggiornavano lo stato del genitore sono state deferite al prossimo tick (pattern `setTimeout(..., 0)`) per evitare errori DOM `removeChild` in flussi mattutini.
 - Per garantire remount puliti del pannello mattutino, `SchoolMorningPanel` viene ora renderizzato con keying/Suspense controllata quando `isComplete` cambia.
 - Aggiunta logica di guard per il comando "Avanza fase" (UI + scorciatoia): viene bloccato durante la sequenza mattutina scolastica attiva.
-- Report di analisi codice completo: `docs/ANALISI_CODEBASE_COMPLETA.md` (vedi sezione Documentazione).
+- Report di analisi codice completo: archiviato in `docs/piani archiviati/` (era `docs/ANALISI_CODEBASE_COMPLETA.md`).
 - Le prove programmate supportano ora il discriminante opzionale `type?: 'scritto' | 'orale'` nel flusso `ScheduledExam`; la generazione è centralizzata in `exam-system.ts` con builder strutturati in `school-structured-events.ts`, e `ExamsPanel.tsx` espone il tipo nel pannello UI.
 - Configurata la suite unit test con Vitest in `vite.config.ts` (`jsdom` + `src/test-setup.ts`) e coperti i principali orchestratori UI/hook introdotti nel refactor (`useAppDialogs`, `useGameActions`, `GameDialogs` e dialog group).
 
@@ -88,63 +102,117 @@ tabboz-simulator-202/
     │
     ├── lib/                    # Logica di dominio pura (zero dipendenze React)
     │   ├── types.ts            # Tipi e interfacce condivise
+    │   ├── utils.ts            # Utility generiche (cn, merge classi)
     │   ├── game-utils.ts       # Utility stat, calcoli, probabilità
+    │   ├── game-balance.constants.ts # Costanti bilancio di gioco centralizzate
     │   ├── time-utils.ts       # Calendario, fasi giornata, avanzamento tempo
+    │   ├── gender-utils.ts     # Utility narrativa genere/flessione grammaticale
     │   ├── subjects.ts         # Definizioni materie per indirizzo/anno
     │   ├── exam-system.ts      # Generazione e valutazione prove scritte/orali
     │   ├── social-system.ts    # Generazione amici/relazioni, probabilità incontri
     │   ├── relation-system.ts  # Sistema relazionale 4 assi (amicizia/romantico/amore/odio)
-    │   ├── girlfriend-system.ts# Generazione e gestione fidanzata
+    │   ├── relationship-utils.ts # Utility per calcolo tier e migrazione relazioni
+    │   ├── classmate-relations.ts# Azioni tra compagni di classe con effetti relazionali
+    │   ├── teacher-relations.ts# Azioni con professori + effetti relazione
+    │   ├── girlfriend-system.ts# Generazione e gestione partner (Ragazza + ActivePartner)
     │   ├── enhanced-friend-system.ts # Azioni amicizia avanzate
     │   ├── character-traits.ts # Tratti caratteriali (ispirazione CK3)
     │   ├── school-events.ts    # Eventi scolastici (professore, genitori)
     │   ├── school-morning-events.ts  # Eventi narrativi mattutini pre-scuola
     │   ├── school-structured-events.ts # Eventi contestuali in aula + builder prove strutturate
+    │   ├── school-day-engine.ts# Motore simulazione giornata scolastica
+    │   ├── school-day-templates.ts # Template slot-sequenza per tipo di giornata
+    │   ├── school-timetable.ts # Generazione orario settimanale per indirizzo
+    │   ├── school-roster.ts    # Rosa compagni di classe con generazione procedurale
+    │   ├── school-roster-transitions.ts # Transizioni rosa tra anni scolastici
+    │   ├── school-teachers.ts  # Pool professori per materia e indirizzo
+    │   ├── school-actions.ts   # Azioni disponibili durante la mattinata scolastica
+    │   ├── school-break-actions.ts   # Azioni durante l'intervallo scolastico
+    │   ├── school-event-handlers.ts  # Handler effetti eventi scolastici contestuali
     │   ├── street-morning-events.ts  # Eventi narrativi mattutini (strada/marina)
     │   ├── afternoon-events.ts # Eventi narrativi pomeridiani
     │   ├── phase-actions.ts    # Azioni disponibili per fase/giorno
     │   ├── bet-system.ts       # Sistema scommesse e gare motorini
+    │   ├── job-system.ts       # Lavori part-time disponibili e guadagni
     │   ├── sound-effects.ts    # Sintesi audio via Web Audio API
     │   └── data-validation.ts  # Validazione e sanitizzazione dati
     │
     ├── hooks/                  # Custom hooks (business logic React)
+    │   ├── useHydratedKV.ts    # Wrapper KV con bootstrap snapshot e backoff
+    │   ├── useAppEffects.ts    # Side effect globali (migrazione, inizializzazioni)
+    │   ├── useAppViewModels.ts # Derivazioni di stato per la view (computed props)
     │   ├── useGameStats.ts     # Statistiche + reputazione automatica
     │   ├── useGameTime.ts      # Data, fase, azioni, avanzamento giorno
-    │   ├── useGameActions.ts   # Handler per ogni tipo di azione
+    │   ├── useGameActions.ts   # Facciata azioni: instrada ActionId → sotto-hook
+    │   ├── useSchoolSystem.ts  # Stato anno scolastico, voti, esami
+    │   ├── useSchoolHandlers.ts# Handler azioni scuola (vai/marina/slot)
+    │   ├── useSchoolEffects.ts # Effetti automatici ciclo scolastico
+    │   ├── useSocialActions.ts # Azioni sociali (chiacchiera, telefona, ecc.)
+    │   ├── useEconomyActions.ts# Azioni economia (lavoro, spesa, motorino)
+    │   ├── useLifestyleActions.ts# Azioni lifestyle (palestra, riposa, dormi)
+    │   ├── useStudyActions.ts  # Azioni studio con selezione materia
+    │   ├── useGirlfriendActions.ts# Azioni partner romantici (ActivePartner)
     │   ├── useEventEngine.ts   # Motore eventi casuali
     │   ├── useGameRelations.ts # Interazioni relazionali 4 assi
     │   ├── useHealthSystem.ts  # Condizioni di salute e status effect
     │   ├── useGameLog.ts       # Diario/log di gioco
     │   ├── useAppDialogs.ts    # Stato dei dialog modali
+    │   ├── useActionGuard.ts   # Guard centralizzata consumo azioni di fase
+    │   ├── useSoundFeedback.ts # Trigger effetti audio contestuali
     │   ├── useKeyboardShortcuts.ts # Scorciatoie da tastiera
     │   └── use-mobile.ts       # Rilevamento dispositivo mobile
     │
     ├── components/             # Componenti React (presentazione + interazione)
     │   ├── ActionButton.tsx
+    │   ├── AdvancePhaseButton.tsx
+    │   ├── AfternoonEventPanel.tsx
+    │   ├── AppHeader.tsx
     │   ├── CharacterSheet.tsx
+    │   ├── ChunkErrorBoundary.tsx
     │   ├── CityPanel.tsx
+    │   ├── DailyControls.tsx
     │   ├── DiaryPanel.tsx
     │   ├── EnhancedFriendsPanel.tsx
     │   ├── ExamsPanel.tsx
-    │   ├── FriendsPanel.tsx
+    │   ├── FriendshipsPanel.tsx
     │   ├── GameDialogs.tsx
     │   ├── GirlfriendPanel.tsx
     │   ├── GradeProgressPanel.tsx
     │   ├── HealthRecordPanel.tsx
+    │   ├── JobSelectionDialog.tsx
     │   ├── KeyboardShortcutsDialog.tsx
+    │   ├── MainGameTabs.tsx
     │   ├── RelationCard.tsx
-    │   ├── RelationsPanel.tsx
     │   ├── RelationshipsPanel.tsx
     │   ├── ReportCardDialog.tsx
+    │   ├── SchoolBreakPanel.tsx
     │   ├── SchoolEventDialog.tsx
+    │   ├── SchoolHomePanel.tsx
     │   ├── SchoolMorningPanel.tsx
     │   ├── SchoolSelection.tsx
     │   ├── StatDisplay.tsx
     │   ├── StatsDashboard.tsx
     │   ├── SubjectSelectionDialog.tsx
     │   ├── TeacherSelectionDialog.tsx
+    │   ├── TeachersPanel.tsx
     │   ├── ThemeSelector.tsx
-    │   └── TimeDisplay.tsx
+    │   ├── TimeDisplay.tsx
+    │   ├── dialogs/            # Dialog di gioco per dominio
+    │   │   ├── SchoolDialogsGroup.tsx
+    │   │   ├── CityDialogsGroup.tsx
+    │   │   ├── SocialDialogsGroup.tsx
+    │   │   ├── AtipaEventDialog.tsx
+    │   │   ├── BulliDialog.tsx
+    │   │   ├── GameOverDialog.tsx
+    │   │   ├── MetallariDialog.tsx
+    │   │   ├── PoliceDialog.tsx
+    │   │   ├── ResetDialog.tsx
+    │   │   └── StreetRaceDialog.tsx
+    │   └── tabs/               # Pannelli principali per tab di gioco
+    │       ├── SchoolTab.tsx
+    │       ├── CityTab.tsx
+    │       ├── SocialTab.tsx
+    │       └── StatusTab.tsx
     │
     ├── components/ui/          # Primitivi UI (shadcn/ui + Radix)
     │   ├── button.tsx          # ~48 componenti wrapper Radix
@@ -245,7 +313,8 @@ Questo rende l'avvio più robusto sotto rate limit, soprattutto con più tab o r
 | `tabboz-grades`            | `SubjectGrades`           | Voti correnti per materia         |
 | `tabboz-friends`           | `Friend[]`                | Lista amici                       |
 | `tabboz-relationships`     | `Relationship[]`          | Interessi sentimentali            |
-| `tabboz-girlfriend`        | `Ragazza \| null`         | Fidanzata attuale                 |
+| `tabboz-girlfriend`        | `Ragazza \| null`         | Fidanzata attuale (legacy — fallback)  |
+| `tabboz-active-partners`   | `ActivePartner[]`         | Partner romantici attivi (store primario) |
 | `tabboz-theme`             | `ThemeVariant`            | Tema UI scelto                    |
 | `tabboz-school-record`     | `SchoolRecord`            | Condotta, assenze, note           |
 | `tabboz-grades-history`    | `Record<number, Grades>`  | Archivio voti per anno scolastico |
@@ -280,15 +349,27 @@ Gli hook incapsulano la logica di gioco e separano le responsabilità:
 
 | Hook                     | Responsabilità                                            |
 | ------------------------ | --------------------------------------------------------- |
-| `useGameStats`           | Gestione 12 statistiche, calcolo reputazione automatico   |
+| `useHydratedKV`          | Wrapper KV con bootstrap snapshot condiviso e backoff     |
+| `useAppEffects`          | Side effect globali: migrazione legacy, inizializzazioni  |
+| `useAppViewModels`       | Computed props per la view derivati dallo stato           |
+| `useGameStats`           | Gestione 13 statistiche, calcolo reputazione automatico   |
 | `useGameTime`            | Avanzamento data/fase/azioni, pagella, promozione/bocciatura |
 | `useGameActions`         | Facciata delle azioni: compone sotto-hook tematici e instrada `ActionId` → handler |
+| `useSchoolSystem`        | Stato anno scolastico, voti, esami programmati            |
+| `useSchoolHandlers`      | Handler azioni scuola: vai/marina/avanza slot             |
+| `useSchoolEffects`       | Effetti automatici fine anno, condotta, bocciatura        |
+| `useSocialActions`       | Azioni sociali (chiacchiera, telefona, naviga online)     |
+| `useEconomyActions`      | Azioni economia (lavoro part-time, spesa, motorino)       |
+| `useLifestyleActions`    | Azioni lifestyle (palestra, riposa, dormi)                |
+| `useStudyActions`        | Azioni studio con selezione materia e bonus amici         |
+| `useGirlfriendActions`   | Azioni su partner romantici `ActivePartner`               |
 | `useEventEngine`         | Generazione eventi casuali (metallari, polizia, bulli, gare) |
 | `useGameRelations`       | Interazioni relazionali 4 assi con prerequisiti ed effetti |
 | `useHealthSystem`        | Condizioni di salute (influenza, infortunio, ecc.)         |
 | `useGameLog`             | Diario giornaliero con entry tipizzate                     |
 | `useAppDialogs`          | Stato on/off di tutti i dialog modali e dei flussi mattutini / job dialog |
-|                         | Include `schoolMorningEvents`, `streetMorningEvents`, `morningDisplay`, `teacherActionType` e stato del `JobSelectionDialog` |
+| `useActionGuard`         | Guard centralizzata per consumo corretto azioni di fase   |
+| `useSoundFeedback`       | Trigger effetti audio contestuali alle azioni             |
 | `useKeyboardShortcuts`   | Binding tastiera per a11y e power user                     |
 
 ### Orchestrazione
@@ -317,21 +398,38 @@ Sono testabili in isolamento e riutilizzabili.
 | Modulo                        | Responsabilità                                         |
 | ----------------------------- | ------------------------------------------------------ |
 | `types.ts`                    | Tipi e interfacce condivise per l'intero progetto       |
-| `game-utils.ts`               | Utility generiche: clamp, probabilità, calcolo media    |
+| `utils.ts`                    | Utility generiche (cn, merge classi Tailwind)           |
+| `game-utils.ts`               | Clamp stat, probabilità, calcolo media                  |
+| `game-balance.constants.ts`   | Costanti numeriche bilancio centralizzate               |
 | `time-utils.ts`               | Calendario, fasi giornata, avanzamento tempo            |
+| `gender-utils.ts`             | Utility narrativa genere (flessione grammaticale)       |
 | `subjects.ts`                 | Definizioni materie con pesi e disponibilità per indirizzo |
 | `exam-system.ts`              | Generazione e valutazione prove programmate/interrogazioni |
 | `social-system.ts`            | Generazione amici/relazioni, probabilità incontri       |
 | `relation-system.ts`          | Sistema relazionale 4 assi + catalogo interazioni       |
-| `girlfriend-system.ts`        | Generazione e gestione fidanzata                        |
+| `relationship-utils.ts`       | Utility calcolo tier e migrazione dati relazioni legacy |
+| `classmate-relations.ts`      | Azioni tra compagni di classe con effetti relazionali   |
+| `teacher-relations.ts`        | Azioni con professori e modifica relazione              |
+| `girlfriend-system.ts`        | Generazione partner (`Ragazza` + tipo `ActivePartner`)  |
 | `enhanced-friend-system.ts`   | Azioni amicizia avanzate con effetti                    |
 | `character-traits.ts`         | Tratti caratteriali (CK3-style) con bonus/malus         |
 | `school-events.ts`            | Eventi scolastici (professore, genitori, condotta)      |
 | `school-morning-events.ts`    | Eventi narrativi mattutini pre-scuola                   |
 | `school-structured-events.ts` | Eventi contestuali in aula e builder per prove strutturate |
+| `school-day-engine.ts`        | Motore simulazione giornata scolastica (slot HourSlot)  |
+| `school-day-templates.ts`     | Template sequenza slot per tipo giornata                |
+| `school-timetable.ts`         | Generazione orario settimanale per indirizzo            |
+| `school-roster.ts`            | Rosa compagni di classe con generazione procedurale     |
+| `school-roster-transitions.ts`| Transizioni e rinnovo rosa tra anni scolastici          |
+| `school-teachers.ts`          | Pool professori per materia e indirizzo scolastico      |
+| `school-actions.ts`           | Azioni disponibili durante la mattinata scolastica      |
+| `school-break-actions.ts`     | Azioni durante l'intervallo scolastico                  |
+| `school-event-handlers.ts`    | Handler effetti eventi scolastici contestuali           |
+| `street-morning-events.ts`    | Eventi narrativi mattutini (strada/marina)              |
 | `afternoon-events.ts`         | Eventi narrativi pomeridiani per location               |
 | `phase-actions.ts`            | Mappa azioni disponibili per fase e tipo di giorno      |
 | `bet-system.ts`               | Scommesse e gare motorini con importi dinamici          |
+| `job-system.ts`               | Lavori part-time disponibili, requisiti e guadagni      |
 | `sound-effects.ts`            | Sintesi audio tramite Web Audio API                     |
 | `data-validation.ts`          | Validazione runtime di tutti i tipi persistiti          |
 
@@ -442,10 +540,12 @@ Il progetto implementa accessibilità a più livelli:
 
 - **ARIA live regions** per annunci di cambio stato (statistiche, eventi, risultati).
 - **Focus trap** nei dialog modali con `aria-modal`.
-- **Scorciatoie da tastiera**: `?` per help, `Ctrl+1-8` per tab, `Space` per azione, `Escape` per chiudere dialog.
+- **Scorciatoie da tastiera**: `Alt+H` per help, `Alt+S` per tab Scuola, `Ctrl+1..9`/`Ctrl+D`/`Ctrl+C`/`Ctrl+S` per azioni rapide, `Ctrl+F` e `Ctrl+T` per tab Personaggio, `Ctrl+R` per reset, `Ctrl+Alt+Invio` per avanzamento fase con routing notturno su `handleDormi`.
 - **Screen reader**: ogni cambio significativo viene annunciato tramite `announce()` (toast + ARIA).
 - **Contrasto colori**: palette progettata per ratio ≥ 9:1.
 - **Navigazione Tab**: tutti i controlli raggiungibili senza mouse.
+- **NVDA browse mode fix (apr 2026)**: `ActionButton` non attiva side effect su focus passivo — `announce(helpText)` è chiamato solo da `onClick` e `onKeyDown` (Enter/Space). I focus shift programmatici sui pannelli tab sono condizionati da `pendingFocusTargetRef` per evitare spostamenti non richiesti durante redirect automatici di stato. `SchoolBreakPanel` non ruba più il focus al mount.
+- **Landmark e heading**: tutti i `TabsList` principali e scolastici espongono `aria-label`; i pannelli attivi hanno heading `h2` semantico; dialog e sheet hanno pulsante di chiusura localizzato in italiano.
 
 ---
 

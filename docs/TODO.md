@@ -1,17 +1,8 @@
-# TODO - Social Network Expansion
+- 2026-04-22: ripristinato il focus dal CTA mattutino al pulsante Vai a Scuola nel tab Scuola.
+- 2026-04-22: corretta la scorciatoia Ctrl+Alt+Invio per usare Vai a dormire durante la fase notte.
+- 2026-04-22: aggiunto test di regressione per useKeyboardShortcuts sul ramo notturno.
 
-- [x] F1 - Aggiungere azione social online nel tab Social
-- [x] F2 - Far nascere gli amici online con provenienza rete coerente
-- [x] F3 - Mostrare la provenienza nelle card amici
-- [x] F4 - Tracciare il contesto di origine nelle relazioni romantiche
-- [x] F5 - Aggiungere il filtro Rete nel FriendshipsPanel
-- [x] Cleanup - Ripulire il typecheck globale del repository
-- [x] Cleanup - Aggiungere test UI per RelationshipsPanel
-- [x] Cleanup - Rinominare le label sociali di quartiere in UI, handler, test e registry azioni
-- [x] Bugfix - Bloccare partner automatici incompatibili con orientamento e gender del giocatore
-- [x] Feature - Introdurre limite massimo di relazioni romantiche attive basato sulle statistiche
-- [x] Refactor - Sostituire lo slot singolo girlfriend con activePartners persistiti
-- [x] Refactor - Aggiornare hook business romantici a upsert multi-partner
-- [x] Refactor - Aggiornare container UI e pannelli partner a rendering multiplo
-- [x] Test - Allineare mock e asserzioni al contratto activePartners
-- [x] Docs - Chiudere il refactor activePartners in TODO e PLAN
+2026-04-22: Ciclo A/B/C per miglioramenti A11Y completato.
+- Dettagli: Fase A (centralizzazione announce in `src/lib/a11y-announce.ts` e rimozione di live region inline in `src/App.tsx`), Fase B (rimozione prop `announce` da `ActionButton`; SchoolTab mantiene `announce` solo dove necessario), Fase C (introduzione condizionale di `aria-keyshortcuts` su `ActionButton`; `DailyControls` espone `Control+Alt+Enter` per "Prossima fase").
+- Gate di validazione superati: `npx tsc --noEmit`, `npm run test`, `npm run build`.
+- Rinviato / Fuori scope: `StatsDashboard` e grandi refactor di pannelli.

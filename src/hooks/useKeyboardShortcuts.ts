@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { SchoolType } from '@/lib/types'
 
 interface UseKeyboardShortcutsParams {
+  currentPhase: string | null | undefined
   gameOver: boolean
   showResetDialog: boolean
   showMetallariEvent: boolean
@@ -20,19 +21,21 @@ interface UseKeyboardShortcutsParams {
   handleOpenCorrompiDialog: () => void
   handleOpenMinacciaDialog: () => void
   handleRiposa: () => void
+  handleDormi: () => void
   handleProvarciConAtipa: () => void
   handleDisco: () => void
   handleCinema: () => void
   handleShoppingMall: () => void
   setShowResetDialog: (show: boolean) => void
   advancePhaseOnly: () => void
-  setShowKeyboardHelp: (show: boolean) => void
+  openKeyboardHelp: () => void
   setActiveTab: (tab: string) => void
   announce: (message: string) => void
 }
 
 export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
   const {
+    currentPhase,
     gameOver,
     showResetDialog,
     showMetallariEvent,
@@ -51,13 +54,14 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
     handleRiposa,
+    handleDormi,
     handleProvarciConAtipa,
     handleDisco,
     handleCinema,
     handleShoppingMall,
     setShowResetDialog,
     advancePhaseOnly,
-    setShowKeyboardHelp,
+    openKeyboardHelp,
     setActiveTab,
     announce
   } = params
@@ -72,8 +76,14 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
 
       if (e.altKey && key === 'h') {
         e.preventDefault()
-        setShowKeyboardHelp(true)
+        openKeyboardHelp()
         announce('Aiuto scorciatoie da tastiera aperto')
+        return
+      }
+      if (e.altKey && key === 's') {
+        e.preventDefault()
+        setActiveTab('school')
+        announce('Tab Scuola aperto')
         return
       }
 
@@ -143,13 +153,14 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
           setShowResetDialog(true)
           announce('Dialogo di reset aperto')
           break
-        case 'n':
+        case 'enter':
+          if (!e.altKey) break
           e.preventDefault()
-          if (phaseActionsRemaining === 0) {
-            advancePhaseOnly()
-          } else {
-            announce(`Devi consumare prima le ${phaseActionsRemaining} azioni rimaste!`)
+          if (currentPhase === 'notte') {
+            handleDormi()
+            break
           }
+          advancePhaseOnly()
           break
       }
     }
@@ -157,6 +168,7 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [
+    currentPhase,
     gameOver,
     showResetDialog,
     showMetallariEvent,
@@ -175,13 +187,14 @@ export function useKeyboardShortcuts(params: UseKeyboardShortcutsParams) {
     handleOpenCorrompiDialog,
     handleOpenMinacciaDialog,
     handleRiposa,
+    handleDormi,
     handleProvarciConAtipa,
     handleDisco,
     handleCinema,
     handleShoppingMall,
     setShowResetDialog,
     advancePhaseOnly,
-    setShowKeyboardHelp,
+    openKeyboardHelp,
     setActiveTab,
     announce
   ])

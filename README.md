@@ -164,7 +164,7 @@ Per una descrizione completa, consulta la [documentazione tecnica](#documentazio
 | --- | --- |
 | [docs/architecture.md](docs/architecture.md) | Architettura logica, layer, flusso dati, componenti |
 | [docs/api.md](docs/api.md) | Riferimento API completo: tipi, funzioni, hook, costanti |
-| [docs/ANALISI_CODEBASE_COMPLETA.md](docs/ANALISI_CODEBASE_COMPLETA.md) | Report di analisi e piano di rimedio (audit completo, 08 Apr 2026) |
+| [docs/piani archiviati/](docs/piani%20archiviati/) | Piani e analisi archiviate (incluso report audit 08 Apr 2026) |
 | [THEME_SYSTEM.md](THEME_SYSTEM.md) | Sistema di temi e variabili CSS |
 | [SECURITY.md](SECURITY.md) | Policy di sicurezza |
 | [PRD.md](PRD.md) | Product Requirements Document |
@@ -182,7 +182,7 @@ Il progetto è progettato per essere **completamente accessibile**:
 
 - **Screen reader:** notifiche ARIA live per ogni azione e cambio di stato
 - **Navigazione da tastiera:** tutti i controlli raggiungibili senza mouse
-- **Scorciatoie:** `?` per aiuto, `Ctrl+1-8` per tab, `Space` per azione, `Escape` per chiudere
+- **Scorciatoie:** `Alt+H` aiuto, `Alt+S` tab Scuola, `Ctrl+1..9`/`Ctrl+D`/`Ctrl+C`/`Ctrl+S` azioni rapide, `Ctrl+R` reset, `Ctrl+Alt+Invio` avanzamento fase (di notte instradato su Vai a dormire)
 - **Focus trap:** attivo in tutti i dialog modali
 - **Contrasto:** palette con ratio minimo 9:1
 - **Semantica:** struttura heading corretta, label su ogni controllo
@@ -205,7 +205,7 @@ Il progetto è progettato per essere **completamente accessibile**:
 - **Stato:** Hook custom, zero state management library
 - **Logica pura:** Funzioni in `src/lib/` senza dipendenze React
 
-Documentazione aggiornata: 08 Apr 2026 — vedi `docs/ANALISI_CODEBASE_COMPLETA.md` per l'audit e i prossimi passi consigliati.
+Documentazione aggiornata: 18 Apr 2026 — vedi [docs/architecture.md](docs/architecture.md) e [docs/api.md](docs/api.md) per l'architettura corrente.
 
 ---
 
