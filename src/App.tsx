@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { announce as a11yAnnounce } from '@/lib/a11y-announce'
 import { useKV } from '@/hooks/useHydratedKV'
-import { toast } from 'sonner'
 import { AppHeader } from '@/components/AppHeader'
+import { A11yLiveRegion, useA11y } from '@/components/A11yLiveRegion'
 import { GameDialogs } from '@/components/GameDialogs'
 import { MainGameTabs } from '@/components/MainGameTabs'
 import { SchoolSelection } from '@/components/SchoolSelection'
@@ -39,6 +38,7 @@ import { useSchoolHandlers } from '@/hooks/useSchoolHandlers'
 import { useSchoolEffects } from '@/hooks/useSchoolEffects'
 import { useAppEffects } from '@/hooks/useAppEffects'
 import { useAppViewModels } from '@/hooks/useAppViewModels'
+import { useGameNarrator } from '@/hooks/useGameNarrator'
 import {
   adaptNarrativeText,
   DEFAULT_SEXUAL_ORIENTATION,
@@ -49,6 +49,7 @@ import {
 } from '@/lib/gender-utils'
 
 function App() {
+  const { announce: baseAnnounce } = useA11y()
   const keyboardHelpRestoreTargetRef = useRef<HTMLElement | null>(null)
   const [rawSchoolType, setRawSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
   const [rawPlayerProfile, setRawPlayerProfile] = useKV<PlayerProfile | null>('tabboz-player-profile', null)
@@ -144,9 +145,8 @@ function App() {
     priority: 'polite' | 'assertive' = 'polite'
   ) => {
     const adaptedMessage = adaptNarrativeText(message, playerProfile?.gender)
-    a11yAnnounce(adaptedMessage, priority)
-    toast(adaptedMessage, { duration: 3000 })
-  }, [playerProfile?.gender])
+    baseAnnounce(adaptedMessage, priority)
+  }, [baseAnnounce, playerProfile?.gender])
 
   const { stats, setStats } = useGameStats(announce)
   const { gameLog, addLogEntry: rawAddLogEntry, clearLog } = useGameLog()
@@ -612,6 +612,15 @@ function App() {
     [grades, schoolType]
   )
 
+  useGameNarrator({
+    currentDate: gameTime.currentDate,
+    currentPhase: currentPhase ?? null,
+    phaseActionsRemaining: phaseActionsRemaining ?? 0,
+    stats,
+    afternoonEvent,
+    activeConditionIds: healthRecord.conditions.map((condition) => condition.id),
+  })
+
   const nextPhaseLabelStr =
     currentPhase === 'mattina' ? 'Pomeriggio' :
     currentPhase === 'pomeriggio' ? 'Sera' :
@@ -852,6 +861,7 @@ function App() {
             handleDormi={handleDormi}
             handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
           />
+          <A11yLiveRegion />
           <MainGameTabs
             activeTab={activeTab}
             onValueChange={setActiveTab}

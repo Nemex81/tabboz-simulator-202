@@ -1,3 +1,6 @@
+- 2026-04-23: corretti i doppi annunci A11y su `useGameNarrator` al primo mount e su `ActionButton` da tastiera; aggiunti test di non regressione mirati.
+- 2026-04-23: completato il sistema `useGameNarrator` con `A11yProvider` e live region dual-channel per annunci di fase, giorno, salute, soldi, delta statistiche ed eventi automatici pomeridiani.
+- 2026-04-23: aggiornati `ActionButton`, root App e suite Vitest mirata per il nuovo flusso annunci accessibili compatibile con screen reader.
 - 2026-04-22: ripristinato il focus dal CTA mattutino al pulsante Vai a Scuola nel tab Scuola.
 - 2026-04-22: corretta la scorciatoia Ctrl+Alt+Invio per usare Vai a dormire durante la fase notte.
 - 2026-04-22: aggiunto test di regressione per useKeyboardShortcuts sul ramo notturno.

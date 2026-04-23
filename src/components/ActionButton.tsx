@@ -1,9 +1,9 @@
 import React, { ReactNode, useId, useRef } from 'react'
 import { Button } from '@/components/ui/button'
+import { useA11y } from '@/components/A11yLiveRegion'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
-import { announce } from '@/lib/a11y-announce'
 
 interface ActionButtonProps {
   icon: ReactNode
@@ -31,17 +31,9 @@ export const ActionButton = React.memo(function ActionButton({
   helpText,
 }: ActionButtonProps) {
   const id = useId()
-  const wasActivated = useRef(false)
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      wasActivated.current = true
-      if (helpText && announce) announce(helpText)
-    }
-  }
+  const { announce } = useA11y()
 
   const handleClick = () => {
-    wasActivated.current = true
     if (helpText && announce) announce(helpText)
     onClick()
   }
@@ -55,7 +47,6 @@ export const ActionButton = React.memo(function ActionButton({
       <Button
         id={buttonId}
         onClick={handleClick}
-        onKeyDown={handleKeyDown}
         disabled={disabled}
         variant={variant}
         className={cn(
@@ -88,9 +79,12 @@ export const ActionButton = React.memo(function ActionButton({
           {label}
         </div>
         {shortcut && (
-          <div className="absolute top-1 right-1 text-xs opacity-70 font-mono" aria-hidden="true">
-            {shortcut}
-          </div>
+          <>
+            <div className="absolute top-1 right-1 text-xs opacity-70 font-mono" aria-hidden="true">
+              {shortcut}
+            </div>
+            <span className="sr-only">Scorciatoia: {shortcut}</span>
+          </>
         )}
         {disabled && blockedReason && (
           <span id={`${id}-blocked`} className="sr-only">

@@ -11,6 +11,26 @@ updates that do not introduce regressions.
 
 ---
 
+## [0.6.1] - 2026-04-23
+
+### Added
+
+- `feat(a11y)`: introdotti `A11yProvider` e `useGameNarrator` per coordinare annunci `polite` e `assertive` via live region unificata.
+- `useGameNarrator`: nuovi annunci accessibili per ingresso nel gioco, cambio fase, cambio giorno, salute critica, soldi bassi, delta statistiche e eventi automatici pomeridiani.
+- Test Vitest mirati per `A11yLiveRegion`, `useGameNarrator` e `ActionButton`.
+
+### Changed
+
+- `ActionButton` usa ora `useA11y()` al posto del bridge raw e rende la scorciatoia leggibile anche agli screen reader tramite testo `sr-only`.
+- `App` monta una sola `A11yLiveRegion` dentro il tree applicativo e collega il narratore accessibile allo stato di gioco osservato.
+
+### Fixed
+
+- `useGameNarrator`: rimosso il doppio scheduling dell'annuncio iniziale di fase per evitare messaggi assertivi duplicati al primo mount.
+- `ActionButton`: l'`helpText` viene annunciato una sola volta anche quando il bottone è attivato da tastiera.
+
+---
+
 
 ## [0.6.0] - 2026-04-22
 
@@ -253,7 +273,8 @@ updates that do not introduce regressions.
 - Riconciliazione DOM durante la sequenza `SchoolMorningPanel`: aggiornamenti stato
   parent deferriti con `setTimeout(..., 0)` per evitare errori `removeChild`.
 
-[Unreleased]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/Nemex81/tabboz-simulator-202/compare/v0.5.0...v0.5.1
