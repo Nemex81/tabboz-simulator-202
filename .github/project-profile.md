@@ -1,11 +1,12 @@
 ---
 spark: true
 initialized: true
+framework_edit_mode: false
 active_plugins:
 	- scf-master-codecrafter
 	- spark-base
 framework_version: "scf-master-codecrafter@2.1.0"
-spark_base_version: "1.2.0"
+spark_base_version: "1.4.0"
 engine_version: "2.1.1"
 project_name: "Tabboz Simulator"
 description: "Riedizione moderna di Tabboz Simulator: RPG gestionale client-side"

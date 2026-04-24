@@ -1,7 +1,14 @@
 ---
-type: prompt
-name: scf-remove
 description: Rimuove un pacchetto SCF con conferma esplicita prima di modificare file.
+scf_protected: false
+scf_file_role: "prompt"
+name: scf-remove
+scf_merge_priority: 10
+scf_merge_strategy: "replace"
+scf_version: "1.2.0"
+type: prompt
+spark: true
+scf_owner: "spark-base"
 ---
 
 Obiettivo: rimuovere un pacchetto installato senza toccare file user-modified.

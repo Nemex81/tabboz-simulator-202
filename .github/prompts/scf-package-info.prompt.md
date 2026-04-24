@@ -1,7 +1,14 @@
 ---
-type: prompt
-name: scf-package-info
 description: Mostra dettagli completi di un pacchetto SCF, inclusi contenuti e file installabili.
+scf_protected: false
+scf_file_role: "prompt"
+name: scf-package-info
+scf_merge_priority: 10
+scf_merge_strategy: "replace"
+scf_version: "1.2.0"
+type: prompt
+spark: true
+scf_owner: "spark-base"
 ---
 
 Obiettivo: aiutare l'utente a decidere se installare un pacchetto.

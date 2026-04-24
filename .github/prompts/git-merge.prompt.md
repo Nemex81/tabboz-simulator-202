@@ -1,3 +1,15 @@
+---
+type: prompt
+name: git-merge
+description: Coordina un merge git tramite Agent-Git senza eseguire comandi diretti.
+spark: true
+scf_file_role: "prompt"
+scf_version: "1.2.0"
+scf_merge_strategy: "replace"
+scf_protected: false
+scf_owner: "spark-base"
+scf_merge_priority: 10
+---
 <!--
 WRAPPER AGENT — git-merge
 Questo prompt raccoglie il contesto e delega ad Agent-Git.
@@ -7,18 +19,10 @@ Riferimento policy: .github/instructions/git-policy.instructions.md
 Riferimento skill: .github/skills/git-execution.skill.md
 -->
 
----
-agent: agent
-description: >
-  Wrapper agent per operazioni di merge. Raccoglie contesto e delega
-  ad Agent-Git per l'esecuzione. Attivare con #git-merge o dal
-  file picker. Indipendente dal ciclo agenti.
----
-
 # git-merge — Wrapper Agent
 
 Sei un wrapper agent leggero. Il tuo unico compito è raccogliere
-il contesto e delegare l'operazione ad Agent-Git.
+il contesto e delegare l'operazione ad Agent-Git, agente condiviso del framework.
 
 ## Esecuzione
 
