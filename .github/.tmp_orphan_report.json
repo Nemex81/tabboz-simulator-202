@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-04-24T22:00:00Z",
+  "summary": "Analisi file orphan sotto .github; raccomandazioni non distruttive.",
+  "orphans": [
+    {
+      "path": ".scf-registry-cache.json",
+      "likely_owner": "local metadata",
+      "reason": "Cache file used by SCF; not part of package manifests.",
+      "recommended_action": "Keep under .github; safe to commit."
+    },
+    {
+      "path": "AGENTS-master.md",
+      "likely_owner": "scf-master-codecrafter or local variant",
+      "reason": "Name suggests a master AGENTS index for codecrafter plugin.",
+      "recommended_action": "Compare with upstream scf-master-codecrafter AGENTS.md; if identical, add to manifest or keep."
+    },
+    {
+      "path": "FRAMEWORK_CHANGELOG.md",
+      "likely_owner": "framework docs (local)",
+      "reason": "Changelog often maintained locally; not present in spark-base manifest.",
+      "recommended_action": "Keep; review contents and include in commit if relevant."
+    },
+    {
+      "path": "install_scf_master_codecrafter_step1.ps1",
+      "likely_owner": "scf-master-codecrafter",
+      "reason": "Installer script name references scf-master-codecrafter.",
+      "recommended_action": "Treat as package-managed from scf-master-codecrafter; verify upstream and add to manifest if appropriate."
+    },
+    {
+      "path": "install_scf_master_codecrafter_step2.ps1",
+      "likely_owner": "scf-master-codecrafter",
+      "reason": "Installer script name references scf-master-codecrafter.",
+      "recommended_action": "Treat as package-managed from scf-master-codecrafter; verify upstream and add to manifest if appropriate."
+    },
+    {
+      "path": "agents/Agent-Analyze-MSI.md",
+      "likely_owner": "local MSI variant",
+      "reason": "MSI suffix indicates variant maintained for MSI distribution.",
+      "recommended_action": "Keep as MSI variant; include in commit if desired."
+    },
+    {
+      "path": "agents/Agent-Release-MSI.md",
+      "likely_owner": "local MSI variant",
+      "reason": "MSI suffix indicates variant maintained for MSI distribution.",
+      "recommended_action": "Keep as MSI variant; include in commit if desired."
+    },
+    {
+      "path": "prompts/git-merge.prompt-MSI.md",
+      "likely_owner": "local MSI variant",
+      "reason": "MSI variant of prompt.",
+      "recommended_action": "Keep; or deduplicate with upstream if identical."
+    },
+    {
+      "path": "prompts/scf-update.prompt-MSI.md",
+      "likely_owner": "local MSI variant",
+      "reason": "MSI variant of prompt (duplicate noted).",
+      "recommended_action": "Keep or deduplicate; remove duplicate file if confirmed."
+    },
+    {
+      "path": "skills/conventional-commit.skill-MSI.md",
+      "likely_owner": "local MSI variant",
+      "reason": "MSI suffix.",
+      "recommended_action": "Keep as MSI-specific; no action required unless you want to consolidate."
+    },
+    {
+      "path": "skills/task-scope-guard.skill-MSI.md",
+      "likely_owner": "local MSI variant",
+      "reason": "MSI suffix.",
+      "recommended_action": "Keep as MSI-specific; no action required unless you want to consolidate."
+    },
+    {
+      "path": "runtime/spark-user-prefs.json",
+      "likely_owner": "local runtime",
+      "reason": "Runtime prefs file; was fixed for JSON validity earlier.",
+      "recommended_action": "Keep; include in commit."
+    }
+  ],
+  "next_steps": [
+    "1) If you want, I can fetch upstream manifests for 'scf-master-codecrafter' and 'spark-base' to confirm ownership for the 'codecrafter' scripts and AGENTS-master.md.",
+    "2) I can prepare suggested git commands to commit these .github changes (staging + commit message). Execution requires Agent-Git or manual run.",
+    "3) I can deduplicate or remove MSI-duplicate files on your confirmation."
+  ]
+}
