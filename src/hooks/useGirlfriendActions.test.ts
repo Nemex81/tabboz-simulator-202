@@ -26,7 +26,7 @@ function makeRelationship(overrides: Partial<Relationship> = {}): Relationship {
     gender: 'F',
     orientamentoSessuale: 'eterosessuale',
     difficulty: 'media',
-    preference: 'carisma',
+    preference: 'figosita',
     relationshipLevel: 1,
     isActive: true,
     ...overrides,

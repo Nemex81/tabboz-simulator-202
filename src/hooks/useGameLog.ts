@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
+import { useKV } from '@/hooks/useHydratedKV'
 import { GameLogEntry, GameDate, DayPhase, DayPhaseLabel, LogEntryType, MAX_LOG_ENTRIES } from '@/lib/types'
 
 let _logCounter = 0
@@ -19,7 +20,7 @@ function phaseToLabel(phase: DayPhase): DayPhaseLabel {
 }
 
 export function useGameLog() {
-  const [gameLog, setGameLog] = useState<GameLogEntry[]>([])
+  const [gameLog, setGameLog] = useKV<GameLogEntry[]>('tabboz-game-log', [])
 
   const addLogEntry = useCallback((
     type: LogEntryType,
@@ -39,12 +40,13 @@ export function useGameLog() {
       result,
     }
     setGameLog((prev) => {
-      const updated = [entry, ...prev]
+      const currentLog = prev ?? []
+      const updated = [entry, ...currentLog]
       return updated.slice(0, MAX_LOG_ENTRIES)
     })
   }, [])
 
   const clearLog = useCallback(() => setGameLog([]), [])
 
-  return { gameLog, addLogEntry, clearLog }
+  return { gameLog: gameLog ?? [], addLogEntry, clearLog }
 }

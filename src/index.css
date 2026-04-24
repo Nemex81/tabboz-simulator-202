@@ -19,7 +19,7 @@ html:not([data-theme]) {
   --border: oklch(0.27 0.02 255);
   --input: oklch(0.22 0.02 255);
   --ring: oklch(0.65 0.12 170);
-  --radius: 0.25rem;
+  --radius: 0.5rem;
 }
 
 html[data-theme="dark"] {
@@ -42,7 +42,7 @@ html[data-theme="dark"] {
   --border: oklch(0.25 0.02 280);
   --input: oklch(0.18 0.01 280);
   --ring: oklch(0.60 0.20 300);
-  --radius: 0.25rem;
+  --radius: 0.5rem;
 }
 
 html[data-theme="green"] {
@@ -65,7 +65,7 @@ html[data-theme="green"] {
   --border: oklch(0.30 0.04 110);
   --input: oklch(0.25 0.03 110);
   --ring: oklch(0.60 0.18 130);
-  --radius: 0.25rem;
+  --radius: 0.5rem;
 }
 
 @theme {
@@ -106,19 +106,21 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .neon-glow {
-  box-shadow: 0 0 15px rgba(100, 255, 100, 0.3);
+  box-shadow:
+    0 0 10px color-mix(in oklch, var(--primary) 40%, transparent),
+    0 0 20px color-mix(in oklch, var(--primary) 20%, transparent);
 }
 
 .neon-text-glow {
-  text-shadow: 0 0 10px rgba(100, 255, 100, 0.8);
+  text-shadow: 0 0 10px color-mix(in oklch, var(--primary) 50%, transparent);
 }
 
 @keyframes neon-pulse {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(100, 255, 100, 0.3);
+    box-shadow: 0 0 15px color-mix(in oklch, var(--primary) 30%, transparent);
   }
   50% {
-    box-shadow: 0 0 25px rgba(100, 255, 100, 0.6);
+    box-shadow: 0 0 25px color-mix(in oklch, var(--primary) 60%, transparent);
   }
 }
 
@@ -165,9 +167,34 @@ h1, h2, h3, h4, h5, h6 {
 
 @keyframes glow-intense {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(100, 255, 100, 0.3);
+    box-shadow: 0 0 15px color-mix(in oklch, var(--primary) 30%, transparent);
   }
   50% {
-    box-shadow: 0 0 40px rgba(100, 255, 100, 0.9), 0 0 60px rgba(100, 255, 100, 0.5);
+    box-shadow:
+      0 0 40px color-mix(in oklch, var(--primary) 90%, transparent),
+      0 0 60px color-mix(in oklch, var(--primary) 50%, transparent);
+  }
+}/* ---------- Accessibility (P0) ---------- */
+:focus-visible {
+  outline: 3px solid hsl(var(--ring, var(--primary)));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+a[href]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid hsl(var(--ring, var(--primary)));
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -236,7 +236,6 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
         intelligenza: clampStat(current!.intelligenza + 2),
         stanchezza: clampStat(current!.stanchezza + 10)
       })),
-      () => p.consumeAllMorningActions(),
       () => {
         if (schoolDay.type === 'sequence') {
           p.setSchoolDayState(schoolDay.state)
@@ -249,7 +248,7 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
   }, [
     p.phaseActionsRemaining, p.dayType, p.currentPhase, p.gameTime,
     p.schoolRecord, p.canAttendSchool, p.setStats, p.setSchoolRecord,
-    p.consumeAllMorningActions, p.setMorningChoicePending, p.announce,
+    p.setMorningChoicePending, p.announce,
     p.addLogEntry, p.timetable, p.teachers, p.stats, p.getTodaySchedule,
     p.setSchoolDayState, p.setSchoolMorningEvents, p.setShowSchoolMorning,
     scheduleAcrossFrames,

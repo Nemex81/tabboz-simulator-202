@@ -206,26 +206,26 @@ export const DAY_PHASE_CONFIG: Record<DayType, Record<DayPhase, DayPhaseConfig>>
   feriale: {
     mattina:    { label: 'Mattina',    timeRange: '07:00–13:00', maxActions: 2, energyCost: 5,  nightRecovery: 0 },
     pomeriggio: { label: 'Pomeriggio', timeRange: '13:00–18:00', maxActions: 2, energyCost: 8,  nightRecovery: 0 },
-    sera:       { label: 'Sera',       timeRange: '18:00–23:00', maxActions: 1, energyCost: 10, nightRecovery: 0 },
-    notte:      { label: 'Notte',      timeRange: '23:00–07:00', maxActions: 0, energyCost: 0,  nightRecovery: -20 },
+    sera:       { label: 'Sera',       timeRange: '18:00–23:00', maxActions: 2, energyCost: 10, nightRecovery: 0 },
+    notte:      { label: 'Notte',      timeRange: '23:00–07:00', maxActions: 2, energyCost: 0,  nightRecovery: -20 },
   },
   sabato: {
     mattina:    { label: 'Mattina',    timeRange: '08:00–13:00', maxActions: 2, energyCost: 5,  nightRecovery: 0 },
     pomeriggio: { label: 'Pomeriggio', timeRange: '13:00–19:00', maxActions: 3, energyCost: 8,  nightRecovery: 0 },
     sera:       { label: 'Sera',       timeRange: '19:00–24:00', maxActions: 2, energyCost: 10, nightRecovery: 0 },
-    notte:      { label: 'Notte',      timeRange: '00:00–08:00', maxActions: 0, energyCost: 0,  nightRecovery: -25 },
+    notte:      { label: 'Notte',      timeRange: '00:00–08:00', maxActions: 2, energyCost: 0,  nightRecovery: -25 },
   },
   domenica: {
     mattina:    { label: 'Mattina',    timeRange: '09:00–13:00', maxActions: 1, energyCost: 5,  nightRecovery: 0 },
     pomeriggio: { label: 'Pomeriggio', timeRange: '13:00–18:00', maxActions: 2, energyCost: 8,  nightRecovery: 0 },
-    sera:       { label: 'Sera',       timeRange: '18:00–22:00', maxActions: 1, energyCost: 10, nightRecovery: 0 },
-    notte:      { label: 'Notte',      timeRange: '22:00–09:00', maxActions: 0, energyCost: 0,  nightRecovery: -30 },
+    sera:       { label: 'Sera',       timeRange: '18:00–22:00', maxActions: 2, energyCost: 10, nightRecovery: 0 },
+    notte:      { label: 'Notte',      timeRange: '22:00–09:00', maxActions: 2, energyCost: 0,  nightRecovery: -30 },
   },
   festivo: {
     mattina:    { label: 'Mattina',    timeRange: '09:00–13:00', maxActions: 1, energyCost: 5,  nightRecovery: 0 },
     pomeriggio: { label: 'Pomeriggio', timeRange: '13:00–18:00', maxActions: 2, energyCost: 8,  nightRecovery: 0 },
-    sera:       { label: 'Sera',       timeRange: '18:00–22:00', maxActions: 1, energyCost: 10, nightRecovery: 0 },
-    notte:      { label: 'Notte',      timeRange: '22:00–09:00', maxActions: 0, energyCost: 0,  nightRecovery: -30 },
+    sera:       { label: 'Sera',       timeRange: '18:00–22:00', maxActions: 2, energyCost: 10, nightRecovery: 0 },
+    notte:      { label: 'Notte',      timeRange: '22:00–09:00', maxActions: 2, energyCost: 0,  nightRecovery: -30 },
   },
 }
 

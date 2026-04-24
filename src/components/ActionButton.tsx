@@ -1,12 +1,15 @@
-import React, { ReactNode, useRef } from 'react'
+import React, { ReactNode, useId, useRef } from 'react'
 import { Button } from '@/components/ui/button'
+import { useA11y } from '@/components/A11yLiveRegion'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
+import { announce } from '@/lib/a11y-announce'
 
 interface ActionButtonProps {
   icon: ReactNode
   label: string
+  buttonId?: string
   shortcut?: string
   onClick: () => void
   disabled?: boolean
@@ -14,12 +17,12 @@ interface ActionButtonProps {
   ariaLabel?: string
   blockedReason?: string
   helpText?: string
-  announce?: (msg: string) => void
 }
 
 export const ActionButton = React.memo(function ActionButton({ 
   icon, 
   label, 
+  buttonId,
   shortcut, 
   onClick, 
   disabled = false, 
@@ -27,20 +30,13 @@ export const ActionButton = React.memo(function ActionButton({
   ariaLabel,
   blockedReason,
   helpText,
-  announce,
 }: ActionButtonProps) {
-  const helpTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const id = useId()
+  const { announce } = useA11y()
 
-  const handleFocus = () => {
-    if (helpText && announce) {
-      helpTimer.current = setTimeout(() => {
-        announce(helpText)
-      }, 1500)
-    }
-  }
-
-  const handleBlur = () => {
-    if (helpTimer.current) clearTimeout(helpTimer.current)
+  const handleClick = () => {
+    if (helpText && announce) announce(helpText)
+    onClick()
   }
   const buttonContent = (
     <motion.div
@@ -49,11 +45,10 @@ export const ActionButton = React.memo(function ActionButton({
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       <Button
-        onClick={onClick}
+        id={buttonId}
+        onClick={handleClick}
         disabled={disabled}
         variant={variant}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
         className={cn(
           "relative flex flex-col items-center justify-center gap-2 h-auto py-4 px-6",
           "border-2 transition-all duration-100",
@@ -64,6 +59,13 @@ export const ActionButton = React.memo(function ActionButton({
           variant === 'destructive' && "bg-destructive text-destructive-foreground border-destructive"
         )}
         aria-label={ariaLabel || label}
+        aria-keyshortcuts={shortcut ? shortcut.replace(/\bCtrl\b/g, 'Control') : undefined}
+        aria-describedby={
+          [
+            disabled && blockedReason ? `${id}-blocked` : null,
+            helpText ? `${id}-help` : null,
+          ].filter(Boolean).join(' ') || undefined
+        }
       >
         <motion.div 
           className="text-3xl" 
@@ -77,9 +79,22 @@ export const ActionButton = React.memo(function ActionButton({
           {label}
         </div>
         {shortcut && (
-          <div className="absolute top-1 right-1 text-xs opacity-70 font-mono" aria-hidden="true">
-            {shortcut}
-          </div>
+          <>
+            <div className="absolute top-1 right-1 text-xs opacity-70 font-mono" aria-hidden="true">
+              {shortcut}
+            </div>
+            <span className="sr-only">Scorciatoia: {shortcut}</span>
+          </>
+        )}
+        {disabled && blockedReason && (
+          <span id={`${id}-blocked`} className="sr-only">
+            {blockedReason}
+          </span>
+        )}
+        {helpText && (
+          <span id={`${id}-help`} className="sr-only">
+            {helpText}
+          </span>
         )}
       </Button>
     </motion.div>

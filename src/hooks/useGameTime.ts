@@ -79,6 +79,7 @@ export function useGameTime({
   const [currentPhase, setCurrentPhase] = useKV<DayPhase>('tabboz-phase', 'mattina')
   const [dayType, setDayType] = useKV<DayType>('tabboz-day-type', 'feriale')
   const [phaseActionsRemaining, setPhaseActionsRemaining] = useKV<number>('tabboz-phase-actions', 2)
+  const [phaseActionsMax, setPhaseActionsMax] = useKV<number>('tabboz-phase-actions-max', 2)
   const [interazioniRimaste, setInterazioniRimaste] = useKV<number>('tabboz-interazioni', 3)
   const [maxInterazioni, setMaxInterazioni] = useKV<number>('tabboz-max-interazioni', 3)
 
@@ -149,6 +150,7 @@ export function useGameTime({
         const newDayType = getDayType(newGt.currentDate)
         setDayType(newDayType)
         setCurrentPhase('mattina')
+        setPhaseActionsMax(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
         setPhaseActionsRemaining(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
         setMaxInterazioni(newMaxInterazioni)
         setInterazioniRimaste(newMaxInterazioni)
@@ -201,6 +203,7 @@ export function useGameTime({
     } else {
       const cfg = DAY_PHASE_CONFIG[(dayType ?? 'feriale')][nextPhase]
       setCurrentPhase(nextPhase)
+      setPhaseActionsMax(cfg.maxActions)
       setPhaseActionsRemaining(cfg.maxActions)
       setMaxInterazioni(newMaxInterazioni)
       setInterazioniRimaste(newMaxInterazioni)
@@ -232,7 +235,7 @@ export function useGameTime({
     }
     // STEP 9C: check condizioni automatiche dopo ogni cambio fase
     checkAutoConditions(gameTime.currentDate, nextPhase)
-  }, [currentPhase, dayType, setStats, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsRemaining,
+  }, [currentPhase, dayType, setStats, setRawGameTime, setCurrentPhase, setDayType, setPhaseActionsMax, setPhaseActionsRemaining,
       setSchoolMorningEvents, setShowSchoolMorning, announce, schoolRecord, setSchoolRecord, setGameOver, setGameOverReason,
       setSchoolEvent, setShowSchoolEvent, gameTime, addLogEntry, checkAutoConditions])
 
@@ -245,6 +248,7 @@ export function useGameTime({
       const newDayType = getDayType(newGameTime.currentDate)
       setDayType(newDayType)
       setCurrentPhase('mattina')
+      setPhaseActionsMax(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
       setPhaseActionsRemaining(DAY_PHASE_CONFIG[newDayType]['mattina'].maxActions)
       const newMaxInterazioni = Math.min(5, 3 + Math.floor((statsRef.current.carisma ?? 0) / 40))
       setMaxInterazioni(newMaxInterazioni)
@@ -386,6 +390,7 @@ export function useGameTime({
     announce,
     setDayType,
     setCurrentPhase,
+    setPhaseActionsMax,
     setPhaseActionsRemaining,
     schoolRecord,
     setSchoolRecord,
@@ -452,7 +457,9 @@ export function useGameTime({
     dayType,
     setDayType,
     phaseActionsRemaining,
+    phaseActionsMax,
     setPhaseActionsRemaining,
+    setPhaseActionsMax,
     interazioniRimaste,
     maxInterazioni,
     canInteract,

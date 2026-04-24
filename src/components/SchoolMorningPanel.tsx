@@ -18,7 +18,6 @@ interface SchoolMorningPanelProps {
   stats: GameStats
   onStatChange: (updater: (prev: GameStats) => GameStats) => void
   onGainExtraAction: () => void
-  onConsumeAction: () => void
   announce: (msg: string) => void
   onNewFriend?: (f: Friend) => void
   addLogEntry: (
@@ -46,13 +45,13 @@ const categoryLabel: Record<MorningEventCategory, string> = {
 }
 
 const categoryColor: Record<MorningEventCategory, string> = {
-  didattica: 'bg-blue-100 text-blue-800',
-  sociale: 'bg-green-100 text-green-800',
-  istituto: 'bg-orange-100 text-orange-800',
-  strada: 'bg-gray-100 text-gray-800',
-  casa: 'bg-yellow-100 text-yellow-800',
-  citta: 'bg-purple-100 text-purple-800',
-  amici: 'bg-pink-100 text-pink-800',
+  didattica: 'bg-primary/10 text-primary border border-primary/30',
+  sociale:   'bg-secondary/10 text-secondary border border-secondary/30',
+  istituto:  'bg-accent/10 text-accent border border-accent/30',
+  strada:    'bg-muted text-muted-foreground',
+  casa:      'bg-secondary/10 text-secondary border border-secondary/30',
+  citta:     'bg-accent/10 text-accent border border-accent/30',
+  amici:     'bg-primary/10 text-primary border border-primary/30',
 }
 
 function EventCard({
@@ -113,7 +112,6 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
   stats,
   onStatChange,
   onGainExtraAction,
-  onConsumeAction,
   announce,
   onNewFriend,
   addLogEntry,
@@ -128,40 +126,40 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
     (choice: SchoolMorningChoice, slotIndex: number, eventId: string) => {
       if (resolvedIds.has(eventId)) return
 
-      const result = choice.outcome(stats)
+      {
+        const result = choice.outcome(stats)
 
-      onStatChange((prev) => {
-        const updated = { ...prev }
-        const numericUpdated = updated as unknown as Record<string, number>
-        for (const [key, value] of Object.entries(result.delta)) {
-          if (typeof value !== 'number') continue
-          const k = key as keyof GameStats
-          if (k === 'soldi') {
-            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
-          } else {
-            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+        onStatChange((prev) => {
+          const updated = { ...prev }
+          const numericUpdated = updated as unknown as Record<string, number>
+          for (const [key, value] of Object.entries(result.delta)) {
+            if (typeof value !== 'number') continue
+            const k = key as keyof GameStats
+            if (k === 'soldi') {
+              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
+            } else {
+              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+            }
           }
-        }
-        return updated
-      })
+          return updated
+        })
 
-      if (choice.grantsExtraAction) onGainExtraAction()
+        if (choice.grantsExtraAction) onGainExtraAction()
 
-      playSound.buttonClick()
-      announce(result.message)
-      if (result.newFriend && onNewFriend) onNewFriend(result.newFriend)
+        playSound.buttonClick()
+        announce(result.message)
+        if (result.newFriend && onNewFriend) onNewFriend(result.newFriend)
 
-      const deltaSum = Object.entries(result.delta)
-        .filter(([k, v]) => k !== 'soldi' && typeof v === 'number')
-        .reduce((acc, [, v]) => acc + (v as number), 0)
-      const logResult: import('@/lib/types').GameLogEntry['result'] =
-        deltaSum > 0 ? 'positive' : deltaSum < 0 ? 'negative' : 'neutral'
-      addLogEntry('school', 'Evento scolastico', result.message, logResult, currentDate, 'mattina')
+        const deltaSum = Object.entries(result.delta)
+          .filter(([k, v]) => k !== 'soldi' && typeof v === 'number')
+          .reduce((acc, [, v]) => acc + (v as number), 0)
+        const logResult: import('@/lib/types').GameLogEntry['result'] =
+          deltaSum > 0 ? 'positive' : deltaSum < 0 ? 'negative' : 'neutral'
+        addLogEntry('school', 'Evento scolastico', result.message, logResult, currentDate, 'mattina')
 
-      setResolvedIds((prev) => new Set([...prev, eventId]))
-      // Defer parent KV update to the next tick so React commits the local
-      // resolvedIds change first, preventing removeChild on DOM reconciliation.
-      setTimeout(() => onSlotComplete?.(slotIndex), 0)
+        setResolvedIds((prev) => new Set([...prev, eventId]))
+        setTimeout(() => onSlotComplete?.(slotIndex), 0)
+      }
     },
     [resolvedIds, stats, onStatChange, onGainExtraAction, announce, onNewFriend, addLogEntry, currentDate, onSlotComplete]
   )
@@ -256,26 +254,27 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
               <Button
                 className="w-full"
                 onClick={() => {
-                  // Applica statDelta dell'intervallo
-                  if (Object.keys(delta).length > 0) {
-                    onStatChange((prev) => {
-                      const updated = { ...prev }
-                      const numericUpdated = updated as unknown as Record<string, number>
-                      for (const [key, value] of Object.entries(delta)) {
-                        if (typeof value !== 'number') continue
-                        const k = key as keyof GameStats
-                        if (k === 'soldi') {
-                          numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
-                        } else {
-                          numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+                  {
+                    if (Object.keys(delta).length > 0) {
+                      onStatChange((prev) => {
+                        const updated = { ...prev }
+                        const numericUpdated = updated as unknown as Record<string, number>
+                        for (const [key, value] of Object.entries(delta)) {
+                          if (typeof value !== 'number') continue
+                          const k = key as keyof GameStats
+                          if (k === 'soldi') {
+                            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
+                          } else {
+                            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+                          }
                         }
-                      }
-                      return updated
-                    })
+                        return updated
+                      })
+                    }
+                    playSound.buttonClick()
+                    announce('Intervallo terminato. Si torna in classe.')
+                    setTimeout(() => onSlotComplete?.(currentSlotIndex), 0)
                   }
-                  playSound.buttonClick()
-                  announce('Intervallo terminato. Si torna in classe.')
-                  setTimeout(() => onSlotComplete?.(currentSlotIndex), 0)
                 }}
                 aria-label="Fine intervallo, torna in classe"
               >
@@ -350,29 +349,28 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
               <Button
                 className="w-full mt-2"
                 onClick={() => {
-                  // Applica statDelta ordinario
-                  const delta = ordinaryEvent.statDelta
-                  if (Object.keys(delta).length > 0) {
-                    onStatChange((prev) => {
-                      const updated = { ...prev }
-                      const numericUpdated = updated as unknown as Record<string, number>
-                      for (const [key, value] of Object.entries(delta)) {
-                        if (typeof value !== 'number') continue
-                        const k = key as keyof GameStats
-                        if (k === 'soldi') {
-                          numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
-                        } else {
-                          numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+                  {
+                    const delta = ordinaryEvent.statDelta
+                    if (Object.keys(delta).length > 0) {
+                      onStatChange((prev) => {
+                        const updated = { ...prev }
+                        const numericUpdated = updated as unknown as Record<string, number>
+                        for (const [key, value] of Object.entries(delta)) {
+                          if (typeof value !== 'number') continue
+                          const k = key as keyof GameStats
+                          if (k === 'soldi') {
+                            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
+                          } else {
+                            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+                          }
                         }
-                      }
-                      return updated
-                    })
+                        return updated
+                      })
+                    }
+                    playSound.buttonClick()
+                    announce(`Ora ${currentLessonNumber} terminata.`)
+                    setTimeout(() => onSlotComplete?.(currentSlotIndex), 0)
                   }
-                  playSound.buttonClick()
-                  announce(`Ora ${currentLessonNumber} terminata.`)
-                  // Defer to next tick to ensure current DOM commit completes
-                  // before the parent KV state update triggers a re-render.
-                  setTimeout(() => onSlotComplete?.(currentSlotIndex), 0)
                 }}
                 aria-label={`Termina ora ${currentLessonNumber} e vai alla successiva`}
               >
@@ -390,51 +388,50 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
     (event: SchoolMorningEvent, choice: SchoolMorningChoice) => {
       if (resolvedIds.has(event.id)) return
 
-      const result = choice.outcome(stats)
+      {
+        const result = choice.outcome(stats)
 
-      // Applica delta alle statistiche
-      onStatChange((prev) => {
-        const updated = { ...prev }
-        const numericUpdated = updated as unknown as Record<string, number>
-        for (const [key, value] of Object.entries(result.delta)) {
-          if (typeof value !== 'number') continue
-          const k = key as keyof GameStats
-          if (k === 'soldi') {
-            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
-          } else {
-            numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+        onStatChange((prev) => {
+          const updated = { ...prev }
+          const numericUpdated = updated as unknown as Record<string, number>
+          for (const [key, value] of Object.entries(result.delta)) {
+            if (typeof value !== 'number') continue
+            const k = key as keyof GameStats
+            if (k === 'soldi') {
+              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
+            } else {
+              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+            }
           }
+          return updated
+        })
+
+        if (choice.grantsExtraAction) {
+          onGainExtraAction()
         }
-        return updated
-      })
 
-      if (choice.grantsExtraAction) {
-        onGainExtraAction()
-      } else {
-        onConsumeAction()
+        playSound.buttonClick()
+        announce(result.message)
+        if (result.newFriend && onNewFriend) {
+          onNewFriend(result.newFriend)
+        }
+        const deltaSum = Object.entries(result.delta)
+          .filter(([k, v]) => k !== 'soldi' && typeof v === 'number')
+          .reduce((acc, [, v]) => acc + (v as number), 0)
+        const logResult: import('@/lib/types').GameLogEntry['result'] =
+          deltaSum > 0 ? 'positive' : deltaSum < 0 ? 'negative' : 'neutral'
+        addLogEntry(
+          event.category === 'didattica' ? 'school' : 'social',
+          event.title,
+          result.message,
+          logResult,
+          currentDate,
+          'mattina'
+        )
+        setResolvedIds((prev) => new Set([...prev, event.id]))
       }
-
-      playSound.buttonClick()
-      announce(result.message)
-      if (result.newFriend && onNewFriend) {
-        onNewFriend(result.newFriend)
-      }
-      const deltaSum = Object.entries(result.delta)
-        .filter(([k, v]) => k !== 'soldi' && typeof v === 'number')
-        .reduce((acc, [, v]) => acc + (v as number), 0)
-      const logResult: import('@/lib/types').GameLogEntry['result'] =
-        deltaSum > 0 ? 'positive' : deltaSum < 0 ? 'negative' : 'neutral'
-      addLogEntry(
-        event.category === 'didattica' ? 'school' : 'social',
-        event.title,
-        result.message,
-        logResult,
-        currentDate,
-        'mattina'
-      )
-      setResolvedIds((prev) => new Set([...prev, event.id]))
     },
-    [resolvedIds, stats, onStatChange, onGainExtraAction, onConsumeAction, announce, onNewFriend, addLogEntry, currentDate]
+    [resolvedIds, stats, onStatChange, onGainExtraAction, announce, onNewFriend, addLogEntry, currentDate]
   )
 
   return (

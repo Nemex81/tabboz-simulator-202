@@ -1,9 +1,10 @@
-import React, { lazy, Suspense } from 'react'
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { GraduationCap, Brain, UserCircle, Trophy, HandCoins, HandFist, Chats } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ActionButton } from '@/components/ActionButton'
+import { AdvancePhaseButton } from '@/components/AdvancePhaseButton'
 import { EnhancedFriendsPanel } from '@/components/EnhancedFriendsPanel'
 import { SchoolBreakPanel } from '@/components/SchoolBreakPanel'
 import type {
@@ -115,6 +116,8 @@ export interface SchoolTabProps {
     date: GameDate,
     phase: DayPhase
   ) => void
+  onAdvance: () => void
+  nextPhaseLabel: string
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
@@ -170,7 +173,24 @@ export function SchoolTab({
   consumeAction,
   announce,
   addLogEntry,
+  onAdvance,
+  nextPhaseLabel,
 }: SchoolTabProps) {
+  const [activeSubTab, setActiveSubTab] = useState<string>('home')
+  const prevPhaseRef = useRef<string | null | undefined>(null)
+  const previousSubTabRef = useRef(activeSubTab)
+  const pendingFocusTargetRef = useRef<string | null>(null)
+
+  const markConfirmedTabChange = (targetTab: string) => {
+    pendingFocusTargetRef.current = targetTab
+  }
+
+  const handleTriggerKeyDown = (targetTab: string, event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      markConfirmedTabChange(targetTab)
+    }
+  }
+
   const hasActiveSchoolSequence =
     dayType === 'feriale' &&
     currentPhase === 'mattina' &&
@@ -180,33 +200,81 @@ export function SchoolTab({
     schoolDayState.slots.length > 0 &&
     !schoolDayState.isComplete
 
+  const isCurrentSlotBreak =
+    schoolDayState !== undefined &&
+    schoolDayState.slots.length > 0 &&
+    schoolDayState.slots[schoolDayState.currentSlotIndex]?.type === 'break'
+
+  const conditionalPanel = hasActiveSchoolSequence && isCurrentSlotBreak
+    ? 'break'
+    : hasActiveSchoolSequence && !isCurrentSlotBreak
+      ? 'morning-school'
+      : morningDisplay === 'street' &&
+          dayType === 'feriale' &&
+          currentPhase === 'mattina' &&
+          marinatoOggi
+        ? 'morning-street'
+        : afternoonEvent !== null &&
+            (currentPhase === 'pomeriggio' || currentPhase === 'sera')
+          ? 'afternoon'
+          : null
+
+  useEffect(() => {
+    if (prevPhaseRef.current === 'mattina' && currentPhase !== 'mattina') {
+      setActiveSubTab('home')
+    }
+    prevPhaseRef.current = currentPhase
+  }, [currentPhase])
+
+  useEffect(() => {
+    if (previousSubTabRef.current === activeSubTab) return
+    previousSubTabRef.current = activeSubTab
+
+    if (pendingFocusTargetRef.current !== activeSubTab) return
+    pendingFocusTargetRef.current = null
+
+    requestAnimationFrame(() => {
+      const activePanel = document.querySelector(`[data-school-tab-panel="${activeSubTab}"]`) as HTMLElement | null
+      activePanel?.focus()
+    })
+  }, [activeSubTab])
+
+  const footerDisabled = hasActiveSchoolSequence
+  const footerBlockedMessage = morningChoicePending
+    ? 'Scegli prima se andare a lezione o marinare per continuare.'
+    : 'Completa tutte le ore di lezione per continuare.'
+
   return (
-    <Tabs defaultValue="home" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
-        <TabsTrigger value="home" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-          <GraduationCap size={18} className="mr-2" weight="fill" />
-          Home
-        </TabsTrigger>
-        <TabsTrigger value="voti" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-          <GraduationCap size={18} className="mr-2" weight="fill" />
-          Voti
-        </TabsTrigger>
-        <TabsTrigger value="verifiche" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <Brain size={18} className="mr-2" weight="fill" />
-          Verifiche
-        </TabsTrigger>
-        <TabsTrigger value="amici" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <UserCircle size={18} className="mr-2" weight="fill" />
-          Amici
-        </TabsTrigger>
-        <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <Trophy size={18} className="mr-2" weight="fill" />
-          Dashboard
-        </TabsTrigger>
-      </TabsList>
+    <>
+    <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
+      <nav aria-label="Sezioni scuola">
+        <TabsList aria-label="Sezioni scuola" className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
+          <TabsTrigger value="home" onMouseDown={() => markConfirmedTabChange('home')} onKeyDown={(event) => handleTriggerKeyDown('home', event)} className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <GraduationCap size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Home</span>
+          </TabsTrigger>
+          <TabsTrigger value="voti" onMouseDown={() => markConfirmedTabChange('voti')} onKeyDown={(event) => handleTriggerKeyDown('voti', event)} className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <GraduationCap size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Voti</span>
+          </TabsTrigger>
+          <TabsTrigger value="verifiche" onMouseDown={() => markConfirmedTabChange('verifiche')} onKeyDown={(event) => handleTriggerKeyDown('verifiche', event)} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Brain size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Verifiche</span>
+          </TabsTrigger>
+          <TabsTrigger value="amici" onMouseDown={() => markConfirmedTabChange('amici')} onKeyDown={(event) => handleTriggerKeyDown('amici', event)} className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+            <UserCircle size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Amici</span>
+          </TabsTrigger>
+          <TabsTrigger value="dashboard" onMouseDown={() => markConfirmedTabChange('dashboard')} onKeyDown={(event) => handleTriggerKeyDown('dashboard', event)} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Trophy size={18} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Dashboard</span>
+          </TabsTrigger>
+        </TabsList>
+      </nav>
+      <h2 className="sr-only">Pannello scuola</h2>
 
       {/* ── Sotto-tab: Home ─────────────────────────────────────────────── */}
-      <TabsContent value="home" className="space-y-4 mt-6">
+      <TabsContent value="home" className="space-y-4 mt-6" tabIndex={-1} data-school-tab-panel="home">
         {/* Pannello Professori */}
         {schoolSubPanel === 'teachers' && (
           <div className="space-y-3">
@@ -280,6 +348,7 @@ export function SchoolTab({
                     VAI A SCUOLA
                   </h3>
                   <ActionButton
+                    buttonId="school-go-to-school-action"
                     icon={<GraduationCap size={48} />}
                     label="Vai a Scuola"
                     onClick={handleVaiAScuola}
@@ -304,7 +373,6 @@ export function SchoolTab({
                     variant="default"
                     ariaLabel="Vai a scuola durante la mattina dei giorni feriali. +2 Intelligenza, +10 Stanchezza."
                     helpText="Frequenta le lezioni a scuola. Disponibile solo la mattina dei giorni feriali durante il periodo scolastico. +2 Intelligenza, +10 Stanchezza."
-                    announce={announce}
                   />
                   <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
                     <p className="font-semibold mb-1">Effetti:</p>
@@ -343,7 +411,6 @@ export function SchoolTab({
                       variant="destructive"
                       ariaLabel="Marina la scuola. +1 Assenza conta per le soglie bocciatura, +5 Coattaggine, 1 azione extra."
                       helpText="Non vai a scuola. Guadagni 1 azione extra ma accumuli 1 Assenza che conta verso le soglie 15/25/35. Oltre 35 assenze sei bocciato automaticamente!"
-                      announce={announce}
                     />
                     <div className="mt-3 text-xs text-muted-foreground p-3 bg-muted/30 rounded">
                       <p className="font-semibold mb-1">Effetti:</p>
@@ -358,11 +425,9 @@ export function SchoolTab({
             )}
 
             {/* SchoolBreakPanel — slot intervallo attivo */}
-            {hasActiveSchoolSequence &&
-             schoolDayState !== undefined &&
-             schoolDayState.slots[schoolDayState.currentSlotIndex]?.type === 'break' && (
+            {conditionalPanel === 'break' && (
               <SchoolBreakPanel
-                schoolDayState={schoolDayState}
+                schoolDayState={schoolDayState as SchoolDayState}
                 teachers={teachers ?? []}
                 classRoster={classRoster ?? []}
                 stats={stats}
@@ -377,8 +442,7 @@ export function SchoolTab({
             )}
 
             {/* SchoolMorningPanel — slot lezione attivo */}
-            {hasActiveSchoolSequence &&
-             schoolDayState?.slots[schoolDayState?.currentSlotIndex]?.type !== 'break' && (
+            {conditionalPanel === 'morning-school' && (
               <SchoolMorningPanel
                 key={`smp-${schoolDayState?.isComplete ? 'done' : 'live'}`}
                 context="school"
@@ -386,7 +450,6 @@ export function SchoolTab({
                 stats={stats}
                 onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
                 onGainExtraAction={gainExtraAction}
-                onConsumeAction={consumeAction}
                 announce={announce}
                 onNewFriend={onNewFriend}
                 addLogEntry={addLogEntry}
@@ -397,14 +460,13 @@ export function SchoolTab({
             )}
 
             {/* SchoolMorningPanel — contesto strada (marinatori) */}
-            {morningDisplay === 'street' && dayType === 'feriale' && currentPhase === 'mattina' && marinatoOggi && (
+            {conditionalPanel === 'morning-street' && (
               <SchoolMorningPanel
                 context="street"
                 events={streetMorningEvents}
                 stats={stats}
                 onStatChange={onStatChange as (updater: (prev: GameStats) => GameStats) => void}
                 onGainExtraAction={gainExtraAction}
-                onConsumeAction={consumeAction}
                 announce={announce}
                 onNewFriend={onNewFriend}
                 addLogEntry={addLogEntry}
@@ -413,9 +475,9 @@ export function SchoolTab({
             )}
 
             {/* AfternoonEventPanel */}
-            {afternoonEvent && (currentPhase === 'pomeriggio' || currentPhase === 'sera') && (
+            {conditionalPanel === 'afternoon' && (
               <AfternoonEventPanel
-                event={afternoonEvent}
+                event={afternoonEvent as AfternoonEvent}
                 onChoice={handleAfternoonChoice}
               />
             )}
@@ -424,7 +486,7 @@ export function SchoolTab({
       </TabsContent>
 
       {/* ── Sotto-tab: Voti ──────────────────────────────────────────────── */}
-      <TabsContent value="voti" className="space-y-6 mt-6">
+      <TabsContent value="voti" className="space-y-6 mt-6" tabIndex={-1} data-school-tab-panel="voti">
         <Card className="p-6 border-2 border-secondary bg-card">
           <h3 className="text-2xl font-bold mb-4 text-secondary flex items-center gap-2">
             <GraduationCap size={32} weight="fill" />
@@ -554,7 +616,6 @@ export function SchoolTab({
               variant="default"
               ariaLabel="Corrompi un professore con una mazzetta da 100 euro. Aumenta i voti. Tasto rapido: Ctrl+6"
               helpText="Corrompi un professore con 100 euro. Scegli quale professore corrompere. Aumenta i voti di 0.5 punti nella materia scelta."
-              announce={announce}
             />
             <ActionButton
               icon={<HandFist size={48} />}
@@ -566,7 +627,6 @@ export function SchoolTab({
               variant="destructive"
               ariaLabel="Minaccia un professore. Rischio 30% di espulsione! Aumenta molto i voti e la coattaggine. Tasto rapido: Ctrl+7"
               helpText="Minaccia un professore. Scegli quale professore minacciare. Rischio del 30% di essere espulso dal gioco! Se riesce, +1.5 al voto e +15 coattaggine. Usare con cautela."
-              announce={announce}
             />
           </div>
           <div className="mt-4 pt-4 border-t border-border text-xs text-destructive">
@@ -576,7 +636,7 @@ export function SchoolTab({
       </TabsContent>
 
       {/* ── Sotto-tab: Verifiche ─────────────────────────────────────────── */}
-      <TabsContent value="verifiche" className="space-y-6 mt-6">
+      <TabsContent value="verifiche" className="space-y-6 mt-6" tabIndex={-1} data-school-tab-panel="verifiche">
         <ExamsPanel
           exams={scheduledExams}
           onPrepareExam={handlePrepareExam}
@@ -604,7 +664,7 @@ export function SchoolTab({
       </TabsContent>
 
       {/* ── Sotto-tab: Amici ─────────────────────────────────────────────── */}
-      <TabsContent value="amici" className="space-y-6 mt-6">
+      <TabsContent value="amici" className="space-y-6 mt-6" tabIndex={-1} data-school-tab-panel="amici">
         <EnhancedFriendsPanel
           friends={friends.filter(f =>
             f.originType === 'compagno_classe' || f.originType === 'compagno_istituto'
@@ -638,7 +698,7 @@ export function SchoolTab({
       </TabsContent>
 
       {/* ── Sotto-tab: Dashboard ─────────────────────────────────────────── */}
-      <TabsContent value="dashboard" className="space-y-6 mt-6">
+      <TabsContent value="dashboard" className="space-y-6 mt-6" tabIndex={-1} data-school-tab-panel="dashboard">
         <ChunkErrorBoundary>
           <Suspense fallback={<div className="flex items-center justify-center p-8 text-sm text-muted-foreground">Caricamento statistiche...</div>}>
             <StatsDashboard stats={stats} grades={grades} />
@@ -646,5 +706,14 @@ export function SchoolTab({
         </ChunkErrorBoundary>
       </TabsContent>
     </Tabs>
+    <div className="mt-6 pt-4 border-t border-border flex justify-end">
+      <AdvancePhaseButton
+        disabled={morningChoicePending || footerDisabled}
+        label={nextPhaseLabel}
+        onAdvance={onAdvance}
+        blockedMessage={footerBlockedMessage}
+      />
+    </div>
+    </>
   )
 }

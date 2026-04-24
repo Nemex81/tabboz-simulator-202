@@ -3,7 +3,7 @@
 // 3 tab: Compagni | Professori | Altro.
 // Una sola azione eseguibile per intervallo.
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -78,12 +78,6 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
   const [selectedTarget, setSelectedTarget] = useState<string | undefined>(undefined)
   const [actionResult, setActionResult] = useState<BreakResult | null>(null)
   const [actionDone, setActionDone] = useState(false)
-  const firstTabRef = useRef<HTMLButtonElement>(null)
-
-  // Focus sul primo tab al mount (accessibilità)
-  useEffect(() => {
-    firstTabRef.current?.focus()
-  }, [])
 
   // ── Derivazioni da schoolDayState (C11) ───────────────────────────────────
   const todayTeachers: Teacher[] = schoolDayState.slots
@@ -119,110 +113,122 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
     (actionKey: BreakActionType) => {
       if (actionDone) return
 
-      const applyStatDelta = (statDelta: Partial<GameStats>) => {
-        if (Object.keys(statDelta).length === 0) return
-        onStatChange((prev) => {
-          const updated = { ...prev }
-          const numericUpdated = updated as unknown as Record<string, number>
-          for (const [key, value] of Object.entries(statDelta)) {
-            if (typeof value !== 'number') continue
-            const k = key as keyof GameStats
-            if (k === 'soldi') {
-              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
-            } else {
-              numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+      if (
+        (actionKey === 'chiacchiera_compagno' ||
+          actionKey === 'studia_insieme' ||
+          actionKey === 'risolvi_conflitto' ||
+          actionKey === 'conversazione_prof' ||
+          actionKey === 'chiedi_spiegazione' ||
+          actionKey === 'chiedi_revoca_voto' ||
+          actionKey === 'corruzione_prof' ||
+          actionKey === 'minaccia_prof') &&
+        !selectedTarget
+      ) {
+        return
+      }
+
+      {
+        const applyStatDelta = (statDelta: Partial<GameStats>) => {
+          if (Object.keys(statDelta).length === 0) return
+          onStatChange((prev) => {
+            const updated = { ...prev }
+            const numericUpdated = updated as unknown as Record<string, number>
+            for (const [key, value] of Object.entries(statDelta)) {
+              if (typeof value !== 'number') continue
+              const k = key as keyof GameStats
+              if (k === 'soldi') {
+                numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value, 0, 1000)
+              } else {
+                numericUpdated[k] = clampStat((numericUpdated[k] ?? 0) + value)
+              }
             }
-          }
-          return updated
-        })
-      }
+            return updated
+          })
+        }
 
-      let result: BreakResult | null = null
+        let result: BreakResult | null = null
 
-      switch (actionKey) {
-        case 'chiacchiera_compagno': {
-          if (!selectedTarget) return
-          const interaction = onClassmateInteraction(selectedTarget, 'chiacchiera')
-          if (!interaction.success) return
-          result = {
-            message: interaction.message,
-            statDelta: { ...(interaction.statDelta ?? {}), stanchezza: -2 },
+        switch (actionKey) {
+          case 'chiacchiera_compagno': {
+            const interaction = onClassmateInteraction(selectedTarget as string, 'chiacchiera')
+            if (!interaction.success) return
+            result = {
+              message: interaction.message,
+              statDelta: { ...(interaction.statDelta ?? {}), stanchezza: -2 },
+            }
+            break
           }
-          break
-        }
-        case 'studia_insieme': {
-          if (!selectedTarget) return
-          const interaction = onClassmateInteraction(selectedTarget, 'studia_insieme')
-          if (!interaction.success) return
-          result = {
-            message: interaction.message,
-            statDelta: interaction.statDelta ?? {},
+          case 'studia_insieme': {
+            const interaction = onClassmateInteraction(selectedTarget as string, 'studia_insieme')
+            if (!interaction.success) return
+            result = {
+              message: interaction.message,
+              statDelta: interaction.statDelta ?? {},
+            }
+            break
           }
-          break
-        }
-        case 'risolvi_conflitto': {
-          if (!selectedTarget) return
-          const interaction = onClassmateInteraction(selectedTarget, 'risolvi_conflitto')
-          if (!interaction.success) return
-          result = {
-            message: interaction.message,
-            statDelta: interaction.statDelta ?? {},
+          case 'risolvi_conflitto': {
+            const interaction = onClassmateInteraction(selectedTarget as string, 'risolvi_conflitto')
+            if (!interaction.success) return
+            result = {
+              message: interaction.message,
+              statDelta: interaction.statDelta ?? {},
+            }
+            break
           }
-          break
-        }
-        case 'conversazione_prof':
-        case 'chiedi_spiegazione':
-        case 'chiedi_revoca_voto':
-        case 'corruzione_prof':
-        case 'minaccia_prof': {
-          if (!selectedTarget) return
-          const teacherActionMap: Record<
-            'conversazione_prof' | 'chiedi_spiegazione' | 'chiedi_revoca_voto' | 'corruzione_prof' | 'minaccia_prof',
-            TeacherInteractionKey
-          > = {
-            conversazione_prof: 'conversazione',
-            chiedi_spiegazione: 'richiesta_spiegazione',
-            chiedi_revoca_voto: 'richiesta_revoca_voto',
-            corruzione_prof: 'corruzione',
-            minaccia_prof: 'minaccia',
+          case 'conversazione_prof':
+          case 'chiedi_spiegazione':
+          case 'chiedi_revoca_voto':
+          case 'corruzione_prof':
+          case 'minaccia_prof': {
+            const teacherActionMap: Record<
+              'conversazione_prof' | 'chiedi_spiegazione' | 'chiedi_revoca_voto' | 'corruzione_prof' | 'minaccia_prof',
+              TeacherInteractionKey
+            > = {
+              conversazione_prof: 'conversazione',
+              chiedi_spiegazione: 'richiesta_spiegazione',
+              chiedi_revoca_voto: 'richiesta_revoca_voto',
+              corruzione_prof: 'corruzione',
+              minaccia_prof: 'minaccia',
+            }
+            const interaction = onTeacherInteraction(selectedTarget as string, teacherActionMap[actionKey])
+            if (!interaction.success && actionKey !== 'minaccia_prof' && actionKey !== 'chiedi_revoca_voto' && actionKey !== 'corruzione_prof') {
+              return
+            }
+            result = {
+              message: interaction.message,
+              statDelta: interaction.statDelta ?? {},
+            }
+            break
           }
-          const interaction = onTeacherInteraction(selectedTarget, teacherActionMap[actionKey])
-          if (!interaction.success && actionKey !== 'minaccia_prof' && actionKey !== 'chiedi_revoca_voto' && actionKey !== 'corruzione_prof') {
+          case 'bar_scolastico': {
+            result = {
+              message: 'Ti sei concesso qualcosa al bar. Stanchezza -5, umore +3.',
+              statDelta: { soldi: -2, stanchezza: -5, morale: 3 },
+            }
+            break
+          }
+          case 'riposa': {
+            result = {
+              message: 'Hai riposato durante l\'intervallo. Stanchezza -8.',
+              statDelta: { stanchezza: -8 },
+            }
+            break
+          }
+          default:
             return
-          }
-          result = {
-            message: interaction.message,
-            statDelta: interaction.statDelta ?? {},
-          }
-          break
         }
-        case 'bar_scolastico': {
-          result = {
-            message: 'Ti sei concesso qualcosa al bar. Stanchezza -5, umore +3.',
-            statDelta: { soldi: -2, stanchezza: -5, morale: 3 },
-          }
-          break
-        }
-        case 'riposa': {
-          result = {
-            message: 'Hai riposato durante l\'intervallo. Stanchezza -8.',
-            statDelta: { stanchezza: -8 },
-          }
-          break
-        }
-        default:
-          return
-      }
 
-      if (!result) return
-      applyStatDelta(result.statDelta)
+        if (!result) return
+        applyStatDelta(result.statDelta)
 
-      playSound.buttonClick()
-      if (actionKey === 'bar_scolastico' || actionKey === 'riposa') {
-        announce(result.message)
+        playSound.buttonClick()
+        if (actionKey === 'bar_scolastico' || actionKey === 'riposa') {
+          announce(result.message)
+        }
+        setActionResult(result)
+        setActionDone(true)
       }
-      setActionResult(result)
-      setActionDone(true)
     },
     [actionDone, announce, onClassmateInteraction, onStatChange, onTeacherInteraction, selectedTarget]
   )
@@ -235,9 +241,9 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
       role="region"
       aria-label="Pannello intervallo scolastico"
     >
-      <div className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-center">
-        <p className="font-bold text-amber-800">☕ Intervallo</p>
-        <p className="text-sm text-amber-700">Hai 15 minuti. Scegli una sola azione.</p>
+      <div className="rounded-lg bg-secondary/10 border border-secondary/20 p-3 text-center">
+        <p className="font-bold text-secondary">☕ Intervallo</p>
+        <p className="text-sm text-secondary">Hai 15 minuti. Scegli una sola azione.</p>
       </div>
 
       {actionResult ? (
@@ -248,16 +254,16 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
           aria-live="polite"
           aria-label="Risultato azione"
         >
-          <Card className="border-2 border-green-300 bg-green-50">
+          <Card className="border-2 border-primary/20 bg-primary/10">
             <CardContent className="pt-4">
-              <p className="text-sm font-medium text-green-800">{actionResult.message}</p>
+              <p className="text-sm font-medium text-primary">{actionResult.message}</p>
               {Object.keys(actionResult.statDelta).length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {Object.entries(actionResult.statDelta).map(([k, v]) =>
                     typeof v === 'number' && v !== 0 ? (
                       <Badge
                         key={k}
-                        className={v > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                        className={v > 0 ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}
                       >
                         {k}: {v > 0 ? '+' : ''}{v}
                       </Badge>
@@ -300,7 +306,6 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
           >
             <TabsTrigger
               value="compagni"
-              ref={firstTabRef}
               aria-label="Tab Compagni"
             >
               👥 Compagni
@@ -323,7 +328,11 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
               ) : (
                 <fieldset>
                   <legend className="sr-only">Seleziona un compagno</legend>
-                  <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
+                  <div
+                    role="radiogroup"
+                    aria-label="Selezione compagno"
+                    className="space-y-1 max-h-40 overflow-y-auto pr-1"
+                  >
                     {classRoster.map(c => (
                       <button
                         key={c.id}
@@ -332,7 +341,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
                         aria-checked={selectedTarget === c.id}
                         className={`w-full text-left px-3 py-2 rounded-md border text-sm flex items-center justify-between transition-colors ${
                           selectedTarget === c.id
-                            ? 'border-amber-400 bg-amber-50 font-semibold'
+                            ? 'border-secondary/50 bg-secondary/10 font-semibold'
                             : 'border-muted bg-background hover:bg-muted/50'
                         }`}
                         onClick={() => setSelectedTarget(
@@ -368,7 +377,11 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
               ) : (
                 <fieldset>
                   <legend className="sr-only">Seleziona un professore</legend>
-                  <div className="space-y-1">
+                  <div
+                    role="radiogroup"
+                    aria-label="Selezione professore"
+                    className="space-y-1"
+                  >
                     {todayTeachers.map(t => (
                       <button
                         key={t.id}
@@ -377,7 +390,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
                         aria-checked={selectedTarget === t.id}
                         className={`w-full text-left px-3 py-2 rounded-md border text-sm flex items-center justify-between transition-colors ${
                           selectedTarget === t.id
-                            ? 'border-amber-400 bg-amber-50 font-semibold'
+                            ? 'border-secondary/50 bg-secondary/10 font-semibold'
                             : 'border-muted bg-background hover:bg-muted/50'
                         }`}
                         onClick={() => setSelectedTarget(
@@ -389,7 +402,7 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
                           {t.name}
                           {t.isOstile && (
                             <span
-                              className="ml-1 text-xs text-red-600 font-normal"
+                              className="ml-1 text-xs text-destructive font-normal"
                               aria-hidden
                             >
                               (ostile)
