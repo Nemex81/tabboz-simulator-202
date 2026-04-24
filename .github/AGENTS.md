@@ -10,14 +10,10 @@ scf_merge_priority: 10
 
 # AGENTS Index
 
-## Master Agents (scf-master-codecrafter)
+## Base Agents (spark-base)
 
-<<<<<<< HEAD
 - spark-assistant — executor — workspace entrypoint, onboarding, package lifecycle, diagnostics
 - spark-guide — executor — user entrypoint, framework orientation, routing to spark-assistant
-=======
-- Agent-Code — executor — code, implementation, fallback
->>>>>>> 402c79acd997c4a955f32ea72a8678fcb9c17e66
 - Agent-Orchestrator — executor — orchestration, workflow, runtime-state
 - Agent-Git — executor — git, commit, push, merge, tag proposal
 - Agent-Helper — executor — framework-help, discovery, routing hints
@@ -25,12 +21,10 @@ scf_merge_priority: 10
 - Agent-FrameworkDocs — executor — framework-docs, changelog, AGENTS index
 - Agent-Welcome — executor — setup, project-profile, onboarding
 - Agent-Research — support/internal — fallback research, unknown-stack briefing
-- Agent-CodeRouter — dispatcher — code, code-ui, routing
 - Agent-Analyze — dispatcher — analyze
-- Agent-Design — dispatcher — design
 - Agent-Plan — dispatcher — plan
 - Agent-Docs — dispatcher — docs
-- Agent-CodeUI — dispatcher — code-ui, ui
+- Agent-Validate — dispatcher — validate
 
 ## Plugin Agents
 
@@ -65,6 +59,6 @@ L'utente non li chiama direttamente.
 
 - **Ruolo**: fallback per linguaggi senza plugin SCF specializzato
 - **Visibilità**: internal
-- **Invocato da**: Agent-Analyze, Agent-Design, Agent-Plan, Agent-CodeUI, Agent-Docs
+- **Invocato da**: Agent-Analyze, Agent-Plan, Agent-Docs, Agent-Orchestrator, Agent-Validate
 - **Produce**: context brief in `.github/runtime/research-cache/{language}-{task-type}.md`
 - **Limite**: non sostituisce un plugin testato — fallback trasparente dichiarato

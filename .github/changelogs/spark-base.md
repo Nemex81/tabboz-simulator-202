@@ -10,7 +10,6 @@ scf_merge_priority: 10
 
 # Changelog — spark-base
 
-<<<<<<< HEAD
 <!-- markdownlint-disable MD024 -->
 
 ## [Unreleased]
@@ -53,8 +52,6 @@ scf_merge_priority: 10
 - Retrocompatibilita: workspace su `spark-base@1.2.0` con file fisici pieni continuano a funzionare. La migrazione a stub avviene solo all'esecuzione esplicita di `scf_update_package("spark-base")`.
 - I 5 asset contestuali restano file fisici completi: `agent-selector.skill.md`, `project-doc-bootstrap/`, `project-profile.skill.md`, `project-reset.skill.md` (skill) + nessuna instruction contestuale in questo pacchetto dopo la delega (era solo `spark-assistant-guide` che e` stato classificato come delegabile).
 
-=======
->>>>>>> 402c79acd997c4a955f32ea72a8678fcb9c17e66
 ## [1.2.0] - 2026-04-16
 
 ### Added

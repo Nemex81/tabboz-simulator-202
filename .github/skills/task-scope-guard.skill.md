@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 ---
-=======
-﻿---
->>>>>>> 402c79acd997c4a955f32ea72a8678fcb9c17e66
 name: task-scope-guard
 hosted_by: engine
 mcp_resource: "engine-skills://task-scope-guard"

@@ -8,16 +8,12 @@ scf_owner: "spark-base"
 scf_merge_priority: 10
 ---
 
-<<<<<<< HEAD
 # Copilot Instructions — SPARK Base Package
-=======
-# Copilot Instructions — SCF Master CodeCrafter
->>>>>>> 402c79acd997c4a955f32ea72a8678fcb9c17e66
 
 ## Contesto
 
-Questo pacchetto fornisce il layer master del framework SCF.
-Definisce agenti trasversali, dispatcher, skill comuni e regole operative
+Questo pacchetto fornisce il layer fondazionale del framework SCF.
+Definisce agenti base, skill comuni, instruction condivise e regole operative
 riutilizzabili da tutti i plugin linguaggio-specifici.
 
 ## Regole base
@@ -27,15 +23,11 @@ riutilizzabili da tutti i plugin linguaggio-specifici.
 - Se una capability richiesta non e coperta da plugin attivi, delega ad Agent-Research.
 - Non modificare `.github/runtime/` tramite sistemi di manifest o ownership package.
 - Per operazioni git, usa Agent-Git o proponi i comandi senza eseguirli direttamente.
-- Per task su codice Python, test Python o contesto MCP, applica anche `.github/instructions/python.instructions.md`, `.github/instructions/tests.instructions.md` e `.github/instructions/mcp-context.instructions.md` quando pertinenti.
+- Le capability language-specific devono essere fornite dai plugin installati sopra `spark-base`.
 
 ## Runtime MCP richiesto
 
-<<<<<<< HEAD
 Questo layer richiede `spark-framework-engine >= 2.4.0`; i tool e le resource runtime seguenti sono stati introdotti a partire da `1.5.0`:
-=======
-Questo layer richiede `spark-framework-engine >= 2.1.0`; i tool e le resource runtime seguenti sono stati introdotti a partire da `1.5.0`:
->>>>>>> 402c79acd997c4a955f32ea72a8678fcb9c17e66
 - `scf_get_runtime_state()`
 - `scf_update_runtime_state(patch)`
 - `scf://runtime-state`
@@ -51,8 +43,8 @@ Quando il task tocca tool MCP o codice engine, mantieni separati `stdout` e `std
 
 ## Routing degli agenti
 
-- Agenti executor master: orchestrazione, git, release, framework docs, onboarding, ricerca.
-- Agenti dispatcher master: analyze, design, plan, docs, code-ui, code-router.
+- Agenti executor base: orchestrazione, git, release, framework docs, onboarding, ricerca.
+- Agenti dispatcher base: analyze, plan, docs, validate.
 - Agenti plugin: dichiarano `plugin`, `capabilities`, `languages` e vengono scoperti via `AGENTS-{plugin-id}.md`.
 
 Nota cross-layer: alcuni agenti con prefisso `code-` (ad es. `code-Agent-Code`,
