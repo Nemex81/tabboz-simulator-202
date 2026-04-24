@@ -35,6 +35,7 @@ let remoteBootstrapPromise: Promise<Snapshot> | null = null
 let bootstrapSyncTimer: number | null = null
 let remoteKVUnauthorized = false
 const bootstrapSeedValues: Snapshot = {}
+const remoteKVStatusListeners = new Set<() => void>()
 const pendingRemoteMutations = new Map<string, PendingMutation>()
 const pendingRemoteMutationTimers = new Map<string, number>()
 const kvProfileStats: KVProfileStats = {
@@ -88,8 +89,19 @@ function isUnauthorizedKVResponse(status: number): boolean {
   return status === 401
 }
 
+function notifyRemoteKVStatusListeners(): void {
+  for (const listener of remoteKVStatusListeners) {
+    listener()
+  }
+}
+
 function markRemoteKVUnauthorized(): void {
+  if (remoteKVUnauthorized) {
+    return
+  }
+
   remoteKVUnauthorized = true
+  notifyRemoteKVStatusListeners()
 }
 
 function isRemoteKVAvailable(): boolean {
@@ -435,8 +447,17 @@ export function __resetHydratedKVStateForTests(): void {
   hydrationSlot = 0
   remoteBootstrapState = null
   remoteBootstrapPromise = null
+
+  if (bootstrapSyncTimer !== null) {
+    window.clearTimeout(bootstrapSyncTimer)
+  }
   bootstrapSyncTimer = null
+
   remoteKVUnauthorized = false
+
+  for (const timerId of pendingRemoteMutationTimers.values()) {
+    window.clearTimeout(timerId)
+  }
   pendingRemoteMutations.clear()
   pendingRemoteMutationTimers.clear()
 
@@ -447,6 +468,23 @@ export function __resetHydratedKVStateForTests(): void {
   for (const stat of Object.keys(kvProfileStats) as Array<keyof KVProfileStats>) {
     kvProfileStats[stat] = 0
   }
+
+  notifyRemoteKVStatusListeners()
+}
+
+export function useRemoteKVFallbackActive(): boolean {
+  const [isActive, setIsActive] = useState(remoteKVUnauthorized)
+
+  useEffect(() => {
+    const listener = () => setIsActive(remoteKVUnauthorized)
+    remoteKVStatusListeners.add(listener)
+
+    return () => {
+      remoteKVStatusListeners.delete(listener)
+    }
+  }, [])
+
+  return isActive
 }
 
 export function useKV<T = string>(key: string, initialValue?: T): readonly [T | undefined, (newValue: Updater<T>) => void, () => void] {
@@ -499,7 +537,10 @@ export function useKV<T = string>(key: string, initialValue?: T): readonly [T | 
           }
 
           if (hydratedValue === undefined && !isBootstrapKey) {
-            hydratedValue = await getOrSetRemoteValue<T>(key, initialValueRef.current)
+            const remoteSeedValue = hasCachedValue
+              ? readCachedValue(key, initialValueRef.current)
+              : initialValueRef.current
+            hydratedValue = await getOrSetRemoteValue<T>(key, remoteSeedValue)
           }
 
           cacheValue(key, hydratedValue)

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { announce as a11yAnnounce } from '@/lib/a11y-announce'
-import { useKV } from '@/hooks/useHydratedKV'
+import { useKV, useRemoteKVFallbackActive } from '@/hooks/useHydratedKV'
 import { AppHeader } from '@/components/AppHeader'
 import { A11yLiveRegion, useA11y } from '@/components/A11yLiveRegion'
 import { GameDialogs } from '@/components/GameDialogs'
@@ -51,6 +51,7 @@ import {
 
 function App() {
   const { announce: baseAnnounce } = useA11y()
+  const isRemoteKVFallbackActive = useRemoteKVFallbackActive()
   const keyboardHelpRestoreTargetRef = useRef<HTMLElement | null>(null)
   const [rawSchoolType, setRawSchoolType] = useKV<SchoolType | null>('tabboz-school-type', null)
   const [rawPlayerProfile, setRawPlayerProfile] = useKV<PlayerProfile | null>('tabboz-player-profile', null)
@@ -857,6 +858,7 @@ function App() {
             morningChoicePending={morningChoicePending}
             onOpenKeyboardHelp={openKeyboardHelp}
             onGoToSchool={handleGoToSchoolMorningChoice}
+            showLocalKVFallbackIndicator={import.meta.env.DEV && isRemoteKVFallbackActive}
             handleRiposa={handleRiposa}
             handleDormi={handleDormi}
             handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}

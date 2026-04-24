@@ -16,6 +16,7 @@ interface AppHeaderProps {
   isSchoolMorningSequenceInProgress: boolean
   morningChoicePending: boolean
   onGoToSchool: () => void
+  showLocalKVFallbackIndicator?: boolean
   handleRiposa: () => void
   handleDormi: () => void
   handleAdvancePhaseGuarded: () => void
@@ -33,6 +34,7 @@ export function AppHeader({
   isSchoolMorningSequenceInProgress,
   morningChoicePending,
   onGoToSchool,
+  showLocalKVFallbackIndicator = false,
   handleRiposa,
   handleDormi,
   handleAdvancePhaseGuarded,
@@ -68,6 +70,15 @@ export function AppHeader({
             Aiuto Tasti (Alt+H)
           </Button>
         </div>
+        {showLocalKVFallbackIndicator && (
+          <p
+            role="status"
+            aria-live="polite"
+            className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-300"
+          >
+            KV remoto disabilitato, fallback locale attivo
+          </p>
+        )}
       </header>
 
       <TimeDisplay
