@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { HandCoins, Fist, CheckCircle, Warning, XCircle } from '@phosphor-icons/react'
+import { HandCoins, HandFist, CheckCircle, Warning, XCircle } from '@phosphor-icons/react'
 import {
   Dialog,
   DialogContent,
@@ -90,7 +90,7 @@ export function TeacherSelectionDialog({
               </>
             ) : (
               <>
-                <Fist size={32} weight="fill" />
+                <HandFist size={32} weight="fill" />
                 SCEGLI QUALE PROFESSORE MINACCIARE
               </>
             )}
@@ -111,6 +111,14 @@ export function TeacherSelectionDialog({
         </DialogHeader>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+          {subjects.length === 0 && (
+            <p
+              className="col-span-3 text-center text-sm text-muted-foreground py-6"
+              role="status"
+            >
+              Nessuna materia disponibile per questa azione.
+            </p>
+          )}
           {subjects.map(([subject, grade], index) => {
             const indicator = getGradeIndicator(grade)
             const isSelected = selectedSubject === subject
@@ -182,7 +190,7 @@ export function TeacherSelectionDialog({
               </>
             ) : (
               <>
-                <Fist size={24} className="mr-2" weight="fill" />
+                <HandFist size={24} className="mr-2" weight="fill" />
                 Minaccia
               </>
             )}

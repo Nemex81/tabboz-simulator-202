@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from '@/hooks/useHydratedKV'
 import { GameStats } from '@/lib/types'
 import { DEFAULT_GAME_STATE } from '@/lib/types'
 import { validateStats } from '@/lib/data-validation'
@@ -36,11 +36,11 @@ export function useGameStats(announce: (msg: string) => void) {
     const newLevel = getReputationLevel(newReputation)
 
     if (Math.abs(newReputation - stats.reputazione) > 2) {
-      setRawStats((current) => ({ ...current, reputazione: newReputation }))
+      setRawStats((current) => ({ ...current!, reputazione: newReputation }))
 
-      if (oldLevel !== newLevel) {
+      if (oldLevel.label !== newLevel.label) {
         playSound.reputationUp()
-        announceRef.current(`CAMBIO DI REPUTAZIONE! Ora sei: ${newLevel}`)
+        announceRef.current(`CAMBIO DI REPUTAZIONE! Ora sei: ${newLevel.label}`)
       }
     }
 

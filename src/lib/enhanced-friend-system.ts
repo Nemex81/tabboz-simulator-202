@@ -1,5 +1,7 @@
 import { GameStats, Friend, FriendType } from '@/lib/types'
-import { randomChance } from '@/lib/game-utils'
+import { randomChance, clampStat } from '@/lib/game-utils'
+import { ORIGIN_INITIAL_STATS, MET_AT_TYPE_WEIGHTS } from '@/lib/relation-system'
+import { DEFAULT_SEXUAL_ORIENTATION } from '@/lib/gender-utils'
 
 // Re-export per compatibilità con componenti che importano da qui
 export type { FriendType, Friend as EnhancedFriend }
@@ -14,6 +16,8 @@ export const generateRandomEnhancedFriend = (): Friend => {
   const name = ITALIAN_MALE_NAMES[Math.floor(Math.random() * ITALIAN_MALE_NAMES.length)]
   const types: FriendType[] = ['coatto', 'secchione', 'sportivo', 'ribelle']
   const type = types[Math.floor(Math.random() * types.length)]
+  const gender: 'M' | 'F' = Math.random() < 0.5 ? 'M' : 'F'
+  const carisma = Math.floor(Math.random() * 41) + 30
   
   let intelligenza = Math.floor(Math.random() * 60) + 20
   if (type === 'secchione') {
@@ -28,8 +32,106 @@ export const generateRandomEnhancedFriend = (): Friend => {
     type,
     affinita: 50,
     unlocked: true,
-    intelligenza
+    gender,
+    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
+    carisma,
+    relazione: 50,
+    intelligenza,
+    originType: 'compagno_classe' as const,
   }
+}
+
+/**
+ * Genera un Friend di tipo scolastico (compagno di classe o istituto).
+ * Imposta originType corretto e rel iniziale da ORIGIN_INITIAL_STATS.
+ */
+export const generateSchoolFriend = (
+  originType: 'compagno_classe' | 'compagno_istituto' = 'compagno_classe',
+  schoolYear?: number
+): Friend => {
+  const name = ITALIAN_MALE_NAMES[Math.floor(Math.random() * ITALIAN_MALE_NAMES.length)]
+  const types: FriendType[] = ['coatto', 'secchione', 'sportivo', 'ribelle']
+  const type = types[Math.floor(Math.random() * types.length)]
+  const gender: 'M' | 'F' = Math.random() < 0.5 ? 'M' : 'F'
+  const carisma = Math.floor(Math.random() * 41) + 30
+
+  let intelligenza = Math.floor(Math.random() * 60) + 20
+  if (type === 'secchione') {
+    intelligenza = Math.floor(Math.random() * 30) + 70
+  } else if (type === 'ribelle' || type === 'coatto') {
+    intelligenza = Math.floor(Math.random() * 30) + 20
+  }
+
+  return {
+    id: `friend_${Date.now()}_${Math.random()}`,
+    name,
+    type,
+    affinita: ORIGIN_INITIAL_STATS[originType].amicizia,
+    unlocked: true,
+    gender,
+    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
+    carisma,
+    relazione: ORIGIN_INITIAL_STATS[originType].amicizia,
+    intelligenza,
+    originType,
+    metAt: 'classe',
+    schoolYearMet: schoolYear,
+    rel: { ...ORIGIN_INITIAL_STATS[originType] },
+  }
+}
+
+/**
+ * Genera un Friend extrascolastico, con originType e location coerenti.
+ * Usa MET_AT_TYPE_WEIGHTS per determinare il type in base al luogo.
+ */
+export const generateExtraFriend = (
+  location: keyof typeof MET_AT_TYPE_WEIGHTS = 'quartiere'
+): Friend => {
+  const name = ITALIAN_MALE_NAMES[Math.floor(Math.random() * ITALIAN_MALE_NAMES.length)]
+  const gender: 'M' | 'F' = Math.random() < 0.5 ? 'M' : 'F'
+  const carisma = Math.floor(Math.random() * 41) + 30
+
+  // Selezione type pesata per location
+  const weights = MET_AT_TYPE_WEIGHTS[location] ?? {}
+  const entries = Object.entries(weights) as [FriendType, number][]
+  let type: FriendType = 'generico'
+  if (entries.length > 0) {
+    const total = entries.reduce((s, [, w]) => s + w, 0)
+    let rand = Math.random() * total
+    for (const [t, w] of entries) {
+      rand -= w
+      if (rand <= 0) { type = t; break }
+    }
+  }
+
+  let intelligenza = Math.floor(Math.random() * 60) + 20
+  if (type === 'secchione') {
+    intelligenza = Math.floor(Math.random() * 30) + 70
+  } else if (type === 'ribelle' || type === 'coatto') {
+    intelligenza = Math.floor(Math.random() * 30) + 20
+  }
+
+  const originStats = ORIGIN_INITIAL_STATS['extrascolastico']
+  return {
+    id: `friend_${Date.now()}_${Math.random()}`,
+    name,
+    type,
+    affinita: originStats.amicizia,
+    unlocked: true,
+    gender,
+    orientamentoSessuale: DEFAULT_SEXUAL_ORIENTATION,
+    carisma,
+    relazione: originStats.amicizia,
+    intelligenza,
+    originType: 'extrascolastico',
+    metAt: location as Friend['metAt'],
+    rel: { ...originStats },
+  }
+}
+
+export const getFriendStudyBonus = (friends: Friend[]): number => {
+  const highIntFriends = friends.filter(friend => (friend.intelligenza || 0) > 60)
+  return highIntFriends.length > 0 ? 0.5 : 0
 }
 
 export const getFriendTypeDescription = (type: FriendType): string => {
@@ -42,6 +144,8 @@ export const getFriendTypeDescription = (type: FriendType): string => {
       return 'SPORTIVO - Pompa ferro e gioca a calcio'
     case 'ribelle':
       return 'RIBELLE - Non segue le regole di nessuno'
+    default:
+      return ''
   }
 }
 
@@ -63,7 +167,7 @@ export const FRIEND_ACTIONS: FriendAction[] = [
     cost: 1,
     effects: '+10 Coattaggine, +5 Affinità, -10 Soldi',
     requirements: (stats, friend) => {
-      if (friend.affinita < 30) {
+      if ((friend.affinita ?? 50) < 30) {
         return { canDo: false, reason: 'Affinità troppo bassa (min 30)' }
       }
       if (stats.soldi < 10) {
@@ -116,7 +220,7 @@ export const FRIEND_ACTIONS: FriendAction[] = [
     cost: 1,
     effects: '+15 Coattaggine, +5 Affinità, -20 Soldi',
     requirements: (stats, friend) => {
-      if (friend.affinita < 50) {
+      if ((friend.affinita ?? 50) < 50) {
         return { canDo: false, reason: 'Affinità troppo bassa (min 50)' }
       }
       if (stats.soldi < 20) {
@@ -140,7 +244,7 @@ export const FRIEND_ACTIONS: FriendAction[] = [
     cost: 0,
     effects: '+20-50 Soldi random, -15 Affinità',
     requirements: (stats, friend) => {
-      if (friend.affinita < 60) {
+      if ((friend.affinita ?? 50) < 60) {
         return { canDo: false, reason: 'Affinità troppo bassa (min 60)' }
       }
       return { canDo: true }
@@ -156,14 +260,16 @@ export const applyFriendActionEffects = (
   newStats: Partial<GameStats>
   newAffinita: number
   message: string
+  /** E1: rel aggiornata se il friend usa il sistema 4-assi, undefined altrimenti */
+  newRel?: import('@/lib/relation-system').RelationStats
 } => {
   const action = FRIEND_ACTIONS.find(a => a.id === actionId)
   if (!action) {
-    return { newStats: {}, newAffinita: friend.affinita, message: 'Azione non trovata' }
+    return { newStats: {}, newAffinita: friend.affinita ?? 50, message: 'Azione non trovata' }
   }
   
   const newStats: Partial<GameStats> = {}
-  let newAffinita = friend.affinita
+  let newAffinita = friend.affinita ?? 50
   let message = ''
 
   switch (actionId) {
@@ -209,9 +315,14 @@ export const applyFriendActionEffects = (
       break
   }
   
-  newAffinita = Math.max(0, Math.min(100, newAffinita))
+  newAffinita = clampStat(newAffinita)
   
-  return { newStats, newAffinita, message }
+  // E1: sincronizza rel.amicizia con newAffinita se il friend usa il nuovo sistema
+  const newRel = friend.rel
+    ? { ...friend.rel, amicizia: clampStat(newAffinita) }
+    : undefined
+
+  return { newStats, newAffinita, message, newRel }
 }
 
 export const checkBestFriend = (affinita: number): boolean => {

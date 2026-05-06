@@ -1,36 +1,85 @@
+/**
+ * EnhancedFriendsPanel: dettaglio amicizie con azioni e sistema relazionale a 4 assi.
+ */
+
 import React from 'react'
-import { User, Users, Barbell, Brain, Lightning, Fist, HandCoins, XCircle, Crown } from '@phosphor-icons/react'
+import { useSoundFeedback } from '@/hooks/useSoundFeedback'
+import { User, Users, Barbell, Brain, Lightning, HandFist, HandCoins, XCircle, Crown } from '@phosphor-icons/react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { GameStats, Friend, getRelationshipTier, getRelationshipTierLabel } from '@/lib/types'
-import type { Ragazza } from '@/lib/girlfriend-system'
+import { GameStats, Friend, PlayerProfile, getRelationshipTier } from '@/lib/types'
+import { getAffinita } from '@/lib/relation-system'
+import { RelationCard } from '@/components/RelationCard'
+import type { ActivePartner } from '@/lib/girlfriend-system'
 import {
   getFriendTypeDescription,
   FRIEND_ACTIONS,
 } from '@/lib/enhanced-friend-system'
 import { GirlfriendPanel } from '@/components/GirlfriendPanel'
+import { getVisibleRelationshipTierLabel } from '@/lib/gender-utils'
 
 interface EnhancedFriendsPanelProps {
+  playerProfile?: PlayerProfile | null
   friends: Friend[]
   stats: GameStats
-  actionsRemaining: number
+  interactionsRemaining: number
   onFriendAction: (friendId: string, actionId: string) => void
-  girlfriend: Ragazza | null
-  onGirlfriendAction: (action: string) => void
-  onGirlfriendBreakup: () => void
+  onRelationInteraction?: (friendId: string, interactionId: string) => void
+  activePartners: ActivePartner[]
+  onGirlfriendAction: (action: string, partnerKey?: string) => void
+  onGirlfriendBreakup: (partnerKey?: string) => void
 }
 
 export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
+  playerProfile,
   friends,
   stats,
-  actionsRemaining,
+  interactionsRemaining,
   onFriendAction,
-  girlfriend,
+  onRelationInteraction,
+  activePartners,
   onGirlfriendAction,
   onGirlfriendBreakup,
 }: EnhancedFriendsPanelProps) {
+  const { play } = useSoundFeedback()
+
+  const getOriginLabel = (friend: Friend): string => {
+    if (friend.metAt === 'online') {
+      return 'Provenienza: Rete'
+    }
+
+    if (friend.originType === 'compagno_classe' || friend.originType === 'compagno_istituto') {
+      return 'Provenienza: Scuola'
+    }
+
+    return 'Provenienza: Extra'
+  }
+
+  const getMetAtLabel = (metAt: Friend['metAt']): string | null => {
+    switch (metAt) {
+      case 'classe':
+        return 'Classe'
+      case 'corridoio':
+        return 'Corridoio'
+      case 'quartiere':
+        return 'Quartiere'
+      case 'palestra':
+        return 'Palestra'
+      case 'online':
+        return 'Online'
+      case 'festa':
+        return 'Festa'
+      case 'sport':
+        return 'Sport'
+      case 'lavoro':
+        return 'Lavoro'
+      default:
+        return null
+    }
+  }
+
   // FIX-A: early-return rimosso — la sezione fidanzata deve renderizzarsi anche senza amici
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -41,7 +90,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
       case 'coatto':
         return <Lightning size={24} weight="fill" />
       case 'ribelle':
-        return <Fist size={24} weight="fill" />
+        return <HandFist size={24} weight="fill" />
       default:
         return <User size={24} weight="fill" />
     }
@@ -65,15 +114,18 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
   return (
     <div className="space-y-6">
       {/* C3-2: GirlfriendPanel embedded — sostituisce la card inline di C2-3 */}
-      {girlfriend && (
+      {activePartners.map((partner) => (
         <GirlfriendPanel
-          girlfriend={girlfriend}
+          key={partner.relationshipSourceKey}
+          partnerKey={partner.relationshipSourceKey}
+          girlfriend={partner}
+          playerProfile={playerProfile}
           stats={stats}
-          actionsRemaining={actionsRemaining}
+          actionsRemaining={interactionsRemaining}
           onAction={onGirlfriendAction}
           onBreakup={onGirlfriendBreakup}
         />
-      )}
+      ))}
 
       {/* FIX-A: messaggio amici vuoti inline — non blocca più il rendering della fidanzata */}
       {friends.length === 0 && (
@@ -89,12 +141,13 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
       )}
 
       {friends.map((friend) => {
-        const tier = getRelationshipTier(friend.affinita, friend.bondType)
+        const _affinita = getAffinita(friend)
+        const tier = getRelationshipTier(_affinita, friend.bondType)
         const isBestFriend = tier === 'migliore_amico'
         const isRomantic = tier === 'trombamica' || tier === 'fidanzata'
-        const affinitaColor = friend.affinita < 30 
+        const affinitaColor = _affinita < 30 
           ? 'bg-destructive'
-          : friend.affinita < 60
+          : _affinita < 60
           ? 'bg-accent'
           : 'bg-primary'
         
@@ -128,6 +181,16 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
                   <p className="text-sm text-muted-foreground mt-1">
                     {getFriendTypeDescription(friend.type)}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge variant="outline" className="border-primary/40 text-primary">
+                      {getOriginLabel(friend)}
+                    </Badge>
+                    {friend.metAt && getMetAtLabel(friend.metAt) && (
+                      <Badge variant="outline" className="border-secondary/40 text-secondary">
+                        Incontro: {getMetAtLabel(friend.metAt)}
+                      </Badge>
+                    )}
+                  </div>
                   {friend.intelligenza && friend.intelligenza > 60 && (
                     <Badge className="mt-2 bg-primary/20 text-primary border border-primary">
                       <Brain size={16} className="mr-1" weight="fill" />
@@ -144,19 +207,19 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
                   Affinità
                 </span>
                 <span className={`text-2xl font-bold ${
-                  friend.affinita < 30 ? 'text-destructive' :
-                  friend.affinita < 60 ? 'text-accent' : 'text-primary'
+                  _affinita < 30 ? 'text-destructive' :
+                  _affinita < 60 ? 'text-accent' : 'text-primary'
                 }`}>
-                  {friend.affinita}
+                  {_affinita}
                 </span>
               </div>
               <Progress 
-                value={friend.affinita} 
+                value={_affinita} 
                 className="h-2"
               />
               <div className="mt-1 text-xs text-muted-foreground">
                 <span className="font-medium">
-                  {getRelationshipTierLabel(tier)}
+                  {getVisibleRelationshipTierLabel(tier, playerProfile?.gender ?? 'maschio')}
                 </span>
                 {tier === 'migliore_amico' && (
                   <span className="ml-2 text-xs text-primary">— Copertura genitori sbloccata!</span>
@@ -167,7 +230,7 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
                       ? 'bg-red-500 text-white'
                       : 'bg-pink-400 text-white'
                   }`}>
-                    {getRelationshipTierLabel(tier)}
+                    {getVisibleRelationshipTierLabel(tier, playerProfile?.gender ?? 'maschio')}
                   </Badge>
                 )}
               </div>
@@ -180,12 +243,12 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {availableActions.map((action) => {
                   const check = action.requirements(stats, friend)
-                  const isDisabled = actionsRemaining < action.cost || !check.canDo
+                  const isDisabled = interactionsRemaining < action.cost || !check.canDo
                   
                   return (
                     <Button
                       key={action.id}
-                      onClick={() => onFriendAction(friend.id, action.id)}
+                      onClick={() => { play('click'); onFriendAction(friend.id, action.id) }}
                       disabled={isDisabled}
                       variant={action.id === 'litiga' ? 'destructive' : 'secondary'}
                       className="justify-start h-auto py-3"
@@ -210,7 +273,19 @@ export const EnhancedFriendsPanel = React.memo(function EnhancedFriendsPanel({
               </div>
             </div>
             
-            {friend.affinita <= 0 && (
+            {/* ── Interazioni relazionali (sistema 4-assi) — usa RelationCard ── */}
+            {onRelationInteraction && friend.rel && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <RelationCard
+                  friend={friend}
+                  onInteraction={onRelationInteraction}
+                    actionsRemaining={interactionsRemaining}
+                  maxInteractions={6}
+                />
+              </div>
+            )}
+
+            {_affinita <= 0 && (
               <div className="mt-4 p-4 bg-destructive/20 border border-destructive rounded text-center">
                 <XCircle size={32} className="mx-auto mb-2 text-destructive" weight="fill" />
                 <p className="text-destructive font-bold">

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
+import { useSoundFeedback } from '@/hooks/useSoundFeedback'
 import { 
   Heart, 
   ChatCircle, 
@@ -19,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats } from '@/lib/types'
+import { GameStats, PlayerProfile } from '@/lib/types'
 import { 
   Ragazza, 
   getAspettoDescription, 
@@ -28,22 +29,28 @@ import {
   calculateMissingStats,
   calculateRelationshipHealth
 } from '@/lib/girlfriend-system'
+import { getRomanticStatusLabel } from '@/lib/gender-utils'
 
 interface GirlfriendPanelProps {
+  partnerKey: string
   girlfriend: Ragazza          // C3-1: non più nullable — il guard è nel padre
+  playerProfile?: PlayerProfile | null
   stats: GameStats
   actionsRemaining: number
-  onAction: (action: string) => void
-  onBreakup: () => void
+  onAction: (action: string, partnerKey?: string) => void
+  onBreakup: (partnerKey?: string) => void
 }
 
-export function GirlfriendPanel({
+export const GirlfriendPanel = memo(function GirlfriendPanel({
+  partnerKey,
   girlfriend,
+  playerProfile: _playerProfile,
   stats,
   actionsRemaining,
   onAction,
   onBreakup
 }: GirlfriendPanelProps) {
+  const { play } = useSoundFeedback()
   // C3-1: guard null rimosso — il componente è sempre renderizzato dentro {girlfriend && ...}
   const interesseColor = girlfriend.interessePerTe < 30 
     ? 'bg-destructive'
@@ -54,6 +61,9 @@ export function GirlfriendPanel({
   const likes = getWhatSheLikes(girlfriend.personalita, girlfriend.statPreferita)
   const missingStats = calculateMissingStats(stats, girlfriend)
   const relationshipHealth = calculateRelationshipHealth(girlfriend)
+  const messageLabel = girlfriend.gender === 'M' ? 'Mandagli un messaggio' : 'Mandale un messaggio'
+  const cinemaLabel = girlfriend.gender === 'M' ? 'Invitalo al cinema' : 'Invitala al cinema'
+  const motorinoLabel = girlfriend.gender === 'M' ? 'Portalo in giro col motorino' : 'Portala in giro col motorino'
   
   const canDichiararti = girlfriend.interessePerTe >= 70 && girlfriend.relationshipStatus !== 'fidanzata'
   const canInvitareCinema = girlfriend.interessePerTe >= 30
@@ -76,10 +86,7 @@ export function GirlfriendPanel({
                   {girlfriend.eta} anni • Classe {girlfriend.classe} • {girlfriend.scuola}
                 </p>
                 <Badge className="mt-1 bg-accent">
-                  {girlfriend.relationshipStatus === 'fidanzata' ? '💕 Fidanzata' :
-                   girlfriend.relationshipStatus === 'interessata' ? '😍 Interessata' :
-                   girlfriend.relationshipStatus === 'amica' ? '😊 Amica' :
-                   girlfriend.relationshipStatus === 'conoscente' ? '👋 Conoscente' : '❓ Sconosciuta'}
+                  {getRomanticStatusLabel(girlfriend.relationshipStatus, girlfriend.gender)}
                 </Badge>
               </div>
             </div>
@@ -101,7 +108,7 @@ export function GirlfriendPanel({
           </div>
           
           <Button
-            onClick={onBreakup}
+            onClick={() => onBreakup(partnerKey)}
             variant="outline"
             size="sm"
             className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
@@ -247,27 +254,27 @@ export function GirlfriendPanel({
             <div className="space-y-3">
               {/* FIX-B: messaggio è gratuito (non consuma azione) — non va mai disabilitato per azioni esaurite */}
               <Button
-                onClick={() => onAction('messaggio')}
+                onClick={() => { play('click'); onAction('messaggio', partnerKey) }}
                 disabled={false}
                 className="w-full justify-start"
                 variant="secondary"
               >
                 <ChatCircle size={24} className="mr-3" weight="fill" />
                 <div className="flex-1 text-left">
-                  <div className="font-bold">Mandagli un messaggio</div>
-                  <div className="text-xs opacity-80">+5 Interesse, +2 Felicità • Gratis</div>
+                  <div className="font-bold">{messageLabel}</div>
+                    <div className="text-xs opacity-80">+5 Interesse, +2 Felicita • Gratis</div>
                 </div>
               </Button>
               
               <Button
-                onClick={() => onAction('cinema')}
+                onClick={() => { play('click'); onAction('cinema', partnerKey) }}
                 disabled={actionsRemaining === 0 || !canInvitareCinema || stats.soldi < 40}
                 className="w-full justify-start"
                 variant="default"
               >
                 <FilmSlate size={24} className="mr-3" weight="fill" />
                 <div className="flex-1 text-left">
-                  <div className="font-bold">Invitala al cinema</div>
+                  <div className="font-bold">{cinemaLabel}</div>
                   <div className="text-xs opacity-80">
                     +15 Interesse, +5 Figosità, +10 Felicità • 40€ • Int. min: 30
                   </div>
@@ -275,14 +282,14 @@ export function GirlfriendPanel({
               </Button>
               
               <Button
-                onClick={() => onAction('motorino')}
+                onClick={() => { play('click'); onAction('motorino', partnerKey) }}
                 disabled={actionsRemaining === 0 || !canPortareMotorino || stats.soldi < 20}
                 className="w-full justify-start"
                 variant="default"
               >
                 <Motorcycle size={24} className="mr-3" weight="fill" />
                 <div className="flex-1 text-left">
-                  <div className="font-bold">Portala in giro col motorino</div>
+                  <div className="font-bold">{motorinoLabel}</div>
                   <div className="text-xs opacity-80">
                     +20 Interesse, +5 Coatt., +15 Felic., +5 Fiducia • 20€ • Int: 40, Coatt: 50
                   </div>
@@ -291,7 +298,7 @@ export function GirlfriendPanel({
               
               {girlfriend.personalita === 'secchiona' && (
                 <Button
-                  onClick={() => onAction('compiti')}
+                  onClick={() => { play('click'); onAction('compiti', partnerKey) }}
                   disabled={actionsRemaining === 0 || stats.intelligenza < 40}
                   className="w-full justify-start"
                   variant="secondary"
@@ -307,7 +314,7 @@ export function GirlfriendPanel({
               )}
               
               <Button
-                onClick={() => onAction('regalo')}
+                onClick={() => { play('moneySpent'); onAction('regalo', partnerKey) }}
                 disabled={actionsRemaining === 0 || stats.soldi < 60}
                 className="w-full justify-start bg-accent text-accent-foreground"
               >
@@ -322,7 +329,7 @@ export function GirlfriendPanel({
               
               {canDichiararti && (
                 <Button
-                  onClick={() => onAction('dichiarati')}
+                  onClick={() => { play('bigWin'); onAction('dichiarati', partnerKey) }}
                   disabled={actionsRemaining === 0}
                   className="w-full justify-start bg-primary text-primary-foreground animate-pulse"
                 >
@@ -330,7 +337,7 @@ export function GirlfriendPanel({
                   <div className="flex-1 text-left">
                     <div className="font-bold">💕 DICHIARATI!</div>
                     <div className="text-xs opacity-80">
-                      Diventa la tua fidanzata ufficiale! Interesse min: 70
+                      Diventa il tuo partner ufficiale! Interesse min: 70
                     </div>
                   </div>
                 </Button>
@@ -406,4 +413,4 @@ export function GirlfriendPanel({
       </Tabs>
     </div>
   )
-}
+})

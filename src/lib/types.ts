@@ -1,5 +1,7 @@
 
 import type { TraitId } from '@/lib/character-traits'
+import { getActiveSubjectsForYear, COMMON_SUBJECTS, SPECIFIC_SUBJECTS } from '@/lib/subjects'
+export type { SubjectDefinition } from '@/lib/subjects'
 
 export interface GameStats {
   muscoli: number
@@ -7,23 +9,36 @@ export interface GameStats {
   soldi: number
   media: number
   stanchezza: number
+  stress: number       // 0-100: stanchezza mentale
+  morale: number       // 0-100: stato emotivo
   figosita: number
   reputazione: number
   intelligenza: number
   carisma: number
+  salute: number
+  hasMotorino: boolean  // true dopo la prima azione motorino riuscita
 }
+
+export type ExamDifficulty = 'facile' | 'normale' | 'difficile' | 'brutale'
 
 export interface ScheduledExam {
   id?: string
   subject: string
   date?: { day: number; month: number; year: number }
   daysUntil?: number
+  type?: 'scritto' | 'orale'
   isPrepared: boolean
-  difficulty: 'facile' | 'normale' | 'difficile' | 'brutale'
+  difficulty: ExamDifficulty
   announced?: boolean
 }
 
-export type SchoolType = 'liceo' | 'tecnico' | 'artistico' | 'tecnico' | 'agraria'
+export type SchoolType =
+  | 'tecnico'
+  | 'agraria'
+  | 'artistico'
+  | 'conservatorio'
+  | 'alberghiero'
+  | 'liceoScientifico'
 
 export interface SubjectGrades {
   [subject: string]: number
@@ -82,6 +97,19 @@ export interface GameTimeV2 extends GameTime {
 
 export type ThemeVariant = 'default' | 'dark' | 'green'
 
+export type NarrativePlayerGender = 'maschio' | 'femmina'
+
+export type BinaryGenderCode = 'M' | 'F'
+
+export type CharacterGender = BinaryGenderCode | NarrativePlayerGender
+
+export type SexualOrientation =
+  | 'eterosessuale'
+  | 'omosessuale'
+  | 'bisessuale'
+  | 'pansessuale'
+  | 'asessuale'
+
 export type ReputationLevel = 'sfigato' | 'normale' | 'popolare' | 'leggenda'
 
 export type RelationshipTier =
@@ -95,113 +123,33 @@ export type RelationshipTier =
 
 export type SocialBondType = 'amicizia' | 'romantico'
 
-export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
-  liceo: {
-    matematica: 1.5,
-    fisica: 1.3,
-    italiano: 1.0,
-    inglese: 1.0,
-    storia: 1.0,
-    scienze: 1.0,
-    edFisica: 0.8
-  },
-  tecnico: {
-    fisica: 1.5,
-    matematica: 1.3,
-    inglese: 1.2,
-    italiano: 1.0,
-    storia: 0.8,
-    scienze: 1.0,
-    edFisica: 0.7
-  },
-  agraria: {
-    scienze: 1.5,
-    matematica: 1.0,
-    italiano: 1.0,
-    inglese: 0.9,
-    storia: 0.8,
-    fisica: 1.2,
-    edFisica: 0.9
-  },
-  artistico: {
-    disegno: 1.5,
-    storiaArte: 1.3,
-    matematica: 0.8,
-    italiano: 1.2,
-    inglese: 1.0,
-    storia: 1.5,
-    scienze: 0.8,
-    edFisica: 0.7
-  }
-}
-
 export function getDefaultGradesForSchoolType(schoolType: SchoolType): SubjectGrades {
-  switch (schoolType) {
-    case 'liceo':
-      return {
-        matematica: 6,
-        fisica: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        scienze: 6,
-        edFisica: 6
-      }
-    case 'tecnico':
-      return {
-        matematica: 6,
-        fisica: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        scienze: 6,
-        edFisica: 6
-      }
-    case 'agraria':
-      return {
-        matematica: 6,
-        fisica: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        scienze: 6,
-        edFisica: 6
-      }
-    case 'artistico':
-      return {
-        matematica: 6,
-        disegno: 6,
-        storiaArte: 6,
-        italiano: 6,
-        inglese: 6,
-        storia: 6,
-        scienze: 6,
-        edFisica: 6
-      }
-  }
+  return Object.fromEntries(
+    getActiveSubjectsForYear(schoolType, 1)
+      .filter(s => s.countsForGPA)
+      .map(s => [s.key, 6])
+  )
 }
 
 export function getSubjectDisplayName(subject: string): string {
-  const displayNames: Record<string, string> = {
-    matematica: 'Matematica',
-    fisica: 'Fisica',
-    italiano: 'Italiano',
-    inglese: 'Inglese',
-    storia: 'Storia',
-    scienze: 'Scienze',
-    disegno: 'Disegno',
-    storiaArte: 'Storia dell\'Arte',
-    edFisica: 'Ed. Fisica'
+  for (const s of COMMON_SUBJECTS) {
+    if (s.key === subject) return s.displayName
   }
-  return displayNames[subject] || subject
+  for (const subjects of Object.values(SPECIFIC_SUBJECTS)) {
+    const found = subjects.find(s => s.key === subject)
+    if (found) return found.displayName
+  }
+  return subject.replace(/([A-Z])/g, ' $1').trim()
 }
 
 export function getSchoolTypeName(schoolType: SchoolType): string {
   const names: Record<SchoolType, string> = {
-    liceo: 'Liceo',
-    tecnico: 'Istituto Tecnico',
-    agraria: 'Istituto Agrario',
-    artistico: 'Istituto Artistico'
+    liceoScientifico: 'Liceo Scientifico',
+    tecnico:          'Istituto Tecnico Informatico',
+    agraria:          'Istituto Tecnico Agrario',
+    artistico:        'Liceo Artistico',
+    conservatorio:    'Liceo Musicale',
+    alberghiero:      'Istituto Alberghiero',
   }
   return names[schoolType] || schoolType
 }
@@ -238,6 +186,7 @@ export const getRelationshipTierLabel = (tier: RelationshipTier): string => {
 export interface GameState {
   stats: GameStats
   grades: SubjectGrades
+  gradesHistory: Record<number, SubjectGrades>
   gameTime: GameTime
 }
 
@@ -248,10 +197,14 @@ export const DEFAULT_GAME_STATE: GameState = {
     soldi: 100,
     media: 6,
     stanchezza: 0,
+    stress: 10,
+    morale: 60,
     figosita: 50,
     reputazione: 50,
     intelligenza: 10,
-    carisma: 10
+    carisma: 10,
+    salute: 100,
+    hasMotorino: false,
   },
   grades: {
     matematica: 6,
@@ -259,9 +212,13 @@ export const DEFAULT_GAME_STATE: GameState = {
     italiano: 6,
     inglese: 6,
     storia: 6,
-    scienze: 6,
-    edFisica: 6
+    edFisica: 6,
+    diritto: 6,
+    scienzeInt: 6,
+    chimicaInt: 6,
+    tecnInfo: 6,
   },
+  gradesHistory: {},
   gameTime: {
     currentDate: { day: 15, month: 9, year: 2026 },
     actionsRemaining: 3,
@@ -286,31 +243,84 @@ export const DEFAULT_GAME_STATE: GameState = {
   }
 }
 
-export interface Friend {
-  id: string
-  name: string
-  type: 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
-  affinita: number
+export interface Friend extends BaseCharacter {
+  // ── campi esistenti (INVARIATI) ──────────────────────────────
+  id:           string
+  name:         string
+  type:         FriendType
   intelligenza?: number
-  unlocked: boolean
-  tier?: RelationshipTier
-  bondType?: SocialBondType
+  gender?:      BinaryGenderCode
+  carisma?:     number
+  relazione?:   number
+  unlocked:     boolean
+
+  // ── NUOVO: contesto di origine ───────────────────────────────
+  originType:   'compagno_classe' | 'compagno_istituto' | 'extrascolastico'
+  metAt?:       'classe' | 'corridoio' | 'quartiere' | 'palestra'
+              | 'online' | 'festa' | 'sport' | 'lavoro'
+  schoolYearMet?: number
+
+  // ── NUOVO: assi relazionali (import type da relation-system) ─
+  rel?: import('@/lib/relation-system').RelationStats
+
+  // ── NUOVO: tracking temporale per erosione inattività ────────
+  lastInteractionDay?: number   // dayIndex (dateToDayIndex) dell'ultima interazione
+
+  // ── DEPRECATO — mantenuto per migrazione KV legacy ───────────
+  affinita?: number             // letto solo da migrateLegacyFriend()
+  tier?:     RelationshipTier   // ora derivato, non stored
+  bondType?: SocialBondType     // ora derivato, non stored
+}
+
+export interface BaseCharacter {
+  id?: string
+  name: string
+  gender?: CharacterGender
+  orientamentoSessuale?: SexualOrientation
+  age?: number
+  carisma?: number
+  intelligenza?: number
+  relazione?: number
+  originType?: 'compagno_classe' | 'compagno_istituto' | 'extrascolastico' | 'player'
+  metAt?: string
+  interazioniPerFase?: number
 }
 
 export interface Relationship {
   id: string
   name: string
+  sourceKey?: string
+  sourceType?: 'generated_interest' | 'pickup' | 'direct_girlfriend'
+  metAt?: Friend['metAt']
+  gender?: BinaryGenderCode
+  orientamentoSessuale?: SexualOrientation
   difficulty: 'facile' | 'media' | 'difficile'
   preference: 'muscoli' | 'figosita' | 'intelligenza'
   relationshipLevel: number
   isActive: boolean
 }
 
-export interface PlayerProfile {
-  name: string
-  gender: 'maschio' | 'femmina'
-  selectedTraits: TraitId[]
+export type FriendType = 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
+
+export interface EventConstraint {
+  allowedPhases?: DayPhase[]
+  allowedDayTypes?: DayType[]
+  requiresSchoolPeriod?: boolean
+  minSchoolYear?: number
+  blockedWhenExhausted?: boolean
 }
+
+export interface PlayerProfile extends BaseCharacter {
+  name: string
+  gender: NarrativePlayerGender
+  orientamentoSessuale: SexualOrientation
+  selectedTraits?: TraitId[]
+  traits?: string[]
+}
+
+export type MorningEventCategory =
+  | 'didattica' | 'sociale' | 'istituto'
+  | 'strada' | 'casa' | 'citta' | 'amici'
 
 export interface SchoolRecord {
   assenze: number
@@ -318,6 +328,7 @@ export interface SchoolRecord {
   sospensioni: number
   condotta: number
   wentToSchoolToday: boolean
+  isAtSchool: boolean          // true solo se fisicamente a scuola oggi
   consecutiveGoodDays: number
 }
 
@@ -327,6 +338,7 @@ export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   sospensioni: 0,
   condotta: 8.0,
   wentToSchoolToday: false,
+  isAtSchool: false,
   consecutiveGoodDays: 0
 }
 import type { TraitId } from '@/lib/character-traits'

@@ -1,6 +1,12 @@
-import { GameStats } from '@/lib/types'
-import { Relationship } from '@/lib/types'
-import { randomChance } from '@/lib/game-utils'
+import { BinaryGenderCode, GameStats, Relationship, SexualOrientation } from '@/lib/types'
+import { randomChance, clampStat } from '@/lib/game-utils'
+import type { RelationStats } from '@/lib/relation-system'
+import {
+  DEFAULT_SEXUAL_ORIENTATION,
+  getPartnerAdjective,
+  getPartnerObjectPronoun,
+  normalizeRelationshipCandidate,
+} from '@/lib/gender-utils'
 
 export type AspettoType = 'carina' | 'bellissima' | 'normale' | 'alternativa'
 export type PersonalitaType = 'timida' | 'estroversa' | 'secchiona' | 'ribelle' | 'vanitosa'
@@ -36,6 +42,8 @@ export interface Ragazza {
   id: string
   nome: string
   cognome: string
+  gender: BinaryGenderCode
+  orientamentoSessuale: SexualOrientation
   eta: number
   classe: string
   aspetto: AspettoType
@@ -53,10 +61,50 @@ export interface Ragazza {
   lastInteractionDate?: string
 }
 
+export type ActivePartner = Ragazza & {
+  relationshipSourceKey: string
+}
+
+export function asActivePartner(partner: Ragazza, relationshipSourceKey: string): ActivePartner {
+  return {
+    ...partner,
+    relationshipSourceKey,
+  }
+}
+
+export function upsertActivePartnerCollection(
+  partners: ActivePartner[],
+  nextPartner: ActivePartner,
+): ActivePartner[] {
+  const existingIndex = partners.findIndex(
+    (partner) => partner.relationshipSourceKey === nextPartner.relationshipSourceKey,
+  )
+
+  if (existingIndex === -1) {
+    return [...partners, nextPartner]
+  }
+
+  return partners.map((partner, index) => (
+    index === existingIndex
+      ? nextPartner
+      : partner
+  ))
+}
+
+interface GenerateRomanticPartnerOptions {
+  targetGender?: BinaryGenderCode
+  targetOrientation?: SexualOrientation
+}
+
 const NOMI_FEMMINILI = [
   'Jessica', 'Samantha', 'Deborah', 'Vanessa', 'Sabrina', 'Jennifer',
   'Melissa', 'Cristina', 'Nicole', 'Daniela', 'Federica', 'Valentina',
   'Alessia', 'Martina', 'Chiara', 'Elisa', 'Francesca', 'Giulia'
+]
+
+const NOMI_MASCHILI = [
+  'Davide', 'Mirko', 'Cristian', 'Fabio', 'Luca', 'Kevin', 'Daniele',
+  'Marco', 'Simone', 'Andrea', 'Alessandro', 'Matteo', 'Lorenzo', 'Federico'
 ]
 
 const COGNOMI = [
@@ -87,8 +135,13 @@ const COLORI_CAPELLI = [
   'Castano chiaro', 'Mogano', 'Ramati'
 ]
 
-export const generateRandomGirlfriend = (): Ragazza => {
-  const nome = NOMI_FEMMINILI[Math.floor(Math.random() * NOMI_FEMMINILI.length)]
+export const generateRandomGirlfriend = (
+  options: GenerateRomanticPartnerOptions = {}
+): Ragazza => {
+  const targetGender = options.targetGender ?? 'F'
+  const targetOrientation = options.targetOrientation ?? DEFAULT_SEXUAL_ORIENTATION
+  const namePool = targetGender === 'M' ? NOMI_MASCHILI : NOMI_FEMMINILI
+  const nome = namePool[Math.floor(Math.random() * namePool.length)]
   const cognome = COGNOMI[Math.floor(Math.random() * COGNOMI.length)]
   const eta = Math.floor(Math.random() * 6) + 14
   const anno = Math.floor(Math.random() * 5) + 1
@@ -136,6 +189,8 @@ export const generateRandomGirlfriend = (): Ragazza => {
     id: `girl_${Date.now()}_${Math.random()}`,
     nome,
     cognome,
+    gender: targetGender,
+    orientamentoSessuale: targetOrientation,
     eta,
     classe: `${anno}${sezione}`,
     aspetto,
@@ -168,15 +223,18 @@ export const generateRandomGirlfriend = (): Ragazza => {
  * Il nome viene estratto dalla relationship; gli attributi sono parzialmente derivati dalla difficoltà/preferenza.
  */
 export const generateGirlfriendFromRelationship = (r: Relationship, currentDateString: string): Ragazza => {
-  const parts = r.name.trim().split(' ')
-  const nome = parts[0] ?? r.name
+  const normalizedRelationship = normalizeRelationshipCandidate(r)
+  const normalizedGender = normalizedRelationship.gender ?? 'F'
+  const normalizedOrientation = normalizedRelationship.orientamentoSessuale ?? DEFAULT_SEXUAL_ORIENTATION
+  const parts = normalizedRelationship.name.trim().split(' ')
+  const nome = parts[0] ?? normalizedRelationship.name
   const cognome = parts.slice(1).join(' ') || COGNOMI[Math.floor(Math.random() * COGNOMI.length)]
 
   // Mappa preferenza → statPreferita
   const statPreferita: 'figosita' | 'muscoli' | 'intelligenza' | 'carisma' =
-    r.preference === 'figosita' ? 'figosita'
-    : r.preference === 'muscoli' ? 'muscoli'
-    : r.preference === 'intelligenza' ? 'intelligenza'
+    normalizedRelationship.preference === 'figosita' ? 'figosita'
+    : normalizedRelationship.preference === 'muscoli' ? 'muscoli'
+    : normalizedRelationship.preference === 'intelligenza' ? 'intelligenza'
     : 'carisma'
 
   // Mappa difficoltà → aspetto e soglie
@@ -185,7 +243,7 @@ export const generateGirlfriendFromRelationship = (r: Relationship, currentDateS
     media: 'carina',
     difficile: 'bellissima',
   }
-  const aspetto = aspettoMap[r.difficulty]
+  const aspetto = aspettoMap[normalizedRelationship.difficulty]
 
   let figositaRichiesta = aspetto === 'bellissima' ? 70 : aspetto === 'carina' ? 50 : 40
   let statusSociale = aspetto === 'bellissima' ? 80 : aspetto === 'carina' ? 60 : 50
@@ -205,9 +263,11 @@ export const generateGirlfriendFromRelationship = (r: Relationship, currentDateS
   const sezione = String.fromCharCode(65 + Math.floor(Math.random() * 5))
 
   return {
-    id: `girl_rel_${r.id}_${Date.now()}`,
+    id: `girl_rel_${normalizedRelationship.id}_${Date.now()}`,
     nome,
     cognome,
+    gender: normalizedGender,
+    orientamentoSessuale: normalizedOrientation,
     eta,
     classe: `${anno}${sezione}`,
     aspetto,
@@ -240,7 +300,7 @@ export const generateGirlfriendFromRelationship = (r: Relationship, currentDateS
 export const getAspettoDescription = (aspetto: AspettoType): string => {
   switch (aspetto) {
     case 'bellissima':
-      return 'Una BOMBA ATOMICA! Tutti se la girano a guardarla'
+      return 'Una BOMBA ATOMICA! Attira tutti gli sguardi'
     case 'carina':
       return 'Davvero carina, bella presenza'
     case 'normale':
@@ -259,7 +319,7 @@ export const getPersonalitaDescription = (personalita: PersonalitaType): string 
     case 'secchiona':
       return 'Secchiona DOC, passa le giornate sui libri'
     case 'ribelle':
-      return 'Ribelle e anticonformista, fa quello che le pare'
+      return 'Ribelle e anticonformista, fa quello che vuole'
     case 'vanitosa':
       return 'Vanitosa e attenta all\'immagine, pretende il meglio'
   }
@@ -271,23 +331,23 @@ export const getWhatSheLikes = (personalita: PersonalitaType, statPreferita: str
   switch (personalita) {
     case 'vanitosa':
       likes.push('Apprezza chi ha FIGOSITÀ alta')
-      likes.push('Vuole essere trattata da regina')
+      likes.push('Vuole sentirsi al centro dell\'attenzione')
       likes.push('Adora i complimenti e l\'attenzione')
       break
     case 'secchiona':
       likes.push('Apprezza chi ha INTELLIGENZA alta')
-      likes.push('Le piace parlare di scuola e cultura')
+      likes.push('Ama parlare di scuola e cultura')
       likes.push('Rispetta chi studia seriamente')
       break
     case 'ribelle':
       likes.push('Apprezza chi ha COATTAGGINE')
-      likes.push('Le piacciono i tipi tosti e decisi')
+      likes.push('Apprezza chi e tosto e deciso')
       likes.push('Odia le regole e la noia')
       break
     case 'estroversa':
       likes.push('Apprezza chi ha CARISMA alto')
       likes.push('Adora uscire e divertirsi')
-      likes.push('Le piace chi sa farla ridere')
+      likes.push('Apprezza chi sa far ridere')
       break
     case 'timida':
       likes.push('Apprezza la gentilezza e la pazienza')
@@ -297,13 +357,13 @@ export const getWhatSheLikes = (personalita: PersonalitaType, statPreferita: str
   }
   
   if (statPreferita === 'muscoli') {
-    likes.push('😍 Le piacciono i MUSCOLOSI')
+    likes.push('😍 Apprezza chi ha un fisico atletico')
   } else if (statPreferita === 'figosita') {
-    likes.push('😍 Le piacciono i FIGHI')
+    likes.push('😍 Apprezza chi ha stile e presenza')
   } else if (statPreferita === 'intelligenza') {
-    likes.push('😍 Le piacciono gli INTELLIGENTI')
+    likes.push('😍 Apprezza chi e intelligente')
   } else if (statPreferita === 'carisma') {
-    likes.push('😍 Le piace chi sa PARLARE BENE')
+    likes.push('😍 Apprezza chi sa parlare bene')
   }
   
   return likes
@@ -412,13 +472,16 @@ export const performGirlfriendAction = (
   const statChanges: Partial<GameStats> = {}
   let message = ''
   let gradeChange: number | undefined = undefined
+  const partnerPronoun = getPartnerObjectPronoun(ragazza.gender)
+  const gratefulAdjective = getPartnerAdjective(ragazza.gender, 'grato', 'grata')
+  const happyAdjective = getPartnerAdjective(ragazza.gender, 'felicissimo', 'felicissima')
 
   switch (action) {
     case 'messaggio':
       updatedGirlfriend.stats.messagesExchanged += 1
       updatedGirlfriend.interessePerTe = Math.min(100, updatedGirlfriend.interessePerTe + 5)
       updatedGirlfriend.stats.happinessLevel = Math.min(100, updatedGirlfriend.stats.happinessLevel + 2)
-      message = `Hai mandato un messaggio a ${ragazza.nome}. Le è piaciuto! +5 Interesse`
+      message = `Hai mandato un messaggio a ${ragazza.nome}. ${partnerPronoun === 'gli' ? 'Gli' : 'Le'} e piaciuto! +5 Interesse`
       break
 
     case 'cinema':
@@ -451,7 +514,7 @@ export const performGirlfriendAction = (
       updatedGirlfriend.stats.trustLevel = Math.min(100, updatedGirlfriend.stats.trustLevel + 5)
       statChanges.coattaggine = 5
       statChanges.soldi = -20
-      message = `Hai portato ${ragazza.nome} a fare un giro col motorino! Si è divertita un sacco! +20 Interesse, +5 Coattaggine, -20 Soldi`
+      message = `Hai portato ${ragazza.nome} a fare un giro col motorino! Si e divertit${ragazza.gender === 'M' ? 'o' : 'a'} un sacco! +20 Interesse, +5 Coattaggine, -20 Soldi`
       break
 
     case 'compiti':
@@ -460,7 +523,7 @@ export const performGirlfriendAction = (
       updatedGirlfriend.stats.trustLevel = Math.min(100, updatedGirlfriend.stats.trustLevel + 10)
       statChanges.coattaggine = -10
       gradeChange = 0.3
-      message = `Hai fatto i compiti a ${ragazza.nome}! È molto grata! +10 Interesse, +0.3 Media, -10 Coattaggine`
+      message = `Hai fatto i compiti a ${ragazza.nome}! E molto ${gratefulAdjective}! +10 Interesse, +0.3 Media, -10 Coattaggine`
       break
 
     case 'regalo':
@@ -469,7 +532,7 @@ export const performGirlfriendAction = (
       updatedGirlfriend.interessePerTe = Math.min(100, updatedGirlfriend.interessePerTe + interesseGain)
       updatedGirlfriend.stats.happinessLevel = Math.min(100, updatedGirlfriend.stats.happinessLevel + 20)
       statChanges.soldi = -60
-      message = `Hai fatto un regalo a ${ragazza.nome}! È felicissima! +${interesseGain} Interesse, -60 Soldi`
+      message = `Hai fatto un regalo a ${ragazza.nome}! E ${happyAdjective}! +${interesseGain} Interesse, -60 Soldi`
       break
 
     case 'dichiarati':
@@ -480,7 +543,7 @@ export const performGirlfriendAction = (
         updatedGirlfriend.stats.trustLevel = Math.min(100, updatedGirlfriend.stats.trustLevel + 20)
         statChanges.figosita = 30
         statChanges.carisma = 15
-        message = `${ragazza.nome} ha detto SÌ! Siete FIDANZATI! +30 Figosità, +15 Carisma`
+        message = `${ragazza.nome} ha detto SI! Ora sei FIDANZATO! +30 Figosita, +15 Carisma`
       } else {
         updatedGirlfriend.interessePerTe = Math.max(0, updatedGirlfriend.interessePerTe - 20)
         statChanges.figosita = -20
@@ -530,7 +593,7 @@ export const calculateRelationshipHealth = (ragazza: Ragazza): {
     health += Math.min(20, ragazza.stats.totalDates * 2)
   }
   
-  health = Math.max(0, Math.min(100, health))
+  health = clampStat(health)
   
   if (ragazza.stats.jealousyLevel > 70) {
     warnings.push('È molto gelosa! Fai attenzione!')
@@ -553,7 +616,7 @@ export const calculateRelationshipHealth = (ragazza: Ragazza): {
     : 0
   
   if (daysSinceLastInteraction > 7) {
-    warnings.push(`Non la vedi da ${daysSinceLastInteraction} giorni!`)
+    warnings.push(`Non vedi ${ragazza.nome} da ${daysSinceLastInteraction} giorni!`)
   }
   
   let status = 'Eccellente'
@@ -579,4 +642,20 @@ export const shouldGirlfriendBreakup = (ragazza: Ragazza): boolean => {
   if (ragazza.interessePerTe < 20) return true
   
   return false
+}
+
+// ── Adapter — Sistema 4-assi (R18) ───────────────────────────────────────────
+
+/**
+ * Converte una Ragazza nel formato RelationStats del sistema 4 assi.
+ * Usato per integrare la fidanzata con il sistema relazioni avanzato.
+ */
+export function girlfriendToRelation(girlfriend: Ragazza): RelationStats {
+  return {
+    amicizia:  girlfriend.stats.trustLevel ?? 30,
+    romantico: girlfriend.interessePerTe,
+    amore:     girlfriend.stats.happinessLevel ?? 0,
+    odio:      0,
+    rivalita:  0,
+  }
 }

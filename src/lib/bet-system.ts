@@ -1,3 +1,5 @@
+import { BET } from '@/lib/game-balance.constants'
+
 export interface BetInfo {
   importo: number
   vincitaPotenziale: number
@@ -13,12 +15,9 @@ const NOMI_AVVERSARI = [
 ]
 
 export const calculateBetAmount = (reputazione: number, difficolta: 1 | 2 | 3 | 4): number => {
-  const baseBet = 10
-  const moltiplicatore = Math.floor(reputazione / 20) * 5
-  const importoCalcolato = baseBet + moltiplicatore + (difficolta * 5)
-  
-  const CAP_MASSIMO = 60
-  return Math.min(importoCalcolato, CAP_MASSIMO)
+  const moltiplicatore = Math.floor(reputazione / BET.REP_DIVISOR) * BET.REP_MULTIPLIER
+  const importoCalcolato = BET.BASE_AMOUNT + moltiplicatore + (difficolta * BET.DIFF_MULTIPLIER)
+  return Math.min(importoCalcolato, BET.MAX_BET)
 }
 
 export const generateStreetRace = (reputazione: number): BetInfo => {

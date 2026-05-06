@@ -1,7 +1,20 @@
-import { GameStats, ReputationLevel, SubjectGrades, SchoolType, SUBJECT_WEIGHTS } from '@/lib/types'
+import { GameStats, SubjectGrades, SchoolType } from '@/lib/types'
+import { getGradeWeight, getActiveSubjectsForYear, SubjectDefinition } from '@/lib/subjects'
+import { STAT_CAPS, REPUTATION_WEIGHTS } from '@/lib/game-balance.constants'
 
-export const clampStat = (value: number, min: number = 0, max: number = 100): number => {
-  return Math.max(min, Math.min(max, value))
+/**
+ * Clamp di un valore statistico.
+ * - clampStat(v)               → [0, 100]
+ * - clampStat(v, 0, 200)       → [0, 200]
+ * - clampStat(v, 'soldi')      → [0, 1000]  (legge STAT_CAPS)
+ * - clampStat(v, 'media')      → [0, 10]
+ */
+export function clampStat(value: number, minOrKey?: number | keyof typeof STAT_CAPS, max?: number): number {
+  if (typeof minOrKey === 'string') {
+    const caps = STAT_CAPS[minOrKey] ?? STAT_CAPS.default
+    return Math.max(caps.min, Math.min(caps.max, value))
+  }
+  return Math.max(minOrKey ?? 0, Math.min(max ?? 100, value))
 }
 
 // A1 — Guardia centralizzata per le spese
@@ -46,13 +59,14 @@ export const calculateMedia = (grades: { [key: string]: number }): number => {
 // Media pesata per materia (Step 2): materie fondamentali contano di più
 export const calculateWeightedMedia = (grades: SubjectGrades, schoolType: SchoolType | null): number => {
   if (!schoolType) return calculateMedia(grades)
-  const weights = SUBJECT_WEIGHTS[schoolType]
   const entries = Object.entries(grades)
   if (entries.length === 0) return 0
+  const allSubjects = getActiveSubjectsForYear(schoolType, 1) // fallback year=1; caller passa voti già filtrati
   let totalWeight = 0
   let weightedSum = 0
   for (const [subject, grade] of entries) {
-    const weight = weights[subject] ?? 1.0
+    const subjectDef = allSubjects.find(s => s.key === subject)
+    const weight = subjectDef ? getGradeWeight(subjectDef, schoolType) : 1.0
     totalWeight += weight
     weightedSum += grade * weight
   }
@@ -72,6 +86,30 @@ export const randomChance = (percentage: number): boolean => {
   return seededRandom() * 100 < percentage
 }
 
+export function getGPASubjectsForYear(schoolType: SchoolType, year: number): SubjectDefinition[] {
+  return getActiveSubjectsForYear(schoolType, year).filter(s => s.countsForGPA)
+}
+
+export function archiveYearGrades(
+  grades: SubjectGrades,
+  schoolType: SchoolType,
+  fromYear: number
+): { archived: SubjectGrades; next: SubjectGrades } {
+  const nextYearSubjectKeys = new Set(
+    getActiveSubjectsForYear(schoolType, fromYear + 1).map(s => s.key)
+  )
+  const archived: SubjectGrades = {}
+  const next: SubjectGrades = {}
+  for (const [key, value] of Object.entries(grades)) {
+    if (nextYearSubjectKeys.has(key)) {
+      next[key] = value
+    } else {
+      archived[key] = value
+    }
+  }
+  return { archived, next }
+}
+
 export const checkGameOver = (stats: GameStats): { isOver: boolean; reason: string } => {
   if (stats.media < 4) {
     return { isOver: true, reason: 'SEI STATO BOCCIATO! Media sotto il 4. Torna a settembre, sfigato!' }
@@ -85,30 +123,23 @@ export const announceToScreenReader = (message: string, element: HTMLElement | n
   }
 }
 
-export const getReputationLevel = (reputazione: number): ReputationLevel => {
-  if (reputazione < 20) return 'Sfigato Totale'
-  if (reputazione < 40) return 'Nessuno'
-  if (reputazione < 60) return 'Coatto Base'
-  if (reputazione < 80) return 'Rispettato'
-  return 'Leggenda del Quartiere'
+export const getReputationLevel = (reputazione: number): { label: string; description: string } => {
+  if (reputazione < 20) return { label: 'Sfigato Totale', description: 'Nessuno ti conosce. Sei un fantasma.' }
+  if (reputazione < 40) return { label: 'Nessuno', description: 'Qualcuno sa chi sei, ma non abbastanza.' }
+  if (reputazione < 60) return { label: 'Coatto Base', description: 'Hai rispetto nel quartiere.' }
+  if (reputazione < 80) return { label: 'Rispettato', description: 'Tutti ti conoscono. Hai peso.' }
+  return { label: 'Leggenda del Quartiere', description: 'Sei una leggenda. Le storie su di te durano anni.' }
 }
 
 export const calculateReputationFromStats = (stats: GameStats): number => {
-  const coattaggineWeight = 0.25
-  const muscoliWeight = 0.15
-  const figositaWeight = 0.2
-  const soldiWeight = 0.1
-  const mediaWeight = 0.1
-  const carismaWeight = 0.2
-  
-  const reputationScore = 
-    (stats.coattaggine * coattaggineWeight) +
-    (stats.muscoli * muscoliWeight) +
-    (stats.figosita * figositaWeight) +
-    (Math.min(stats.soldi / 10, 100) * soldiWeight) +
-    (Math.min(stats.media * 10, 100) * mediaWeight) +
-    (stats.carisma * carismaWeight)
-  
+  const reputationScore =
+    (stats.coattaggine * REPUTATION_WEIGHTS.coattaggine) +
+    (stats.muscoli * REPUTATION_WEIGHTS.muscoli) +
+    (stats.figosita * REPUTATION_WEIGHTS.figosita) +
+    (clampStat(stats.soldi, 'soldi') / 10 * REPUTATION_WEIGHTS.soldi) +
+    (clampStat(stats.media, 'media') * 10 * REPUTATION_WEIGHTS.media) +
+    (stats.carisma * REPUTATION_WEIGHTS.carisma)
+
   return clampStat(reputationScore)
 }
 
@@ -160,7 +191,7 @@ export const getReputationEventModifier = (reputazione: number): {
 } => {
   const level = getReputationLevel(reputazione)
   
-  switch (level) {
+  switch (level.label) {
     case 'Sfigato Totale':
       return { 
         encounterChanceMultiplier: 1.5, 
@@ -191,5 +222,32 @@ export const getReputationEventModifier = (reputazione: number): {
         positiveOutcomeBonus: 30,
         respectBonus: 20
       }
+    default:
+      return { encounterChanceMultiplier: 1.0, positiveOutcomeBonus: 0, respectBonus: 0 }
   }
+}
+
+export function getMentalStateModifiers(stress: number, morale: number): {
+  studyEfficiencyMultiplier: number
+  socialSuccessBonus: number
+  carismaBonus: number
+  isDiscoBlocked: boolean
+  crisiNervosa: boolean
+} {
+  const studyEfficiencyMultiplier =
+    stress > 80 ? 0.6 :
+    stress > 60 ? 0.8 :
+    1.0
+
+  const socialSuccessBonus =
+    morale > 80 ? 10 :
+    morale < 30 ? -15 :
+    0
+
+  const carismaBonus = morale > 80 ? 10 : 0
+
+  const isDiscoBlocked = morale < 20
+  const crisiNervosa = stress > 80 && morale < 30
+
+  return { studyEfficiencyMultiplier, socialSuccessBonus, carismaBonus, isDiscoBlocked, crisiNervosa }
 }

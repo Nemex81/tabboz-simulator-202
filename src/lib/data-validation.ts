@@ -1,5 +1,6 @@
-import { GameStats, SubjectGrades, GameTime, Friend, Relationship, ScheduledExam, SchoolType } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, Friend, Relationship, ScheduledExam, SchoolType, getDefaultGradesForSchoolType } from '@/lib/types'
 import { clampStat } from '@/lib/game-utils'
+import { DEFAULT_SEXUAL_ORIENTATION, normalizeCharacterGenderCode } from '@/lib/gender-utils'
 
 export const validateStats = (stats: Partial<GameStats> | null | undefined): GameStats => {
   if (!stats || typeof stats !== 'object') {
@@ -12,7 +13,11 @@ export const validateStats = (stats: Partial<GameStats> | null | undefined): Gam
       figosita: 50,
       reputazione: 50,
       intelligenza: 10,
-      carisma: 10
+      carisma: 10,
+      stress: 0,
+      morale: 60,
+      salute: 100,
+      hasMotorino: false,
     }
   }
 
@@ -25,22 +30,28 @@ export const validateStats = (stats: Partial<GameStats> | null | undefined): Gam
     figosita: clampStat(stats.figosita ?? 50),
     reputazione: clampStat(stats.reputazione ?? 50),
     intelligenza: clampStat(stats.intelligenza ?? 10),
-    carisma: clampStat(stats.carisma ?? 10)
+    carisma: clampStat(stats.carisma ?? 10),
+    stress: clampStat(stats.stress ?? 0),
+    morale: clampStat(stats.morale ?? 60),
+    salute: clampStat(stats.salute ?? 100),
+    hasMotorino: typeof stats.hasMotorino === 'boolean' ? stats.hasMotorino : false,
   }
 }
 
 export const validateGrades = (grades: Partial<SubjectGrades> | null | undefined, schoolType?: SchoolType | null): SubjectGrades => {
+  const defaults = schoolType ? getDefaultGradesForSchoolType(schoolType) : {
+    matematica: 6,
+    italiano: 6,
+    storia: 6,
+    edFisica: 6
+  }
+
   if (!grades || typeof grades !== 'object') {
-    return {
-      matematica: 6,
-      italiano: 6,
-      storia: 6,
-      edFisica: 6
-    }
+    return defaults
   }
 
   const validated: SubjectGrades = {}
-  
+
   for (const [key, value] of Object.entries(grades)) {
     if (typeof value === 'number' && !isNaN(value)) {
       validated[key] = clampStat(value, 0, 10)
@@ -119,7 +130,7 @@ export const validateGameTime = (gameTime: Partial<GameTime> | null | undefined)
 
   return {
     currentDate,
-    actionsRemaining: Math.max(0, Math.min(gameTime.actionsRemaining ?? 3, gameTime.maxActionsPerDay ?? 3)),
+    actionsRemaining: clampStat(gameTime.actionsRemaining ?? 3, 0, gameTime.maxActionsPerDay ?? 3),
     maxActionsPerDay: gameTime.maxActionsPerDay ?? 3,
     schoolYear,
     age: Math.max(14, Math.min(gameTime.age ?? 14, 25)),
@@ -159,9 +170,9 @@ export const validateFriends = (friends: unknown): Friend[] => {
       // Migrazione dati legacy: legameLevel (1-10) -> affinita (0-100)
       const affinita: number =
         typeof friend.affinita === 'number'
-          ? Math.min(100, Math.max(0, friend.affinita))
+          ? clampStat(friend.affinita)
           : typeof friend.legameLevel === 'number'
-          ? Math.min(100, Math.max(0, (friend.legameLevel as number) * 10))
+          ? clampStat((friend.legameLevel as number) * 10)
           : 50
 
       const type =
@@ -174,8 +185,16 @@ export const validateFriends = (friends: unknown): Friend[] => {
         name: friend.name as string,
         type,
         affinita,
+        gender: normalizeCharacterGenderCode(friend.gender as Friend['gender'] | undefined, 'F'),
+        orientamentoSessuale: (friend.orientamentoSessuale as Friend['orientamentoSessuale']) ?? DEFAULT_SEXUAL_ORIENTATION,
         intelligenza: typeof friend.intelligenza === 'number' ? (friend.intelligenza as number) : undefined,
-        unlocked: typeof friend.unlocked === 'boolean' ? (friend.unlocked as boolean) : true
+        unlocked: typeof friend.unlocked === 'boolean' ? (friend.unlocked as boolean) : true,
+        // Preserva i nuovi campi se presenti nel KV (dati già migrati)
+        originType: (friend.originType as Friend['originType']) ?? 'extrascolastico',
+        metAt: friend.metAt as Friend['metAt'] ?? undefined,
+        schoolYearMet: typeof friend.schoolYearMet === 'number' ? (friend.schoolYearMet as number) : undefined,
+        rel: friend.rel as import('@/lib/relation-system').RelationStats ?? undefined,
+        lastInteractionDay: typeof friend.lastInteractionDay === 'number' ? (friend.lastInteractionDay as number) : undefined,
       }
     })
 }
@@ -216,10 +235,12 @@ export const validateScheduledExams = (exams: unknown): ScheduledExam[] => {
       const difficulty = ['facile', 'normale', 'difficile', 'brutale'].includes(exam.difficulty as string)
         ? (exam.difficulty as 'facile' | 'normale' | 'difficile' | 'brutale')
         : 'normale'
+      const type = exam.type === 'orale' ? 'orale' : 'scritto'
       
       return {
         subject: exam.subject,
         daysUntil: exam.daysUntil,
+        type,
         isPrepared: exam.isPrepared,
         difficulty,
         announced: typeof exam.announced === 'boolean' ? exam.announced : false
@@ -228,16 +249,16 @@ export const validateScheduledExams = (exams: unknown): ScheduledExam[] => {
     return {
       subject: 'matematica',
       daysUntil: 5,
+      type: 'scritto',
       isPrepared: false,
       difficulty: 'normale',
       announced: false
     }
-  }).filter(exam => exam.daysUntil >= 0)
+  }).filter(exam => (exam.daysUntil ?? 0) >= 0)
 }
 
 export const validateSchoolType = (schoolType: unknown): SchoolType | null => {
-  if (schoolType === 'tecnico' || schoolType === 'agraria' || schoolType === 'artistico') {
-    return schoolType
-  }
+  const VALID_SCHOOL_TYPES = ['tecnico', 'agraria', 'artistico', 'conservatorio', 'alberghiero', 'liceoScientifico'] as const
+  if (VALID_SCHOOL_TYPES.includes(schoolType as SchoolType)) return schoolType as SchoolType
   return null
 }
