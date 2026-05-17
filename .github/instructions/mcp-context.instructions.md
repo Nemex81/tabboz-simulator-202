@@ -1,9 +1,15 @@
 ---
-applyTo: "**"
+scf_protected: false
+scf_file_role: "instruction"
 name: mcp-context
+applyTo: "**"
+scf_merge_strategy: "replace"
+scf_version: "2.1.0"
 package: scf-master-codecrafter
-version: 1.0.0
+scf_merge_priority: 20
+scf_owner: "scf-master-codecrafter"
 spark: true
+version: 1.0.0
 ---
 
 # Instruction: MCP Context
