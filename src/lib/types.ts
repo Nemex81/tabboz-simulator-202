@@ -1,4 +1,3 @@
-
 import type { TraitId } from '@/lib/character-traits'
 import { getActiveSubjectsForYear, COMMON_SUBJECTS, SPECIFIC_SUBJECTS } from '@/lib/subjects'
 export type { SubjectDefinition } from '@/lib/subjects'
@@ -341,267 +340,307 @@ export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
   isAtSchool: false,
   consecutiveGoodDays: 0
 }
-import type { TraitId } from '@/lib/character-traits'
 
-  coattaggine: number
-  media: number
-  figosita: number
-  intelligenza:
-}
-export interface Sch
-  figosita: number
-  reputazione: number
-  intelligenza: number
-  carisma: number
- 
+export type LogEntryType =
+  | 'action_success'   // azione del giocatore riuscita
+  | 'action_failure'   // azione del giocatore fallita
+  | 'action_neutral'   // azione del giocatore neutra (es. studia)
+  | 'event_positive'   // evento automatico positivo
+  | 'event_negative'   // evento automatico negativo
+  | 'event_neutral'    // evento automatico neutro
+  | 'school'           // evento scolastico (voto, nota, sospensione)
+  | 'social'           // evento sociale (amico, ragazza)
+  | 'system'           // evento di sistema (fine anno, game over, nuovo anno)
+  | 'health'           // condizione di salute (insorgenza, guarigione, peggioramento)
 
-export interface ScheduledExam {
-  id?: string
-  month: number
-}
-export interface Sch
-  isSchoolPeriod: boo
-  schoolStartDate: GameDate
-  reportCardDate: Gam
+export type DayPhaseLabel = 'Mattina' | 'Pomeriggio' | 'Sera' | 'Notte'
 
-
-  mattina: number
-
-}
-export interface GameTime {
- 
-
-  lastPaghettaDate?: GameDa
-  currentPhas
-  month: number
-  year: number
-e
-
-export interface SchoolYear {
-  currentYear: number
-  isSchoolPeriod: boolean
-  daysUntilBreak: number
-  schoolStartDate: GameDate
-  schoolEndDate: GameDate
-  reportCardDate: GameDate
-}
-
-export type DayPhase = 'mattina' | 'pomeriggio' | 'sera' | 'notte'
-
-export interface PhaseActions {
-  mattina: number
-  pomeriggio: number
-  sera: number
-  notte: number
-}
-
-export interface GameTime {
-  currentDate: GameDate
-  actionsRemaining: number
-  maxActionsPerDay: number
-  schoolYear: SchoolYear
-  age: number
-  lastPaghettaDate?: GameDate
-  extraActions: number
-  currentPhase: DayPhase
-  phaseActions: PhaseActions
-}
-
-export type ThemeVariant = 'default' | 'dark' | 'green'
-
-export type ReputationLevel = 'sfigato' | 'normale' | 'popolare' | 'leggenda'
-
-export const SUBJECT_WEIGHTS: Record<SchoolType, Record<string, number>> = {
-  liceo: {
-}
-    fisica: 1.3,
-  switch (schoolTy
-    inglese: 1.0,
-        matemati
-    scienze: 1.0,
-        inglese: 
-    
-    italiano
-    storia: 'Sto
-    disegno: 'Disegn
-    edFisica: 'Ed
-  return displayNa
-
-  stats: GameStat
-  gameTime: GameT
-
-  stats: {
-    coattaggine: 
-    media: 6,
-    figosita: 50,
-    intelligenza:
-  },
-    matematica: 
-    italiano: 6,
-    
-    edFisica: 
-  gameTime: {
-    actionsRemaining
-    schoolYear: {
-      isSchoolPeri
-      schoolStart
-      reportCard
-    age: 14,
-    currentPhase:
-   
- 
-
-}
-export interface Friend
-  name: string
-  affinita: nu
-  unlocked: boolean
-
+export interface GameLogEntry {
   id: string
-  difficulty: 'faci
-  relationshipLeve
-}
-export interface Pl
-  gende
-}
-export interfa
-  note: number
-  condotta: number
-  consecutiveGoodDay
-
-  assenze: 0,
-  sospensioni: 0,
-  wentToSchoolToday
+  type: LogEntryType
+  phase: DayPhaseLabel
+  date: GameDate
+  title: string
+  description: string
+  result: 'positive' | 'negative' | 'neutral'
 }
 
+export const MAX_LOG_ENTRIES = 200
 
+// ── Health System ──────────────────────────────────────────────
 
+export type HealthConditionId =
+  | 'raffreddore'
+  | 'influenza'
+  | 'febbre_alta'
+  | 'infortunio_lieve'
+  | 'infortunio_grave'
+  | 'sbornia'
+  | 'dipendenza_fumo'
+  | 'dipendenza_alcol'
+  | 'esaurito'
+  | 'depresso'
+  | 'ciclo_mestruale'
+  | 'gravidanza'
 
+export type HealthConditionSeverity = 'lieve' | 'moderata' | 'grave'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    italiano: 'Italiano',
-    inglese: 'Inglese',
-    storia: 'Storia',
-    scienze: 'Scienze',
-    disegno: 'Disegno',
-    storiaArte: 'Storia dell\'Arte',
-    edFisica: 'Ed. Fisica'
+export interface HealthConditionTemplate {
+  id: HealthConditionId
+  label: string
+  description: string
+  severity: HealthConditionSeverity
+  durationDays: number | null
+  statModifiers: Partial<Record<keyof GameStats, number>>
+  genderRestricted?: 'femmina'
+  forcesAbsence?: boolean
+  autoOnset?: {
+    check: 'stress_high' | 'morale_low'
+    threshold: number
   }
-  return displayNames[subject] || subject
-}
-
-export interface GameState {
-  stats: GameStats
-  grades: SubjectGrades
-  gameTime: GameTime
-}
-
-export const DEFAULT_GAME_STATE: GameState = {
-  stats: {
-    muscoli: 50,
-    coattaggine: 50,
-    soldi: 100,
-    media: 6,
-    stanchezza: 0,
-    figosita: 50,
-    reputazione: 50,
-    intelligenza: 10,
-    carisma: 10
-  },
-  grades: {
-    matematica: 6,
-    fisica: 6,
-    italiano: 6,
-    inglese: 6,
-    storia: 6,
-    scienze: 6,
-    edFisica: 6
-  },
-  gameTime: {
-    currentDate: { day: 15, month: 9, year: 2026 },
-    actionsRemaining: 3,
-    maxActionsPerDay: 3,
-    schoolYear: {
-      currentYear: 1,
-      isSchoolPeriod: true,
-      daysUntilBreak: 180,
-      schoolStartDate: { day: 15, month: 9, year: 2026 },
-      schoolEndDate: { day: 10, month: 6, year: 2027 },
-      reportCardDate: { day: 10, month: 6, year: 2027 }
-    },
-    age: 14,
-    extraActions: 0,
-    currentPhase: 'mattina',
-    phaseActions: {
-      mattina: 3,
-      pomeriggio: 3,
-      sera: 2,
-      notte: 1
-    }
+  autoResolve?: {
+    check: 'stress_low' | 'morale_high'
+    threshold: number
   }
+  cumulative?: boolean
 }
 
-export interface Friend {
+export interface ActiveCondition {
+  id: HealthConditionId
+  startDate: GameDate
+  daysElapsed: number
+  appliedModifiers: Partial<Record<keyof GameStats, number>>
+}
+
+export interface HealthRecord {
+  conditions: ActiveCondition[]
+  lastCheckupDate?: GameDate
+  /** Data in cui è previsto il prossimo ciclo (solo per personaggi femminili). */
+  nextCycleDate?: GameDate
+}
+
+export const DEFAULT_HEALTH_RECORD: HealthRecord = {
+  conditions: [],
+}
+
+export const HEALTH_CONDITIONS: Record<HealthConditionId, HealthConditionTemplate> = {
+  raffreddore: {
+    id: 'raffreddore',
+    label: 'Raffreddore',
+    description: 'Naso chiuso e starnuti. Niente di grave, ma sei un po\' rimbambito.',
+    severity: 'lieve',
+    durationDays: 5,
+    statModifiers: { intelligenza: -3, muscoli: -5 },
+  },
+  influenza: {
+    id: 'influenza',
+    label: 'Influenza',
+    description: 'Febbre, dolori, e voglia di starsene a letto. Dura un bel po\'.',
+    severity: 'moderata',
+    durationDays: 10,
+    statModifiers: { intelligenza: -10, muscoli: -15, morale: -10 },
+  },
+  febbre_alta: {
+    id: 'febbre_alta',
+    label: 'Febbre Alta',
+    description: 'Temperatura alle stelle! Non puoi andare a scuola in queste condizioni.',
+    severity: 'grave',
+    durationDays: 7,
+    statModifiers: { intelligenza: -20, muscoli: -20 },
+    forcesAbsence: true,
+  },
+  infortunio_lieve: {
+    id: 'infortunio_lieve',
+    label: 'Infortunio Lieve',
+    description: 'Una storta o un livido. Niente di rotto, ma fa male.',
+    severity: 'lieve',
+    durationDays: 7,
+    statModifiers: { muscoli: -10, figosita: -5 },
+  },
+  infortunio_grave: {
+    id: 'infortunio_grave',
+    label: 'Infortunio Grave',
+    description: 'Frattura o stiramento serio. Ci vorranno settimane per riprenderti.',
+    severity: 'grave',
+    durationDays: 21,
+    statModifiers: { muscoli: -30, figosita: -15, morale: -10 },
+  },
+  sbornia: {
+    id: 'sbornia',
+    label: 'Sbornia',
+    description: 'Testa che gira, stomaco in subbuglio. Mai pi\u00f9... fino alla prossima volta.',
+    severity: 'lieve',
+    durationDays: 1,
+    statModifiers: { intelligenza: -15, muscoli: -10, morale: -5 },
+  },
+  dipendenza_fumo: {
+    id: 'dipendenza_fumo',
+    label: 'Dipendenza da Fumo',
+    description: 'Le sigarette ti stanno consumando. Ogni giorno peggiori un po\'.',
+    severity: 'moderata',
+    durationDays: null,
+    statModifiers: { muscoli: -5, salute: -3 },
+    cumulative: true,
+  },
+  dipendenza_alcol: {
+    id: 'dipendenza_alcol',
+    label: 'Dipendenza da Alcol',
+    description: 'L\'alcol ti sta rovinando la vita. Ogni giorno \u00e8 peggio del precedente.',
+    severity: 'grave',
+    durationDays: null,
+    statModifiers: { intelligenza: -10, morale: -10, salute: -5 },
+    cumulative: true,
+  },
+  esaurito: {
+    id: 'esaurito',
+    label: 'Esaurito',
+    description: 'Troppo stress! Non riesci a concentrarti su nulla.',
+    severity: 'moderata',
+    durationDays: null,
+    statModifiers: { intelligenza: -10, morale: -5 },
+    autoOnset: { check: 'stress_high', threshold: 85 },
+    autoResolve: { check: 'stress_low', threshold: 70 },
+  },
+  depresso: {
+    id: 'depresso',
+    label: 'Depresso',
+    description: 'Non hai voglia di fare niente. Il mondo sembra grigio.',
+    severity: 'grave',
+    durationDays: null,
+    statModifiers: { morale: -10, reputazione: -5, carisma: -5 },
+    autoOnset: { check: 'morale_low', threshold: 15 },
+    autoResolve: { check: 'morale_high', threshold: 25 },
+  },
+  // ── Gender-specific (STEP 9E) ──
+  ciclo_mestruale: {
+    id: 'ciclo_mestruale',
+    label: 'Ciclo Mestruale',
+    description: 'Quel periodo del mese. Crampi e malumore.',
+    severity: 'lieve',
+    durationDays: 5,
+    statModifiers: { morale: -5, muscoli: -5 },
+    genderRestricted: 'femmina',
+  },
+  gravidanza: {
+    id: 'gravidanza',
+    label: 'Gravidanza',
+    description: 'Una situazione... complicata. Tutto cambier\u00e0.',
+    severity: 'grave',
+    durationDays: 280,
+    statModifiers: { muscoli: -10, morale: -15, stress: 20 },
+    genderRestricted: 'femmina',
+  },
+}
+// ── Sistema Scolastico Avanzato — Fase 1B ─────────────────────
+
+// 2.1 Orario Settimanale
+
+export interface TimetableSlot {
+  subjectKey: string   // chiave materia da SubjectDefinition
+  teacherId: string    // id del Teacher assegnato
+}
+
+export type WeeklyTimetable = {
+  [day in 0 | 1 | 2 | 3 | 4]: TimetableSlot[]  // 6 slot per giorno (lun-ven)
+}
+
+// 2.2 Compagno di Classe
+
+export type ClassmatePersonality =
+  | 'secchione' | 'bullo' | 'simpatico' | 'silenzioso'
+  | 'sportivo' | 'ribelle' | 'nerd' | 'popolare'
+  | 'timido' | 'leader'
+
+export interface Classmate extends BaseCharacter {
   id: string
   name: string
-  type: 'coatto' | 'secchione' | 'sportivo' | 'ribelle' | 'generico'
-  affinita: number
-  intelligenza?: number
-  unlocked: boolean
+  type: FriendType                    // coatto | secchione | sportivo | ribelle | generico
+  intelligenza: number                // 20-100
+  relation: number                    // [0,100], valore neutro 50
+  relazione?: number                  // alias compatibile per BaseCharacter
+  gender?: BinaryGenderCode
+  carisma?: number
+  personality: ClassmatePersonality   // archetipo narrativo
+  promotedToFriend: boolean           // true quando il giocatore lo aggiunge agli amici
+  yearJoined: number                  // anno scolastico in cui e entrato nella classe
 }
 
-export interface Relationship {
+// 2.3 Professore
+
+export interface TeacherMemoryEntry {
+  type: 'corruzione' | 'minaccia' | 'buon_voto' | 'cattivo_voto'
+      | 'conversazione' | 'richiesta_spiegazione' | 'richiesta_revoca_voto'
+  date: GameDate
+  detail: string
+  impactOnRelation: number   // quanto ha cambiato la relazione
+}
+
+export interface Teacher extends BaseCharacter {
   id: string
   name: string
-  difficulty: 'facile' | 'media' | 'difficile'
-  preference: 'muscoli' | 'figosita' | 'intelligenza'
-  relationshipLevel: number
-  isActive: boolean
+  subjectKey: string              // materia insegnata
+  gender: BinaryGenderCode
+
+  // Attributi (1-10)
+  severita: number
+  simpatia: number
+  corruttibilita: number
+  resistenzaMinacce: number
+
+  // Relazione col giocatore [0,100] — C2 (aggiornata da piano correttivo v3)
+  relazione: number
+  sogliaRottura: number           // sotto questo valore -> modalita ostile
+  isOstile: boolean               // derivato da relazione < sogliaRottura
+
+  // Memoria
+  memoria: TeacherMemoryEntry[]
+  corruptionCount: number         // tentativi corruzione riusciti
+  threatCount: number             // tentativi minaccia subiti
 }
 
-export interface PlayerProfile {
-  name: string
-  gender: 'maschio' | 'femmina'
-  selectedTraits: TraitId[]
+// 2.4 Stato Mattinata Scolastica
+
+export interface OrdinaryHourEvent {
+  message: string
+  statDelta: Partial<GameStats>   // tipicamente +1 intelligenza o +2 stanchezza
 }
 
-export interface SchoolRecord {
-  assenze: number
-  note: number
-  sospensioni: number
-  condotta: number
-  wentToSchoolToday: boolean
-  consecutiveGoodDays: number
+export interface HourSlot {
+  hourIndex: number               // 0-5 (prima ora = 0, sesta ora = 5)
+  type: 'lesson' | 'break'
+  subjectKey?: string             // assente per break
+  teacherId?: string              // assente per break
+  ordinaryEvent: OrdinaryHourEvent
+  structuredEvent?: import('@/lib/school-morning-events').SchoolMorningEvent
+  schoolEvent?: import('@/lib/school-events').SchoolEvent
+  schoolEventTriggered?: boolean
+  completed: boolean
+  playerChoice?: string           // id della scelta fatta (per log)
 }
 
-export const DEFAULT_SCHOOL_RECORD: SchoolRecord = {
-  assenze: 0,
-  note: 0,
-  sospensioni: 0,
-  condotta: 8.0,
-  wentToSchoolToday: false,
-  consecutiveGoodDays: 0
+export interface SchoolDayState {
+  date: GameDate                  // data della mattinata in corso
+  slots: HourSlot[]               // 7 elementi: 3 ore + break + 3 ore
+  currentSlotIndex: number        // 0-6, slot attivo
+  isComplete: boolean
 }
->>>>>>> Stashed changes
+
+export const DEFAULT_SCHOOL_DAY_STATE: SchoolDayState = {
+  date: { day: 1, month: 9, year: 2026 },
+  slots: [],
+  currentSlotIndex: 0,
+  isComplete: false,
+}
+
+// Blocco 4 — anticipato per dipendenze (C11)
+export type BreakActionType =
+  | 'chiacchiera_compagno'
+  | 'studia_insieme'
+  | 'risolvi_conflitto'
+  | 'conversazione_prof'
+  | 'chiedi_spiegazione'
+  | 'chiedi_revoca_voto'
+  | 'corruzione_prof'
+  | 'minaccia_prof'
+  | 'bar_scolastico'
+  | 'riposa'
