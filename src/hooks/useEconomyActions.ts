@@ -241,7 +241,7 @@ export function useEconomyActions({
     checkForNewFriend('al centro commerciale')
     checkForNewRelationship('quartiere')
     checkForNewGirlfriend('quartiere')
-    triggerRandomEvent()
+    triggerRandomEvent('shopping')
     addLogEntry('action_neutral', 'Shopping al centro commerciale', `Hai comprato VESTITI FICHISSIMI! Ora sei una BOMBA! +20 Figosità, +10 Coattaggine, +5 Carisma, -${ECONOMY.SHOPPING_COSTO} Soldi`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
   }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
 

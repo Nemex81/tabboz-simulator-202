@@ -114,7 +114,7 @@ export function useLifestyleActions({
     addLogEntry('action_neutral', 'Sessione in palestra', `Hai pompato FERRO! +10 Muscoli, +5 Figosità, -${ECONOMY.PALESTRA_COSTO} Soldi, +15 Stanchezza`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     checkForNewFriend('in palestra')
     checkForNewRelationship('palestra')
-    triggerRandomEvent()
+    triggerRandomEvent('palestra')
     // STEP 9C: rischio infortunio da palestra
     const injuryRoll = Math.random()
     if (injuryRoll < 0.02) {
@@ -153,7 +153,7 @@ export function useLifestyleActions({
     consumeAction()
     announce(`Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -${ECONOMY.LAMPADA_COSTO} Soldi`)
     addLogEntry('action_neutral', 'Lampada abbronzante', `Ora sei ABBRONZATISSIMO! +15 Coattaggine, +10 Figosità, -${ECONOMY.LAMPADA_COSTO} Soldi`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
-    triggerRandomEvent()
+    triggerRandomEvent('lampada')
   }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
 
   const handleRiposa = useCallback(() => {

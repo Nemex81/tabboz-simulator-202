@@ -127,6 +127,7 @@ export function useEventEngine({
   const [atipaSuccessChance, setAtipaSuccessChance] = useState(0)
   const [showPoliceEvent, setShowPoliceEvent] = useState(false)
   const [policeBribeCost, setPoliceBribeCost] = useState(50)
+  const [recentEvents, setRecentEvents] = useState<string[]>([])
   const [showStreetRaceEvent, setShowStreetRaceEvent] = useState(false)
   const [showBulliEvent, setShowBulliEvent] = useState(false)
   const [raceWinChance, setRaceWinChance] = useState(0)
@@ -288,63 +289,138 @@ export function useEventEngine({
   const triggerRandomEvent = useCallback((actionType?: string) => {
     const s = statsRef.current
     const reputationModifier = getReputationEventModifier(s.reputazione)
-    const baseRoll = Math.random() * 100
-    const adjustedRoll = baseRoll * reputationModifier.encounterChanceMultiplier
 
-    if (adjustedRoll < 12) {
-      if (canAvoidNegativeEventWithCharisma(s.carisma)) {
-        playSound.success()
-        announce('I METALLARI ti riconoscono! Con la tua PARLANTINA li hai convinti a lasciarti stare!')
-        addLogEntry('event_positive', 'Metallari evitati', 'I METALLARI ti riconoscono! Con la tua PARLANTINA li hai convinti a lasciarti stare!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    // 1. Calcolo probabilità Polizia dinamica
+    const currentModelId = s.motorinoModello ?? (s.hasMotorino ? 'ciao' : '')
+    const currentVehicle = VEHICLES[currentModelId]
+    const isIllegal = currentVehicle?.isIllegal === true
+    const hasModifications = (s.motorinoPezzi ?? []).length > 0
+
+    let policeChance = 8
+    if (actionType === 'lavoro') {
+      policeChance = 2.4
+    } else if (actionType === 'disco' || actionType === 'cinema') {
+      policeChance = 15.0
+    } else if (actionType === 'palestra' || actionType === 'lampada') {
+      policeChance = 4.0
+    } else if (actionType === 'parco' || actionType === 'rimorchia') {
+      policeChance = 8.0
+    }
+
+    if (s.coattaggine > 60) {
+      policeChance += (s.coattaggine - 60) * 0.15
+    } else if (s.coattaggine < 40) {
+      policeChance -= (40 - s.coattaggine) * 0.1
+    }
+
+    if (s.hasMotorino) {
+      if (isIllegal) policeChance += 10
+      if (hasModifications) policeChance += (s.motorinoTuning ?? 0) * 0.08
+    }
+    policeChance = Math.max(1, policeChance * reputationModifier.encounterChanceMultiplier)
+
+    // 2. Calcolo probabilità Metallari
+    let metallariChance = 10
+    if (actionType === 'parco') {
+      metallariChance = 15.0
+    } else if (actionType === 'disco') {
+      metallariChance = 12.0
+    } else if (actionType === 'shopping') {
+      metallariChance = 10.0
+    } else if (actionType === 'lavoro' || actionType === 'palestra' || actionType === 'lampada') {
+      metallariChance = 1.0
+    } else if (actionType === 'cinema' || actionType === 'rimorchia') {
+      metallariChance = 6.0
+    }
+    metallariChance = Math.max(0.5, metallariChance * reputationModifier.encounterChanceMultiplier)
+
+    // 3. Calcolo probabilità Bulli
+    let bulliChance = 6
+    if (actionType === 'parco' || actionType === 'shopping') {
+      bulliChance = 8.0
+    } else if (actionType === 'lavoro' || actionType === 'palestra' || actionType === 'lampada' || actionType === 'disco') {
+      bulliChance = 0.5
+    } else if (actionType === 'cinema' || actionType === 'rimorchia') {
+      bulliChance = 4.0
+    }
+    bulliChance = Math.max(0.2, bulliChance * reputationModifier.encounterChanceMultiplier)
+
+    // 4. Calcolo probabilità Gare Clandestine
+    let streetRaceChance = s.hasMotorino ? 8 : 0
+    if (s.hasMotorino) {
+      if (actionType === 'disco' || actionType === 'cinema') {
+        streetRaceChance = 12.0
+      } else if (actionType === 'lavoro' || actionType === 'palestra' || actionType === 'lampada') {
+        streetRaceChance = 2.0
+      } else {
+        streetRaceChance = 8.0
+      }
+    }
+
+    // Filtra per Cooldown recenti
+    const canPolice = !recentEvents.includes('police')
+    const canMetallari = !recentEvents.includes('metallari')
+    const canBulli = !recentEvents.includes('bulli')
+    const canStreetRace = !recentEvents.includes('street_race') && s.hasMotorino
+
+    const activePoliceChance = canPolice ? policeChance : 0
+    const activeMetallariChance = canMetallari ? metallariChance : 0
+    const activeBulliChance = canBulli ? bulliChance : 0
+    const activeStreetRaceChance = canStreetRace ? streetRaceChance : 0
+
+    // Estrazione cumulativa
+    const roll = Math.random() * 100
+    let cumulative = 0
+
+    // Check Metallari
+    if (activeMetallariChance > 0) {
+      cumulative += activeMetallariChance
+      if (roll < cumulative) {
+        setRecentEvents((prev) => {
+          const next = [...prev, 'metallari']
+          if (next.length > 2) next.shift()
+          return next
+        })
+
+        if (canAvoidNegativeEventWithCharisma(s.carisma)) {
+          playSound.success()
+          announce('I METALLARI ti riconoscono! Con la tua PARLANTINA li hai convinti a lasciarti stare!')
+          addLogEntry('event_positive', 'Metallari evitati', 'I METALLARI ti riconoscono! Con la tua PARLANTINA li hai convinti a lasciarti stare!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+          return
+        }
+        if (reputationModifier.respectBonus >= 15) {
+          playSound.success()
+          announce('I METALLARI ti riconoscono e ti salutano con rispetto! La tua REPUTAZIONE ti precede!')
+          addLogEntry('event_positive', 'Rispettato dai metallari', 'I METALLARI ti riconoscono e ti salutano con rispetto! La tua REPUTAZIONE ti precede!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+          return
+        }
+
+        let desc = 'Incontro con i METALLARI! Vogliono la tua grana!'
+        if (actionType === 'parco') {
+          desc = 'Mentre cazzeggi al parco, spunta un gruppo di METALLARI arrabbiati con le borchie! Vogliono la tua grana!'
+        } else if (actionType === 'disco') {
+          desc = 'Fuori dal locale vieni accerchiato da dei METALLARI ubriachi! Vogliono fregarti i soldi!'
+        }
+
+        playSound.dangerAlert()
+        setShowMetallariEvent(true)
+        setCurrentEvent(desc)
+        announce('Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!')
+        addLogEntry('event_negative', 'Incontro con i metallari', desc, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
         return
       }
-      if (reputationModifier.respectBonus >= 15) {
-        playSound.success()
-        announce('I METALLARI ti riconoscono e ti salutano con rispetto! La tua REPUTAZIONE ti precede!')
-        addLogEntry('event_positive', 'Rispettato dai metallari', 'I METALLARI ti riconoscono e ti salutano con rispetto! La tua REPUTAZIONE ti precede!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
-        return
-      }
-      playSound.dangerAlert()
-      setShowMetallariEvent(true)
-      setCurrentEvent('Incontro con i METALLARI! Vogliono la tua grana!')
-      announce('Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!')
-      addLogEntry('event_negative', 'Incontro con i metallari', 'Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
-    } else {
-      // Calcolo probabilità Polizia dinamica
-      const currentModelId = s.motorinoModello ?? (s.hasMotorino ? 'ciao' : '')
-      const currentVehicle = VEHICLES[currentModelId]
-      const isIllegal = currentVehicle?.isIllegal === true
-      const hasModifications = (s.motorinoPezzi ?? []).length > 0
+    }
 
-      let policeChance = 8 // base chance
-      
-      // Abbattimento probabilità del 70% se sul posto di lavoro (legal lavoro)
-      if (actionType === 'lavoro') {
-        policeChance = policeChance * 0.3
-      }
+    // Check Polizia
+    if (activePoliceChance > 0) {
+      cumulative += activePoliceChance
+      if (roll < cumulative) {
+        setRecentEvents((prev) => {
+          const next = [...prev, 'police']
+          if (next.length > 2) next.shift()
+          return next
+        })
 
-      // Sospetto visivo per coattaggine
-      if (s.coattaggine > 60) {
-        policeChance += (s.coattaggine - 60) * 0.15
-      } else if (s.coattaggine < 40) {
-        policeChance -= (40 - s.coattaggine) * 0.1
-      }
-
-      // Sospetto per motorino truccato o cross non omologato
-      if (s.hasMotorino) {
-        if (isIllegal) {
-          policeChance += 10
-        }
-        if (hasModifications) {
-          policeChance += (s.motorinoTuning ?? 0) * 0.08
-        }
-      }
-
-      // Reputazione mitiga
-      policeChance = Math.max(1, policeChance * reputationModifier.encounterChanceMultiplier)
-
-      const policeRoll = Math.random() * 100
-      if (policeRoll < policeChance) {
         if (canAvoidNegativeEventWithCharisma(s.carisma)) {
           playSound.success()
           setStats((current) => ({ ...current, carisma: clampStat(current.carisma + 5) }))
@@ -359,57 +435,91 @@ export function useEventEngine({
           return
         }
 
-        // Imposta costo mazzetta
+        let desc = 'I POLIZIOTTI ti hanno fermato! Controllo documenti!'
+        if (actionType === 'disco') {
+          desc = 'Uscendo dalla discoteca, una pattuglia ti paletta per un controllo alcoltest e documenti!'
+        } else if (actionType === 'parco') {
+          desc = 'Mentre cazzeggi con gli amici sulle panchine del parco, la Polizia si avvicina per un controllo documenti!'
+        } else if (actionType === 'lavoro') {
+          desc = 'Mentre stai lavorando, una pattuglia ti ferma sul marciapiede per verificare la tua attività!'
+        }
+
         const cost = isIllegal ? 150 : (hasModifications ? 100 : 50)
         setPoliceBribeCost(cost)
 
         playSound.dangerAlert()
         setShowPoliceEvent(true)
-        setCurrentEvent('I POLIZIOTTI ti hanno fermato! Controllo documenti!')
+        setCurrentEvent(desc)
         announce('Evento casuale: Controllo della POLIZIA!')
-        addLogEntry('event_negative', 'Controllo della polizia', 'Evento casuale: Controllo della POLIZIA!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
+        addLogEntry('event_negative', 'Controllo della polizia', desc, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
         return
       }
-
-      // Altrimenti, controlla se scatta la gara
-      if (adjustedRoll < 30) {
-      if (!s.hasMotorino) {
-        return // Salta l'evento se a piedi
-      }
-      const currentModelId = s.motorinoModello ?? 'ciao'
-      const vehicle = VEHICLES[currentModelId]
-      const baseChance = vehicle ? vehicle.baseWinChance : 15
-      const winChance = Math.min(95, Math.max(10,
-        baseChance +
-        (s.coattaggine * 0.2) +
-        (s.figosita * 0.1) +
-        (s.muscoli * 0.05) +
-        ((s.motorinoTuning ?? 0) * 0.4) +
-        reputationModifier.positiveOutcomeBonus
-      ))
-      const race = generateStreetRace(s.reputazione)
-      setBetInfo(race)
-      setRaceWinChance(Math.round(winChance))
-      playSound.eventTrigger()
-      setShowStreetRaceEvent(true)
-      setCurrentEvent('Un TAMARRO ti sfida ad una GARA con il motorino!')
-      announce(`Evento casuale: GARA di motorini! Possibilità di vincita: ${Math.round(winChance)}%`)
-      addLogEntry('event_neutral', 'Sfida a gara di motorini', `Evento casuale: GARA di motorini! Possibilità di vincita: ${Math.round(winChance)}%`, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
-    } else if (adjustedRoll < 36) {
-      if (reputationModifier.respectBonus >= 10) {
-        playSound.success()
-        announce('I BULLI della scuola ti vedono e si allontanano! Hanno PAURA della tua REPUTAZIONE!')
-        addLogEntry('event_positive', 'Rispettato dai bulli', 'I BULLI della scuola ti vedono e si allontanano! Hanno PAURA della tua REPUTAZIONE!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
-        return
-      }
-      playSound.dangerAlert()
-      setShowBulliEvent(true)
-      setCurrentEvent('I BULLI della scuola ti vogliono rubare la merenda!')
-      announce('Evento casuale: Incontro con i BULLI!')
-      addLogEntry('event_negative', 'Incontro con i bulli', 'Evento casuale: Incontro con i BULLI!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
-  }
-}, [setStats, announce, addLogEntry])
+
+    // Check Gara
+    if (activeStreetRaceChance > 0) {
+      cumulative += activeStreetRaceChance
+      if (roll < cumulative) {
+        setRecentEvents((prev) => {
+          const next = [...prev, 'street_race']
+          if (next.length > 2) next.shift()
+          return next
+        })
+
+        const baseChance = currentVehicle ? currentVehicle.baseWinChance : 15
+        const winChance = Math.min(95, Math.max(10,
+          baseChance +
+          (s.coattaggine * 0.2) +
+          (s.figosita * 0.1) +
+          (s.muscoli * 0.05) +
+          ((s.motorinoTuning ?? 0) * 0.4) +
+          reputationModifier.positiveOutcomeBonus
+        ))
+        const race = generateStreetRace(s.reputazione)
+        setBetInfo(race)
+        setRaceWinChance(Math.round(winChance))
+        playSound.eventTrigger()
+        setShowStreetRaceEvent(true)
+        setCurrentEvent('Un TAMARRO ti sfida ad una GARA con il motorino!')
+        announce(`Evento casuale: GARA di motorini! Possibilità di vincita: ${Math.round(winChance)}%`)
+        addLogEntry('event_neutral', 'Sfida a gara di motorini', `Evento casuale: GARA di motorini! Possibilità di vincita: ${Math.round(winChance)}%`, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
+        return
+      }
+    }
+
+    // Check Bulli
+    if (activeBulliChance > 0) {
+      cumulative += activeBulliChance
+      if (roll < cumulative) {
+        setRecentEvents((prev) => {
+          const next = [...prev, 'bulli']
+          if (next.length > 2) next.shift()
+          return next
+        })
+
+        if (reputationModifier.respectBonus >= 10) {
+          playSound.success()
+          announce('I BULLI della scuola ti vedono e si allontanano! Hanno PAURA della tua REPUTAZIONE!')
+          addLogEntry('event_positive', 'Rispettato dai bulli', 'I BULLI della scuola ti vedono e si allontanano! Hanno PAURA della tua REPUTAZIONE!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+          return
+        }
+
+        let desc = 'I BULLI della scuola ti vogliono rubare la merenda!'
+        if (actionType === 'parco') {
+          desc = 'Mentre cammini nel parco, i BULLI della scuola ti bloccano la strada e pretendono la tua merenda!'
+        } else if (actionType === 'shopping') {
+          desc = 'Nei corridoi del centro commerciale, i BULLI ti spintonano e ti chiedono spiccioli!'
+        }
+
+        playSound.dangerAlert()
+        setShowBulliEvent(true)
+        setCurrentEvent(desc)
+        announce('Evento casuale: Incontro con i BULLI!')
+        addLogEntry('event_negative', 'Incontro con i bulli', desc, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
+        return
+      }
+    }
+  }, [setStats, announce, addLogEntry, recentEvents])
 
   const handleMetallariScappa = useCallback(() => {
     setShowMetallariEvent(false)

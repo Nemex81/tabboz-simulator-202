@@ -173,7 +173,7 @@ export function useSocialActions({
     checkForNewFriend('in discoteca')
     checkForNewRelationship('festa')
     checkForNewGirlfriend('festa')
-    triggerRandomEvent()
+    triggerRandomEvent('disco')
     // STEP 9C: rischio sbornia dopo la discoteca
     if (Math.random() < 0.15) {
       applyCondition('sbornia', gameTimeRef.current.currentDate, currentPhaseRef.current)
@@ -237,7 +237,7 @@ export function useSocialActions({
     checkForNewFriend('al cinema')
     checkForNewRelationship('quartiere')
     checkForNewGirlfriend('quartiere')
-    triggerRandomEvent()
+    triggerRandomEvent('cinema')
   }, [setStats, consumeAction, announce, triggerRandomEvent, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry])
 
   const handleTryRelationship = useCallback((relationshipId: string) => {
@@ -386,11 +386,11 @@ export function useSocialActions({
     checkForNewFriend('al parco')
     checkForNewRelationship('quartiere')
     checkForNewGirlfriend('quartiere')
-    // STEP 9C: leggero rischio raffreddore al parco
     if (Math.random() < 0.05) {
       applyCondition('raffreddore', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
-  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry, applyCondition])
+    triggerRandomEvent('parco')
+  }, [setStats, consumeAction, announce, checkForNewFriend, checkForNewRelationship, checkForNewGirlfriend, addLogEntry, applyCondition, triggerRandomEvent])
 
   // B1-FIX-5 applicato
   const handleTelefona = useCallback(() => {
