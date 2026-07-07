@@ -217,10 +217,12 @@ export function useGameNarrator({
     }
 
     const timeoutId = window.setTimeout(() => {
-      for (const entry of changedStats) {
-        const direction = entry.delta > 0 ? 'In aumento' : 'In calo'
-        announce(`${STAT_LABELS[entry.key]}: ${Math.round(entry.value)} su 100. ${direction}.`, 'polite')
-      }
+      const messages = changedStats.map((entry) => {
+        const direction = entry.delta > 0 ? 'in aumento' : 'in calo'
+        const unit = ' su 100'
+        return `${STAT_LABELS[entry.key]}: ${Math.round(entry.value)}${unit} (${direction})`
+      })
+      announce(`Aggiornamento statistiche: ${messages.join(', ')}.`, 'polite')
     }, 300)
 
     return () => {

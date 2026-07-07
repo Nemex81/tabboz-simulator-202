@@ -248,26 +248,26 @@ export function SchoolTab({
     <>
     <Tabs value={activeSubTab} onValueChange={setActiveSubTab} className="w-full">
       <nav aria-label="Sezioni scuola">
-        <TabsList aria-label="Sezioni scuola" className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-card/50 p-1">
-          <TabsTrigger value="home" onMouseDown={() => markConfirmedTabChange('home')} onKeyDown={(event) => handleTriggerKeyDown('home', event)} className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-            <GraduationCap size={18} className="md:mr-2" weight="fill" />
-            <span className="hidden md:inline">Home</span>
+        <TabsList aria-label="Sezioni scuola" className="flex w-full items-center justify-start gap-2 bg-card/50 p-1 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+          <TabsTrigger value="home" onMouseDown={() => markConfirmedTabChange('home')} onKeyDown={(event) => handleTriggerKeyDown('home', event)} className="flex-1 min-w-[90px] md:min-w-[120px] data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground flex items-center justify-center py-2 px-3">
+            <GraduationCap size={18} className="mr-2" weight="fill" />
+            <span>Home</span>
           </TabsTrigger>
-          <TabsTrigger value="voti" onMouseDown={() => markConfirmedTabChange('voti')} onKeyDown={(event) => handleTriggerKeyDown('voti', event)} className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-            <GraduationCap size={18} className="md:mr-2" weight="fill" />
-            <span className="hidden md:inline">Voti</span>
+          <TabsTrigger value="voti" onMouseDown={() => markConfirmedTabChange('voti')} onKeyDown={(event) => handleTriggerKeyDown('voti', event)} className="flex-1 min-w-[90px] md:min-w-[120px] data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground flex items-center justify-center py-2 px-3">
+            <GraduationCap size={18} className="mr-2" weight="fill" />
+            <span>Voti</span>
           </TabsTrigger>
-          <TabsTrigger value="verifiche" onMouseDown={() => markConfirmedTabChange('verifiche')} onKeyDown={(event) => handleTriggerKeyDown('verifiche', event)} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Brain size={18} className="md:mr-2" weight="fill" />
-            <span className="hidden md:inline">Verifiche</span>
+          <TabsTrigger value="verifiche" onMouseDown={() => markConfirmedTabChange('verifiche')} onKeyDown={(event) => handleTriggerKeyDown('verifiche', event)} className="flex-1 min-w-[90px] md:min-w-[120px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center justify-center py-2 px-3">
+            <Brain size={18} className="mr-2" weight="fill" />
+            <span>Verifiche</span>
           </TabsTrigger>
-          <TabsTrigger value="amici" onMouseDown={() => markConfirmedTabChange('amici')} onKeyDown={(event) => handleTriggerKeyDown('amici', event)} className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-            <UserCircle size={18} className="md:mr-2" weight="fill" />
-            <span className="hidden md:inline">Amici</span>
+          <TabsTrigger value="amici" onMouseDown={() => markConfirmedTabChange('amici')} onKeyDown={(event) => handleTriggerKeyDown('amici', event)} className="flex-1 min-w-[90px] md:min-w-[120px] data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex items-center justify-center py-2 px-3">
+            <UserCircle size={18} className="mr-2" weight="fill" />
+            <span>Amici</span>
           </TabsTrigger>
-          <TabsTrigger value="dashboard" onMouseDown={() => markConfirmedTabChange('dashboard')} onKeyDown={(event) => handleTriggerKeyDown('dashboard', event)} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Trophy size={18} className="md:mr-2" weight="fill" />
-            <span className="hidden md:inline">Dashboard</span>
+          <TabsTrigger value="dashboard" onMouseDown={() => markConfirmedTabChange('dashboard')} onKeyDown={(event) => handleTriggerKeyDown('dashboard', event)} className="flex-1 min-w-[90px] md:min-w-[120px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex items-center justify-center py-2 px-3">
+            <Trophy size={18} className="mr-2" weight="fill" />
+            <span>Dashboard</span>
           </TabsTrigger>
         </TabsList>
       </nav>

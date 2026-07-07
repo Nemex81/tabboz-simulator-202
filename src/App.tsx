@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { announce as a11yAnnounce } from '@/lib/a11y-announce'
 import { useKV, useRemoteKVFallbackActive } from '@/hooks/useHydratedKV'
 import { AppHeader } from '@/components/AppHeader'
+import { SidebarStats } from '@/components/SidebarStats'
+import { SidebarLog } from '@/components/SidebarLog'
 import { A11yLiveRegion, useA11y } from '@/components/A11yLiveRegion'
 import { GameDialogs } from '@/components/GameDialogs'
 import { MainGameTabs } from '@/components/MainGameTabs'
@@ -877,16 +879,37 @@ function App() {
             handleDormi={handleDormi}
             handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
           />
-          <MainGameTabs
-            activeTab={activeTab}
-            onValueChange={setActiveTab}
-            currentPhase={currentPhase}
-            statusTab={statusTabProps}
-            schoolTab={schoolTabProps}
-            characterTab={characterTabProps}
-            socialTab={socialTabProps}
-            cityTab={cityTabProps}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Sidebar Sinistra: Statistiche */}
+            <aside className="hidden lg:block lg:col-span-3 lg:sticky lg:top-4">
+              <SidebarStats
+                playerProfile={playerProfile ?? null}
+                stats={stats}
+                schoolYear={gameTime.schoolYear.currentYear}
+                age={gameTime.age}
+                currentMedia={currentMedia}
+              />
+            </aside>
+
+            {/* Contenuto Centrale */}
+            <div className="lg:col-span-6 space-y-6">
+              <MainGameTabs
+                activeTab={activeTab}
+                onValueChange={setActiveTab}
+                currentPhase={currentPhase}
+                statusTab={statusTabProps}
+                schoolTab={schoolTabProps}
+                characterTab={characterTabProps}
+                socialTab={socialTabProps}
+                cityTab={cityTabProps}
+              />
+            </div>
+
+            {/* Sidebar Destra: Diario */}
+            <aside className="hidden lg:block lg:col-span-3 lg:sticky lg:top-4">
+              <SidebarLog gameLog={gameLog} />
+            </aside>
+          </div>
         </div>
       </main>
 

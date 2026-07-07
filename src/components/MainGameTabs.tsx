@@ -99,14 +99,14 @@ export function MainGameTabs({
       className="w-full"
     >
       <nav aria-label="Menu principale di gioco">
-        <TabsList aria-label="Menu principale di gioco" className="grid w-full grid-cols-3 md:grid-cols-5 gap-2 bg-muted/50 p-1 h-auto">
+        <TabsList aria-label="Menu principale di gioco" className="flex w-full items-center justify-start gap-2 bg-muted/50 p-1 h-auto overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
           <TabsTrigger
             value="school"
             disabled={!isSchoolAvailable}
             aria-label={!isSchoolAvailable ? 'Scuola: disponibile solo al mattino' : 'Scuola'}
             onMouseDown={() => markConfirmedTabChange('school')}
             onKeyDown={(event) => handleTriggerKeyDown('school', event)}
-            className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground"
+            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground"
           >
             <GraduationCap size={20} className="mr-2" weight="fill" />
             <span className="hidden sm:inline" aria-hidden="true">Scuola</span>
@@ -118,7 +118,7 @@ export function MainGameTabs({
             aria-label={!isCityAvailable ? 'Città: disponibile dal pomeriggio o se salti la scuola' : 'Città'}
             onMouseDown={() => markConfirmedTabChange('city')}
             onKeyDown={(event) => handleTriggerKeyDown('city', event)}
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <Buildings size={20} className="mr-2" weight="fill" />
             <span className="hidden sm:inline" aria-hidden="true">Città</span>
@@ -129,7 +129,7 @@ export function MainGameTabs({
             aria-label="Personaggio"
             onMouseDown={() => markConfirmedTabChange('character')}
             onKeyDown={(event) => handleTriggerKeyDown('character', event)}
-            className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
+            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
           >
             <IdentificationCard size={20} className="mr-2" weight="fill" aria-hidden="true" />
             <span className="hidden sm:inline" aria-hidden="true">Personaggio</span>
@@ -141,7 +141,7 @@ export function MainGameTabs({
             aria-label={!isSocialAvailable ? 'Azioni: non disponibili di mattina prima della scelta scuola o se vai a lezione' : 'Azioni'}
             onMouseDown={() => markConfirmedTabChange('social')}
             onKeyDown={(event) => handleTriggerKeyDown('social', event)}
-            className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
+            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
           >
             <Chats size={20} className="mr-2" weight="fill" />
             <span className="hidden sm:inline" aria-hidden="true">Azioni</span>
@@ -152,7 +152,7 @@ export function MainGameTabs({
             aria-label="Impostazioni"
             onMouseDown={() => markConfirmedTabChange('status')}
             onKeyDown={(event) => handleTriggerKeyDown('status', event)}
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
             <ChartBar size={20} className="mr-2" weight="fill" aria-hidden="true" />
             <span className="hidden sm:inline" aria-hidden="true">Impostazioni</span>

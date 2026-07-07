@@ -175,7 +175,7 @@ describe('useGameNarrator', () => {
       vi.advanceTimersByTime(300)
     })
 
-    expect(announceMock).toHaveBeenCalledWith('Muscoli: 46 su 100. In aumento.', 'polite')
+    expect(announceMock).toHaveBeenCalledWith('Aggiornamento statistiche: Muscoli: 46 su 100 (in aumento).', 'polite')
   })
 
   it('accorpa aggiornamenti rapidi e mantiene solo l ultimo annuncio di fase', () => {

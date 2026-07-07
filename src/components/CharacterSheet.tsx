@@ -62,33 +62,33 @@ export const CharacterSheet = React.memo(function CharacterSheet({
 }: CharacterSheetProps) {
   return (
     <Tabs defaultValue="profilo" className="w-full mt-6">
-      <TabsList className="grid w-full grid-cols-6 gap-1 bg-muted/50 p-1 h-auto mb-6">
-        <TabsTrigger value="profilo" aria-label="Profilo: informazioni personaggio">
+      <TabsList className="flex w-full items-center justify-start gap-1 bg-muted/50 p-1 h-auto mb-6 overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+        <TabsTrigger value="profilo" className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Profilo: informazioni personaggio">
           <IdentificationCard size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Profilo</span>
           <span className="sm:hidden">👤</span>
         </TabsTrigger>
-        <TabsTrigger value="scuola" aria-label="Scuola: voti e materie">
+        <TabsTrigger value="scuola" className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Scuola: voti e materie">
           <GraduationCap size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Scuola</span>
           <span className="sm:hidden">🎓</span>
         </TabsTrigger>
-        <TabsTrigger value="relazioni" aria-label="Relazioni: amicizie e partner">
+        <TabsTrigger value="relazioni" className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Relazioni: amicizie e partner">
           <UsersThree size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Relazioni</span>
           <span className="sm:hidden">👥</span>
         </TabsTrigger>
-        <TabsTrigger value="diario" aria-label="Diario: eventi recenti">
+        <TabsTrigger value="diario" className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Diario: eventi recenti">
           <BookOpen size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Diario</span>
           <span className="sm:hidden">📓</span>
         </TabsTrigger>
-        <TabsTrigger value="salute" aria-label="Salute: condizioni attive">
+        <TabsTrigger value="salute" className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Salute: condizioni attive">
           <Heart size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Salute</span>
           <span className="sm:hidden">❤️</span>
         </TabsTrigger>
-        <TabsTrigger value="obiettivi" disabled aria-label="Obiettivi: traguardi (non ancora disponibile)">
+        <TabsTrigger value="obiettivi" disabled className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Obiettivi: traguardi (non ancora disponibile)">
           <span className="hidden sm:inline">Obiettivi</span>
           <span className="sm:hidden">🏆</span>
           <span className="ml-1 text-xs opacity-50">🔜</span>
