@@ -128,6 +128,8 @@ function App() {
     setAvailableJobsForDialog,
     showMotorinoGarage,
     setShowMotorinoGarage,
+    garageActiveTab,
+    setGarageActiveTab,
   } = useAppDialogs()
 
   const showSchoolMorning = morningDisplay === 'school'
@@ -286,6 +288,7 @@ function App() {
       setShowJobSelectionDialog(true)
     },
     onOpenGarage: () => {
+      setGarageActiveTab('tuning')
       setShowMotorinoGarage(true)
     },
   })
@@ -755,6 +758,14 @@ function App() {
       onPalestra: handlePalestra,
       onLampada: handleLampada,
       onLavoro: handleLavoro,
+      onConcessionario: () => {
+        setGarageActiveTab('shop')
+        setShowMotorinoGarage(true)
+      },
+      onMeccanico: () => {
+        setGarageActiveTab('tuning')
+        setShowMotorinoGarage(true)
+      },
       morningChoicePending,
       actionsRemaining: phaseActionsRemaining ?? 0,
       soldi: stats.soldi,
@@ -833,6 +844,8 @@ function App() {
       stanchezza: stats.stanchezza,
       showMotorinoGarage,
       setShowMotorinoGarage,
+      garageActiveTab,
+      setGarageActiveTab,
       playerStats: stats,
       setStats,
       consumeAction,

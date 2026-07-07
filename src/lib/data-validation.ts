@@ -18,6 +18,7 @@ export const validateStats = (stats: Partial<GameStats> | null | undefined): Gam
       morale: 60,
       salute: 100,
       hasMotorino: false,
+      motorinoModello: undefined,
       motorinoTuning: 0,
       motorinoPezzi: [],
     }
@@ -37,6 +38,7 @@ export const validateStats = (stats: Partial<GameStats> | null | undefined): Gam
     morale: clampStat(stats.morale ?? 60),
     salute: clampStat(stats.salute ?? 100),
     hasMotorino: typeof stats.hasMotorino === 'boolean' ? stats.hasMotorino : false,
+    motorinoModello: typeof stats.motorinoModello === 'string' ? stats.motorinoModello : undefined,
     motorinoTuning: typeof stats.motorinoTuning === 'number' ? clampStat(stats.motorinoTuning) : 0,
     motorinoPezzi: Array.isArray(stats.motorinoPezzi) ? stats.motorinoPezzi : [],
   }

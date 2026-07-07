@@ -16,6 +16,7 @@ export interface GameStats {
   carisma: number
   salute: number
   hasMotorino: boolean  // true dopo la prima azione motorino riuscita
+  motorinoModello?: string
   motorinoTuning?: number
   motorinoPezzi?: string[]
 }

@@ -11,6 +11,8 @@ interface CityTabProps {
   onPalestra: () => void
   onLampada: () => void
   onLavoro: () => void
+  onConcessionario?: () => void
+  onMeccanico?: () => void
   morningChoicePending: boolean
   actionsRemaining: number
   soldi: number
@@ -34,6 +36,8 @@ export function CityTab(props: CityTabProps) {
         onPalestra={props.onPalestra}
         onLampada={props.onLampada}
         onLavoro={props.onLavoro}
+        onConcessionario={props.onConcessionario}
+        onMeccanico={props.onMeccanico}
         morningChoicePending={props.morningChoicePending}
         actionsRemaining={props.actionsRemaining}
         soldi={props.soldi}

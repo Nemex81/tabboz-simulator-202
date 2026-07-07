@@ -7,14 +7,15 @@ import { SchoolType, getSchoolTypeName, PlayerProfile, ThemeVariant } from '@/li
 import { GraduationCap, Tractor, PaintBrush, User, GenderMale, GenderFemale, Palette, Moon, Sun, Plant, MusicNotes, ForkKnife, Atom } from '@phosphor-icons/react'
 
 interface SchoolSelectionProps {
-  onSelectSchool: (schoolType: SchoolType, profile: PlayerProfile, theme: ThemeVariant) => void
+  onSelectSchool: (schoolType: SchoolType, profile: PlayerProfile, theme: ThemeVariant, startingMoped: string) => void
 }
 
 export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
-  const [step, setStep] = useState<'profile' | 'school'>('profile')
+  const [step, setStep] = useState<'profile' | 'motorino' | 'school'>('profile')
   const [playerName, setPlayerName] = useState('')
   const [playerGender, setPlayerGender] = useState<'maschio' | 'femmina' | null>(null)
   const [selectedTheme, setSelectedTheme] = useState<ThemeVariant>('default')
+  const [selectedMoped, setSelectedMoped] = useState<'ciao' | 'califfone' | 'vespa50'>('ciao')
 
   useEffect(() => {
     const htmlElement = document.querySelector('html')
@@ -25,8 +26,13 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
 
   const handleProfileComplete = () => {
     if (playerName.trim() && playerGender) {
-      setStep('school')
+      setStep('motorino')
     }
+  }
+
+  const handleMopedSelect = (moped: 'ciao' | 'califfone' | 'vespa50') => {
+    setSelectedMoped(moped)
+    setStep('school')
   }
 
   const handleSchoolSelect = (schoolType: SchoolType) => {
@@ -37,8 +43,99 @@ export function SchoolSelection({ onSelectSchool }: SchoolSelectionProps) {
         orientamentoSessuale: 'eterosessuale',
         traits: []
       }
-      onSelectSchool(schoolType, profile, selectedTheme)
+      onSelectSchool(schoolType, profile, selectedTheme, selectedMoped)
     }
+  }
+
+  if (step === 'motorino') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-4xl w-full space-y-6">
+          <div className="text-center space-y-3">
+            <h1 className="text-5xl md:text-6xl font-black text-primary neon-text-glow tracking-wider">
+              TABBOZ SIMULATOR
+            </h1>
+            <h2 className="text-3xl md:text-4xl font-bold text-secondary">
+              SCEGLI IL TUO PRIMO MEZZO
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Quale catorcio vuoi ereditare da tuo nonno o trovare abbandonato in garage?
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card
+              className={`p-6 border-2 transition-all cursor-pointer group flex flex-col justify-between ${
+                selectedMoped === 'ciao' ? 'border-primary bg-primary/10' : 'border-border bg-card hover:bg-muted/30'
+              }`}
+              onClick={() => setSelectedMoped('ciao')}
+            >
+              <div className="text-center space-y-4">
+                <div className="text-5xl">🛵</div>
+                <h3 className="text-2xl font-bold text-primary">Piaggio Ciao</h3>
+                <p className="text-sm text-muted-foreground">
+                  Il re dei pedali. Fa fumo come una ciminiera, ma consuma pochissima miscela.
+                </p>
+                <div className="text-xs text-muted-foreground space-y-1 pt-2 text-left">
+                  <p className="text-green-500 font-semibold">✓ Consumo miscela minimo</p>
+                  <p>✓ Leggero e maneggevole</p>
+                  <p>⚠ Velocità modesta, Max Tuning 20%</p>
+                </div>
+              </div>
+              <Button className="w-full mt-6 bg-primary" onClick={() => handleMopedSelect('ciao')}>
+                SCEGLI CIAO
+              </Button>
+            </Card>
+
+            <Card
+              className={`p-6 border-2 transition-all cursor-pointer group flex flex-col justify-between ${
+                selectedMoped === 'califfone' ? 'border-secondary bg-secondary/10' : 'border-border bg-card hover:bg-muted/30'
+              }`}
+              onClick={() => setSelectedMoped('califfone')}
+            >
+              <div className="text-center space-y-4">
+                <div className="text-5xl">⚙️</div>
+                <h3 className="text-2xl font-bold text-secondary">Garelli Califfone</h3>
+                <p className="text-sm text-muted-foreground">
+                  Un catorcio automatico di puro ferro. Ti dà subito quel tocco rude di periferia.
+                </p>
+                <div className="text-xs text-muted-foreground space-y-1 pt-2 text-left">
+                  <p className="text-secondary font-semibold">✓ +10 Coattaggine iniziale</p>
+                  <p>✓ Telaio pesante e indistruttibile</p>
+                  <p>⚠ Molto rumoroso, Max Tuning 20%</p>
+                </div>
+              </div>
+              <Button className="w-full mt-6 bg-secondary" onClick={() => handleMopedSelect('califfone')}>
+                SCEGLI CALIFFONE
+              </Button>
+            </Card>
+
+            <Card
+              className={`p-6 border-2 transition-all cursor-pointer group flex flex-col justify-between ${
+                selectedMoped === 'vespa50' ? 'border-accent bg-accent/10' : 'border-border bg-card hover:bg-muted/30'
+              }`}
+              onClick={() => setSelectedMoped('vespa50')}
+            >
+              <div className="text-center space-y-4">
+                <div className="text-5xl">🇮🇹</div>
+                <h3 className="text-2xl font-bold text-accent">Vespa 50 Special</h3>
+                <p className="text-sm text-muted-foreground">
+                  La mitica 4 marce. Un classico intramontabile che fa fare bella figura con le ragazze.
+                </p>
+                <div className="text-xs text-muted-foreground space-y-1 pt-2 text-left">
+                  <p className="text-accent font-semibold">✓ +15 Figosità iniziale</p>
+                  <p>✓ Cambio manuale al manubrio</p>
+                  <p>⚠ Più difficile da guidare, Max Tuning 30%</p>
+                </div>
+              </div>
+              <Button className="w-full mt-6 bg-accent text-accent-foreground" onClick={() => handleMopedSelect('vespa50')}>
+                SCEGLI VESPA
+              </Button>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (step === 'profile') {

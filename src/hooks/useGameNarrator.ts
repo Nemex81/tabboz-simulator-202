@@ -6,7 +6,7 @@ import { HEALTH_CONDITIONS, type DayPhase, type GameDate, type GameStats, type H
 
 type AnnounceFn = (message: string, priority?: A11yPriority) => void
 
-type NarratedStatKey = Exclude<keyof GameStats, 'soldi' | 'media' | 'hasMotorino' | 'motorinoTuning' | 'motorinoPezzi'>
+type NarratedStatKey = Exclude<keyof GameStats, 'soldi' | 'media' | 'hasMotorino' | 'motorinoTuning' | 'motorinoPezzi' | 'motorinoModello'>
 
 interface UseGameNarratorParams {
   currentDate: GameDate

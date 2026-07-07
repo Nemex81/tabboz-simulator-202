@@ -74,6 +74,8 @@ export interface SocialDialogsProps {
   stanchezza: number
   showMotorinoGarage?: boolean
   setShowMotorinoGarage?: (value: boolean) => void
+  garageActiveTab?: 'tuning' | 'shop'
+  setGarageActiveTab?: (value: 'tuning' | 'shop') => void
   playerStats?: GameStats
   setStats?: (updater: ((prev: GameStats) => GameStats) | GameStats) => void
   consumeAction?: () => void

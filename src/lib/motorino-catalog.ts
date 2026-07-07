@@ -1,0 +1,313 @@
+export interface VehicleDefinition {
+  id: string
+  name: string
+  description: string
+  cost: number
+  permuteValue: number
+  maxTuning: number
+  baseWinChance: number
+  minAge: number
+  category: 'base' | '50cc' | '125cc' | 'heavy'
+  isIllegal?: boolean
+}
+
+export const VEHICLES: Record<string, VehicleDefinition> = {
+  // Catorci Base
+  ciao: {
+    id: 'ciao',
+    name: 'Piaggio Ciao',
+    description: 'Il mitico ciao a pedali. Fuma come una ciminiera e non fa salite, ma consuma pochissimo.',
+    cost: 90,
+    permuteValue: 45,
+    maxTuning: 20,
+    baseWinChance: 15,
+    minAge: 14,
+    category: 'base',
+  },
+  califfone: {
+    id: 'califfone',
+    name: 'Garelli Califfone',
+    description: 'Monolito automatico di ferro e fumo. Ti dà una reputazione immediata da periferia anni 90.',
+    cost: 120,
+    permuteValue: 60,
+    maxTuning: 20,
+    baseWinChance: 15,
+    minAge: 14,
+    category: 'base',
+  },
+  vespa50: {
+    id: 'vespa50',
+    name: 'Vespa 50 Special',
+    description: 'Il leggendario catorcio con le marce al manubrio. Un classico intramontabile che fa fare bella figura.',
+    cost: 150,
+    permuteValue: 75,
+    maxTuning: 30,
+    baseWinChance: 25,
+    minAge: 14,
+    category: 'base',
+  },
+
+  // 50cc Scooter / Enduro
+  si: {
+    id: 'si',
+    name: 'Piaggio Sì',
+    description: 'Più comodo del Ciao grazie alla forcella telescopica. Sgasare stanca meno.',
+    cost: 180,
+    permuteValue: 90,
+    maxTuning: 25,
+    baseWinChance: 20,
+    minAge: 14,
+    category: '50cc',
+  },
+  booster: {
+    id: 'booster',
+    name: 'Booster MBK 50',
+    description: 'L\'iconico scooter da impennata preferito dai tamarri italiani.',
+    cost: 380,
+    permuteValue: 190,
+    maxTuning: 65,
+    baseWinChance: 35,
+    minAge: 14,
+    category: '50cc',
+  },
+  phantom: {
+    id: 'phantom',
+    name: 'Phantom F12 50',
+    description: 'Scooter aerodinamico e raffreddato a liquido. Si presta a tuning estremi.',
+    cost: 480,
+    permuteValue: 240,
+    maxTuning: 80,
+    baseWinChance: 40,
+    minAge: 14,
+    category: '50cc',
+  },
+  zipsp: {
+    id: 'zipsp',
+    name: 'Piaggio Zip SP',
+    description: 'Il dominatore dei trofei scooter in pista. Agilissimo in curva.',
+    cost: 550,
+    permuteValue: 275,
+    maxTuning: 85,
+    baseWinChance: 45,
+    minAge: 14,
+    category: '50cc',
+  },
+  rx50: {
+    id: 'rx50',
+    name: 'Aprilia RX 50',
+    description: 'Enduro da scavalco. Perfetto per fuggire per campi quando arriva la pula.',
+    cost: 650,
+    permuteValue: 325,
+    maxTuning: 85,
+    baseWinChance: 50,
+    minAge: 14,
+    category: '50cc',
+  },
+  runner50: {
+    id: 'runner50',
+    name: 'Gilera Runner 50',
+    description: 'Lo scooter 50cc più massiccio e veloce. Praticamente un mini-125.',
+    cost: 780,
+    permuteValue: 390,
+    maxTuning: 100,
+    baseWinChance: 55,
+    minAge: 14,
+    category: '50cc',
+  },
+  cr50: {
+    id: 'cr50',
+    name: 'Honda CR 50 (Cross)',
+    description: 'NON OMOLOGATO PER STRADA. Velocità strabiliante per un 50, ma se ti fermano lo confischeranno!',
+    cost: 950,
+    permuteValue: 0,
+    maxTuning: 100,
+    baseWinChance: 85,
+    minAge: 14,
+    category: '50cc',
+    isIllegal: true,
+  },
+
+  // 125cc (16+)
+  vespa125: {
+    id: 'vespa125',
+    name: 'Vespa PX 125',
+    description: 'Stile italiano eterno, cambio a quattro marce. Dà un enorme bonus di figosità.',
+    cost: 900,
+    permuteValue: 450,
+    maxTuning: 50,
+    baseWinChance: 35,
+    minAge: 16,
+    category: '125cc',
+  },
+  runner125: {
+    id: 'runner125',
+    name: 'Gilera Runner 125',
+    description: 'Scooterone due tempi velocissimo. Scatto incredibile al semaforo.',
+    cost: 1200,
+    permuteValue: 600,
+    maxTuning: 85,
+    baseWinChance: 55,
+    minAge: 16,
+    category: '125cc',
+  },
+  rx125: {
+    id: 'rx125',
+    name: 'Aprilia RX 125',
+    description: 'Enduro leggero da 125cc. Versatile sia in città che sullo sterrato.',
+    cost: 1400,
+    permuteValue: 700,
+    maxTuning: 90,
+    baseWinChance: 65,
+    minAge: 16,
+    category: '125cc',
+  },
+  rs125: {
+    id: 'rs125',
+    name: 'Aprilia RS 125',
+    description: 'La supersportiva a 2 tempi per eccellenza. Carene da gran premio e velocità folle.',
+    cost: 1800,
+    permuteValue: 900,
+    maxTuning: 100,
+    baseWinChance: 85,
+    minAge: 16,
+    category: '125cc',
+  },
+  mito125: {
+    id: 'mito125',
+    name: 'Cagiva Mito 125',
+    description: 'Sportiva da sogno, fari tondi leggendari.',
+    cost: 1900,
+    permuteValue: 950,
+    maxTuning: 100,
+    baseWinChance: 90,
+    minAge: 16,
+    category: '125cc',
+  },
+  cr125: {
+    id: 'cr125',
+    name: 'Honda CR 125 (Cross)',
+    description: 'NON OMOLOGATA. Moto da cross spinta da competizione. Illegale per strada, sequestro garantito se catturato.',
+    cost: 2200,
+    permuteValue: 0,
+    maxTuning: 100,
+    baseWinChance: 95,
+    minAge: 16,
+    category: '125cc',
+    isIllegal: true,
+  },
+
+  // Oltre 125cc (18+)
+  majesty250: {
+    id: 'majesty250',
+    name: 'Yamaha Majesty 250',
+    description: 'Maxiscooter comodo e riposante. Riduce la stanchezza dei viaggi.',
+    cost: 1800,
+    permuteValue: 900,
+    maxTuning: 40,
+    baseWinChance: 40,
+    minAge: 18,
+    category: 'heavy',
+  },
+  transalp: {
+    id: 'transalp',
+    name: 'Honda Transalp 650',
+    description: 'Moto da turismo indistruttibile. Super comoda ma molto poco tamarra (-10 Coattaggine).',
+    cost: 2200,
+    permuteValue: 1100,
+    maxTuning: 30,
+    baseWinChance: 45,
+    minAge: 18,
+    category: 'heavy',
+  },
+  ktm640: {
+    id: 'ktm640',
+    name: 'KTM 640 LC4 SM',
+    description: 'Supermotard monocilindrico cattivissimo. Ottimo per fuggire dalla polizia.',
+    cost: 2800,
+    permuteValue: 1400,
+    maxTuning: 80,
+    baseWinChance: 75,
+    minAge: 18,
+    category: 'heavy',
+  },
+  tmax: {
+    id: 'tmax',
+    name: 'Yamaha TMAX 500',
+    description: 'Lo status symbol indiscusso del tamarro romano di spessore. Rumoroso e imponente.',
+    cost: 3200,
+    permuteValue: 1600,
+    maxTuning: 80,
+    baseWinChance: 80,
+    minAge: 18,
+    category: 'heavy',
+  },
+  r6: {
+    id: 'r6',
+    name: 'Yamaha R6',
+    description: 'Supersportiva 4 cilindri da pista prestata alla strada. Pericolo e brivido massimo.',
+    cost: 3800,
+    permuteValue: 1900,
+    maxTuning: 100,
+    baseWinChance: 95,
+    minAge: 18,
+    category: 'heavy',
+  },
+}
+
+export interface TuningPartDefinition {
+  id: string
+  name: string
+  cost: number
+  tuningValue: number
+  coattaggineBonus: number
+  figositaBonus: number
+  benefitText: string
+}
+
+export const TUNING_PARTS: TuningPartDefinition[] = [
+  {
+    id: 'scarico',
+    name: 'Marmitta LeoVince ZX / Giannelli',
+    cost: 60,
+    tuningValue: 15,
+    coattaggineBonus: 10,
+    figositaBonus: 5,
+    benefitText: 'Suono scoppiettante e spinta extra. Rumore assicurato.',
+  },
+  {
+    id: 'carburatore',
+    name: 'Carburatore Dell\'Orto 19',
+    cost: 45,
+    tuningValue: 15,
+    coattaggineBonus: 5,
+    figositaBonus: 0,
+    benefitText: 'Più afflusso di benzina. Il motore risponde subito al gas.',
+  },
+  {
+    id: 'neon',
+    name: 'Neon sottoscocca blu',
+    cost: 30,
+    tuningValue: 5,
+    coattaggineBonus: 15,
+    figositaBonus: 15,
+    benefitText: 'Estetica da urlo. Di sera si nota a un chilometro.',
+  },
+  {
+    id: 'variatore',
+    name: 'Variatore Polini / Malossi Multivar',
+    cost: 50,
+    tuningValue: 20,
+    coattaggineBonus: 5,
+    figositaBonus: 0,
+    benefitText: 'Accelerazione fluida ed elimina i buchi di spinta.',
+  },
+  {
+    id: 'cilindro',
+    name: 'Gruppo Termico 70cc Malossi Base',
+    cost: 130,
+    tuningValue: 35,
+    coattaggineBonus: 20,
+    figositaBonus: 10,
+    benefitText: 'Aumento enorme di cilindrata e potenza pura.',
+  },
+]

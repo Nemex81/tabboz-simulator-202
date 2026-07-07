@@ -1,9 +1,10 @@
 import React from 'react'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Star, User } from '@phosphor-icons/react'
+import { Star, User, Motorcycle } from '@phosphor-icons/react'
 import type { GameStats } from '@/lib/types'
 import { getCharacterGenderLabel } from '@/lib/gender-utils'
+import { VEHICLES } from '@/lib/motorino-catalog'
 
 interface SidebarStatsProps {
   playerProfile: import('@/lib/types').PlayerProfile | null
@@ -55,6 +56,36 @@ export const SidebarStats = React.memo(function SidebarStats({
           </div>
         </div>
       </Card>
+
+      {/* Veicolo Posseduto */}
+      {stats.hasMotorino && (
+        <Card className="p-4 border-2 border-secondary bg-card">
+          <h3 className="text-sm font-bold text-secondary uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <Motorcycle size={18} weight="fill" />
+            IL TUO MEZZO
+          </h3>
+          <div className="space-y-2 text-xs">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Modello:</span>
+              <span className="font-bold text-foreground">
+                {VEHICLES[stats.motorinoModello ?? 'ciao']?.name ?? 'Piaggio Ciao'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Tuning:</span>
+              <span className="font-bold text-secondary">{stats.motorinoTuning ?? 0}%</span>
+            </div>
+            <div className="text-[10px] text-muted-foreground pt-1 border-t border-border mt-1 flex justify-between">
+              <span className="font-semibold">Modifiche installate:</span>
+              <span className="font-bold">
+                {stats.motorinoPezzi && stats.motorinoPezzi.length > 0
+                  ? stats.motorinoPezzi.length
+                  : 'Nessuna'}
+              </span>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Statistiche */}
       <Card className="p-4 border-2 border-primary bg-card">

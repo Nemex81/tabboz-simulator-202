@@ -407,7 +407,8 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
   const handleSchoolSelection = useCallback((
     selected: SchoolType,
     profile: PlayerProfile,
-    theme: ThemeVariant
+    theme: ThemeVariant,
+    startingMoped: string
   ) => {
     playSound.success()
     p.setSchoolType(selected)
@@ -415,8 +416,30 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
     p.setCurrentTheme(theme)
     p.setGrades(getDefaultGradesForSchoolType(selected))
     p.setRawGradesHistory({})
-    p.announce(`Ciao ${profile.name}! Hai scelto: ${selected.toUpperCase()}! Buona fortuna!`)
-  }, [p.setSchoolType, p.setPlayerProfile, p.setCurrentTheme, p.setGrades, p.setRawGradesHistory, p.announce])
+
+    p.setStats((current) => {
+      let coattaggineBonus = 0
+      let figositaBonus = 0
+      if (startingMoped === 'califfone') {
+        coattaggineBonus = 10
+      } else if (startingMoped === 'vespa50') {
+        figositaBonus = 15
+      }
+
+      return {
+        ...current,
+        hasMotorino: true,
+        motorinoModello: startingMoped,
+        motorinoTuning: 0,
+        motorinoPezzi: [],
+        coattaggine: Math.min(100, current.coattaggine + coattaggineBonus),
+        figosita: Math.min(100, current.figosita + figositaBonus),
+      }
+    })
+
+    const mopedLabel = startingMoped === 'ciao' ? 'Piaggio Ciao' : startingMoped === 'califfone' ? 'Garelli Califfone' : 'Vespa 50 Special'
+    p.announce(`Ciao ${profile.name}! Hai scelto: ${selected.toUpperCase()} e inizierai con un ${mopedLabel}! Buona fortuna!`)
+  }, [p.setSchoolType, p.setPlayerProfile, p.setCurrentTheme, p.setGrades, p.setRawGradesHistory, p.setStats, p.announce])
 
   // ── handleThemeChange ─────────────────────────────────────────────────────
   const handleThemeChange = useCallback((theme: ThemeVariant) => {

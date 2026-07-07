@@ -66,6 +66,8 @@ export function SocialDialogsGroup({ social, currentEvent }: SocialDialogsGroupP
             addLogEntry={social.addLogEntry}
             currentPhase={social.currentPhase}
             gameTime={social.gameTime}
+            activeTab={social.garageActiveTab}
+            onActiveTabChange={social.setGarageActiveTab}
           />
         )}
     </>

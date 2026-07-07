@@ -18,6 +18,7 @@ import { getFriendGenChance, LOCATION_PROB_BONUS } from '@/lib/relation-system'
 import { playSound } from '@/lib/sound-effects'
 import { getAfternoonEvent, AfternoonLocation, AfternoonEvent } from '@/lib/afternoon-events'
 import { BetInfo, generateStreetRace } from '@/lib/bet-system'
+import { VEHICLES } from '@/lib/motorino-catalog'
 import {
   canStartNewRomanticRelationship,
   getCompatibleCandidateOrientation,
@@ -327,11 +328,18 @@ export function useEventEngine({
       announce('Evento casuale: Controllo della POLIZIA!')
       addLogEntry('event_negative', 'Controllo della polizia', 'Evento casuale: Controllo della POLIZIA!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else if (adjustedRoll < 30) {
+      if (!s.hasMotorino) {
+        return // Salta l'evento se a piedi
+      }
+      const currentModelId = s.motorinoModello ?? 'ciao'
+      const vehicle = VEHICLES[currentModelId]
+      const baseChance = vehicle ? vehicle.baseWinChance : 15
       const winChance = Math.min(95, Math.max(10,
-        (s.coattaggine * 0.3) +
-        (s.figosita * 0.15) +
-        (s.muscoli * 0.1) +
-        ((s.motorinoTuning ?? 0) * 0.45) +
+        baseChance +
+        (s.coattaggine * 0.2) +
+        (s.figosita * 0.1) +
+        (s.muscoli * 0.05) +
+        ((s.motorinoTuning ?? 0) * 0.4) +
         reputationModifier.positiveOutcomeBonus
       ))
       const race = generateStreetRace(s.reputazione)
@@ -391,14 +399,20 @@ export function useEventEngine({
   const handlePoliceScappa = useCallback(() => {
     setShowPoliceEvent(false)
     const s = statsRef.current
+    const currentModelId = s.motorinoModello ?? (s.hasMotorino ? 'ciao' : '')
+    const currentVehicle = VEHICLES[currentModelId]
+    const isIllegal = currentVehicle?.isIllegal === true
     const hasModifications = (s.motorinoPezzi ?? []).length > 0
-    const hasMalossi = (s.motorinoPezzi ?? []).includes('malossi_70cc')
+    const hasMalossi = (s.motorinoPezzi ?? []).includes('cilindro') || (s.motorinoPezzi ?? []).includes('malossi_70cc')
     
     let escapeChance = 0
     if (s.hasMotorino) {
       escapeChance = (s.coattaggine * 0.3) + ((s.motorinoTuning ?? 0) * 0.7)
       if (hasMalossi) {
         escapeChance += 25
+      }
+      if (currentModelId === 'ktm640') {
+        escapeChance += 30
       }
     } else {
       escapeChance = s.coattaggine > 70 ? 100 : 0
@@ -417,7 +431,7 @@ export function useEventEngine({
         reputazione: clampStat(current.reputazione + reputazioneBonus)
       }))
       const msg = s.hasMotorino 
-        ? `Sei SCAPPATO in impennata dai poliziotti! Che LEGGENDA! +25 Coattaggine, +20 Reputazione`
+        ? `Sei SCAPPATO in impennata dai poliziotti col tuo ${currentVehicle?.name || 'motorino'}! Che LEGGENDA! +25 Coattaggine, +20 Reputazione`
         : `Sei SCAPPATO a piedi dai poliziotti! Che COATTO! +10 Coattaggine`
       announce(msg)
       addLogEntry('event_positive', 'Polizia — fuga riuscita', msg, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
@@ -427,7 +441,20 @@ export function useEventEngine({
       let coattagginePenalty = 15
       let msg = ''
       
-      if (s.hasMotorino && hasModifications) {
+      if (s.hasMotorino && isIllegal) {
+        fine = 350
+        coattagginePenalty = 25
+        setStats((current) => ({
+          ...current,
+          soldi: clampStat(current.soldi - fine, 0, 1000),
+          coattaggine: clampStat(current.coattaggine - coattagginePenalty),
+          hasMotorino: false,
+          motorinoModello: undefined,
+          motorinoTuning: 0,
+          motorinoPezzi: []
+        }))
+        msg = `Ti hanno BECCATO con la moto non omologata ${currentVehicle?.name}! SEQUESTRO DEFINITIVO del mezzo e multa di 350€! -350 Soldi, -25 Coattaggine, sei a piedi!`
+      } else if (s.hasMotorino && hasModifications) {
         fine = 200
         coattagginePenalty = 20
         setStats((current) => ({
@@ -454,8 +481,11 @@ export function useEventEngine({
   const handlePoliceCollabora = useCallback(() => {
     setShowPoliceEvent(false)
     const s = statsRef.current
+    const currentModelId = s.motorinoModello ?? (s.hasMotorino ? 'ciao' : '')
+    const currentVehicle = VEHICLES[currentModelId]
+    const isIllegal = currentVehicle?.isIllegal === true
     const hasModifications = (s.motorinoPezzi ?? []).length > 0
-    const bribeCost = hasModifications ? 100 : 50
+    const bribeCost = isIllegal ? 150 : (hasModifications ? 100 : 50)
 
     if (s.soldi >= bribeCost) {
       playSound.moneySpent()
@@ -463,9 +493,11 @@ export function useEventEngine({
         ...current,
         soldi: clampStat(current.soldi - bribeCost, 0, 1000)
       }))
-      const msg = hasModifications 
-        ? `Hai dato una mazzetta da 100€ per far chiudere un occhio sulle elaborazioni! Ti lasciano andare. -100 Soldi`
-        : `Hai dato una MAZZETTA da 50€! Ti lasciano andare. -50 Soldi`
+      const msg = isIllegal
+        ? `Hai sborsato una super mazzetta da 150€ per fargli ignorare che guidavi un cross senza targa! Ti lasciano andare. -150 Soldi`
+        : (hasModifications 
+          ? `Hai dato una mazzetta da 100€ per far chiudere un occhio sulle elaborazioni! Ti lasciano andare. -100 Soldi`
+          : `Hai dato una MAZZETTA da 50€! Ti lasciano andare. -50 Soldi`)
       announce(msg)
       addLogEntry('event_neutral', 'Polizia — mazzetta', msg, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {

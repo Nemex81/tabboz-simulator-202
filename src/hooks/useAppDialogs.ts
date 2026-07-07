@@ -27,6 +27,7 @@ export function useAppDialogs() {
   const [showJobSelectionDialog, setShowJobSelectionDialog] = useState(false)
   const [availableJobsForDialog, setAvailableJobsForDialog] = useState<JobDefinition[]>([])
   const [showMotorinoGarage, setShowMotorinoGarage] = useState(false)
+  const [garageActiveTab, setGarageActiveTab] = useState<'tuning' | 'shop'>('tuning')
 
   return {
     gameOver,
@@ -66,5 +67,7 @@ export function useAppDialogs() {
     setAvailableJobsForDialog,
     showMotorinoGarage,
     setShowMotorinoGarage,
+    garageActiveTab,
+    setGarageActiveTab,
   }
 }

@@ -1,4 +1,3 @@
-import React from 'react'
 import { 
   MusicNotes, 
   FilmSlate,
@@ -6,7 +5,9 @@ import {
   Barbell,
   Briefcase,
   Buildings,
-  Sun
+  Sun,
+  Wrench,
+  Storefront
 } from '@phosphor-icons/react'
 import { ActionButton } from '@/components/ActionButton'
 import { Card } from '@/components/ui/card'
@@ -23,6 +24,8 @@ interface CityPanelProps {
   onPalestra: () => void
   onLampada: () => void
   onLavoro: () => void
+  onConcessionario?: () => void
+  onMeccanico?: () => void
   actionsRemaining: number
   soldi: number
   muscoli: number
@@ -63,6 +66,8 @@ export function CityPanel({
   onPalestra,
   onLampada,
   onLavoro,
+  onConcessionario,
+  onMeccanico,
   actionsRemaining,
   soldi,
   muscoli,
@@ -192,6 +197,31 @@ export function CityPanel({
           <p>• Fattorino, Cameriere, Rider (dal 2° anno)</p>
           <p>• Buttafuori (dal 3° anno, Muscoli ≥ 70)</p>
           <p className="mt-2 text-secondary font-semibold">Apre il selettore lavori</p>
+        </div>
+      </Card>
+
+      <Card className="p-6 border-2 border-accent bg-card">
+        <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+          <Wrench size={24} weight="fill" />
+          CONCESSIONARIA & OFFICINA
+        </h3>
+        <div className="space-y-3">
+          <ActionButton
+            icon={<Storefront size={48} />}
+            label="Gennaro Moto"
+            onClick={onConcessionario || (() => {})}
+            {...base()}
+            ariaLabel="Vai dal concessionario Gennaro Moto per acquistare o permutare un ciclomotore o una motocicletta."
+            variant="default"
+          />
+          <ActionButton
+            icon={<Wrench size={48} />}
+            label="Officina Clandestina"
+            onClick={onMeccanico || (() => {})}
+            {...base()}
+            ariaLabel="Vai all'Officina Clandestina del tuning per truccare il tuo mezzo o sgasare nel piazzale."
+            variant="default"
+          />
         </div>
       </Card>
 
