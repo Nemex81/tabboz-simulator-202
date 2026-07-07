@@ -36,7 +36,7 @@ interface UseSocialActionsParams {
   consumeAction: () => void
   consumeInterazione: () => void
   announce: (msg: string, priority?: 'polite' | 'assertive') => void
-  triggerRandomEvent: () => void
+  triggerRandomEvent: (actionType?: string) => void
   checkForNewFriend: (location: string) => void
   checkForNewRelationship: (metAt?: Relationship['metAt']) => void
   checkForNewGirlfriend: (metAt?: Relationship['metAt']) => void

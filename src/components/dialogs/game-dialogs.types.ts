@@ -36,7 +36,10 @@ export interface CityDialogsProps {
   handleMetallariCombatti: () => void
   showPoliceEvent: boolean
   setShowPoliceEvent: (value: boolean) => void
+  policeBribeCost: number
   handlePoliceScappa: () => void
+  handlePoliceMazzetta: () => void
+  handlePoliceCarisma: () => void
   handlePoliceCollabora: () => void
   showStreetRaceEvent: boolean
   setShowStreetRaceEvent: (value: boolean) => void

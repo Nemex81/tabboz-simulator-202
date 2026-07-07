@@ -126,6 +126,7 @@ export function useEventEngine({
   const [atipaEncounterKey, setAtipaEncounterKey] = useState('')
   const [atipaSuccessChance, setAtipaSuccessChance] = useState(0)
   const [showPoliceEvent, setShowPoliceEvent] = useState(false)
+  const [policeBribeCost, setPoliceBribeCost] = useState(50)
   const [showStreetRaceEvent, setShowStreetRaceEvent] = useState(false)
   const [showBulliEvent, setShowBulliEvent] = useState(false)
   const [raceWinChance, setRaceWinChance] = useState(0)
@@ -284,7 +285,7 @@ export function useEventEngine({
     }
   }, [announce, upsertActivePartner, upsertRelationship])
 
-  const triggerRandomEvent = useCallback(() => {
+  const triggerRandomEvent = useCallback((actionType?: string) => {
     const s = statsRef.current
     const reputationModifier = getReputationEventModifier(s.reputazione)
     const baseRoll = Math.random() * 100
@@ -308,26 +309,70 @@ export function useEventEngine({
       setCurrentEvent('Incontro con i METALLARI! Vogliono la tua grana!')
       announce('Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!')
       addLogEntry('event_negative', 'Incontro con i metallari', 'Evento casuale: Incontro con i METALLARI! Vogliono la tua grana!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
-    } else if (adjustedRoll < 22) {
-      if (canAvoidNegativeEventWithCharisma(s.carisma)) {
-        playSound.success()
-        setStats((current) => ({ ...current, carisma: clampStat(current.carisma + 5) }))
-        announce('I POLIZIOTTI ti hanno fermato ma con la tua PARLANTINA li hai convinti! +5 Carisma!')
-        addLogEntry('event_positive', 'Fermati dalla polizia — via libera', 'I POLIZIOTTI ti hanno fermato ma con la tua PARLANTINA li hai convinti! +5 Carisma!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    } else {
+      // Calcolo probabilità Polizia dinamica
+      const currentModelId = s.motorinoModello ?? (s.hasMotorino ? 'ciao' : '')
+      const currentVehicle = VEHICLES[currentModelId]
+      const isIllegal = currentVehicle?.isIllegal === true
+      const hasModifications = (s.motorinoPezzi ?? []).length > 0
+
+      let policeChance = 8 // base chance
+      
+      // Abbattimento probabilità del 70% se sul posto di lavoro (legal lavoro)
+      if (actionType === 'lavoro') {
+        policeChance = policeChance * 0.3
+      }
+
+      // Sospetto visivo per coattaggine
+      if (s.coattaggine > 60) {
+        policeChance += (s.coattaggine - 60) * 0.15
+      } else if (s.coattaggine < 40) {
+        policeChance -= (40 - s.coattaggine) * 0.1
+      }
+
+      // Sospetto per motorino truccato o cross non omologato
+      if (s.hasMotorino) {
+        if (isIllegal) {
+          policeChance += 10
+        }
+        if (hasModifications) {
+          policeChance += (s.motorinoTuning ?? 0) * 0.08
+        }
+      }
+
+      // Reputazione mitiga
+      policeChance = Math.max(1, policeChance * reputationModifier.encounterChanceMultiplier)
+
+      const policeRoll = Math.random() * 100
+      if (policeRoll < policeChance) {
+        if (canAvoidNegativeEventWithCharisma(s.carisma)) {
+          playSound.success()
+          setStats((current) => ({ ...current, carisma: clampStat(current.carisma + 5) }))
+          announce('I POLIZIOTTI ti hanno fermato ma con la tua PARLANTINA li hai convinti! +5 Carisma!')
+          addLogEntry('event_positive', 'Fermati dalla polizia — via libera', 'I POLIZIOTTI ti hanno fermato ma con la tua PARLANTINA li hai convinti! +5 Carisma!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+          return
+        }
+        if (reputationModifier.respectBonus >= 15) {
+          playSound.success()
+          announce('I POLIZIOTTI ti hanno fermato ma ti lasciano andare! Sei troppo RISPETTATO nel quartiere!')
+          addLogEntry('event_positive', 'Rispettato dalla polizia', 'I POLIZIOTTI ti hanno fermato ma ti lasciano andare! Sei troppo RISPETTATO nel quartiere!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+          return
+        }
+
+        // Imposta costo mazzetta
+        const cost = isIllegal ? 150 : (hasModifications ? 100 : 50)
+        setPoliceBribeCost(cost)
+
+        playSound.dangerAlert()
+        setShowPoliceEvent(true)
+        setCurrentEvent('I POLIZIOTTI ti hanno fermato! Controllo documenti!')
+        announce('Evento casuale: Controllo della POLIZIA!')
+        addLogEntry('event_negative', 'Controllo della polizia', 'Evento casuale: Controllo della POLIZIA!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
         return
       }
-      if (reputationModifier.respectBonus >= 15) {
-        playSound.success()
-        announce('I POLIZIOTTI ti hanno fermato ma ti lasciano andare! Sei troppo RISPETTATO nel quartiere!')
-        addLogEntry('event_positive', 'Rispettato dalla polizia', 'I POLIZIOTTI ti hanno fermato ma ti lasciano andare! Sei troppo RISPETTATO nel quartiere!', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
-        return
-      }
-      playSound.dangerAlert()
-      setShowPoliceEvent(true)
-      setCurrentEvent('I POLIZIOTTI ti hanno fermato! Controllo documenti!')
-      announce('Evento casuale: Controllo della POLIZIA!')
-      addLogEntry('event_negative', 'Controllo della polizia', 'Evento casuale: Controllo della POLIZIA!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
-    } else if (adjustedRoll < 30) {
+
+      // Altrimenti, controlla se scatta la gara
+      if (adjustedRoll < 30) {
       if (!s.hasMotorino) {
         return // Salta l'evento se a piedi
       }
@@ -363,7 +408,8 @@ export function useEventEngine({
       announce('Evento casuale: Incontro con i BULLI!')
       addLogEntry('event_negative', 'Incontro con i bulli', 'Evento casuale: Incontro con i BULLI!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
-  }, [setStats, announce, addLogEntry])
+  }
+}, [setStats, announce, addLogEntry])
 
   const handleMetallariScappa = useCallback(() => {
     setShowMetallariEvent(false)
@@ -478,7 +524,7 @@ export function useEventEngine({
     }
   }, [setStats, announce, addLogEntry])
 
-  const handlePoliceCollabora = useCallback(() => {
+  const handlePoliceMazzetta = useCallback(() => {
     setShowPoliceEvent(false)
     const s = statsRef.current
     const currentModelId = s.motorinoModello ?? (s.hasMotorino ? 'ciao' : '')
@@ -510,6 +556,54 @@ export function useEventEngine({
       announce('Non hai abbastanza GRANA per la mazzetta! Ti hanno portato in questura! -Tutti i Soldi, -20 Coattaggine')
       addLogEntry('event_negative', 'Polizia — questura', 'Non hai GRANA per la mazzetta! Ti hanno portato in questura! -Tutti i Soldi, -20 Coattaggine', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
+  }, [setStats, announce, addLogEntry])
+
+  const handlePoliceCarisma = useCallback(() => {
+    setShowPoliceEvent(false)
+    const s = statsRef.current
+    const reputationModifier = getReputationEventModifier(s.reputazione)
+    
+    // Parlantina success chance: carisma * 0.6 + positiveOutcomeBonus
+    const successChance = Math.min(95, Math.max(5, s.carisma * 0.6 + reputationModifier.positiveOutcomeBonus))
+    const success = Math.random() * 100 < successChance
+
+    if (success) {
+      playSound.success()
+      setStats((current) => ({
+        ...current,
+        carisma: clampStat(current.carisma + 5)
+      }))
+      const msg = `Con la tua parlantina d'oro hai convinto gli sbirri che andavi piano. Ti lasciano andare con un avvertimento! +5 Carisma`
+      announce(msg)
+      addLogEntry('event_positive', 'Polizia — parlantina riuscita', msg, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    } else {
+      playSound.bigLoss()
+      const fine = Math.min(100, s.soldi)
+      setStats((current) => ({
+        ...current,
+        soldi: clampStat(current.soldi - fine, 0, 1000),
+        coattaggine: clampStat(current.coattaggine - 15)
+      }))
+      const msg = `Gli sbirri non si sono fatti incantare! Ti becchi una multa da 100€ e una figuraccia. -${fine}€ Soldi, -15 Coattaggine`
+      announce(msg)
+      addLogEntry('event_negative', 'Polizia — parlantina fallita', msg, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
+    }
+  }, [setStats, announce, addLogEntry])
+
+  const handlePoliceCollabora = useCallback(() => {
+    setShowPoliceEvent(false)
+    const s = statsRef.current
+    
+    // Rilasciato senza multa o sequestro, ma perde Reputazione e Coattaggine
+    setStats((current) => ({
+      ...current,
+      reputazione: clampStat(current.reputazione - 30),
+      coattaggine: clampStat(current.coattaggine - 20)
+    }))
+
+    const msg = `Hai fatto la spia! Gli sbirri ti hanno rilasciato senza multa, ma la voce si è sparsa: sei un infame! -30 Reputazione, -20 Coattaggine`
+    announce(msg)
+    addLogEntry('event_negative', 'Polizia — spia', msg, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
   }, [setStats, announce, addLogEntry])
 
   // B1-FIX-2 applicato
@@ -764,6 +858,7 @@ export function useEventEngine({
     showAtipaEvent, setShowAtipaEvent,
     atipaName, atipaSuccessChance,
     showPoliceEvent, setShowPoliceEvent,
+    policeBribeCost,
     showStreetRaceEvent, setShowStreetRaceEvent,
     showBulliEvent, setShowBulliEvent,
     raceWinChance,
@@ -776,6 +871,8 @@ export function useEventEngine({
     handleMetallariScappa,
     handleMetallariCombatti,
     handlePoliceScappa,
+    handlePoliceMazzetta,
+    handlePoliceCarisma,
     handlePoliceCollabora,
     handleStreetRaceAccetta,
     handleStreetRaceRifiuta,

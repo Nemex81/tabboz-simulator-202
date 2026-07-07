@@ -29,7 +29,7 @@ interface UseEconomyActionsParams {
   gameTime: GameTime
   consumeAction: () => void
   announce: (msg: string, priority?: 'polite' | 'assertive') => void
-  triggerRandomEvent: () => void
+  triggerRandomEvent: (actionType?: string) => void
   checkForNewFriend: (location: string) => void
   checkForNewRelationship: (metAt?: Relationship['metAt']) => void
   checkForNewGirlfriend: (metAt?: Relationship['metAt']) => void
@@ -171,7 +171,7 @@ export function useEconomyActions({
       gameTimeRef.current.currentDate,
       currentPhaseRef.current
     )
-    triggerRandomEvent()
+    triggerRandomEvent('lavoro')
   }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
 
   const handleMotorino = useCallback(() => {

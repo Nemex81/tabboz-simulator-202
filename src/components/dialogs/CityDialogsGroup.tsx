@@ -22,7 +22,12 @@ export function CityDialogsGroup({ city }: CityDialogsGroupProps) {
         open={city.showPoliceEvent}
         onOpenChange={city.setShowPoliceEvent}
         currentEvent={city.currentEvent}
+        playerSoldi={city.playerStats.soldi}
+        bribeCost={city.policeBribeCost}
+        hasMotorino={city.playerStats.hasMotorino}
         onScappa={city.handlePoliceScappa}
+        onMazzetta={city.handlePoliceMazzetta}
+        onCarisma={city.handlePoliceCarisma}
         onCollabora={city.handlePoliceCollabora}
       />
       <StreetRaceDialog
