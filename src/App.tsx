@@ -879,9 +879,9 @@ function App() {
             handleDormi={handleDormi}
             handleAdvancePhaseGuarded={handleAdvancePhaseGuarded}
           />
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
             {/* Sidebar Sinistra: Statistiche */}
-            <aside className="hidden lg:block lg:col-span-3 lg:sticky lg:top-4">
+            <aside className="hidden md:block md:col-span-3 md:sticky md:top-4">
               <SidebarStats
                 playerProfile={playerProfile ?? null}
                 stats={stats}
@@ -892,7 +892,7 @@ function App() {
             </aside>
 
             {/* Contenuto Centrale */}
-            <div className="lg:col-span-6 space-y-6">
+            <div className="md:col-span-6 space-y-6">
               <MainGameTabs
                 activeTab={activeTab}
                 onValueChange={setActiveTab}
@@ -906,7 +906,7 @@ function App() {
             </div>
 
             {/* Sidebar Destra: Diario */}
-            <aside className="hidden lg:block lg:col-span-3 lg:sticky lg:top-4">
+            <aside className="hidden md:block md:col-span-3 md:sticky md:top-4">
               <SidebarLog gameLog={gameLog} />
             </aside>
           </div>
