@@ -296,9 +296,27 @@ export const playSound = {
     
     gainNode.gain.setValueAtTime(0.15, ctx.currentTime)
     gainNode.gain.setValueAtTime(0.15, ctx.currentTime + 0.3)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35)
-    
     oscillator.start(ctx.currentTime)
     oscillator.stop(ctx.currentTime + 0.35)
+  },
+  
+  motorinoRev: () => {
+    const ctx = getAudioContext()
+    const playRev = (startTime: number, duration: number, baseFreq: number) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(baseFreq, startTime)
+      osc.frequency.linearRampToValueAtTime(baseFreq * 2.8, startTime + duration * 0.4)
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.7, startTime + duration)
+      gain.gain.setValueAtTime(0.15, startTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration)
+      osc.start(startTime)
+      osc.stop(startTime + duration)
+    }
+    playRev(ctx.currentTime, 0.25, 80)
+    playRev(ctx.currentTime + 0.3, 0.45, 85)
   }
 }

@@ -47,10 +47,12 @@ interface UseEconomyActionsParams {
   marinatoOggi: boolean
   onOpenStreetRace?: (betInfo: BetInfo) => void
   onOpenJobSelection?: (jobs: JobDefinition[]) => void
+  onOpenGarage?: () => void
 }
 
 export function useEconomyActions({
   stats,
+  onOpenGarage,
   setStats,
   gameTime,
   consumeAction,
@@ -83,6 +85,8 @@ export function useEconomyActions({
   onOpenStreetRaceRef.current = onOpenStreetRace
   const onOpenJobSelectionRef = useRef(onOpenJobSelection)
   onOpenJobSelectionRef.current = onOpenJobSelection
+  const onOpenGarageRef = useRef(onOpenGarage)
+  onOpenGarageRef.current = onOpenGarage
 
   // TASK-B: gateway — apre il dialog di selezione lavoro
   const handleLavoro = useCallback(() => {
@@ -186,18 +190,8 @@ export function useEconomyActions({
       announce('Sei a scuola! Non puoi farlo adesso.', 'assertive')
       return
     }
-    if (s.soldi < ECONOMY.MOTORINO_TRUCCO_COSTO) {
-      playSound.failure()
-      announce(`Non hai abbastanza GRANA per truccare il motorino! Servono ${ECONOMY.MOTORINO_TRUCCO_COSTO}€`, 'assertive')
-      return
-    }
-    if (s.stanchezza > 80) {
-      playSound.failure()
-      announce('Sei troppo DISTRUTTO per trafficare col motorino! Riposa prima!', 'assertive')
-      return
-    }
     // STEP 13.5 — gara motorino sera/sabato
-    if ((dayTypeRef.current === 'sabato' || dayTypeRef.current === 'festivo')
+    if (s.hasMotorino && (dayTypeRef.current === 'sabato' || dayTypeRef.current === 'festivo')
       && currentPhaseRef.current === 'sera'
       && onOpenStreetRaceRef.current) {
       const race = generateStreetRace(s.reputazione)
@@ -207,20 +201,10 @@ export function useEconomyActions({
       onOpenStreetRaceRef.current(race)
       return
     }
-    playSound.buttonClick()
-    playSound.statIncrease()
-    setStats((current) => ({
-      ...current,
-      coattaggine: clampStat(current.coattaggine + 20),
-      figosita: clampStat(current.figosita + 15),
-      soldi: clampStat(current.soldi - ECONOMY.MOTORINO_TRUCCO_COSTO, 0, 1000),
-      hasMotorino: true,
-    }))
-    consumeAction()
-    announce(`Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -${ECONOMY.MOTORINO_TRUCCO_COSTO} Soldi`)
-    addLogEntry('action_neutral', 'Motorino truccato', `Motorino TRUCCATO! Ora SGASA di brutto! +20 Coattaggine, +15 Figosità, -${ECONOMY.MOTORINO_TRUCCO_COSTO} Soldi`, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
-    triggerRandomEvent()
-  }, [setStats, consumeAction, announce, triggerRandomEvent, addLogEntry])
+    if (onOpenGarageRef.current) {
+      onOpenGarageRef.current()
+    }
+  }, [announce, consumeAction, addLogEntry])
 
   const handleShoppingMall = useCallback(() => {
     const gt = gameTimeRef.current

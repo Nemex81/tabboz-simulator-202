@@ -16,6 +16,8 @@ export interface GameStats {
   carisma: number
   salute: number
   hasMotorino: boolean  // true dopo la prima azione motorino riuscita
+  motorinoTuning?: number
+  motorinoPezzi?: string[]
 }
 
 export type ExamDifficulty = 'facile' | 'normale' | 'difficile' | 'brutale'
@@ -204,6 +206,8 @@ export const DEFAULT_GAME_STATE: GameState = {
     carisma: 10,
     salute: 100,
     hasMotorino: false,
+    motorinoTuning: 0,
+    motorinoPezzi: [],
   },
   grades: {
     matematica: 6,

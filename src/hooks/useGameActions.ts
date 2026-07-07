@@ -1,4 +1,4 @@
-﻿import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useEconomyActions } from './useEconomyActions'
 import { useGirlfriendActions } from './useGirlfriendActions'
 import { useSocialActions } from './useSocialActions'
@@ -45,6 +45,7 @@ export function useGameActions({
   handleDormi,
   onOpenStreetRace,
   onOpenJobSelection,
+  onOpenGarage,
 }: UseGameActionsParams) {
   const { handleLavoro, handleJobSelection, handleMotorino, handleShoppingMall } = useEconomyActions({
     stats,
@@ -63,6 +64,7 @@ export function useGameActions({
     marinatoOggi,
     onOpenStreetRace,
     onOpenJobSelection,
+    onOpenGarage,
   })
 
   const {

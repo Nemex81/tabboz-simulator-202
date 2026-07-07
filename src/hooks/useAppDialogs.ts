@@ -26,6 +26,7 @@ export function useAppDialogs() {
   // TASK-B: stato dialog selezione lavoro
   const [showJobSelectionDialog, setShowJobSelectionDialog] = useState(false)
   const [availableJobsForDialog, setAvailableJobsForDialog] = useState<JobDefinition[]>([])
+  const [showMotorinoGarage, setShowMotorinoGarage] = useState(false)
 
   return {
     gameOver,
@@ -63,5 +64,7 @@ export function useAppDialogs() {
     setShowJobSelectionDialog,
     availableJobsForDialog,
     setAvailableJobsForDialog,
+    showMotorinoGarage,
+    setShowMotorinoGarage,
   }
 }

@@ -327,10 +327,11 @@ export function useEventEngine({
       announce('Evento casuale: Controllo della POLIZIA!')
       addLogEntry('event_negative', 'Controllo della polizia', 'Evento casuale: Controllo della POLIZIA!', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else if (adjustedRoll < 30) {
-      const winChance = Math.min(85, Math.max(15,
-        (s.coattaggine * 0.5) +
-        (s.figosita * 0.3) +
-        (s.muscoli * 0.2) +
+      const winChance = Math.min(95, Math.max(10,
+        (s.coattaggine * 0.3) +
+        (s.figosita * 0.15) +
+        (s.muscoli * 0.1) +
+        ((s.motorinoTuning ?? 0) * 0.45) +
         reputationModifier.positiveOutcomeBonus
       ))
       const race = generateStreetRace(s.reputazione)
@@ -389,36 +390,84 @@ export function useEventEngine({
 
   const handlePoliceScappa = useCallback(() => {
     setShowPoliceEvent(false)
-    if (statsRef.current.coattaggine > 70) {
+    const s = statsRef.current
+    const hasModifications = (s.motorinoPezzi ?? []).length > 0
+    const hasMalossi = (s.motorinoPezzi ?? []).includes('malossi_70cc')
+    
+    let escapeChance = 0
+    if (s.hasMotorino) {
+      escapeChance = (s.coattaggine * 0.3) + ((s.motorinoTuning ?? 0) * 0.7)
+      if (hasMalossi) {
+        escapeChance += 25
+      }
+    } else {
+      escapeChance = s.coattaggine > 70 ? 100 : 0
+    }
+    
+    const roll = Math.random() * 100
+    const success = roll < escapeChance
+
+    if (success) {
       playSound.success()
+      const coattaggineBonus = s.hasMotorino ? 25 : 10
+      const reputazioneBonus = s.hasMotorino ? 20 : 0
       setStats((current) => ({
         ...current,
-        coattaggine: clampStat(current.coattaggine + 10)
+        coattaggine: clampStat(current.coattaggine + coattaggineBonus),
+        reputazione: clampStat(current.reputazione + reputazioneBonus)
       }))
-      announce('Sei SCAPPATO dai poliziotti! Che COATTO! +10 Coattaggine')
-      addLogEntry('event_positive', 'Polizia — fuga riuscita', 'Sei SCAPPATO dai poliziotti! Che COATTO! +10 Coattaggine', 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
+      const msg = s.hasMotorino 
+        ? `Sei SCAPPATO in impennata dai poliziotti! Che LEGGENDA! +25 Coattaggine, +20 Reputazione`
+        : `Sei SCAPPATO a piedi dai poliziotti! Che COATTO! +10 Coattaggine`
+      announce(msg)
+      addLogEntry('event_positive', 'Polizia — fuga riuscita', msg, 'positive', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {
       playSound.bigLoss()
-      setStats((current) => ({
-        ...current,
-        soldi: clampStat(current.soldi - 100, 0, 1000),
-        coattaggine: clampStat(current.coattaggine - 15)
-      }))
-      announce('Ti hanno BECCATO! Multa di 100€! -100 Soldi, -15 Coattaggine')
-      addLogEntry('event_negative', 'Polizia — beccato in fuga', 'Ti hanno BECCATO! Multa di 100€! -100 Soldi, -15 Coattaggine', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
+      let fine = 100
+      let coattagginePenalty = 15
+      let msg = ''
+      
+      if (s.hasMotorino && hasModifications) {
+        fine = 200
+        coattagginePenalty = 20
+        setStats((current) => ({
+          ...current,
+          soldi: clampStat(current.soldi - fine, 0, 1000),
+          coattaggine: clampStat(current.coattaggine - coattagginePenalty),
+          motorinoTuning: 0,
+          motorinoPezzi: []
+        }))
+        msg = `Ti hanno BECCATO col motorino elaborato! Sequestro dei pezzi ed elaborazione azzerata! Multa di 200€! -200 Soldi, -20 Coattaggine`
+      } else {
+        setStats((current) => ({
+          ...current,
+          soldi: clampStat(current.soldi - fine, 0, 1000),
+          coattaggine: clampStat(current.coattaggine - coattagginePenalty)
+        }))
+        msg = `Ti hanno BECCATO! Multa di 100€! -100 Soldi, -15 Coattaggine`
+      }
+      announce(msg)
+      addLogEntry('event_negative', 'Polizia — beccato in fuga', msg, 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
   }, [setStats, announce, addLogEntry])
 
   const handlePoliceCollabora = useCallback(() => {
     setShowPoliceEvent(false)
-    if (statsRef.current.soldi >= 50) {
+    const s = statsRef.current
+    const hasModifications = (s.motorinoPezzi ?? []).length > 0
+    const bribeCost = hasModifications ? 100 : 50
+
+    if (s.soldi >= bribeCost) {
       playSound.moneySpent()
       setStats((current) => ({
         ...current,
-        soldi: clampStat(current.soldi - 50, 0, 1000)
+        soldi: clampStat(current.soldi - bribeCost, 0, 1000)
       }))
-      announce('Hai dato una MAZZETTA! Ti lasciano andare. -50 Soldi')
-      addLogEntry('event_neutral', 'Polizia — mazzetta', 'Hai dato una MAZZETTA! Ti lasciano andare. -50 Soldi', 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
+      const msg = hasModifications 
+        ? `Hai dato una mazzetta da 100€ per far chiudere un occhio sulle elaborazioni! Ti lasciano andare. -100 Soldi`
+        : `Hai dato una MAZZETTA da 50€! Ti lasciano andare. -50 Soldi`
+      announce(msg)
+      addLogEntry('event_neutral', 'Polizia — mazzetta', msg, 'neutral', gameTimeRef.current.currentDate, currentPhaseRef.current)
     } else {
       playSound.bigLoss()
       setStats((current) => ({
@@ -426,7 +475,7 @@ export function useEventEngine({
         soldi: 0,
         coattaggine: clampStat(current.coattaggine - 20)
       }))
-      announce('Non hai GRANA per la mazzetta! Ti hanno portato in questura! -Tutti i Soldi, -20 Coattaggine')
+      announce('Non hai abbastanza GRANA per la mazzetta! Ti hanno portato in questura! -Tutti i Soldi, -20 Coattaggine')
       addLogEntry('event_negative', 'Polizia — questura', 'Non hai GRANA per la mazzetta! Ti hanno portato in questura! -Tutti i Soldi, -20 Coattaggine', 'negative', gameTimeRef.current.currentDate, currentPhaseRef.current)
     }
   }, [setStats, announce, addLogEntry])

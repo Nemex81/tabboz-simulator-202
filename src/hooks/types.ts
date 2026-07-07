@@ -56,4 +56,5 @@ export interface UseGameActionsParams {
   handleDormi: () => void
   onOpenStreetRace?: (betInfo: BetInfo) => void
   onOpenJobSelection?: (jobs: JobDefinition[]) => void
+  onOpenGarage?: () => void
 }

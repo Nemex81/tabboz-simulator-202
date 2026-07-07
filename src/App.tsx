@@ -124,6 +124,8 @@ function App() {
     setShowJobSelectionDialog,
     availableJobsForDialog,
     setAvailableJobsForDialog,
+    showMotorinoGarage,
+    setShowMotorinoGarage,
   } = useAppDialogs()
 
   const showSchoolMorning = morningDisplay === 'school'
@@ -280,6 +282,9 @@ function App() {
     onOpenJobSelection: (jobs: JobDefinition[]) => {
       setAvailableJobsForDialog(jobs)
       setShowJobSelectionDialog(true)
+    },
+    onOpenGarage: () => {
+      setShowMotorinoGarage(true)
     },
   })
 
@@ -824,6 +829,15 @@ function App() {
       setShowKeyboardHelp,
       onKeyboardHelpCloseAutoFocus: handleKeyboardHelpCloseAutoFocus,
       stanchezza: stats.stanchezza,
+      showMotorinoGarage,
+      setShowMotorinoGarage,
+      playerStats: stats,
+      setStats,
+      consumeAction,
+      announce,
+      addLogEntry,
+      currentPhase: currentPhase ?? 'mattina',
+      gameTime,
     },
   })
   // ─────────────────────────────────────────────────────────────────────────────

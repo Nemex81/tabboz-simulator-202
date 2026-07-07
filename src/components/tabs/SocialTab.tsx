@@ -184,26 +184,24 @@ export function SocialTab({
         <div className="space-y-3">
           <ActionButton
             icon={<Motorcycle size={48} />}
-            label="Trucca Motorino"
+            label="Garage Motorino"
             shortcut="Ctrl+4"
             onClick={handleMotorino}
-            disabled={morningChoicePending || phaseActionsLeft <= 0 || soldi < ECONOMY.MOTORINO_TRUCCO_COSTO || stanchezza > 80}
+            disabled={morningChoicePending || phaseActionsLeft <= 0}
             blockedReason={
               morningChoicePending
                 ? '🏫 Scegli prima se andare a scuola o marinare!'
                 : phaseActionsLeft <= 0
                   ? 'Nessuna azione per questa fascia oraria'
-                  : soldi < ECONOMY.MOTORINO_TRUCCO_COSTO
-                    ? `Servono almeno ${ECONOMY.MOTORINO_TRUCCO_COSTO}€`
-                      : `Sei troppo ${renderPlayerForm(playerGender, 'stanco', 'stanca')} per trafficare col motorino!`
+                  : undefined
             }
-            ariaLabel={`Trucca il motorino per aumentare molto la coattaggine. Costa ${ECONOMY.MOTORINO_TRUCCO_COSTO} euro. Tasto rapido: Ctrl+4`}
+            ariaLabel="Apri il Garage Motorino per truccare il mezzo, acquistare parti o sgasare nel piazzale. Tasto rapido: Ctrl+4"
           />
           <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded">
-            <p className="font-semibold mb-1">Effetti:</p>
-            <p>• +15 Coattaggine</p>
-            <p>• +10 Figosità</p>
-            <p className="mt-2 text-destructive font-semibold">Costo: {ECONOMY.MOTORINO_TRUCCO_COSTO}€</p>
+            <p className="font-semibold mb-1">Elabora il tuo mezzo:</p>
+            <p>• Acquista parti speciali Malossi e Polini</p>
+            <p>• Aumenta Coattaggine e Figosità sgasando</p>
+            <p>• Migliora il successo nelle gare clandestinamente</p>
           </div>
         </div>
       </Card>

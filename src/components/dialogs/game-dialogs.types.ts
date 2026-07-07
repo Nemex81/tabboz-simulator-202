@@ -72,6 +72,15 @@ export interface SocialDialogsProps {
   setShowKeyboardHelp: (value: boolean) => void
   onKeyboardHelpCloseAutoFocus?: (event: Event) => void
   stanchezza: number
+  showMotorinoGarage?: boolean
+  setShowMotorinoGarage?: (value: boolean) => void
+  playerStats?: GameStats
+  setStats?: (updater: ((prev: GameStats) => GameStats) | GameStats) => void
+  consumeAction?: () => void
+  announce?: (msg: string, priority?: 'polite' | 'assertive') => void
+  addLogEntry?: any
+  currentPhase?: any
+  gameTime?: any
 }
 
 export interface GameDialogsProps {

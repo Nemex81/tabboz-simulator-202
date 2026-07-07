@@ -3,6 +3,7 @@ import { AtipaEventDialog } from '@/components/dialogs/AtipaEventDialog'
 import { BulliDialog } from '@/components/dialogs/BulliDialog'
 import { GameOverDialog } from '@/components/dialogs/GameOverDialog'
 import { ResetDialog } from '@/components/dialogs/ResetDialog'
+import { MotorinoGarageDialog } from '@/components/dialogs/MotorinoGarageDialog'
 import type { SocialDialogsProps } from '@/components/dialogs/game-dialogs.types'
 
 interface SocialDialogsGroupProps {
@@ -46,6 +47,27 @@ export function SocialDialogsGroup({ social, currentEvent }: SocialDialogsGroupP
           onCloseAutoFocus={social.onKeyboardHelpCloseAutoFocus}
         />
       )}
+      {social.showMotorinoGarage !== undefined &&
+        social.setShowMotorinoGarage &&
+        social.playerStats &&
+        social.setStats &&
+        social.consumeAction &&
+        social.announce &&
+        social.addLogEntry &&
+        social.currentPhase &&
+        social.gameTime && (
+          <MotorinoGarageDialog
+            open={social.showMotorinoGarage}
+            onOpenChange={social.setShowMotorinoGarage}
+            playerStats={social.playerStats}
+            setStats={social.setStats}
+            consumeAction={social.consumeAction}
+            announce={social.announce}
+            addLogEntry={social.addLogEntry}
+            currentPhase={social.currentPhase}
+            gameTime={social.gameTime}
+          />
+        )}
     </>
   )
 }
