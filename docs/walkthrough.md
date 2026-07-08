@@ -91,3 +91,4 @@ Abbiamo inserito e bilanciato tre lavori accessibili fin dal 1° anno di liceo (
 * **TypeScript Compilation**: `npx tsc --noEmit` completato con **0 errori**.
 * **Vitest Suite**: `npm run test` completato con successo (56 test su 56 **verdi**).
 * **Production Build**: `npm run build` completato correttamente (bundle generato in `dist/`).
+* **Deploy Automatico GitHub Pages**: Ripristinato il file `.github/workflows/deploy.yml` usando Node 22 (LTS) e `npm ci`. Al push su `main`, la GitHub Actions build si è avviata ed ha completato con successo il deploy. Verificata la corretta pubblicazione del sito live all'indirizzo `https://nemex81.github.io/tabboz-simulator-202/` (asset correnti: JS `index-C9NuBpMz.js` e CSS `index-DVrsgN4Z.css`).
