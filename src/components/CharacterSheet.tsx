@@ -1,8 +1,20 @@
 import React from 'react'
-import { IdentificationCard, Star, Trophy, GraduationCap, BookOpen, Heart, UsersThree } from '@phosphor-icons/react'
+import { 
+  IdentificationCard, 
+  Star, 
+  Trophy, 
+  GraduationCap, 
+  BookOpen, 
+  Heart, 
+  UsersThree,
+  Chats,
+  Laptop,
+  UserCircle
+} from '@phosphor-icons/react'
+import { ActionButton } from '@/components/ActionButton'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats, SchoolType, SchoolRecord, GameLogEntry, HealthRecord, SubjectGrades, Friend, Relationship } from '@/lib/types'
+import { GameStats, SchoolType, SchoolRecord, GameLogEntry, HealthRecord, SubjectGrades, Friend, Relationship, NarrativePlayerGender } from '@/lib/types'
 import { getReputationLevel } from '@/lib/game-utils'
 import { DiaryPanel } from '@/components/DiaryPanel'
 import { HealthRecordPanel } from '@/components/HealthRecordPanel'
@@ -35,6 +47,11 @@ interface CharacterSheetProps {
   onGirlfriendAction: (action: string, partnerKey?: string) => void
   onGirlfriendBreakup: (partnerKey?: string) => void
   onTryRelationship: (relationshipId: string) => void
+  onChiacchiera: () => void
+  onNavigaOnline: () => void
+  onTelefona: () => void
+  onRimorchia: () => void
+  playerGender: NarrativePlayerGender
 }
 
 export const CharacterSheet = React.memo(function CharacterSheet({
@@ -59,6 +76,11 @@ export const CharacterSheet = React.memo(function CharacterSheet({
   onGirlfriendAction,
   onGirlfriendBreakup,
   onTryRelationship,
+  onChiacchiera,
+  onNavigaOnline,
+  onTelefona,
+  onRimorchia,
+  playerGender,
 }: CharacterSheetProps) {
   return (
     <Tabs defaultValue="profilo" className="w-full mt-6">
@@ -77,6 +99,11 @@ export const CharacterSheet = React.memo(function CharacterSheet({
           <UsersThree size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Relazioni</span>
           <span className="sm:hidden">👥</span>
+        </TabsTrigger>
+        <TabsTrigger value="azioni" className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Azioni: attività e socializzazione">
+          <Chats size={18} className="mr-1" weight="fill" aria-hidden="true" />
+          <span className="hidden sm:inline">Azioni</span>
+          <span className="sm:hidden">💬</span>
         </TabsTrigger>
         <TabsTrigger value="diario" className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Diario: eventi recenti">
           <BookOpen size={18} className="mr-1" weight="fill" aria-hidden="true" />
@@ -319,6 +346,80 @@ export const CharacterSheet = React.memo(function CharacterSheet({
               Seleziona prima un indirizzo scolastico.
             </p>
           )}
+        </div>
+      </TabsContent>
+
+      <TabsContent value="azioni">
+        <div className="grid md:grid-cols-2 gap-6 mt-2">
+          {/* Socializza */}
+          <Card className="p-4 border-2 border-primary bg-card">
+            <h3 className="text-xl font-bold mb-4 text-primary flex items-center gap-2">
+              <Chats size={24} weight="fill" />
+              SOCIALIZZA
+            </h3>
+            <div className="space-y-3">
+              <ActionButton
+                icon={<Chats size={40} />}
+                label="Chiacchiera"
+                onClick={onChiacchiera}
+                disabled={actionsRemaining <= 0}
+                blockedReason={actionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : undefined}
+                variant="secondary"
+                ariaLabel="Chiacchiera con qualcuno. Gratis. Aumenta Carisma e Reputazione."
+                helpText="Chiacchiera con qualcuno per strada. Aumenta il Carisma di 5 e la Reputazione di 3."
+              />
+              <ActionButton
+                icon={<Laptop size={40} />}
+                label="Naviga Online"
+                onClick={onNavigaOnline}
+                disabled={actionsRemaining <= 0}
+                blockedReason={actionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : undefined}
+                variant="secondary"
+                ariaLabel="Naviga online e socializza in rete. Gratis. Aumenta Carisma e di poco la Reputazione."
+                helpText="Usa il PC per chattare e navigare. Aumenta il Carisma di 4, la Reputazione di 1 e può farti conoscere nuovi amici online."
+              />
+              <ActionButton
+                icon={<UserCircle size={40} />}
+                label="Telefona ad un amico"
+                onClick={onTelefona}
+                disabled={actionsRemaining <= 0 || friends.length === 0}
+                blockedReason={
+                  actionsRemaining <= 0 
+                    ? 'Nessuna azione per questa fascia oraria' 
+                    : friends.length === 0 
+                    ? 'Non hai nessun amico in rubrica da chiamare!' 
+                    : undefined
+                }
+                variant="secondary"
+                ariaLabel="Telefona a un amico. Gratis. Richiede amici in rubrica."
+                helpText="Fai una chiamata ad un amico della tua rubrica. Aumenta il Carisma di 3."
+              />
+            </div>
+          </Card>
+
+          {/* Rimorchia */}
+          <Card className="p-4 border-2 border-accent bg-card flex flex-col justify-between">
+            <div>
+              <h3 className="text-xl font-bold mb-4 text-accent flex items-center gap-2">
+                <Heart size={24} weight="fill" />
+                RIMORCHIA
+              </h3>
+              <ActionButton
+                icon={<Heart size={40} />}
+                label="Rimorchia nel quartiere"
+                shortcut="Ctrl+9"
+                onClick={onRimorchia}
+                disabled={actionsRemaining <= 0}
+                blockedReason={actionsRemaining <= 0 ? 'Nessuna azione per questa fascia oraria' : undefined}
+                variant="default"
+                ariaLabel={`Prova a rimorchiare qualcuno nel quartiere. Fondi attuali: ${stats.soldi} euro. Tasto rapido: Ctrl+9`}
+                helpText="Prova a fare colpo su qualcuno nel quartiere. Se ci riesci avvierai una conoscenza romantica. Se fallisci perderai un po' di morale e figosità."
+              />
+            </div>
+            <div className="mt-4 pt-4 border-t border-border text-xs text-muted-foreground italic">
+              💡 Spostati in discoteca o al cinema per sbloccare altri modi di socializzazione e divertimento!
+            </div>
+          </Card>
         </div>
       </TabsContent>
 

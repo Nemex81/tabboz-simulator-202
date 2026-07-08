@@ -33,6 +33,8 @@ function makeParams(overrides: Partial<Parameters<typeof useKeyboardShortcuts>[0
     openKeyboardHelp: vi.fn(),
     setActiveTab: vi.fn(),
     announce: vi.fn(),
+    currentLocation: 'cameretta',
+    soldi: 100,
     ...overrides,
   }
 }

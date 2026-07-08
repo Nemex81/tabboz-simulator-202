@@ -1,5 +1,7 @@
 # TODO
 
+- 2026-07-08: Aggiunti e bilanciati tre lavori part-time accessibili a 14 anni (minSchoolYear: 1): Dogsitter (paga 15€, mattina/pomeriggio), Volantinaggio (paga 12€, pomeriggio feriali/sabato) e Consegna Giornali (paga 18€, mattina feriali/sabato).
+- 2026-07-07: Riorganizzazione completa UI/UX e introduzione della navigazione geografica (Popomundo style) con tab Home (Sommario), Luogo (Location-locked actions), Città (Mappa degli spostamenti con SFX), e integrazione delle azioni personali nella scheda Personaggio (sub-tab Azioni). Implementata scorciatoia Shift+M / M per stato rapido accessibile.
 - 2026-04-23: corretti i doppi annunci A11y su `useGameNarrator` al primo mount e su `ActionButton` da tastiera; aggiunti test di non regressione mirati.
 - 2026-04-23: completato il sistema `useGameNarrator` con `A11yProvider` e live region dual-channel per annunci di fase, giorno, salute, soldi, delta statistiche ed eventi automatici pomeridiani.
 - 2026-04-23: aggiornati `ActionButton`, root App e suite Vitest mirata per il nuovo flusso annunci accessibili compatibile con screen reader.

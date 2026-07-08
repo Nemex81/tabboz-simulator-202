@@ -1,20 +1,20 @@
 import { useEffect, useRef } from 'react'
 import type { ComponentProps } from 'react'
-import { Buildings, ChartBar, Chats, GraduationCap, IdentificationCard } from '@phosphor-icons/react'
+import { House, MapPin, MapTrifold, IdentificationCard, UserGear } from '@phosphor-icons/react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CharacterSheet } from '@/components/CharacterSheet'
 import { CityTab } from '@/components/tabs/CityTab'
-import { SchoolTab } from '@/components/tabs/SchoolTab'
-import { SocialTab } from '@/components/tabs/SocialTab'
 import { StatusTab } from '@/components/tabs/StatusTab'
+import { DashboardTab } from '@/components/tabs/DashboardTab'
+import { LocationTab } from '@/components/tabs/LocationTab'
 import { announce } from '@/lib/a11y-announce'
 import type { DayPhase } from '@/lib/types'
 
 const TAB_ANNOUNCE_MESSAGES: Record<string, string> = {
-  school: 'Scheda scuola aperta',
-  city: 'Pannello città aperto',
+  home: 'Sommario rapido aperto',
+  location: 'Pannello luogo attuale aperto',
+  city: 'Mappa della città aperta',
   character: 'Scheda personaggio aperta',
-  social: 'Azioni sociali aperte',
   status: 'Impostazioni aperte',
 }
 
@@ -23,10 +23,10 @@ interface MainGameTabsProps {
   onValueChange: (value: string) => void
   currentPhase: DayPhase | null | undefined
   statusTab: ComponentProps<typeof StatusTab>
-  schoolTab: ComponentProps<typeof SchoolTab>
   characterTab: ComponentProps<typeof CharacterSheet>
-  socialTab: ComponentProps<typeof SocialTab>
   cityTab: ComponentProps<typeof CityTab>
+  dashboardTabProps: ComponentProps<typeof DashboardTab>
+  locationTabProps: ComponentProps<typeof LocationTab>
 }
 
 export function MainGameTabs({
@@ -34,14 +34,13 @@ export function MainGameTabs({
   onValueChange,
   currentPhase,
   statusTab,
-  schoolTab,
   characterTab,
-  socialTab,
   cityTab,
+  dashboardTabProps,
+  locationTabProps,
 }: MainGameTabsProps) {
   const previousTabRef = useRef(activeTab)
   const pendingFocusTargetRef = useRef<string | null>(null)
-  const isSkippedSchoolMorning = currentPhase === 'mattina' && schoolTab.marinatoOggi
 
   const markConfirmedTabChange = (targetTab: string) => {
     pendingFocusTargetRef.current = targetTab
@@ -53,27 +52,18 @@ export function MainGameTabs({
     }
   }
 
-  // DayPhase reale: 'mattina' | 'pomeriggio' | 'sera' | 'notte'
-  const isSchoolAvailable = currentPhase === 'mattina'
-  const isCityAvailable = isSkippedSchoolMorning || currentPhase === 'pomeriggio' || currentPhase === 'sera'
-  const isSocialAvailable =
-    isSkippedSchoolMorning ||
-    currentPhase === 'pomeriggio' ||
-    currentPhase === 'sera' ||
-    currentPhase === 'notte'
-  // character e status sempre disponibili
+  // Tutti i tab sono sempre disponibili, tranne che in base alle specifiche restrizioni orarie se applicabili.
+  // Home, Personaggio e Impostazioni sono sempre attivi.
+  const isCityAvailable = currentPhase !== 'notte'
+  const isLocationAvailable = true
 
-  // Redirect automatico se il tab attivo diventa non disponibile
+  // Redirect se il tab diventa improvvisamente non disponibile
   useEffect(() => {
     if (currentPhase == null) return
-    if (activeTab === 'school' && !isSchoolAvailable) {
-      onValueChange(isSocialAvailable ? 'social' : 'status')
-    } else if (activeTab === 'city' && !isCityAvailable) {
-      onValueChange(isSchoolAvailable ? 'school' : isSocialAvailable ? 'social' : 'status')
-    } else if (activeTab === 'social' && !isSocialAvailable) {
-      onValueChange(isSchoolAvailable ? 'school' : 'status')
+    if (activeTab === 'city' && !isCityAvailable) {
+      onValueChange('home')
     }
-  }, [activeTab, currentPhase, isSchoolAvailable, isCityAvailable, isSocialAvailable, onValueChange])
+  }, [activeTab, currentPhase, isCityAvailable, onValueChange])
 
   useEffect(() => {
     if (previousTabRef.current === activeTab) return
@@ -99,86 +89,94 @@ export function MainGameTabs({
       className="w-full"
     >
       <nav aria-label="Menu principale di gioco">
-        <TabsList aria-label="Menu principale di gioco" className="flex w-full items-center justify-start gap-2 bg-muted/50 p-1 h-auto overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth">
+        <TabsList 
+          aria-label="Menu principale di gioco" 
+          className="flex w-full items-center justify-start gap-2 p-1 h-auto overflow-x-auto whitespace-nowrap scrollbar-none scroll-smooth
+                     bg-muted/50 border-b border-border md:relative md:flex-row md:bg-muted/50 md:border-b-0
+                     fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-border p-2 justify-around"
+        >
+          {/* HOME */}
           <TabsTrigger
-            value="school"
-            disabled={!isSchoolAvailable}
-            aria-label={!isSchoolAvailable ? 'Scuola: disponibile solo al mattino' : 'Scuola'}
-            onMouseDown={() => markConfirmedTabChange('school')}
-            onKeyDown={(event) => handleTriggerKeyDown('school', event)}
-            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground"
+            value="home"
+            aria-label="Home e sommario"
+            onMouseDown={() => markConfirmedTabChange('home')}
+            onKeyDown={(event) => handleTriggerKeyDown('home', event)}
+            className="flex-1 min-w-[70px] md:min-w-[120px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
-            <GraduationCap size={20} className="mr-2" weight="fill" />
-            <span className="hidden sm:inline" aria-hidden="true">Scuola</span>
-            <span className="sm:hidden" aria-hidden="true">Scuola</span>
+            <House size={20} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Home</span>
           </TabsTrigger>
+
+          {/* LUOGO */}
+          <TabsTrigger
+            value="location"
+            disabled={!isLocationAvailable}
+            aria-label="Luogo attuale"
+            onMouseDown={() => markConfirmedTabChange('location')}
+            onKeyDown={(event) => handleTriggerKeyDown('location', event)}
+            className="flex-1 min-w-[70px] md:min-w-[120px] data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground"
+          >
+            <MapPin size={20} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Luogo</span>
+          </TabsTrigger>
+
+          {/* CITTA */}
           <TabsTrigger
             value="city"
             disabled={!isCityAvailable}
-            aria-label={!isCityAvailable ? 'Città: disponibile dal pomeriggio o se salti la scuola' : 'Città'}
+            aria-label={!isCityAvailable ? 'Città: chiusa di notte' : 'Mappa città'}
             onMouseDown={() => markConfirmedTabChange('city')}
             onKeyDown={(event) => handleTriggerKeyDown('city', event)}
-            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="flex-1 min-w-[70px] md:min-w-[120px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
-            <Buildings size={20} className="mr-2" weight="fill" />
-            <span className="hidden sm:inline" aria-hidden="true">Città</span>
-            <span className="sm:hidden" aria-hidden="true">Roma</span>
+            <MapTrifold size={20} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Città</span>
           </TabsTrigger>
+
+          {/* PERSONAGGIO */}
           <TabsTrigger
             value="character"
-            aria-label="Personaggio"
+            aria-label="Personaggio e Social"
             onMouseDown={() => markConfirmedTabChange('character')}
             onKeyDown={(event) => handleTriggerKeyDown('character', event)}
-            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
+            className="flex-1 min-w-[70px] md:min-w-[120px] data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
           >
-            <IdentificationCard size={20} className="mr-2" weight="fill" aria-hidden="true" />
-            <span className="hidden sm:inline" aria-hidden="true">Personaggio</span>
-            <span className="sm:hidden" aria-hidden="true">👤</span>
+            <IdentificationCard size={20} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Personaggio</span>
           </TabsTrigger>
-          <TabsTrigger
-            value="social"
-            disabled={!isSocialAvailable}
-            aria-label={!isSocialAvailable ? 'Azioni: non disponibili di mattina prima della scelta scuola o se vai a lezione' : 'Azioni'}
-            onMouseDown={() => markConfirmedTabChange('social')}
-            onKeyDown={(event) => handleTriggerKeyDown('social', event)}
-            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-accent data-[state=active]:text-accent-foreground"
-          >
-            <Chats size={20} className="mr-2" weight="fill" />
-            <span className="hidden sm:inline" aria-hidden="true">Azioni</span>
-            <span className="sm:hidden" aria-hidden="true">Azioni</span>
-          </TabsTrigger>
+
+          {/* IMPOSTAZIONI */}
           <TabsTrigger
             value="status"
             aria-label="Impostazioni"
             onMouseDown={() => markConfirmedTabChange('status')}
             onKeyDown={(event) => handleTriggerKeyDown('status', event)}
-            className="flex-1 min-w-[100px] md:min-w-[120px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="flex-1 min-w-[70px] md:min-w-[120px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
           >
-            <ChartBar size={20} className="mr-2" weight="fill" aria-hidden="true" />
-            <span className="hidden sm:inline" aria-hidden="true">Impostazioni</span>
-            <span className="sm:hidden" aria-hidden="true">⚙️</span>
+            <UserGear size={20} className="md:mr-2" weight="fill" />
+            <span className="hidden md:inline">Impostazioni</span>
           </TabsTrigger>
         </TabsList>
       </nav>
 
-      <TabsContent value="status" className="space-y-6 mt-6" tabIndex={-1} data-main-tab-panel="status">
-        <StatusTab {...statusTab} />
+      <TabsContent value="home" className="space-y-6 mt-6 focus-visible:outline-none" tabIndex={-1} data-main-tab-panel="home">
+        <DashboardTab {...dashboardTabProps} />
       </TabsContent>
 
-      <TabsContent value="school" className="space-y-6 mt-6" tabIndex={-1} data-main-tab-panel="school">
-        <SchoolTab {...schoolTab} />
+      <TabsContent value="location" className="space-y-6 mt-6 focus-visible:outline-none" tabIndex={-1} data-main-tab-panel="location">
+        <LocationTab {...locationTabProps} />
       </TabsContent>
 
-      <TabsContent value="character" tabIndex={-1} data-main-tab-panel="character">
+      <TabsContent value="city" className="space-y-6 mt-6 focus-visible:outline-none" tabIndex={-1} data-main-tab-panel="city">
+        <CityTab {...cityTab} />
+      </TabsContent>
+
+      <TabsContent value="character" className="focus-visible:outline-none" tabIndex={-1} data-main-tab-panel="character">
         <CharacterSheet {...characterTab} />
       </TabsContent>
 
-      <TabsContent value="social" className="space-y-6 mt-6" tabIndex={-1} data-main-tab-panel="social">
-        <SocialTab {...socialTab} />
-      </TabsContent>
-
-      <TabsContent value="city" className="space-y-6 mt-6" tabIndex={-1} data-main-tab-panel="city">
-        <CityTab {...cityTab} />
+      <TabsContent value="status" className="space-y-6 mt-6 focus-visible:outline-none" tabIndex={-1} data-main-tab-panel="status">
+        <StatusTab {...statusTab} />
       </TabsContent>
     </Tabs>
   )

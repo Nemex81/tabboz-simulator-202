@@ -65,6 +65,8 @@ function App() {
   const [currentTheme, setCurrentTheme] = useKV<ThemeVariant>('tabboz-theme', 'default')
   const [rawSchoolRecord, setRawSchoolRecord] = useKV<SchoolRecord>('tabboz-school-record', DEFAULT_SCHOOL_RECORD)
   const [rawGradesHistory, setRawGradesHistory] = useKV<Record<number, SubjectGrades>>('tabboz-grades-history', {})
+  const [currentLocation, setCurrentLocation] = useKV<string>('tabboz-location', 'cameretta')
+  const activeLocation = currentLocation ?? 'cameretta'
 
   const schoolType = validateSchoolType(rawSchoolType)
   const playerProfile = useMemo(() => normalizePlayerProfileNullable(rawPlayerProfile), [rawPlayerProfile])
@@ -144,7 +146,7 @@ function App() {
   const [marinatoOggi, setMarinatoOggi] = useState(false)
   const [morningChoicePending, setMorningChoicePending] = useState(false)
   const [schoolSubPanel, setSchoolSubPanel] = useState<'home' | 'teachers' | 'break'>('home')
-  const [activeTab, setActiveTab] = useState<string>('school')
+  const [activeTab, setActiveTab] = useState<string>('home')
   const [schoolMorningChoiceFocusNonce, setSchoolMorningChoiceFocusNonce] = useState(0)
   const schoolBootstrapStartedRef = useRef(false)
 
@@ -559,7 +561,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (schoolMorningChoiceFocusNonce === 0 || activeTab !== 'school') {
+    if (schoolMorningChoiceFocusNonce === 0 || activeTab !== 'location') {
       return
     }
 
@@ -584,9 +586,63 @@ function App() {
   }, [activeTab, schoolMorningChoiceFocusNonce])
 
   const handleGoToSchoolMorningChoice = useCallback(() => {
-    setActiveTab('school')
+    handleVaiAScuola()
+    setCurrentLocation('scuola')
+    setActiveTab('location')
     setSchoolMorningChoiceFocusNonce((value) => value + 1)
-  }, [])
+  }, [handleVaiAScuola, setCurrentLocation, setActiveTab])
+
+  const handleMarinaSchoolChoice = useCallback(() => {
+    handleMarina()
+    setCurrentLocation('quartiere')
+    setActiveTab('location')
+  }, [handleMarina, setCurrentLocation, setActiveTab])
+
+  const handleTravel = useCallback((locationId: string) => {
+    setCurrentLocation(locationId)
+    if (stats.hasMotorino) {
+      playSound.motorinoRev()
+    } else {
+      playSound.buttonClick()
+    }
+    setActiveTab('location')
+    const locationNames: Record<string, string> = {
+      cameretta: 'Tua Cameretta',
+      scuola: 'Liceo Copernico',
+      quartiere: 'Piazza del Quartiere',
+      palestra: 'Palestra Fit & Co.',
+      lavoro: 'Luogo di Lavoro',
+      shopping: 'Centro Commerciale',
+      cinema: 'Cinema Multisala',
+      disco: 'Discoteca',
+      officina: 'Officina Clandestina',
+      concessionaria: 'Gennaro Moto',
+    }
+    announce(`Ti sei spostato in ${locationNames[locationId] || 'Strada'}.`)
+  }, [stats.hasMotorino, setActiveTab, announce, setCurrentLocation])
+
+  // Effetto per sincronizzare la posizione geografica al cambio turno o scelta
+  useEffect(() => {
+    if (morningChoicePending) {
+      return
+    }
+
+    if (currentPhase === 'mattina') {
+      if (marinatoOggi) {
+        if (currentLocation !== 'quartiere') {
+          setCurrentLocation('quartiere')
+        }
+      } else {
+        if (currentLocation !== 'scuola') {
+          setCurrentLocation('scuola')
+        }
+      }
+    } else if (currentPhase === 'notte') {
+      if (currentLocation !== 'cameretta') {
+        setCurrentLocation('cameretta')
+      }
+    }
+  }, [currentPhase, marinatoOggi, morningChoicePending, currentLocation, setCurrentLocation])
 
   useKeyboardShortcuts({
     currentPhase,
@@ -617,7 +673,9 @@ function App() {
     advancePhaseOnly: handleAdvancePhaseGuarded,
     openKeyboardHelp,
     setActiveTab,
-    announce
+    announce,
+    currentLocation: activeLocation,
+    soldi: stats.soldi
   })
 
   const currentMedia = useMemo(
@@ -859,6 +917,85 @@ function App() {
       gameTime,
     },
   })
+
+  const dashboardTabProps = {
+    stats,
+    currentDate: gameTime.currentDate,
+    currentPhase: currentPhase ?? 'mattina',
+    activePartners,
+    relationships,
+    friends,
+    gameLog,
+    playerProfile: {
+      name: playerProfile?.name ?? 'Tabboz',
+      gender: playerProfile?.gender ?? 'maschio',
+      orientamentoSessuale: playerProfile?.orientamentoSessuale ?? 'eterosessuale',
+    },
+    currentLocationName: ({
+      cameretta: 'Tua Cameretta',
+      scuola: 'Liceo Copernico',
+      quartiere: 'Piazza del Quartiere',
+      palestra: 'Palestra Fit & Co.',
+      lavoro: 'Luogo di Lavoro',
+      shopping: 'Centro Commerciale',
+      cinema: 'Cinema Multisala',
+      disco: 'Discoteca',
+      officina: 'Officina Clandestina',
+      concessionaria: 'Gennaro Moto',
+    }[activeLocation] || 'Strada') as string,
+    morningChoicePending,
+    onGoToSchool: handleGoToSchoolMorningChoice,
+    onMarinaSchool: handleMarinaSchoolChoice,
+  }
+
+  const locationTabProps = {
+    currentLocation: activeLocation,
+    stats,
+    playerGender: playerProfile?.gender ?? 'maschio',
+    actionsRemaining: phaseActionsRemaining ?? 0,
+    currentPhase: currentPhase ?? 'mattina',
+    schoolTabProps: schoolTabProps,
+    onDisco: handleDisco,
+    onCinema: handleCinema,
+    onShopping: handleShoppingMall,
+    onPalestra: handlePalestra,
+    onLampada: handleLampada,
+    onLavoro: handleLavoro,
+    onConcessionario: () => {
+      setGarageActiveTab('shop')
+      setShowMotorinoGarage(true)
+    },
+    onMeccanico: () => {
+      setGarageActiveTab('tuning')
+      setShowMotorinoGarage(true)
+    },
+    onRiposa: handleRiposa,
+    onDormi: handleDormi,
+    morningChoicePending,
+    onGoToSchool: handleGoToSchoolMorningChoice,
+    onMarinaSchool: handleMarinaSchoolChoice,
+  }
+
+  const newCityTabProps = {
+    currentLocation: activeLocation,
+    currentPhase: currentPhase ?? 'mattina',
+    isSchoolPeriod: gameTime.schoolYear.isSchoolPeriod,
+    dayType: dayType ?? 'feriale',
+    onTravel: handleTravel,
+    nextPhaseLabel: nextPhaseLabelStr,
+    onAdvance: handleAdvancePhaseGuarded,
+    soldi: stats.soldi,
+  }
+
+  const newCharacterTabProps = {
+    ...characterTabProps,
+    onChiacchiera: handleChiacchiera,
+    onNavigaOnline: handleNavigaOnline,
+    onTelefona: handleTelefona,
+    onRimorchia: handleProvarciConAtipa,
+    playerGender: playerProfile?.gender ?? 'maschio',
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
 
   if (!schoolType) {
@@ -915,10 +1052,10 @@ function App() {
                 onValueChange={setActiveTab}
                 currentPhase={currentPhase}
                 statusTab={statusTabProps}
-                schoolTab={schoolTabProps}
-                characterTab={characterTabProps}
-                socialTab={socialTabProps}
-                cityTab={cityTabProps}
+                characterTab={newCharacterTabProps}
+                cityTab={newCityTabProps}
+                dashboardTabProps={dashboardTabProps}
+                locationTabProps={locationTabProps}
               />
             </div>
 

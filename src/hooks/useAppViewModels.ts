@@ -1,9 +1,5 @@
 import { useMemo } from 'react'
 import type { ComponentProps } from 'react'
-import { CharacterSheet } from '@/components/CharacterSheet'
-import { CityTab } from '@/components/tabs/CityTab'
-import { SchoolTab } from '@/components/tabs/SchoolTab'
-import { SocialTab } from '@/components/tabs/SocialTab'
 import { StatusTab } from '@/components/tabs/StatusTab'
 import type { CityDialogsProps, SchoolDialogsProps, SocialDialogsProps } from '@/components/dialogs/game-dialogs.types'
 import type { ThemeVariant } from '@/lib/types'
@@ -16,10 +12,10 @@ interface UseAppViewModelsParams {
   schoolType: ComponentProps<typeof StatusTab>['schoolType']
   age: number
   onResetRequest: () => void
-  schoolTabInput: ComponentProps<typeof SchoolTab>
-  characterTabInput: ComponentProps<typeof CharacterSheet>
-  socialTabInput: ComponentProps<typeof SocialTab>
-  cityTabInput: ComponentProps<typeof CityTab>
+  schoolTabInput: any
+  characterTabInput: any
+  socialTabInput: any
+  cityTabInput: any
   schoolDialogsInput: SchoolDialogsProps
   cityDialogsInput: CityDialogsProps
   socialDialogsInput: SocialDialogsProps

@@ -11,6 +11,7 @@ export type JobId =
   | 'fattorino'
   | 'dogsitter'
   | 'volantinaggio'
+  | 'giornali'
 
 export interface JobDefinition {
   id: JobId
@@ -93,14 +94,26 @@ export const JOBS: Record<JobId, JobDefinition> = {
   volantinaggio: {
     id: 'volantinaggio',
     label: 'Volantinaggio',
-    description: 'Distribuisci volantini pubblicitari',
+    description: 'Distribuisci volantini pubblicitari nel quartiere',
     payPerShift: 12,
-    allowedPhases: ['mattina'],
-    allowedDayTypes: ['feriale'],
+    allowedPhases: ['pomeriggio'],
+    allowedDayTypes: ['feriale', 'sabato'],
     minSchoolYear: 1,
     minStats: {} as Partial<GameStats>,
-    statEffects: { stanchezza: 6, morale: 1 } as Partial<GameStats>,
+    statEffects: { stanchezza: 8, stress: 2, morale: -1 } as Partial<GameStats>,
     icon: '\u{1F4C4}',
+  },
+  giornali: {
+    id: 'giornali',
+    label: 'Consegna Giornali',
+    description: 'Sveglia all\'alba per lanciare i giornali nei cortili',
+    payPerShift: 18,
+    allowedPhases: ['mattina'],
+    allowedDayTypes: ['feriale', 'sabato'],
+    minSchoolYear: 1,
+    minStats: {} as Partial<GameStats>,
+    statEffects: { stanchezza: 12, stress: 3 } as Partial<GameStats>,
+    icon: '\u{1F4F0}',
   },
 }
 

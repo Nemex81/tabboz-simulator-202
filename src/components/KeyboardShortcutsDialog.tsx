@@ -34,13 +34,16 @@ export function KeyboardShortcutsDialog({ open, onOpenChange, onCloseAutoFocus }
       { keys: 'Ctrl + 3', action: 'Lavora da buttadifuori' },
       { keys: 'Ctrl + 8', action: 'Riposa' }
     ]},
-    { category: 'Generale', shortcuts: [
-      { keys: 'Ctrl + Alt + Invio', action: 'Avanza alla prossima fase della giornata' },
+    { category: 'Generale & Navigazione Tab', shortcuts: [
+      { keys: 'Ctrl + 0', action: 'Stato rapido vocale (soldi, posizione, azioni)' },
+      { keys: 'Ctrl + Alt + Invio', action: 'Avanza alla prossima fase della giornata (o Vai a dormire)' },
       { keys: 'Ctrl + R', action: 'Reset gioco' },
-      { keys: 'Alt + H', action: 'Mostra questo aiuto' },
-      { keys: 'Alt + S', action: 'Vai al tab Scuola (scelta mattutina)' },
-      { keys: 'Esc', action: 'Chiudi dialogo senza consumare azioni' },
-      { keys: 'Enter', action: 'Conferma selezione (nei pannelli)' }
+      { keys: 'Alt + K', action: 'Mostra questo aiuto scorciatoie' },
+      { keys: 'Alt + H', action: 'Apri tab Home (Sommario)' },
+      { keys: 'Alt + L', action: 'Apri tab Luogo (Azioni locali)' },
+      { keys: 'Alt + C', action: 'Apri tab Città (Mappa viaggi)' },
+      { keys: 'Alt + P', action: 'Apri tab Personaggio' },
+      { keys: 'Esc', action: 'Chiudi dialogo senza consumare azioni' }
     ]}
   ]
 
@@ -83,7 +86,7 @@ export function KeyboardShortcutsDialog({ open, onOpenChange, onCloseAutoFocus }
           <div className="bg-accent/10 border border-accent rounded-lg p-3 mb-3">
             <p className="text-xs text-muted-foreground">
               <strong className="text-accent">💡 SUGGERIMENTO:</strong> Le scorciatoie funzionano solo quando NON sei in un dialogo di evento.
-              Premi <kbd className="px-2 py-0.5 bg-muted rounded text-xs">Alt + H</kbd> in qualsiasi momento per aprire questo aiuto!
+              Premi <kbd className="px-2 py-0.5 bg-muted rounded text-xs">Alt + K</kbd> in qualsiasi momento per aprire questo aiuto!
             </p>
           </div>
           
