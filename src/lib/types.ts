@@ -623,11 +623,26 @@ export interface HourSlot {
   playerChoice?: string           // id della scelta fatta (per log)
 }
 
+export interface AutoSchoolDayReport {
+  lessonsResolved: {
+    hour: number
+    subject: string
+    teacherName: string
+    ordinaryMsg: string
+    eventMsg?: string
+    autoChoiceLabel?: string
+  }[]
+  breakMsg: string
+  totalDelta: Partial<GameStats>
+  newFriends: Friend[]
+}
+
 export interface SchoolDayState {
   date: GameDate                  // data della mattinata in corso
   slots: HourSlot[]               // 7 elementi: 3 ore + break + 3 ore
   currentSlotIndex: number        // 0-6, slot attivo
   isComplete: boolean
+  report?: AutoSchoolDayReport    // report della risoluzione automatica
 }
 
 export const DEFAULT_SCHOOL_DAY_STATE: SchoolDayState = {
@@ -649,3 +664,28 @@ export type BreakActionType =
   | 'minaccia_prof'
   | 'bar_scolastico'
   | 'riposa'
+
+// --- HUB ATTIVITÀ AUTOMATICHE ---
+export interface SchoolActivitySettings {
+  mode: 'manuale' | 'assistita' | 'rapida';
+  archetype: 'secchione' | 'tamarro' | 'fancazzista' | 'casino' | 'bullo' | 'mediatore' | 'randagio' | 'custom';
+  aulaDidattica: 'impegno' | 'copia' | 'invisibile' | 'disturbo';
+  aulaSociale: 'sfida' | 'collabora' | 'opportunista' | 'evita';
+  intervalloMode: 'studia' | 'socializza' | 'casino' | 'riposa' | 'snack';
+}
+
+export interface CharacterActivities {
+  school: SchoolActivitySettings;
+}
+
+export const DEFAULT_SCHOOL_ACTIVITY_SETTINGS: SchoolActivitySettings = {
+  mode: 'manuale',
+  archetype: 'tamarro',
+  aulaDidattica: 'invisibile',
+  aulaSociale: 'sfida',
+  intervalloMode: 'socializza',
+}
+
+export const DEFAULT_CHARACTER_ACTIVITIES: CharacterActivities = {
+  school: DEFAULT_SCHOOL_ACTIVITY_SETTINGS,
+}

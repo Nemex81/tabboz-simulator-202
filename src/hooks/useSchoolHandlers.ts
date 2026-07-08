@@ -24,6 +24,7 @@ import {
   WeeklyTimetable,
   TimetableSlot,
   HealthRecord,
+  CharacterActivities,
 } from '@/lib/types'
 import type { GameTime, SchoolDayState, Relationship, ScheduledExam } from '@/lib/types'
 import type { ActivePartner } from '@/lib/girlfriend-system'
@@ -34,6 +35,7 @@ import type { SchoolEvent } from '@/lib/school-events'
 import { getParentEventByMedia, EventOutcome } from '@/lib/school-events'
 import { drawStreetMorningEvents } from '@/lib/street-morning-events'
 import { buildSchoolDayState } from '@/lib/school-actions'
+import { resolveSchoolDayBlock } from '@/lib/school-activities'
 import { computeEventGradeChange, computeReportCardVerdict } from '@/lib/school-event-handlers'
 import { promoteToFriend } from '@/lib/classmate-relations'
 import { applyTeacherRelationChange } from '@/lib/teacher-relations'
@@ -83,6 +85,7 @@ export interface UseSchoolHandlersParams {
   phaseActionsRemaining: number
   currentPhase: Phase
   dayType: DayType
+  activities: CharacterActivities
   marinatoOggi: boolean
   teacherActionType: TeacherActionType
   setTeacherActionType: SetState<TeacherActionType>
@@ -219,36 +222,133 @@ export function useSchoolHandlers(p: UseSchoolHandlersParams) {
     }
     playSound.buttonClick()
 
-    p.setSchoolRecord((current): SchoolRecord => ({
-      ...(current ?? DEFAULT_SCHOOL_RECORD),
-      wentToSchoolToday: true,
-      isAtSchool: true
-    }))
-    p.setMorningChoicePending(false)
-    p.announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
-    p.addLogEntry('school', 'Vai a scuola', 'Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!', 'positive', p.gameTime.currentDate, p.currentPhase ?? 'mattina')
-
     const schoolDay = buildSchoolDayState(p.timetable, p.gameTime.currentDate, p.teachers, p.stats, p.getTodaySchedule)
 
-    scheduleAcrossFrames([
-      () => p.setStats((current) => ({
-        ...current!,
-        intelligenza: clampStat(current!.intelligenza + 2),
-        stanchezza: clampStat(current!.stanchezza + 10)
-      })),
-      () => {
-        if (schoolDay.type === 'sequence') {
-          p.setSchoolDayState(schoolDay.state)
-        } else {
-          p.setSchoolMorningEvents(schoolDay.morningEvents)
+    if (p.activities.school.mode === 'rapida' && schoolDay.type === 'sequence') {
+      const report = resolveSchoolDayBlock(
+        schoolDay.state.slots,
+        p.teachers,
+        p.stats,
+        p.activities.school
+      )
+
+      const baseDelta = { intelligenza: 2, stanchezza: 10 }
+      p.setStats((current) => {
+        const updated = { ...current! }
+        const numeric = updated as unknown as Record<string, number>
+
+        // Applica base delta
+        for (const [k, v] of Object.entries(baseDelta)) {
+          numeric[k] = clampStat(numeric[k] + v)
         }
-        p.setShowSchoolMorning(true)
-      },
-    ])
+
+        // Applica report delta
+        for (const [k, v] of Object.entries(report.totalDelta)) {
+          if (typeof v !== 'number') continue
+          if (k === 'soldi') {
+            numeric[k] = clampStat(numeric[k] + v, 0, 1000)
+          } else {
+            numeric[k] = clampStat(numeric[k] + v)
+          }
+        }
+        return updated
+      })
+
+      p.setSchoolRecord((current): SchoolRecord => ({
+        ...(current ?? DEFAULT_SCHOOL_RECORD),
+        wentToSchoolToday: true,
+        isAtSchool: true
+      }))
+      p.setMorningChoicePending(false)
+
+      p.addLogEntry(
+        'school', 
+        'Scuola in modalità rapida', 
+        `Sei andato a scuola con condotta "${p.activities.school.archetype}". Risoluzione automatica in blocco completata.`, 
+        'positive', 
+        p.gameTime.currentDate, 
+        p.currentPhase ?? 'mattina'
+      )
+
+      for (const lesson of report.lessonsResolved) {
+        if (lesson.eventMsg) {
+          p.addLogEntry(
+            'school',
+            `Ora ${lesson.hour}: ${lesson.subject}`,
+            `Evento: ${lesson.eventMsg} (Scelta automatica: ${lesson.autoChoiceLabel})`,
+            'neutral',
+            p.gameTime.currentDate,
+            p.currentPhase ?? 'mattina'
+          )
+        }
+      }
+
+      if (report.breakMsg) {
+        p.addLogEntry(
+          'school',
+          'Intervallo',
+          report.breakMsg,
+          'neutral',
+          p.gameTime.currentDate,
+          p.currentPhase ?? 'mattina'
+        )
+      }
+
+      if (report.newFriends.length > 0) {
+        p.setRawFriends((prev) => [...(prev ?? []), ...report.newFriends])
+        for (const f of report.newFriends) {
+          p.addLogEntry(
+            'social',
+            'Nuova amicizia',
+            `Hai stretto amicizia con ${f.name}!`,
+            'positive',
+            p.gameTime.currentDate,
+            p.currentPhase ?? 'mattina'
+          )
+        }
+      }
+
+      const completedSlots = schoolDay.state.slots.map(s => ({ ...s, completed: true }))
+      p.setSchoolDayState({
+        ...schoolDay.state,
+        slots: completedSlots,
+        currentSlotIndex: completedSlots.length,
+        isComplete: true,
+        report
+      })
+
+      p.setShowSchoolMorning(true)
+      p.announce('Giornata scolastica risolta automaticamente. Leggi il resoconto.')
+    } else {
+      p.setSchoolRecord((current): SchoolRecord => ({
+        ...(current ?? DEFAULT_SCHOOL_RECORD),
+        wentToSchoolToday: true,
+        isAtSchool: true
+      }))
+      p.setMorningChoicePending(false)
+      p.announce('Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!')
+      p.addLogEntry('school', 'Vai a scuola', 'Sei andato a scuola! +2 Intelligenza, +10 Stanchezza. Segui le lezioni!', 'positive', p.gameTime.currentDate, p.currentPhase ?? 'mattina')
+
+      scheduleAcrossFrames([
+        () => p.setStats((current) => ({
+          ...current!,
+          intelligenza: clampStat(current!.intelligenza + 2),
+          stanchezza: clampStat(current!.stanchezza + 10)
+        })),
+        () => {
+          if (schoolDay.type === 'sequence') {
+            p.setSchoolDayState(schoolDay.state)
+          } else {
+            p.setSchoolMorningEvents(schoolDay.morningEvents)
+          }
+          p.setShowSchoolMorning(true)
+        },
+      ])
+    }
   }, [
     p.phaseActionsRemaining, p.dayType, p.currentPhase, p.gameTime,
     p.schoolRecord, p.canAttendSchool, p.setStats, p.setSchoolRecord,
-    p.setMorningChoicePending, p.announce,
+    p.setMorningChoicePending, p.announce, p.activities, p.setRawFriends,
     p.addLogEntry, p.timetable, p.teachers, p.stats, p.getTodaySchedule,
     p.setSchoolDayState, p.setSchoolMorningEvents, p.setShowSchoolMorning,
     scheduleAcrossFrames,

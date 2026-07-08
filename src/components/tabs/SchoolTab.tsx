@@ -23,6 +23,7 @@ import type {
   LogEntryType,
   GameLogEntry,
   DayPhase,
+  CharacterActivities,
 } from '@/lib/types'
 import type { AfternoonEvent } from '@/lib/afternoon-events'
 import type { SchoolMorningEvent } from '@/lib/school-morning-events'
@@ -118,6 +119,7 @@ export interface SchoolTabProps {
   ) => void
   onAdvance: () => void
   nextPhaseLabel: string
+  activities: CharacterActivities
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
@@ -175,6 +177,7 @@ export function SchoolTab({
   addLogEntry,
   onAdvance,
   nextPhaseLabel,
+  activities,
 }: SchoolTabProps) {
   const [activeSubTab, setActiveSubTab] = useState<string>('home')
   const prevPhaseRef = useRef<string | null | undefined>(null)
@@ -197,8 +200,7 @@ export function SchoolTab({
     isSchoolPeriod &&
     schoolRecord.wentToSchoolToday &&
     schoolDayState !== undefined &&
-    schoolDayState.slots.length > 0 &&
-    !schoolDayState.isComplete
+    schoolDayState.slots.length > 0
 
   const isCurrentSlotBreak =
     schoolDayState !== undefined &&
@@ -239,7 +241,7 @@ export function SchoolTab({
     })
   }, [activeSubTab])
 
-  const footerDisabled = hasActiveSchoolSequence
+  const footerDisabled = hasActiveSchoolSequence && !schoolDayState?.isComplete
   const footerBlockedMessage = morningChoicePending
     ? 'Scegli prima se andare a lezione o marinare per continuare.'
     : 'Completa tutte le ore di lezione per continuare.'
@@ -438,6 +440,7 @@ export function SchoolTab({
                 onBreakComplete={onBreakComplete}
                 announce={announce}
                 currentDate={currentDate}
+                activities={activities}
               />
             )}
 
@@ -456,6 +459,7 @@ export function SchoolTab({
                 currentDate={currentDate}
                 schoolDayState={schoolDayState ?? undefined}
                 onSlotComplete={onSlotComplete}
+                activities={activities}
               />
             )}
 

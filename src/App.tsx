@@ -9,7 +9,8 @@ import { GameDialogs } from '@/components/GameDialogs'
 import { MainGameTabs } from '@/components/MainGameTabs'
 import { SchoolSelection } from '@/components/SchoolSelection'
 import { CharacterSheet } from '@/components/CharacterSheet'
-import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant, SchoolRecord, DEFAULT_SCHOOL_RECORD, DEFAULT_HEALTH_RECORD } from '@/lib/types'
+import { GameStats, SubjectGrades, GameTime, DEFAULT_GAME_STATE, SchoolType, Friend, Relationship, ScheduledExam, PlayerProfile, ThemeVariant, SchoolRecord, DEFAULT_SCHOOL_RECORD, DEFAULT_HEALTH_RECORD, CharacterActivities, DEFAULT_CHARACTER_ACTIVITIES } from '@/lib/types'
+import { resolveSchoolDayBlock } from '@/lib/school-activities'
 import { useGameStats } from '@/hooks/useGameStats'
 import { useGameTime } from '@/hooks/useGameTime'
 import { useEventEngine } from '@/hooks/useEventEngine'
@@ -67,6 +68,8 @@ function App() {
   const [rawGradesHistory, setRawGradesHistory] = useKV<Record<number, SubjectGrades>>('tabboz-grades-history', {})
   const [currentLocation, setCurrentLocation] = useKV<string>('tabboz-location', 'cameretta')
   const activeLocation = currentLocation ?? 'cameretta'
+  const [activities, setActivities] = useKV<CharacterActivities>('tabboz-activities', DEFAULT_CHARACTER_ACTIVITIES)
+  const activeActivities = activities ?? DEFAULT_CHARACTER_ACTIVITIES
 
   const schoolType = validateSchoolType(rawSchoolType)
   const playerProfile = useMemo(() => normalizePlayerProfileNullable(rawPlayerProfile), [rawPlayerProfile])
@@ -420,6 +423,7 @@ function App() {
   } = useSchoolHandlers({
     stats,
     setStats,
+    activities: activeActivities,
     grades,
     setGrades,
     schoolRecord,
@@ -766,6 +770,7 @@ function App() {
       addLogEntry,
       onAdvance: handleAdvancePhaseGuarded,
       nextPhaseLabel: nextPhaseLabelStr,
+      activities: activeActivities,
     },
     characterTabInput: {
       playerProfile: playerProfile ?? null,
@@ -789,6 +794,8 @@ function App() {
       onGirlfriendAction: handleGirlfriendAction,
       onGirlfriendBreakup: handleGirlfriendBreakup,
       onTryRelationship: handleTryRelationship,
+      activities: activeActivities,
+      onUpdateActivities: setActivities,
     },
     socialTabInput: {
       playerGender: playerProfile?.gender ?? 'maschio',

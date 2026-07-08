@@ -76,6 +76,7 @@ const BOOTSTRAP_KEYS = new Set<string>([
   'tabboz-weekly-timetable',
   'tabboz-school-day-state',
   'tabboz-location',
+  'tabboz-activities',
 ])
 
 function isBrowserAvailable(): boolean {

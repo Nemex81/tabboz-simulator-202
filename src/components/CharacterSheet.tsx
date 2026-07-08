@@ -9,12 +9,14 @@ import {
   UsersThree,
   Chats,
   Laptop,
-  UserCircle
+  UserCircle,
+  Sliders,
+  Sparkle
 } from '@phosphor-icons/react'
 import { ActionButton } from '@/components/ActionButton'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { GameStats, SchoolType, SchoolRecord, GameLogEntry, HealthRecord, SubjectGrades, Friend, Relationship, NarrativePlayerGender } from '@/lib/types'
+import { GameStats, SchoolType, SchoolRecord, GameLogEntry, HealthRecord, SubjectGrades, Friend, Relationship, NarrativePlayerGender, CharacterActivities } from '@/lib/types'
 import { getReputationLevel } from '@/lib/game-utils'
 import { DiaryPanel } from '@/components/DiaryPanel'
 import { HealthRecordPanel } from '@/components/HealthRecordPanel'
@@ -23,6 +25,7 @@ import { FriendshipsPanel } from '@/components/FriendshipsPanel'
 import { RelationshipsPanel } from '@/components/RelationshipsPanel'
 import type { ActivePartner } from '@/lib/girlfriend-system'
 import { getCharacterGenderLabel, getSexualOrientationLabel } from '@/lib/gender-utils'
+import { ARCHETYPES } from '@/lib/school-activities'
 
 interface CharacterSheetProps {
   playerProfile: import('@/lib/types').PlayerProfile | null
@@ -52,6 +55,8 @@ interface CharacterSheetProps {
   onTelefona: () => void
   onRimorchia: () => void
   playerGender: NarrativePlayerGender
+  activities: CharacterActivities
+  onUpdateActivities: (activities: CharacterActivities) => void
 }
 
 export const CharacterSheet = React.memo(function CharacterSheet({
@@ -81,6 +86,8 @@ export const CharacterSheet = React.memo(function CharacterSheet({
   onTelefona,
   onRimorchia,
   playerGender,
+  activities,
+  onUpdateActivities,
 }: CharacterSheetProps) {
   return (
     <Tabs defaultValue="profilo" className="w-full mt-6">
@@ -114,6 +121,11 @@ export const CharacterSheet = React.memo(function CharacterSheet({
           <Heart size={18} className="mr-1" weight="fill" aria-hidden="true" />
           <span className="hidden sm:inline">Salute</span>
           <span className="sm:hidden">❤️</span>
+        </TabsTrigger>
+        <TabsTrigger value="attivita" className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Attività: routine e condotta">
+          <Sliders size={18} className="mr-1" weight="fill" aria-hidden="true" />
+          <span className="hidden sm:inline">Attività</span>
+          <span className="sm:hidden">⚙️</span>
         </TabsTrigger>
         <TabsTrigger value="obiettivi" disabled className="flex-1 min-w-[75px] sm:min-w-[100px]" aria-label="Obiettivi: traguardi (non ancora disponibile)">
           <span className="hidden sm:inline">Obiettivi</span>
@@ -426,6 +438,189 @@ export const CharacterSheet = React.memo(function CharacterSheet({
       <TabsContent value="salute">
         <div className="mt-2">
           <HealthRecordPanel healthRecord={healthRecord} gameLog={gameLog} />
+        </div>
+      </TabsContent>
+
+      <TabsContent value="attivita">
+        <div className="space-y-6">
+          <Card className="p-6 border-2 border-primary bg-card/60 backdrop-blur-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mr-10 -mt-10" />
+            <h2 className="text-2xl font-bold text-primary flex items-center gap-2 mb-2">
+              <Sliders size={28} weight="fill" aria-hidden="true" />
+              Attività Automatiche & Condotta
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Configura il comportamento del tuo personaggio per automatizzare o assistere le attività scolastiche ricorrenti. La struttura è predisposta per accogliere in seguito anche lavoro e tempo libero.
+            </p>
+          </Card>
+
+          {/* Sotto-sezione Scuola */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Colonna 1: Modalità & Archetipi */}
+            <div className="lg:col-span-2 space-y-6">
+              
+              {/* Card 1: Modalità di Esecuzione */}
+              <Card className="p-5 border border-border bg-card">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                  ⚙️ Modalità Risoluzione Scolastica
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { key: 'manuale', title: 'Manuale', desc: 'Risolvi ora per ora compiendo manualmente le scelte ed il break.' },
+                    { key: 'assistita', title: 'Assistita', desc: 'La scuola scorre ora per ora, ma le scelte degli eventi sono automatiche.' },
+                    { key: 'rapida', title: 'Rapida (In blocco)', desc: 'La scuola si risolve istantaneamente con un resoconto finale.' }
+                  ].map((m) => (
+                    <button
+                      key={m.key}
+                      onClick={() => {
+                        const next = { ...activities }
+                        next.school.mode = m.key as any
+                        onUpdateActivities(next)
+                      }}
+                      className={`p-3 border rounded-lg text-left transition-all flex flex-col justify-between ${
+                        activities.school.mode === m.key
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
+                          : 'border-border bg-muted/20 hover:bg-muted/40'
+                      }`}
+                    >
+                      <span className="font-bold text-sm capitalize">{m.title}</span>
+                      <span className="text-xs text-muted-foreground mt-1">{m.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Card 2: Archetipi Preimpostati */}
+              <Card className="p-5 border border-border bg-card">
+                <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
+                  🎭 Archetipi Condotta Scolastica
+                </h3>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Seleziona un archetipo per impostare rapidamente i comportamenti automatici del personaggio.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { key: 'secchione', label: 'Secchioni opportunista', icon: '📚' },
+                    { key: 'tamarro', label: 'Tamaro disciplinato', icon: '🔥' },
+                    { key: 'fancazzista', label: 'Fancazzista invisibile', icon: '💤' },
+                    { key: 'casino', label: 'Casinanò organizzato', icon: '📣' },
+                    { key: 'bullo', label: 'Bullo sociale', icon: '💪' },
+                    { key: 'mediatore', label: 'Mediatore paraculo', icon: '🤝' },
+                    { key: 'randagio', label: 'Randagio di Torre', icon: '🚶' }
+                  ].map((arch) => (
+                    <button
+                      key={arch.key}
+                      onClick={() => {
+                        const defaults = ARCHETYPES[arch.key as keyof typeof ARCHETYPES]
+                        if (defaults) {
+                          const next = { ...activities }
+                          next.school = {
+                            ...next.school,
+                            archetype: arch.key as any,
+                            ...defaults
+                          }
+                          onUpdateActivities(next)
+                        }
+                      }}
+                      className={`p-3 border rounded-lg text-center transition-all flex flex-col items-center justify-center gap-1 ${
+                        activities.school.archetype === arch.key
+                          ? 'border-accent bg-accent/5 ring-2 ring-accent/30'
+                          : 'border-border bg-muted/15 hover:bg-muted/30'
+                      }`}
+                    >
+                      <span className="text-2xl" aria-hidden="true">{arch.icon}</span>
+                      <span className="text-xs font-bold leading-tight">{arch.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            {/* Colonna 2: Preferenze Dettagliate */}
+            <Card className="p-5 border border-border bg-card space-y-4">
+              <h3 className="text-lg font-bold flex items-center gap-2 border-b pb-2">
+                🔧 Condotta Personalizzata
+              </h3>
+              
+              {/* Aula Didattica */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
+                  📖 Comportamento Didattico
+                </label>
+                <select
+                  value={activities.school.aulaDidattica}
+                  onChange={(e) => {
+                    const next = { ...activities }
+                    next.school.aulaDidattica = e.target.value as any
+                    next.school.archetype = 'custom'
+                    onUpdateActivities(next)
+                  }}
+                  className="w-full bg-background border border-border rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-primary"
+                >
+                  <option value="impegno">Impegnati al massimo (+Studio)</option>
+                  <option value="copia">Copia dai compagni (+Furbizia)</option>
+                  <option value="invisibile">Fai finta di nulla (Nessun rischio)</option>
+                  <option value="disturbo">Casino e Disturbo (+Coatto)</option>
+                </select>
+              </div>
+
+              {/* Aula Sociale */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
+                  👥 Comportamento Sociale
+                </label>
+                <select
+                  value={activities.school.aulaSociale}
+                  onChange={(e) => {
+                    const next = { ...activities }
+                    next.school.aulaSociale = e.target.value as any
+                    next.school.archetype = 'custom'
+                    onUpdateActivities(next)
+                  }}
+                  className="w-full bg-background border border-border rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-primary"
+                >
+                  <option value="sfida">Sfida a muso duro (Faccia a faccia)</option>
+                  <option value="collabora">Collabora ed aiuta (+Amicizia)</option>
+                  <option value="opportunista">Opportunismo e profitto</option>
+                  <option value="evita">Evita rogne e scappa</option>
+                </select>
+              </div>
+
+              {/* Gestione Intervallo */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
+                  ☕ Gestione Intervallo
+                </label>
+                <select
+                  value={activities.school.intervalloMode}
+                  onChange={(e) => {
+                    const next = { ...activities }
+                    next.school.intervalloMode = e.target.value as any
+                    next.school.archetype = 'custom'
+                    onUpdateActivities(next)
+                  }}
+                  className="w-full bg-background border border-border rounded px-2 py-1.5 text-sm focus:ring-2 focus:ring-primary"
+                >
+                  <option value="studia">Ripassa ed interroga (+Intelligenza)</option>
+                  <option value="socializza">Fai gruppo nei corridoi (+Relazione)</option>
+                  <option value="casino">Crea disordine nella scuola (+Coatto)</option>
+                  <option value="riposa">Rilassati e riprendi fiato (-Stanchezza)</option>
+                  <option value="snack">Merenda calda al bar (-3€, -Stanchezza)</option>
+                </select>
+              </div>
+
+              {activities.school.archetype !== 'custom' && (
+                <div className="mt-4 p-2.5 bg-accent/5 border border-accent/20 rounded flex items-start gap-2">
+                  <Sparkle size={16} className="text-accent shrink-0 mt-0.5" aria-hidden="true" />
+                  <p className="text-[11px] text-muted-foreground leading-normal">
+                    L'archetipo <strong>{activities.school.archetype}</strong> controlla questi campi. Modificandoli passerai alla condotta personalizzata.
+                  </p>
+                </div>
+              )}
+            </Card>
+
+          </div>
         </div>
       </TabsContent>
     </Tabs>

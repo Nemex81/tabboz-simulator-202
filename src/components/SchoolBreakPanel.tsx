@@ -3,7 +3,7 @@
 // 3 tab: Compagni | Professori | Altro.
 // Una sola azione eseguibile per intervallo.
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +16,7 @@ import type {
   SchoolRecord,
   GameDate,
   Teacher,
+  CharacterActivities,
 } from '@/lib/types'
 import {
   type BreakContext,
@@ -26,6 +27,7 @@ import { clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
 import type { ClassmateInteractionKey } from '@/lib/classmate-relations'
 import type { DoInteractionResult, TeacherInteractionKey } from '@/hooks/useGameRelations'
+import { resolveAutoBreak } from '@/lib/school-activities'
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
@@ -41,6 +43,7 @@ interface SchoolBreakPanelProps {
   onBreakComplete: () => void
   announce: (msg: string) => void
   currentDate: GameDate
+  activities?: CharacterActivities
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -74,10 +77,67 @@ export const SchoolBreakPanel = React.memo(function SchoolBreakPanel({
   onBreakComplete,
   announce,
   currentDate,
+  activities,
 }: SchoolBreakPanelProps) {
   const [selectedTarget, setSelectedTarget] = useState<string | undefined>(undefined)
   const [actionResult, setActionResult] = useState<BreakResult | null>(null)
   const [actionDone, setActionDone] = useState(false)
+
+  // ── Gestione Automatica in Modalità Assistita ──────────────────────────────
+  const isAssisted = activities?.school.mode === 'assistita'
+  const [autoBreakMessage, setAutoBreakMessage] = useState<string | null>(null)
+  const [autoBreakApplied, setAutoBreakApplied] = useState(false)
+
+  useEffect(() => {
+    if (isAssisted && !autoBreakApplied && activities) {
+      const result = resolveAutoBreak(activities.school, stats)
+      setAutoBreakMessage(result.message)
+      setAutoBreakApplied(true)
+      
+      onStatChange((prev) => {
+        const updated = { ...prev }
+        const numeric = updated as unknown as Record<string, number>
+        for (const [k, v] of Object.entries(result.delta)) {
+          if (typeof v !== 'number') continue
+          if (k === 'soldi') {
+            numeric[k] = clampStat(numeric[k] + v, 0, 1000)
+          } else {
+            numeric[k] = clampStat(numeric[k] + v)
+          }
+        }
+        return updated
+      })
+
+      playSound.buttonClick()
+      announce(result.message)
+    }
+  }, [isAssisted, autoBreakApplied, activities, stats, onStatChange, announce])
+
+  if (isAssisted) {
+    return (
+      <Card className="border-2 border-amber-200" role="region" aria-label="Intervallo Automatico" aria-live="polite">
+        <CardHeader className="pb-2">
+          <Badge className="w-fit bg-amber-100 text-amber-800">☕ Intervallo (Automatico)</Badge>
+          <CardTitle className="text-base mt-2">
+            Risoluzione condotta intervallo: <span className="text-primary capitalize">"{activities?.school.intervalloMode}"</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground italic">
+            {autoBreakMessage || 'Calcolo dell\'intervallo in corso...'}
+          </p>
+          <Button
+            className="w-full"
+            onClick={onBreakComplete}
+            disabled={!autoBreakApplied}
+            aria-label="Fine intervallo, torna in classe"
+          >
+            Fine Intervallo →
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
 
   // ── Derivazioni da schoolDayState (C11) ───────────────────────────────────
   const todayTeachers: Teacher[] = schoolDayState.slots

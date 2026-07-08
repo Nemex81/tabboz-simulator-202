@@ -7,10 +7,11 @@ import React, { useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { GameStats, Friend, MorningEventCategory, SchoolDayState } from '@/lib/types'
+import { GameStats, Friend, MorningEventCategory, SchoolDayState, CharacterActivities } from '@/lib/types'
 import { SchoolMorningEvent, SchoolMorningChoice } from '@/lib/school-morning-events'
 import { clampStat } from '@/lib/game-utils'
 import { playSound } from '@/lib/sound-effects'
+import { getAutoChoiceIndex } from '@/lib/school-activities'
 
 interface SchoolMorningPanelProps {
   context: 'school' | 'street'
@@ -32,6 +33,7 @@ interface SchoolMorningPanelProps {
   // Modalità slot (Fase 2E) — opzionali per retrocompatibilità
   schoolDayState?: SchoolDayState
   onSlotComplete?: (slotIndex: number) => void
+  activities?: CharacterActivities
 }
 
 const categoryLabel: Record<MorningEventCategory, string> = {
@@ -118,6 +120,7 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
   currentDate,
   schoolDayState,
   onSlotComplete,
+  activities,
 }: SchoolMorningPanelProps) {
   const [resolvedIds, setResolvedIds] = React.useState<Set<string>>(new Set())
 
@@ -164,12 +167,110 @@ export const SchoolMorningPanel = React.memo(function SchoolMorningPanel({
     [resolvedIds, stats, onStatChange, onGainExtraAction, announce, onNewFriend, addLogEntry, currentDate, onSlotComplete]
   )
 
+  // Auto-risoluzione scelta in modalità assistita (dopo la dichiarazione di handleSlotChoice)
+  React.useEffect(() => {
+    if (schoolDayState && context === 'school' && activities?.school.mode === 'assistita') {
+      const currentSlot = schoolDayState.slots[schoolDayState.currentSlotIndex]
+      if (currentSlot && currentSlot.type === 'lesson' && currentSlot.structuredEvent) {
+        const eventId = currentSlot.structuredEvent.id
+        if (!resolvedIds.has(eventId)) {
+          const choiceIdx = getAutoChoiceIndex(
+            eventId,
+            currentSlot.structuredEvent.category,
+            activities.school,
+            currentSlot.structuredEvent.choices.length
+          )
+          const choice = currentSlot.structuredEvent.choices[choiceIdx]
+          if (choice) {
+            const timer = setTimeout(() => {
+              handleSlotChoice(choice, schoolDayState.currentSlotIndex, eventId)
+            }, 600)
+            return () => clearTimeout(timer)
+          }
+        }
+      }
+    }
+  }, [schoolDayState, context, activities, resolvedIds, handleSlotChoice])
+
   // ── Modalità slot: UI ──────────────────────────────────────────────────────
   if (schoolDayState && context === 'school') {
     const { slots, currentSlotIndex, isComplete } = schoolDayState
 
     // Giornata completata
     if (isComplete) {
+      if (schoolDayState.report) {
+        const rep = schoolDayState.report
+        const deltaText = Object.entries(rep.totalDelta)
+          .filter(([, v]) => v !== 0 && v !== undefined)
+          .map(([k, v]) => `${(v as number) > 0 ? '+' : ''}${v} ${k}`)
+          .join(', ')
+
+        return (
+          <div className="space-y-4 font-sans" role="region" aria-label="Resoconto giornata scolastica automatica">
+            <div className="rounded-lg bg-green-50 border border-green-300 p-4 text-center">
+              <p className="font-bold text-green-800 text-lg">🎓 Scuola Risolta in Blocco!</p>
+              <p className="text-xs text-green-700 mt-1">
+                La mattinata scolastica è stata gestita con condotta <span className="font-bold">"{activities?.school.archetype}"</span> ({activities?.school.mode} mode).
+              </p>
+            </div>
+
+            <Card className="border border-border">
+              <CardHeader className="pb-2 border-b">
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  Riepilogo Ore di Lezione
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4 space-y-3">
+                {rep.lessonsResolved.map((lr, idx) => (
+                  <div key={idx} className="text-sm border-b pb-2 last:border-0 last:pb-0">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-bold text-primary">{lr.hour}ª Ora: {lr.subject.toUpperCase()}</span>
+                      <span className="text-xs text-muted-foreground font-mono">Prof: {lr.teacherName}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{lr.ordinaryMsg}</p>
+                    {lr.eventMsg && (
+                      <div className="mt-1.5 p-2 bg-muted/40 border border-border rounded text-xs">
+                        <span className="font-bold block text-accent">⚡ Evento: {lr.autoChoiceLabel}</span>
+                        <span className="italic block mt-0.5">{lr.eventMsg}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border">
+              <CardHeader className="pb-2 border-b">
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  ☕ Intervallo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-3">
+                <p className="text-xs text-muted-foreground italic">{rep.breakMsg}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-green-200 bg-green-50/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-bold text-green-800 uppercase tracking-wider">
+                  📈 Variazioni Statistiche Aggregate
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs font-bold text-green-700">
+                  {deltaText ? `Effetti: ${deltaText}` : 'Nessuna variazione statistica rilevante.'}
+                </p>
+                {rep.newFriends.length > 0 && (
+                  <div className="mt-2 text-xs text-green-800">
+                    🤝 Nuove amicizie strette oggi: <span className="font-bold">{rep.newFriends.map(f => f.name).join(', ')}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )
+      }
+
       const structuredOccurred = slots.filter(
         (s) => s.type === 'lesson' && s.structuredEvent
       )
